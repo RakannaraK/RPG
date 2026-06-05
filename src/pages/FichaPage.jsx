@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useFicha } from '../hooks/useFicha'
+import { supabase } from '../lib/supabase'
 import FichaView from '../components/ficha/FichaView'
 import EquipamentosTab from '../components/ficha/EquipamentosTab'
 import ImagensTab from '../components/ficha/ImagensTab'
@@ -14,6 +15,25 @@ export default function FichaPage() {
   const navigate = useNavigate()
   const { ficha, valoresAtributos, loading, error, refetch } = useFicha(fichaId)
   const [activeTab, setActiveTab] = useState('Ficha')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+
+  async function handleDeleteFicha() {
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      const { error: err } = await supabase
+        .from('fichas')
+        .delete()
+        .eq('id', fichaId)
+      if (err) throw err
+      navigate(`/mesa/${mesaId}`)
+    } catch (err) {
+      setDeleteError(err.message || 'Erro ao deletar ficha.')
+      setDeleting(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -41,11 +61,7 @@ export default function FichaPage() {
 
   const isDono = ficha.dono_id === session?.user?.id
 
-  const subtitulo = [
-    ficha.raca,
-    ficha.classe,
-    ficha.nivel ? `Nível ${ficha.nivel}` : null,
-  ]
+  const subtitulo = [ficha.raca, ficha.classe, ficha.nivel ? `Nível ${ficha.nivel}` : null]
     .filter(Boolean)
     .join(' · ')
 
@@ -67,11 +83,22 @@ export default function FichaPage() {
               <p className="text-purple-400 text-sm mt-0.5 truncate">{subtitulo}</p>
             )}
           </div>
-          {!isDono && (
-            <span className="text-xs text-purple-400 bg-purple-900/60 border border-purple-700 px-2 py-1 rounded-full shrink-0">
-              Visualizando
-            </span>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {!isDono && (
+              <span className="text-xs text-purple-400 bg-purple-900/60 border border-purple-700 px-2 py-1 rounded-full">
+                Visualizando
+              </span>
+            )}
+            {isDono && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="p-2 text-red-500 hover:text-red-400 hover:bg-red-950/50 rounded-lg transition-colors"
+                title="Deletar ficha"
+              >
+                🗑
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -101,24 +128,44 @@ export default function FichaPage() {
               isDono={isDono}
             />
           )}
-
           {activeTab === 'Equipamentos' && (
-            <EquipamentosTab
-              fichaId={fichaId}
-              donoId={ficha.dono_id}
-              isDono={isDono}
-            />
+            <EquipamentosTab fichaId={fichaId} donoId={ficha.dono_id} isDono={isDono} />
           )}
-
           {activeTab === 'Imagens' && (
-            <ImagensTab
-              fichaId={fichaId}
-              donoId={ficha.dono_id}
-              isDono={isDono}
-            />
+            <ImagensTab fichaId={fichaId} donoId={ficha.dono_id} isDono={isDono} />
           )}
         </div>
       </div>
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-red-800/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-white font-bold text-lg mb-2">Deletar ficha?</h3>
+            <p className="text-purple-300 text-sm mb-5">
+              Tem certeza? Esta ação não pode ser desfeita. Todos os atributos, equipamentos e imagens desta ficha serão apagados permanentemente.
+            </p>
+            {deleteError && (
+              <p className="text-red-400 text-sm mb-3">{deleteError}</p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowDeleteConfirm(false); setDeleteError('') }}
+                disabled={deleting}
+                className="flex-1 py-2.5 text-purple-300 hover:text-white border border-purple-700 hover:border-purple-500 rounded-xl text-sm transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteFicha}
+                disabled={deleting}
+                className="flex-1 py-2.5 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors"
+              >
+                {deleting ? 'Deletando...' : 'Deletar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -22,6 +22,16 @@ export default function MesaPage() {
   const [copiado, setCopiado] = useState(false)
   const [showFichaCreate, setShowFichaCreate] = useState(false)
 
+  // delete mesa
+  const [showDeleteMesa, setShowDeleteMesa] = useState(false)
+  const [deletingMesa, setDeletingMesa] = useState(false)
+  const [deleteMesaError, setDeleteMesaError] = useState('')
+
+  // delete ficha
+  const [fichaToDelete, setFichaToDelete] = useState(null)
+  const [deletingFicha, setDeletingFicha] = useState(false)
+  const [deleteFichaError, setDeleteFichaError] = useState('')
+
   const { fichas, loading: loadingFichas, refetch: refetchFichas } = useFichas(id)
 
   useEffect(() => {
@@ -39,11 +49,7 @@ export default function MesaPage() {
 
         const { data: membrosData, error: membrosError } = await supabase
           .from('membros_mesa')
-          .select(`
-            role,
-            joined_at,
-            usuario:usuario_id (id, username)
-          `)
+          .select(`role, joined_at, usuario:usuario_id (id, username)`)
           .eq('mesa_id', id)
 
         if (membrosError) throw membrosError
@@ -73,7 +79,6 @@ export default function MesaPage() {
       setCopiado(true)
       setTimeout(() => setCopiado(false), 2000)
     } catch {
-      // fallback para browsers sem suporte
       const el = document.createElement('textarea')
       el.value = mesa.codigo_convite
       document.body.appendChild(el)
@@ -82,6 +87,40 @@ export default function MesaPage() {
       document.body.removeChild(el)
       setCopiado(true)
       setTimeout(() => setCopiado(false), 2000)
+    }
+  }
+
+  async function handleDeleteMesa() {
+    setDeletingMesa(true)
+    setDeleteMesaError('')
+    try {
+      const { error: err } = await supabase
+        .from('mesas')
+        .delete()
+        .eq('id', id)
+      if (err) throw err
+      navigate('/dashboard')
+    } catch (err) {
+      setDeleteMesaError(err.message || 'Erro ao deletar mesa.')
+      setDeletingMesa(false)
+    }
+  }
+
+  async function handleDeleteFicha() {
+    if (!fichaToDelete) return
+    setDeletingFicha(true)
+    setDeleteFichaError('')
+    try {
+      const { error: err } = await supabase
+        .from('fichas')
+        .delete()
+        .eq('id', fichaToDelete.id)
+      if (err) throw err
+      setFichaToDelete(null)
+      refetchFichas()
+    } catch (err) {
+      setDeleteFichaError(err.message || 'Erro ao deletar ficha.')
+      setDeletingFicha(false)
     }
   }
 
@@ -109,27 +148,40 @@ export default function MesaPage() {
     )
   }
 
+  const isCriador = mesa?.criador_id === session?.user?.id
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
       <header className="border-b border-purple-800 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard')}
-            className="text-purple-400 hover:text-white transition-colors text-sm"
+            className="text-purple-400 hover:text-white transition-colors text-sm shrink-0"
           >
             ← Voltar
           </button>
-          <div className="flex-1">
-            <h1 className="text-white font-bold text-xl leading-tight">{mesa?.nome}</h1>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-white font-bold text-xl leading-tight truncate">{mesa?.nome}</h1>
             {mesa?.descricao && (
               <p className="text-purple-400 text-sm mt-0.5 truncate">{mesa.descricao}</p>
             )}
           </div>
-          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-            meuRole === 'mestre' ? 'bg-amber-500 text-amber-950' : 'bg-purple-700 text-white'
-          }`}>
-            {meuRole === 'mestre' ? 'Mestre' : 'Jogador'}
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+              meuRole === 'mestre' ? 'bg-amber-500 text-amber-950' : 'bg-purple-700 text-white'
+            }`}>
+              {meuRole === 'mestre' ? 'Mestre' : 'Jogador'}
+            </span>
+            {isCriador && (
+              <button
+                onClick={() => setShowDeleteMesa(true)}
+                className="p-2 text-red-500 hover:text-red-400 hover:bg-red-950/50 rounded-lg transition-colors"
+                title="Deletar mesa"
+              >
+                🗑
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -172,18 +224,13 @@ export default function MesaPage() {
               {loadingFichas ? (
                 <div className="space-y-3">
                   {[1, 2].map(i => (
-                    <div
-                      key={i}
-                      className="h-20 bg-slate-800 rounded-xl animate-pulse border border-purple-900"
-                    />
+                    <div key={i} className="h-20 bg-slate-800 rounded-xl animate-pulse border border-purple-900" />
                   ))}
                 </div>
               ) : fichas.length === 0 ? (
                 <div className="text-center py-16 border border-dashed border-purple-800 rounded-2xl">
                   <div className="text-4xl mb-4">📜</div>
-                  <p className="text-purple-300 text-lg font-medium mb-2">
-                    Nenhuma ficha criada
-                  </p>
+                  <p className="text-purple-300 text-lg font-medium mb-2">Nenhuma ficha criada</p>
                   <p className="text-purple-500 text-sm mb-5">
                     Crie sua primeira ficha de personagem para começar a aventura!
                   </p>
@@ -196,32 +243,48 @@ export default function MesaPage() {
                 </div>
               ) : (
                 <div className="grid gap-3">
-                  {fichas.map(f => (
-                    <button
-                      key={f.id}
-                      onClick={() => navigate(`/mesa/${id}/ficha/${f.id}`)}
-                      className="w-full text-left bg-slate-800 hover:bg-slate-700 border border-purple-800 hover:border-purple-600 rounded-xl p-4 transition-all"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-white font-semibold">{f.nome_personagem}</p>
-                          <p className="text-purple-400 text-sm mt-0.5">
-                            {[f.raca, f.classe, f.nivel ? `Nível ${f.nivel}` : null]
-                              .filter(Boolean)
-                              .join(' · ') || 'Sem detalhes'}
-                          </p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          {f.hp_maximo && (
-                            <p className="text-green-400 text-sm font-medium">
-                              {f.hp_atual ?? '?'}/{f.hp_maximo} HP
-                            </p>
-                          )}
-                          <p className="text-purple-500 text-xs mt-0.5">{f.dono?.username}</p>
-                        </div>
+                  {fichas.map(f => {
+                    const ehDono = f.dono?.id === session?.user?.id
+                    return (
+                      <div
+                        key={f.id}
+                        className="flex bg-slate-800 border border-purple-800 hover:border-purple-600 rounded-xl transition-all overflow-hidden"
+                      >
+                        <button
+                          onClick={() => navigate(`/mesa/${id}/ficha/${f.id}`)}
+                          className="flex-1 text-left p-4"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-white font-semibold">{f.nome_personagem}</p>
+                              <p className="text-purple-400 text-sm mt-0.5">
+                                {[f.raca, f.classe, f.nivel ? `Nível ${f.nivel}` : null]
+                                  .filter(Boolean)
+                                  .join(' · ') || 'Sem detalhes'}
+                              </p>
+                            </div>
+                            <div className="text-right shrink-0">
+                              {f.hp_maximo && (
+                                <p className="text-green-400 text-sm font-medium">
+                                  {f.hp_atual ?? '?'}/{f.hp_maximo} HP
+                                </p>
+                              )}
+                              <p className="text-purple-500 text-xs mt-0.5">{f.dono?.username}</p>
+                            </div>
+                          </div>
+                        </button>
+                        {ehDono && (
+                          <button
+                            onClick={() => { setDeleteFichaError(''); setFichaToDelete(f) }}
+                            className="px-3 text-red-500 hover:text-red-400 hover:bg-red-950/40 border-l border-purple-800 transition-colors"
+                            title="Deletar ficha"
+                          >
+                            🗑
+                          </button>
+                        )}
                       </div>
-                    </button>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
 
@@ -255,9 +318,7 @@ export default function MesaPage() {
                     <button
                       onClick={copiarCodigo}
                       className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                        copiado
-                          ? 'bg-green-700 text-green-100'
-                          : 'bg-purple-700 hover:bg-purple-600 text-white'
+                        copiado ? 'bg-green-700 text-green-100' : 'bg-purple-700 hover:bg-purple-600 text-white'
                       }`}
                     >
                       {copiado ? '✓ Copiado!' : 'Copiar'}
@@ -271,9 +332,7 @@ export default function MesaPage() {
 
               <div className="bg-slate-800 border border-purple-800 rounded-xl overflow-hidden">
                 <div className="px-5 py-3 border-b border-purple-900">
-                  <p className="text-purple-200 font-medium text-sm">
-                    Membros ({membros.length})
-                  </p>
+                  <p className="text-purple-200 font-medium text-sm">Membros ({membros.length})</p>
                 </div>
                 <ul className="divide-y divide-purple-900">
                   {membros.map(m => (
@@ -292,6 +351,76 @@ export default function MesaPage() {
           )}
         </div>
       </div>
+
+      {/* Modal: deletar mesa */}
+      {showDeleteMesa && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-red-800/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-white font-bold text-lg mb-2">Deletar mesa?</h3>
+            <p className="text-purple-300 text-sm mb-1">
+              Tem certeza? Esta ação não pode ser desfeita.
+            </p>
+            <p className="text-purple-400 text-xs mb-5">
+              Todas as fichas, sistemas, atributos e imagens desta mesa serão apagados permanentemente junto com ela.
+            </p>
+            {deleteMesaError && (
+              <p className="text-red-400 text-sm mb-3">{deleteMesaError}</p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowDeleteMesa(false); setDeleteMesaError('') }}
+                disabled={deletingMesa}
+                className="flex-1 py-2.5 text-purple-300 hover:text-white border border-purple-700 hover:border-purple-500 rounded-xl text-sm transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteMesa}
+                disabled={deletingMesa}
+                className="flex-1 py-2.5 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors"
+              >
+                {deletingMesa ? 'Deletando...' : 'Deletar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: deletar ficha */}
+      {fichaToDelete && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-red-800/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-white font-bold text-lg mb-2">Deletar ficha?</h3>
+            <p className="text-purple-300 text-sm mb-1">
+              Tem certeza? Esta ação não pode ser desfeita.
+            </p>
+            <p className="text-purple-400 text-xs mb-5">
+              Todos os atributos, equipamentos e imagens de{' '}
+              <strong className="text-purple-300">{fichaToDelete.nome_personagem}</strong>{' '}
+              serão apagados permanentemente.
+            </p>
+            {deleteFichaError && (
+              <p className="text-red-400 text-sm mb-3">{deleteFichaError}</p>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setFichaToDelete(null); setDeleteFichaError('') }}
+                disabled={deletingFicha}
+                className="flex-1 py-2.5 text-purple-300 hover:text-white border border-purple-700 hover:border-purple-500 rounded-xl text-sm transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteFicha}
+                disabled={deletingFicha}
+                className="flex-1 py-2.5 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors"
+              >
+                {deletingFicha ? 'Deletando...' : 'Deletar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
