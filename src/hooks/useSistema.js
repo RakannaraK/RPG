@@ -1,0 +1,138 @@
+import { useState, useEffect, useCallback } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
+
+export function useSistema(mesaId) {
+  const { session } = useAuth()
+  const [sistema, setSistema] = useState(null)
+  const [atributos, setAtributos] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const fetchSistema = useCallback(async () => {
+    if (!session || !mesaId) return
+    setLoading(true)
+    setError(null)
+    try {
+      const { data: sistemaData } = await supabase
+        .from('sistemas')
+        .select('*')
+        .eq('mesa_id', mesaId)
+        .maybeSingle()
+
+      if (sistemaData) {
+        const { data: atributosData, error: attrError } = await supabase
+          .from('atributos')
+          .select('*')
+          .eq('sistema_id', sistemaData.id)
+          .order('ordem', { ascending: true })
+
+        if (attrError) throw attrError
+        setSistema(sistemaData)
+        setAtributos(atributosData || [])
+      } else {
+        setSistema(null)
+        setAtributos([])
+      }
+    } catch (err) {
+      setError(err.message || 'Erro ao carregar sistema.')
+    } finally {
+      setLoading(false)
+    }
+  }, [session, mesaId])
+
+  useEffect(() => {
+    fetchSistema()
+  }, [fetchSistema])
+
+  return { sistema, atributos, loading, error, refetch: fetchSistema }
+}
+
+export function useSaveSistema() {
+  const { session } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  async function saveSistema({ mesaId, sistema, atributos, removedAtributoIds }) {
+    if (!session) throw new Error('Usuário não autenticado')
+    setLoading(true)
+    setError(null)
+
+    try {
+      let sistemaId = sistema.id
+
+      if (!sistemaId) {
+        // Cria novo sistema
+        const { data: novo, error: createErr } = await supabase
+          .from('sistemas')
+          .insert({
+            nome: sistema.nome,
+            descricao: sistema.descricao,
+            criador_id: session.user.id,
+            mesa_id: mesaId,
+          })
+          .select()
+          .single()
+
+        if (createErr) throw createErr
+        sistemaId = novo.id
+
+        // Vincula o sistema à mesa
+        await supabase
+          .from('mesas')
+          .update({ sistema_id: sistemaId })
+          .eq('id', mesaId)
+      } else {
+        // Atualiza sistema existente
+        const { error: updateErr } = await supabase
+          .from('sistemas')
+          .update({ nome: sistema.nome, descricao: sistema.descricao })
+          .eq('id', sistemaId)
+
+        if (updateErr) throw updateErr
+      }
+
+      // Remove atributos deletados
+      if (removedAtributoIds.length > 0) {
+        const { error: delErr } = await supabase
+          .from('atributos')
+          .delete()
+          .in('id', removedAtributoIds)
+        if (delErr) throw delErr
+      }
+
+      // Salva cada atributo
+      for (let i = 0; i < atributos.length; i++) {
+        const attr = atributos[i]
+        const payload = {
+          nome: attr.nome,
+          descricao: attr.descricao,
+          ordem: i,
+          regra_rolagem: attr.regra_rolagem,
+          sistema_id: sistemaId,
+        }
+
+        if (!attr.id || attr.id.startsWith('temp_')) {
+          const { error: insErr } = await supabase.from('atributos').insert(payload)
+          if (insErr) throw insErr
+        } else {
+          const { error: updErr } = await supabase
+            .from('atributos')
+            .update(payload)
+            .eq('id', attr.id)
+          if (updErr) throw updErr
+        }
+      }
+
+      return sistemaId
+    } catch (err) {
+      const msg = err.message || 'Erro ao salvar sistema.'
+      setError(msg)
+      throw new Error(msg)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return { saveSistema, loading, error }
+}
