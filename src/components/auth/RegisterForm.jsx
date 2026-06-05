@@ -34,15 +34,19 @@ export default function RegisterForm({ onSwitchToLogin }) {
 
   if (success) {
     return (
-      <div className="space-y-4 text-center">
-        <div className="text-4xl">🎲</div>
-        <h3 className="text-purple-200 font-semibold text-lg">Conta criada!</h3>
-        <p className="text-purple-300 text-sm">
-          Verifique seu email para confirmar a conta, depois volte para entrar.
-        </p>
+      <div className="space-y-5 text-center py-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-800/40 border border-purple-600/40 rounded-2xl">
+          <span className="text-3xl">🎲</span>
+        </div>
+        <div>
+          <h3 className="text-white font-semibold text-lg">Conta criada!</h3>
+          <p className="text-purple-400 text-sm mt-2">
+            Verifique seu email para confirmar a conta, depois volte para entrar.
+          </p>
+        </div>
         <button
           onClick={onSwitchToLogin}
-          className="w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors"
+          className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-purple-900/50 text-base"
         >
           Ir para o login
         </button>
@@ -51,65 +55,55 @@ export default function RegisterForm({ onSwitchToLogin }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="block text-sm font-medium text-purple-200 mb-1">Email</label>
+        <label className="block text-sm font-medium text-purple-200 mb-1.5">Email</label>
         <input
           type="email"
           required
           value={email}
           onChange={e => setEmail(e.target.value)}
-          className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="w-full px-4 py-3 rounded-xl bg-purple-950/70 border border-purple-700/70 text-white placeholder-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
           placeholder="seu@email.com"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-purple-200 mb-1">Senha</label>
+        <label className="block text-sm font-medium text-purple-200 mb-1.5">Senha</label>
         <input
           type="password"
           required
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="w-full px-4 py-3 rounded-xl bg-purple-950/70 border border-purple-700/70 text-white placeholder-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
           placeholder="Mínimo 6 caracteres"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-purple-200 mb-1">Confirmar senha</label>
+        <label className="block text-sm font-medium text-purple-200 mb-1.5">Confirmar senha</label>
         <input
           type="password"
           required
           value={confirm}
           onChange={e => setConfirm(e.target.value)}
-          className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="w-full px-4 py-3 rounded-xl bg-purple-950/70 border border-purple-700/70 text-white placeholder-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
           placeholder="••••••••"
         />
       </div>
 
       {error && (
-        <p className="text-red-400 text-sm bg-red-950 border border-red-800 rounded-lg px-3 py-2">
-          {error}
-        </p>
+        <div className="flex items-start gap-2 text-red-400 text-sm bg-red-950/60 border border-red-800/60 rounded-xl px-4 py-3">
+          <span className="shrink-0 mt-0.5">⚠</span>
+          <span>{error}</span>
+        </div>
       )}
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
+        className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors shadow-lg shadow-purple-900/50 text-base"
       >
         {loading ? 'Criando conta...' : 'Criar conta'}
       </button>
-
-      <p className="text-center text-purple-300 text-sm">
-        Já tem conta?{' '}
-        <button
-          type="button"
-          onClick={onSwitchToLogin}
-          className="text-purple-400 hover:text-purple-300 underline"
-        >
-          Entrar
-        </button>
-      </p>
     </form>
   )
 }
