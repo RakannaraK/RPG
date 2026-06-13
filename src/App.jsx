@@ -4,6 +4,7 @@ import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import MesaPage from './pages/MesaPage'
 import FichaPage from './pages/FichaPage'
+import DadosTestePage from './pages/DadosTestePage'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -76,6 +77,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/teste-dados" element={<DadosTestePage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
