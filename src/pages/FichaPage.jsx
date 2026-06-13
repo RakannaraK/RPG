@@ -1,20 +1,30 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useFicha } from '../hooks/useFicha'
+import { useFicha, useUpdateFicha } from '../hooks/useFicha'
+import { useSistema } from '../hooks/useSistema'
+import { useRolagem } from '../hooks/useRolagem'
 import { supabase } from '../lib/supabase'
-import FichaView from '../components/ficha/FichaView'
-import EquipamentosTab from '../components/ficha/EquipamentosTab'
-import ImagensTab from '../components/ficha/ImagensTab'
-
-const TABS = ['Ficha', 'Equipamentos', 'Imagens']
+import { mergeConfigLayout } from '../lib/sistemaDefaults'
+import CabecalhoPersonagem from '../components/ficha/layout/CabecalhoPersonagem'
+import FaixaAtributos from '../components/ficha/layout/FaixaAtributos'
+import PainelCombate from '../components/ficha/layout/PainelCombate'
+import PainelPericias from '../components/ficha/layout/PainelPericias'
+import PainelProficiencias from '../components/ficha/layout/PainelProficiencias'
+import PainelDefesas from '../components/ficha/layout/PainelDefesas'
+import PainelImagens from '../components/ficha/layout/PainelImagens'
+import AbasCentrais from '../components/ficha/layout/AbasCentrais'
 
 export default function FichaPage() {
   const { id: mesaId, fichaId } = useParams()
   const { session } = useAuth()
   const navigate = useNavigate()
+
   const { ficha, valoresAtributos, loading, error, refetch } = useFicha(fichaId)
-  const [activeTab, setActiveTab] = useState('Ficha')
+  const { sistema, pericias: periciasDoSistema } = useSistema(mesaId)
+  const { updateValorAtributo } = useUpdateFicha()
+  const { registrarRolagem } = useRolagem()
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
@@ -23,16 +33,18 @@ export default function FichaPage() {
     setDeleting(true)
     setDeleteError('')
     try {
-      const { error: err } = await supabase
-        .from('fichas')
-        .delete()
-        .eq('id', fichaId)
+      const { error: err } = await supabase.from('fichas').delete().eq('id', fichaId)
       if (err) throw err
       navigate(`/mesa/${mesaId}`)
     } catch (err) {
       setDeleteError(err.message || 'Erro ao deletar ficha.')
       setDeleting(false)
     }
+  }
+
+  async function handleSaveValor(atributoId, valor, dadosRolados) {
+    await updateValorAtributo(fichaId, atributoId, valor, dadosRolados)
+    refetch()
   }
 
   if (loading) {
@@ -60,15 +72,19 @@ export default function FichaPage() {
   }
 
   const isDono = ficha.dono_id === session?.user?.id
+  const config = sistema?.config_layout || mergeConfigLayout(null)
+  const secoes = config.secoes
+  const camposCombate = config.campos_combate || []
+  const rotuloVida = config.rotulo_vida || 'Pontos de Vida'
 
-  const subtitulo = [ficha.raca, ficha.classe, ficha.nivel ? `Nível ${ficha.nivel}` : null]
-    .filter(Boolean)
-    .join(' · ')
+  const hasLeft = secoes.pericias || secoes.proficiencias
+  const hasRight = secoes.combate || secoes.defesas || secoes.imagens
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
+      {/* Barra de navegação */}
       <header className="border-b border-purple-800 px-4 sm:px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center gap-4">
+        <div className="max-w-7xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate(`/mesa/${mesaId}`)}
             className="text-purple-400 hover:text-white transition-colors text-sm shrink-0"
@@ -79,9 +95,6 @@ export default function FichaPage() {
             <h1 className="text-white font-bold text-xl leading-tight truncate">
               {ficha.nome_personagem}
             </h1>
-            {subtitulo && (
-              <p className="text-purple-400 text-sm mt-0.5 truncate">{subtitulo}</p>
-            )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {!isDono && (
@@ -102,49 +115,95 @@ export default function FichaPage() {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="flex border-b border-purple-900 mt-6 overflow-x-auto">
-          {TABS.map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px shrink-0 whitespace-nowrap ${
-                activeTab === tab
-                  ? 'text-white border-purple-500'
-                  : 'text-purple-400 border-transparent hover:text-purple-200'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+      {/* Conteúdo principal */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        {/* Cabeçalho do personagem */}
+        <CabecalhoPersonagem
+          ficha={ficha}
+          rotuloVida={rotuloVida}
+          isDono={isDono}
+          onRefetch={refetch}
+        />
 
-        <div className="py-8">
-          {activeTab === 'Ficha' && (
-            <FichaView
-              ficha={ficha}
-              valoresAtributos={valoresAtributos}
-              refetch={refetch}
+        {/* Faixa de atributos */}
+        <FaixaAtributos
+          valoresAtributos={valoresAtributos}
+          isDono={isDono}
+          mesaId={mesaId}
+          fichaId={fichaId}
+          registrarRolagem={registrarRolagem}
+          onSaveValor={handleSaveValor}
+        />
+
+        {/* Layout de 3 colunas */}
+        <div className="flex flex-col lg:flex-row gap-4 items-start">
+
+          {/* Coluna esquerda — Perícias / Proficiências */}
+          {hasLeft && (
+            <div className="w-full lg:w-64 xl:w-72 shrink-0 space-y-4">
+              {secoes.pericias && (
+                <PainelPericias
+                  pericias={periciasDoSistema}
+                  fichaId={fichaId}
+                  isDono={isDono}
+                  valoresAtributos={valoresAtributos}
+                />
+              )}
+              {secoes.proficiencias && (
+                <PainelProficiencias
+                  ficha={ficha}
+                  isDono={isDono}
+                  onRefetch={refetch}
+                />
+              )}
+            </div>
+          )}
+
+          {/* Coluna central — Abas: Ações / Inventário / Traços / Notas */}
+          <div className="flex-1 min-w-0">
+            <AbasCentrais
+              secoes={secoes}
+              fichaId={fichaId}
+              donoId={ficha.dono_id}
               isDono={isDono}
               mesaId={mesaId}
-              fichaId={fichaId}
+              ficha={ficha}
+              onRefetch={refetch}
             />
+          </div>
+
+          {/* Coluna direita — Combate / Defesas / Imagens */}
+          {hasRight && (
+            <div className="w-full lg:w-64 xl:w-72 shrink-0 space-y-4">
+              {secoes.combate && (
+                <PainelCombate
+                  campos={camposCombate}
+                  fichaId={fichaId}
+                  isDono={isDono}
+                />
+              )}
+              {secoes.defesas && <PainelDefesas />}
+              {secoes.imagens && (
+                <PainelImagens
+                  fichaId={fichaId}
+                  donoId={ficha.dono_id}
+                  isDono={isDono}
+                />
+              )}
+            </div>
           )}
-          {activeTab === 'Equipamentos' && (
-            <EquipamentosTab fichaId={fichaId} donoId={ficha.dono_id} isDono={isDono} mesaId={mesaId} />
-          )}
-          {activeTab === 'Imagens' && (
-            <ImagensTab fichaId={fichaId} donoId={ficha.dono_id} isDono={isDono} />
-          )}
+
         </div>
       </div>
 
+      {/* Modal de confirmação de deleção */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-red-800/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
             <h3 className="text-white font-bold text-lg mb-2">Deletar ficha?</h3>
             <p className="text-purple-300 text-sm mb-5">
-              Tem certeza? Esta ação não pode ser desfeita. Todos os atributos, equipamentos e imagens desta ficha serão apagados permanentemente.
+              Tem certeza? Esta ação não pode ser desfeita. Todos os atributos,
+              equipamentos e imagens desta ficha serão apagados permanentemente.
             </p>
             {deleteError && (
               <p className="text-red-400 text-sm mb-3">{deleteError}</p>
