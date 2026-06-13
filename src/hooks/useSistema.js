@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { mergeConfigLayout } from '../lib/sistemaDefaults'
 
 export function useSistema(mesaId) {
   const { session } = useAuth()
   const [sistema, setSistema] = useState(null)
   const [atributos, setAtributos] = useState([])
+  const [pericias, setPericias] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -21,18 +23,32 @@ export function useSistema(mesaId) {
         .maybeSingle()
 
       if (sistemaData) {
-        const { data: atributosData, error: attrError } = await supabase
-          .from('atributos')
-          .select('*')
-          .eq('sistema_id', sistemaData.id)
-          .order('ordem', { ascending: true })
+        const [atributosResp, periciasResp] = await Promise.all([
+          supabase
+            .from('atributos')
+            .select('*')
+            .eq('sistema_id', sistemaData.id)
+            .order('ordem', { ascending: true }),
+          supabase
+            .from('pericias')
+            .select('*')
+            .eq('sistema_id', sistemaData.id)
+            .order('ordem', { ascending: true }),
+        ])
 
-        if (attrError) throw attrError
-        setSistema(sistemaData)
-        setAtributos(atributosData || [])
+        if (atributosResp.error) throw atributosResp.error
+
+        setSistema({
+          ...sistemaData,
+          config_layout: mergeConfigLayout(sistemaData.config_layout),
+        })
+        setAtributos(atributosResp.data || [])
+        // pericias table may not exist yet — ignore error gracefully
+        setPericias(periciasResp.data || [])
       } else {
         setSistema(null)
         setAtributos([])
+        setPericias([])
       }
     } catch (err) {
       setError(err.message || 'Erro ao carregar sistema.')
@@ -45,7 +61,7 @@ export function useSistema(mesaId) {
     fetchSistema()
   }, [fetchSistema])
 
-  return { sistema, atributos, loading, error, refetch: fetchSistema }
+  return { sistema, atributos, pericias, loading, error, refetch: fetchSistema }
 }
 
 export function useSaveSistema() {
@@ -53,7 +69,15 @@ export function useSaveSistema() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  async function saveSistema({ mesaId, sistema, atributos, removedAtributoIds }) {
+  async function saveSistema({
+    mesaId,
+    sistema,
+    atributos,
+    removedAtributoIds,
+    configLayout,
+    pericias = [],
+    removedPericiaIds = [],
+  }) {
     if (!session) throw new Error('Usuário não autenticado')
     setLoading(true)
     setError(null)
@@ -70,6 +94,7 @@ export function useSaveSistema() {
             descricao: sistema.descricao,
             criador_id: session.user.id,
             mesa_id: mesaId,
+            config_layout: configLayout,
           })
           .select()
           .single()
@@ -77,7 +102,6 @@ export function useSaveSistema() {
         if (createErr) throw createErr
         sistemaId = novo.id
 
-        // Vincula o sistema à mesa
         await supabase
           .from('mesas')
           .update({ sistema_id: sistemaId })
@@ -86,7 +110,11 @@ export function useSaveSistema() {
         // Atualiza sistema existente
         const { error: updateErr } = await supabase
           .from('sistemas')
-          .update({ nome: sistema.nome, descricao: sistema.descricao })
+          .update({
+            nome: sistema.nome,
+            descricao: sistema.descricao,
+            config_layout: configLayout,
+          })
           .eq('id', sistemaId)
 
         if (updateErr) throw updateErr
@@ -120,6 +148,35 @@ export function useSaveSistema() {
             .from('atributos')
             .update(payload)
             .eq('id', attr.id)
+          if (updErr) throw updErr
+        }
+      }
+
+      // Remove perícias deletadas
+      if (removedPericiaIds.length > 0) {
+        await supabase.from('pericias').delete().in('id', removedPericiaIds)
+      }
+
+      // Salva cada perícia
+      for (let i = 0; i < pericias.length; i++) {
+        const p = pericias[i]
+        if (!p.nome.trim()) continue
+
+        const payload = {
+          nome: p.nome.trim(),
+          atributo_base_id: p.atributo_base_id || null,
+          ordem: i,
+          sistema_id: sistemaId,
+        }
+
+        if (!p.id || p.id.startsWith('temp_')) {
+          const { error: insErr } = await supabase.from('pericias').insert(payload)
+          if (insErr) throw insErr
+        } else {
+          const { error: updErr } = await supabase
+            .from('pericias')
+            .update(payload)
+            .eq('id', p.id)
           if (updErr) throw updErr
         }
       }
