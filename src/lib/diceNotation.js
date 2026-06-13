@@ -87,24 +87,31 @@ export function rolarNotacao(notacao) {
   const individuais = []
   const mantidos = []
   const descartados = []
+  // {lados, valor, descartado} por dado — usado pelo Dice3D
+  const dados = []
 
   for (const grupo of grupos) {
     const rolls = rolarDados(grupo.qtd, grupo.lados)
     individuais.push(...rolls)
 
     if (grupo.keep) {
-      // Ordena crescente; kh mantém os últimos N, kl mantém os primeiros N
-      const sorted = [...rolls].sort((a, b) => a - b)
+      // Rastreia por índice para lidar corretamente com valores duplicados
+      const indexed = rolls.map((v, i) => ({ v, i })).sort((a, b) => a.v - b.v)
       const n = grupo.keep.n
+      const mantidosIdx = new Set()
+
       if (grupo.keep.tipo === 'kh') {
-        mantidos.push(...sorted.slice(sorted.length - n))
-        descartados.push(...sorted.slice(0, sorted.length - n))
+        indexed.slice(indexed.length - n).forEach(x => { mantidosIdx.add(x.i); mantidos.push(x.v) })
+        indexed.slice(0, indexed.length - n).forEach(x => descartados.push(x.v))
       } else {
-        mantidos.push(...sorted.slice(0, n))
-        descartados.push(...sorted.slice(n))
+        indexed.slice(0, n).forEach(x => { mantidosIdx.add(x.i); mantidos.push(x.v) })
+        indexed.slice(n).forEach(x => descartados.push(x.v))
       }
+
+      rolls.forEach((v, i) => dados.push({ lados: grupo.lados, valor: v, descartado: !mantidosIdx.has(i) }))
     } else {
       mantidos.push(...rolls)
+      rolls.forEach(v => dados.push({ lados: grupo.lados, valor: v, descartado: false }))
     }
   }
 
@@ -118,5 +125,6 @@ export function rolarNotacao(notacao) {
     descartados,
     modificador,
     total,
+    dados, // [{lados, valor, descartado}] — um objeto por dado rolado
   }
 }

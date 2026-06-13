@@ -66,6 +66,7 @@ export function useRolagem() {
         rotulo: rotulo || null,
         notacao: resultado.notacao,
         resultados: {
+          dados: resultado.dados,
           individuais: resultado.individuais,
           mantidos: resultado.mantidos,
           descartados: resultado.descartados,

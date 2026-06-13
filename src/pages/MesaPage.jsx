@@ -5,8 +5,9 @@ import { useAuth } from '../context/AuthContext'
 import SistemaEditor from '../components/sistema/SistemaEditor'
 import { useFichas } from '../hooks/useFicha'
 import FichaCreate from '../components/ficha/FichaCreate'
+import RoladorGenerico from '../components/dados/RoladorGenerico'
 
-const TABS = ['Fichas', 'Sistema', 'Membros']
+const TABS = ['Fichas', 'Dados', 'Sistema', 'Membros']
 
 export default function MesaPage() {
   const { id } = useParams()
@@ -300,6 +301,10 @@ export default function MesaPage() {
                 />
               )}
             </div>
+          )}
+
+          {activeTab === 'Dados' && (
+            <RoladorGenerico mesaId={id} />
           )}
 
           {activeTab === 'Sistema' && (
