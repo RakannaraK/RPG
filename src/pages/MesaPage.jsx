@@ -6,6 +6,7 @@ import SistemaEditor from '../components/sistema/SistemaEditor'
 import { useFichas } from '../hooks/useFicha'
 import FichaCreate from '../components/ficha/FichaCreate'
 import RoladorGenerico from '../components/dados/RoladorGenerico'
+import FeedRolagens from '../components/dados/FeedRolagens'
 
 const TABS = ['Fichas', 'Dados', 'Sistema', 'Membros']
 
@@ -304,7 +305,16 @@ export default function MesaPage() {
           )}
 
           {activeTab === 'Dados' && (
-            <RoladorGenerico mesaId={id} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              <div>
+                <p className="text-purple-200 font-medium text-sm mb-4">Rolar dados</p>
+                <RoladorGenerico mesaId={id} />
+              </div>
+              <div>
+                <p className="text-purple-200 font-medium text-sm mb-4">Histórico da sessão</p>
+                <FeedRolagens mesaId={id} />
+              </div>
+            </div>
           )}
 
           {activeTab === 'Sistema' && (
