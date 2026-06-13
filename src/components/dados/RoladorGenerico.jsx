@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRolagem } from '../../hooks/useRolagem'
 import { validarNotacao } from '../../lib/diceNotation'
+import { playDiceRoll } from '../../lib/diceSound'
 import Dice3D from './Dice3D'
 
 const ATALHOS = [
@@ -88,6 +89,7 @@ export default function RoladorGenerico({ mesaId, fichaId = null }) {
       return
     }
     setErroLocal('')
+    playDiceRoll()
 
     try {
       const res = await registrarRolagem({

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import DiceRoller from './DiceRoller'
 import Dice3D from '../dados/Dice3D'
+import { playDiceRoll } from '../../lib/diceSound'
 
 function formulaTexto(regra) {
   if (!regra) return ''
@@ -83,6 +84,7 @@ export default function AtributoCard({ atributo, valorAtributo, onSave, canEdit,
     if (testando || !registrarRolagem) return
     setTestando(true)
     setErroTeste('')
+    playDiceRoll()
     try {
       const notacao = buildNotacaoTeste(valor)
       const res = await registrarRolagem({

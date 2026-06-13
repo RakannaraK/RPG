@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { playDiceNotify } from '../../lib/diceSound'
 import Dice3D from './Dice3D'
 
 function tempoRelativo(ts) {
@@ -69,7 +70,7 @@ function RolagemCard({ rolagem, animando }) {
   )
 }
 
-export default function FeedRolagens({ mesaId }) {
+export default function FeedRolagens({ mesaId, onNovaRolagem }) {
   const { session } = useAuth()
   const [rolagens, setRolagens] = useState([])
   const [loading, setLoading] = useState(true)
@@ -103,10 +104,11 @@ export default function FeedRolagens({ mesaId }) {
         },
         payload => {
           setRolagens(prev => [payload.new, ...prev.slice(0, 49)])
-          // Anima apenas rolagens de outros jogadores (a sua já animou localmente)
           if (payload.new.autor_id !== session?.user?.id) {
             setAnimandoId(payload.new.id)
             setTimeout(() => setAnimandoId(null), 1400)
+            playDiceNotify()
+            onNovaRolagem?.()
           }
         }
       )
@@ -144,14 +146,26 @@ export default function FeedRolagens({ mesaId }) {
   }
 
   return (
-    <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-      {rolagens.map(r => (
-        <RolagemCard
-          key={r.id}
-          rolagem={r}
-          animando={animandoId === r.id}
-        />
-      ))}
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-purple-500 text-xs">{rolagens.length} rolagem{rolagens.length > 1 ? 'ns' : ''}</span>
+        <button
+          type="button"
+          onClick={() => setRolagens([])}
+          className="text-xs text-purple-600 hover:text-purple-400 transition-colors"
+        >
+          Limpar visualização
+        </button>
+      </div>
+      <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1">
+        {rolagens.map(r => (
+          <RolagemCard
+            key={r.id}
+            rolagem={r}
+            animando={animandoId === r.id}
+          />
+        ))}
+      </div>
     </div>
   )
 }

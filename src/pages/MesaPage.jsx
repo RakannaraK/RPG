@@ -23,6 +23,7 @@ export default function MesaPage() {
   const [activeTab, setActiveTab] = useState('Fichas')
   const [copiado, setCopiado] = useState(false)
   const [showFichaCreate, setShowFichaCreate] = useState(false)
+  const [novasRolagens, setNovasRolagens] = useState(0)
 
   // delete mesa
   const [showDeleteMesa, setShowDeleteMesa] = useState(false)
@@ -192,14 +193,19 @@ export default function MesaPage() {
           {TABS.map(tab => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px shrink-0 whitespace-nowrap ${
+              onClick={() => { setActiveTab(tab); if (tab === 'Dados') setNovasRolagens(0) }}
+              className={`relative px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px shrink-0 whitespace-nowrap ${
                 activeTab === tab
                   ? 'text-white border-purple-500'
                   : 'text-purple-400 border-transparent hover:text-purple-200'
               }`}
             >
               {tab}
+              {tab === 'Dados' && novasRolagens > 0 && activeTab !== 'Dados' && (
+                <span className="ml-1.5 inline-flex items-center justify-center text-[10px] font-bold bg-amber-500 text-amber-950 rounded-full w-4 h-4">
+                  {novasRolagens > 9 ? '9+' : novasRolagens}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -312,7 +318,7 @@ export default function MesaPage() {
               </div>
               <div>
                 <p className="text-purple-200 font-medium text-sm mb-4">Histórico da sessão</p>
-                <FeedRolagens mesaId={id} />
+                <FeedRolagens mesaId={id} onNovaRolagem={() => setNovasRolagens(n => n + 1)} />
               </div>
             </div>
           )}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useItens } from '../../hooks/useItens'
 import { useRolagem } from '../../hooks/useRolagem'
 import { validarNotacao } from '../../lib/diceNotation'
+import { playDiceRoll } from '../../lib/diceSound'
 import { redimensionarImagem } from '../../lib/imageUtils'
 import { supabase } from '../../lib/supabase'
 import ImageUpload from './ImageUpload'
@@ -323,6 +324,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId }) {
     setRollProcessing(true)
     setRollItemId(item.id)
     setRollErro('')
+    playDiceRoll()
     try {
       const res = await registrarRolagem({
         mesaId,
