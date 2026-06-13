@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useUpdateFicha } from '../../hooks/useFicha'
+import { useRolagem } from '../../hooks/useRolagem'
 import AtributoCard from './AtributoCard'
 
-export default function FichaView({ ficha, valoresAtributos, refetch, isDono }) {
+export default function FichaView({ ficha, valoresAtributos, refetch, isDono, mesaId, fichaId }) {
   const { updateFicha, updateValorAtributo, loading: salvando } = useUpdateFicha()
+  const { registrarRolagem } = useRolagem()
 
   const [hpAtual, setHpAtual] = useState(ficha.hp_atual ?? '')
   const [hpMaximo, setHpMaximo] = useState(ficha.hp_maximo ?? '')
@@ -149,6 +151,9 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono }) 
                 valorAtributo={va}
                 onSave={handleSaveValor}
                 canEdit={isDono}
+                mesaId={mesaId}
+                fichaId={fichaId}
+                registrarRolagem={registrarRolagem}
               />
             ))}
           </div>

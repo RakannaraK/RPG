@@ -126,10 +126,12 @@ export default function FichaPage() {
               valoresAtributos={valoresAtributos}
               refetch={refetch}
               isDono={isDono}
+              mesaId={mesaId}
+              fichaId={fichaId}
             />
           )}
           {activeTab === 'Equipamentos' && (
-            <EquipamentosTab fichaId={fichaId} donoId={ficha.dono_id} isDono={isDono} />
+            <EquipamentosTab fichaId={fichaId} donoId={ficha.dono_id} isDono={isDono} mesaId={mesaId} />
           )}
           {activeTab === 'Imagens' && (
             <ImagensTab fichaId={fichaId} donoId={ficha.dono_id} isDono={isDono} />

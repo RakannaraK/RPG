@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { useItens } from '../../hooks/useItens'
+import { useRolagem } from '../../hooks/useRolagem'
+import { validarNotacao } from '../../lib/diceNotation'
 import { redimensionarImagem } from '../../lib/imageUtils'
 import { supabase } from '../../lib/supabase'
 import ImageUpload from './ImageUpload'
+import Dice3D from '../dados/Dice3D'
 
 const TIPOS_ITEM = ['item', 'arma', 'armadura', 'magico', 'outro']
 
@@ -32,6 +35,54 @@ function pairsToObject(pairs) {
 function objectToPairs(obj) {
   if (!obj || typeof obj !== 'object') return []
   return Object.entries(obj).map(([chave, valor]) => ({ chave, valor: String(valor) }))
+}
+
+function RollResultCompact({ resultado, rotulo, rolando, onClose }) {
+  const { notacao, dados, mantidos, descartados, modificador, total } = resultado
+  return (
+    <div className="bg-slate-700/60 border border-purple-700/50 rounded-xl p-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-baseline gap-2 flex-wrap">
+          {rotulo && <span className="text-white text-xs font-semibold">{rotulo}</span>}
+          <span className="text-purple-400 font-mono text-xs">{notacao}</span>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-purple-600 hover:text-purple-400 text-xs ml-2 transition-colors"
+        >
+          ✕
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-2 items-center">
+        {dados.map((d, i) => (
+          <div key={i} className="flex flex-col items-center gap-0.5">
+            <Dice3D
+              lados={d.lados}
+              resultado={d.valor}
+              rolando={rolando}
+              descartado={d.descartado}
+            />
+            {d.descartado && <span className="text-red-500 text-[9px]">desc.</span>}
+          </div>
+        ))}
+        <div className="flex items-baseline gap-1.5 ml-1">
+          <span className="text-purple-400 text-xs">Total:</span>
+          <span className="text-2xl font-bold text-white leading-none">{total}</span>
+        </div>
+      </div>
+      {(mantidos.length > 1 || modificador !== 0) && (
+        <p className="text-purple-500 text-xs">
+          ({mantidos.join(' + ')}
+          {modificador > 0 && ` + ${modificador}`}
+          {modificador < 0 && ` − ${Math.abs(modificador)}`})
+        </p>
+      )}
+      {descartados.length > 0 && (
+        <p className="text-red-500 text-xs">descartados: {descartados.join(', ')}</p>
+      )}
+    </div>
+  )
 }
 
 function ItemForm({ item, fichaId, donoId, onSalvar, onFechar }) {
@@ -157,7 +208,7 @@ function ItemForm({ item, fichaId, donoId, onSalvar, onFechar }) {
             </div>
             {pairs.length === 0 ? (
               <p className="text-purple-600 text-xs">
-                Nenhuma propriedade. Ex: Dano, CA, Alcance, Peso...
+                Nenhuma propriedade. Ex: dano, ataque, CA, Alcance, Peso...
               </p>
             ) : (
               <div className="space-y-2">
@@ -222,12 +273,20 @@ function ItemForm({ item, fichaId, donoId, onSalvar, onFechar }) {
   )
 }
 
-export default function EquipamentosTab({ fichaId, donoId, isDono }) {
+export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId }) {
   const { itens, loading, error, createItem, updateItem, deleteItem } = useItens(fichaId)
+  const { registrarRolagem } = useRolagem()
   const [showForm, setShowForm] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
   const [deleteErro, setDeleteErro] = useState('')
+
+  const [rollResultado, setRollResultado] = useState(null)
+  const [rollRotulo, setRollRotulo] = useState('')
+  const [rollRolando, setRollRolando] = useState(false)
+  const [rollProcessing, setRollProcessing] = useState(false)
+  const [rollItemId, setRollItemId] = useState(null)
+  const [rollErro, setRollErro] = useState('')
 
   async function handleSalvar(data) {
     if (editingItem) {
@@ -249,6 +308,34 @@ export default function EquipamentosTab({ fichaId, donoId, isDono }) {
       setDeleteErro(err.message || 'Erro ao remover item.')
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  async function handleRolarItem(item, campo) {
+    if (rollProcessing) return
+    const notacao = String(item.atributos_extras?.[campo] || '')
+    if (!validarNotacao(notacao)) {
+      setRollItemId(item.id)
+      setRollErro(`Notação inválida: "${notacao}". Ex: 1d8+4, 1d20+5`)
+      return
+    }
+    const rotulo = `${campo === 'dano' ? 'Dano' : 'Ataque'} — ${item.nome}`
+    setRollProcessing(true)
+    setRollItemId(item.id)
+    setRollErro('')
+    try {
+      const res = await registrarRolagem({
+        mesaId,
+        fichaId,
+        rotulo,
+        notacao,
+      })
+      setRollResultado(res)
+      setRollRotulo(rotulo)
+      setRollRolando(true)
+      setTimeout(() => { setRollRolando(false); setRollProcessing(false) }, 1400)
+    } catch {
+      setRollProcessing(false)
     }
   }
 
@@ -303,60 +390,65 @@ export default function EquipamentosTab({ fichaId, donoId, isDono }) {
         </div>
       ) : (
         <div className="grid gap-3">
-          {itens.map(item => (
-            <div
-              key={item.id}
-              className="bg-slate-800 border border-purple-800 rounded-xl overflow-hidden"
-            >
-              <div className="flex gap-4 p-4">
-                {item.imagem_url && (
-                  <img
-                    src={item.imagem_url}
-                    alt={item.nome}
-                    className="w-20 h-20 object-cover rounded-lg shrink-0"
-                  />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="text-white font-semibold">{item.nome}</p>
-                      <span
-                        className={`inline-block text-xs px-2 py-0.5 rounded-full mt-1 ${
-                          TIPO_COLORS[item.tipo] || TIPO_COLORS.outro
-                        }`}
-                      >
-                        {TIPO_LABELS[item.tipo] || item.tipo}
-                      </span>
-                    </div>
-                    {isDono && (
-                      <div className="flex gap-1 shrink-0">
-                        <button
-                          onClick={() => { setEditingItem(item); setShowForm(true) }}
-                          className="p-1.5 text-purple-400 hover:text-white hover:bg-purple-800 rounded-lg transition-colors text-sm"
-                          title="Editar"
-                        >
-                          ✎
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item)}
-                          disabled={deletingId === item.id}
-                          className="p-1.5 text-red-500 hover:text-red-400 hover:bg-red-950 rounded-lg transition-colors text-sm disabled:opacity-40"
-                          title="Remover"
-                        >
-                          {deletingId === item.id ? '…' : '🗑'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
+          {itens.map(item => {
+            const extras = item.atributos_extras || {}
+            const temDano = extras.dano && validarNotacao(String(extras.dano))
+            const temAtaque = extras.ataque && validarNotacao(String(extras.ataque))
+            const temRoll = mesaId && (temDano || temAtaque || extras.dano || extras.ataque)
 
-                  {item.descricao && (
-                    <p className="text-purple-400 text-sm mt-2">{item.descricao}</p>
+            return (
+              <div
+                key={item.id}
+                className="bg-slate-800 border border-purple-800 rounded-xl overflow-hidden"
+              >
+                <div className="flex gap-4 p-4">
+                  {item.imagem_url && (
+                    <img
+                      src={item.imagem_url}
+                      alt={item.nome}
+                      className="w-20 h-20 object-cover rounded-lg shrink-0"
+                    />
                   )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-white font-semibold">{item.nome}</p>
+                        <span
+                          className={`inline-block text-xs px-2 py-0.5 rounded-full mt-1 ${
+                            TIPO_COLORS[item.tipo] || TIPO_COLORS.outro
+                          }`}
+                        >
+                          {TIPO_LABELS[item.tipo] || item.tipo}
+                        </span>
+                      </div>
+                      {isDono && (
+                        <div className="flex gap-1 shrink-0">
+                          <button
+                            onClick={() => { setEditingItem(item); setShowForm(true) }}
+                            className="p-1.5 text-purple-400 hover:text-white hover:bg-purple-800 rounded-lg transition-colors text-sm"
+                            title="Editar"
+                          >
+                            ✎
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item)}
+                            disabled={deletingId === item.id}
+                            className="p-1.5 text-red-500 hover:text-red-400 hover:bg-red-950 rounded-lg transition-colors text-sm disabled:opacity-40"
+                            title="Remover"
+                          >
+                            {deletingId === item.id ? '…' : '🗑'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
 
-                  {item.atributos_extras &&
-                    Object.keys(item.atributos_extras).length > 0 && (
+                    {item.descricao && (
+                      <p className="text-purple-400 text-sm mt-2">{item.descricao}</p>
+                    )}
+
+                    {Object.keys(extras).length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-2">
-                        {Object.entries(item.atributos_extras).map(([k, v]) => (
+                        {Object.entries(extras).map(([k, v]) => (
                           <span
                             key={k}
                             className="text-xs bg-amber-900/50 border border-amber-700 text-amber-300 px-2 py-0.5 rounded-full"
@@ -366,10 +458,52 @@ export default function EquipamentosTab({ fichaId, donoId, isDono }) {
                         ))}
                       </div>
                     )}
+
+                    {/* Botões de rolagem contextual */}
+                    {temRoll && (
+                      <div className="mt-3 space-y-2">
+                        <div className="flex flex-wrap gap-2">
+                          {(temAtaque || extras.ataque) && (
+                            <button
+                              type="button"
+                              onClick={() => handleRolarItem(item, 'ataque')}
+                              disabled={rollProcessing}
+                              className="px-3 py-1.5 text-xs bg-amber-800 hover:bg-amber-700 disabled:opacity-40 text-white rounded-lg transition-colors"
+                            >
+                              🎲 Rolar ataque
+                            </button>
+                          )}
+                          {(temDano || extras.dano) && (
+                            <button
+                              type="button"
+                              onClick={() => handleRolarItem(item, 'dano')}
+                              disabled={rollProcessing}
+                              className="px-3 py-1.5 text-xs bg-red-900 hover:bg-red-800 disabled:opacity-40 text-white rounded-lg transition-colors"
+                            >
+                              🎲 Rolar dano
+                            </button>
+                          )}
+                        </div>
+
+                        {rollItemId === item.id && rollErro && (
+                          <p className="text-red-400 text-xs">{rollErro}</p>
+                        )}
+
+                        {rollItemId === item.id && rollResultado && !rollErro && (
+                          <RollResultCompact
+                            resultado={rollResultado}
+                            rotulo={rollRotulo}
+                            rolando={rollRolando}
+                            onClose={() => { setRollResultado(null); setRollItemId(null) }}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
