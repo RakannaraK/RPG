@@ -7,6 +7,7 @@ export default function FaixaAtributos({
   fichaId,
   registrarRolagem,
   dadoPadrao,
+  valoresFinaisMotor,
   onSaveValor,
 }) {
   if (!valoresAtributos || valoresAtributos.length === 0) {
@@ -39,6 +40,7 @@ export default function FaixaAtributos({
             fichaId={fichaId}
             registrarRolagem={registrarRolagem}
             dadoPadrao={dadoPadrao}
+            valorFinal={valoresFinaisMotor ? valoresFinaisMotor[va.atributo?.id] : undefined}
             compact
           />
         ))}

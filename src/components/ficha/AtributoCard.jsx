@@ -35,6 +35,7 @@ export default function AtributoCard({
   fichaId,
   registrarRolagem,
   dadoPadrao = 20,
+  valorFinal,
   compact = false,
 }) {
   const [rolando, setRolando] = useState(false)
@@ -49,6 +50,8 @@ export default function AtributoCard({
   const [erroTeste, setErroTeste] = useState('')
 
   const valor = valorAtributo?.valor
+  // valorFinal vem do motor de modificadores; valor é sempre o base (usado na edição)
+  const display = valorFinal !== undefined ? valorFinal : valor
   const regra = atributo?.regra_rolagem
   const podeRolar = canEdit && regra?.tipo !== 'fixo'
 
@@ -97,7 +100,7 @@ export default function AtributoCard({
     setErroTeste('')
     playDiceRoll()
     try {
-      const notacao = buildNotacaoTeste(valor, dadoPadrao)
+      const notacao = buildNotacaoTeste(display, dadoPadrao)
       const res = await registrarRolagem({
         mesaId,
         fichaId,
@@ -124,8 +127,11 @@ export default function AtributoCard({
 
         {/* Valor */}
         <p className="text-white font-bold text-4xl leading-none">
-          {valor !== undefined && valor !== null ? valor : '—'}
+          {display !== undefined && display !== null ? display : '—'}
         </p>
+        {valorFinal !== undefined && valorFinal !== valor && valor !== undefined && valor !== null && (
+          <p className="text-purple-500 text-[9px] leading-none mt-0.5">base {valor}</p>
+        )}
 
         {/* Fórmula */}
         <p className="text-amber-500 text-[10px] font-mono mt-1 opacity-70">
@@ -260,8 +266,11 @@ export default function AtributoCard({
         </div>
         <div className="flex flex-col items-end gap-1 ml-4 shrink-0">
           <p className="text-white font-bold text-3xl leading-none">
-            {valor !== undefined && valor !== null ? valor : '—'}
+            {display !== undefined && display !== null ? display : '—'}
           </p>
+          {valorFinal !== undefined && valorFinal !== valor && valor !== undefined && valor !== null && (
+            <p className="text-purple-500 text-[10px] leading-none">base {valor}</p>
+          )}
           {mesaId && registrarRolagem && (
             <button
               type="button"

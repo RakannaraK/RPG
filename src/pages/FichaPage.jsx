@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useFicha, useUpdateFicha } from '../hooks/useFicha'
@@ -6,6 +6,7 @@ import { useSistema } from '../hooks/useSistema'
 import { useRolagem } from '../hooks/useRolagem'
 import { supabase } from '../lib/supabase'
 import { mergeConfigLayout } from '../lib/sistemaDefaults'
+import { coletarModificadores, calcularValoresFinais, agregarDefesas } from '../lib/modifierEngine'
 import CabecalhoPersonagem from '../components/ficha/layout/CabecalhoPersonagem'
 import FaixaAtributos from '../components/ficha/layout/FaixaAtributos'
 import PainelCombate from '../components/ficha/layout/PainelCombate'
@@ -21,9 +22,20 @@ export default function FichaPage() {
   const navigate = useNavigate()
 
   const { ficha, valoresAtributos, loading, error, refetch } = useFicha(fichaId)
-  const { sistema, pericias: periciasDoSistema } = useSistema(mesaId)
-  const { updateValorAtributo } = useUpdateFicha()
+  const { sistema, pericias: periciasDoSistema, racas, classes } = useSistema(mesaId)
+  const { updateValorAtributo, updateFicha } = useUpdateFicha()
   const { registrarRolagem } = useRolagem()
+
+  // Estado local de raça/classe para recálculo imediato sem esperar refetch
+  const [racaId, setRacaId] = useState(null)
+  const [classeId, setClasseId] = useState(null)
+
+  useEffect(() => {
+    if (ficha?.id) {
+      setRacaId(ficha.raca_id || null)
+      setClasseId(ficha.classe_id || null)
+    }
+  }, [ficha?.id])
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -45,6 +57,16 @@ export default function FichaPage() {
   async function handleSaveValor(atributoId, valor, dadosRolados) {
     await updateValorAtributo(fichaId, atributoId, valor, dadosRolados)
     refetch()
+  }
+
+  async function handleRacaChange(id) {
+    setRacaId(id || null)
+    try { await updateFicha(fichaId, { raca_id: id || null }) } catch {}
+  }
+
+  async function handleClasseChange(id) {
+    setClasseId(id || null)
+    try { await updateFicha(fichaId, { classe_id: id || null }) } catch {}
   }
 
   if (loading) {
@@ -80,6 +102,20 @@ export default function FichaPage() {
   const camposCombate = config.campos_combate || []
   const rotuloVida = config.rotulo_vida || 'Pontos de Vida'
   const dadoPadrao = config.dado_padrao || 20
+
+  // Motor de modificadores
+  const racaAtiva = racas.find(r => r.id === racaId) || null
+  const classeAtiva = classes.find(c => c.id === classeId) || null
+  const modificadoresAtivos = coletarModificadores({ raca: racaAtiva, classe: classeAtiva })
+  const baseMotor = {
+    atributos: Object.fromEntries(
+      valoresAtributos.filter(va => va.atributo?.id).map(va => [va.atributo.id, va.valor ?? 0])
+    ),
+    vida_max: ficha.hp_maximo ?? 0,
+    combate: {},
+  }
+  const valoresFinais = calcularValoresFinais(baseMotor, modificadoresAtivos)
+  const defesas = agregarDefesas(modificadoresAtivos)
 
   const hasLeft = secoes.pericias || secoes.proficiencias
   const hasRight = secoes.combate || secoes.defesas || secoes.imagens
@@ -127,6 +163,14 @@ export default function FichaPage() {
           rotuloVida={rotuloVida}
           isDono={isDono}
           onRefetch={refetch}
+          racas={racas}
+          classes={classes}
+          racaId={racaId}
+          classeId={classeId}
+          onRacaChange={handleRacaChange}
+          onClasseChange={handleClasseChange}
+          vidaMaxFinal={valoresFinais.vida_max}
+          vidaTemp={valoresFinais.vida_temp}
         />
 
         {/* Faixa de atributos */}
@@ -137,6 +181,7 @@ export default function FichaPage() {
           fichaId={fichaId}
           registrarRolagem={registrarRolagem}
           dadoPadrao={dadoPadrao}
+          valoresFinaisMotor={valoresFinais.atributos}
           onSaveValor={handleSaveValor}
         />
 
@@ -189,7 +234,14 @@ export default function FichaPage() {
                   isDono={isDono}
                 />
               )}
-              {secoes.defesas && <PainelDefesas />}
+              {secoes.defesas && (
+                <PainelDefesas
+                  resistencias={defesas.resistencias}
+                  imunidades={defesas.imunidades}
+                  vulnerabilidades={defesas.vulnerabilidades}
+                  vidaTemp={valoresFinais.vida_temp}
+                />
+              )}
               {secoes.imagens && (
                 <PainelImagens
                   fichaId={fichaId}
