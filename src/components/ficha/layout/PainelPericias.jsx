@@ -1,11 +1,27 @@
 import { useState, useEffect } from 'react'
 import { usePericiasFicha } from '../../../hooks/usePericiasFicha'
+import { playDiceRoll } from '../../../lib/diceSound'
+import Dice3D from '../../dados/Dice3D'
 
-export default function PainelPericias({ pericias, fichaId, isDono, valoresAtributos }) {
+function buildNotacao(bonus) {
+  if (!bonus || bonus === 0) return '1d20'
+  if (bonus > 0) return `1d20+${bonus}`
+  return `1d20${bonus}`
+}
+
+export default function PainelPericias({
+  pericias,
+  fichaId,
+  isDono,
+  valoresAtributos,
+  mesaId,
+  registrarRolagem,
+}) {
   const { periciasFicha, savePericia } = usePericiasFicha(fichaId)
   const [localBonus, setLocalBonus] = useState({})
+  const [rollAtivo, setRollAtivo] = useState(null) // { periciaId, resultado, rolando }
+  const [rolando, setRolando] = useState(false)
 
-  // Sync local bonus state when data loads
   useEffect(() => {
     const map = {}
     periciasFicha.forEach(p => { map[p.pericia_id] = p.bonus ?? 0 })
@@ -37,6 +53,29 @@ export default function PainelPericias({ pericias, fichaId, isDono, valoresAtrib
     } catch {}
   }
 
+  async function handleRolar(pericia) {
+    if (rolando || !registrarRolagem) return
+    const pf = getPericiaFicha(pericia.id)
+    const bonus = pf.bonus ?? 0
+    const notacao = buildNotacao(bonus)
+    setRolando(true)
+    setRollAtivo({ periciaId: pericia.id, resultado: null, rolando: true })
+    playDiceRoll()
+    try {
+      const res = await registrarRolagem({
+        mesaId,
+        fichaId,
+        rotulo: `Perícia: ${pericia.nome}`,
+        notacao,
+      })
+      setRollAtivo({ periciaId: pericia.id, resultado: res, rolando: false })
+    } catch {
+      setRollAtivo(null)
+    } finally {
+      setRolando(false)
+    }
+  }
+
   return (
     <div className="bg-slate-800 border border-purple-800 rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-purple-900">
@@ -45,52 +84,102 @@ export default function PainelPericias({ pericias, fichaId, isDono, valoresAtrib
       {pericias.length === 0 ? (
         <p className="px-4 py-4 text-purple-500 text-xs">Nenhuma perícia definida no sistema.</p>
       ) : (
-        <div className="divide-y divide-purple-900/40 max-h-96 overflow-y-auto">
+        <div className="divide-y divide-purple-900/40 max-h-[28rem] overflow-y-auto">
           {pericias.map(pericia => {
             const pf = getPericiaFicha(pericia.id)
             const atributoVal = getAtributoValor(pericia.atributo_base_id)
             const bonusDisplay = pf.bonus >= 0 ? `+${pf.bonus}` : String(pf.bonus)
+            const esteRoll = rollAtivo?.periciaId === pericia.id
 
             return (
-              <div key={pericia.id} className="flex items-center gap-2 px-3 py-2">
-                {isDono ? (
-                  <button
-                    onClick={() => toggleProficiente(pericia.id)}
-                    className={`w-4 h-4 rounded-full shrink-0 border-2 transition-colors ${
-                      pf.proficiente
-                        ? 'bg-amber-500 border-amber-400'
-                        : 'bg-transparent border-slate-500 hover:border-purple-400'
-                    }`}
-                    title={pf.proficiente ? 'Proficiente (clique para remover)' : 'Não proficiente (clique para marcar)'}
-                  />
-                ) : (
-                  <div
-                    className={`w-4 h-4 rounded-full shrink-0 border-2 ${
-                      pf.proficiente ? 'bg-amber-500 border-amber-400' : 'bg-transparent border-slate-600'
-                    }`}
-                  />
-                )}
+              <div key={pericia.id}>
+                <div className="flex items-center gap-2 px-3 py-2">
+                  {/* Indicador de proficiência */}
+                  {isDono ? (
+                    <button
+                      onClick={() => toggleProficiente(pericia.id)}
+                      className={`w-4 h-4 rounded-full shrink-0 border-2 transition-colors ${
+                        pf.proficiente
+                          ? 'bg-amber-500 border-amber-400'
+                          : 'bg-transparent border-slate-500 hover:border-purple-400'
+                      }`}
+                      title={pf.proficiente ? 'Proficiente' : 'Não proficiente'}
+                    />
+                  ) : (
+                    <div
+                      className={`w-4 h-4 rounded-full shrink-0 border-2 ${
+                        pf.proficiente ? 'bg-amber-500 border-amber-400' : 'bg-transparent border-slate-600'
+                      }`}
+                    />
+                  )}
 
-                <span className="text-white text-sm flex-1 truncate">{pericia.nome}</span>
+                  {/* Nome */}
+                  <span className="text-white text-sm flex-1 truncate">{pericia.nome}</span>
 
-                {atributoVal !== null && (
-                  <span className="text-purple-500 text-xs shrink-0">({atributoVal})</span>
-                )}
+                  {/* Valor do atributo base */}
+                  {atributoVal !== null && (
+                    <span className="text-purple-500 text-xs shrink-0">({atributoVal})</span>
+                  )}
 
-                {isDono ? (
-                  <input
-                    type="number"
-                    value={localBonus[pericia.id] ?? pf.bonus ?? 0}
-                    onChange={e =>
-                      setLocalBonus(prev => ({ ...prev, [pericia.id]: e.target.value }))
-                    }
-                    onBlur={e => handleBonusBlur(pericia.id, e.target.value)}
-                    className="w-12 px-1 py-0.5 bg-purple-950 border border-purple-700 text-white text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500 shrink-0"
-                  />
-                ) : (
-                  <span className="text-white text-sm font-semibold w-8 text-right shrink-0">
-                    {bonusDisplay}
-                  </span>
+                  {/* Bônus */}
+                  {isDono ? (
+                    <input
+                      type="number"
+                      value={localBonus[pericia.id] ?? pf.bonus ?? 0}
+                      onChange={e =>
+                        setLocalBonus(prev => ({ ...prev, [pericia.id]: e.target.value }))
+                      }
+                      onBlur={e => handleBonusBlur(pericia.id, e.target.value)}
+                      className="w-12 px-1 py-0.5 bg-purple-950 border border-purple-700 text-white text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500 shrink-0"
+                    />
+                  ) : (
+                    <span className="text-white text-sm font-semibold w-8 text-right shrink-0">
+                      {bonusDisplay}
+                    </span>
+                  )}
+
+                  {/* Botão rolar */}
+                  {mesaId && registrarRolagem && (
+                    <button
+                      onClick={() => handleRolar(pericia)}
+                      disabled={rolando}
+                      title={`Rolar ${pericia.nome}`}
+                      className="text-amber-500 hover:text-amber-300 disabled:opacity-40 transition-colors text-xs px-1 shrink-0"
+                    >
+                      🎲
+                    </button>
+                  )}
+                </div>
+
+                {/* Resultado inline */}
+                {esteRoll && rollAtivo?.resultado && (
+                  <div className="mx-3 mb-2 bg-slate-700/70 border border-purple-700/50 rounded-lg px-2 py-1.5">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-purple-400 font-mono text-xs">
+                        {rollAtivo.resultado.notacao}
+                      </span>
+                      <button
+                        onClick={() => setRollAtivo(null)}
+                        className="text-purple-600 hover:text-purple-400 text-xs transition-colors"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 items-center">
+                      {rollAtivo.resultado.dados.map((d, i) => (
+                        <Dice3D
+                          key={i}
+                          lados={d.lados}
+                          resultado={d.valor}
+                          rolando={rollAtivo.rolando}
+                          descartado={d.descartado}
+                        />
+                      ))}
+                      <span className="text-white font-bold text-lg leading-none ml-1">
+                        {rollAtivo.resultado.total}
+                      </span>
+                    </div>
+                  </div>
                 )}
               </div>
             )

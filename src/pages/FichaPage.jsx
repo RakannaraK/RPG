@@ -147,6 +147,8 @@ export default function FichaPage() {
                   fichaId={fichaId}
                   isDono={isDono}
                   valoresAtributos={valoresAtributos}
+                  mesaId={mesaId}
+                  registrarRolagem={registrarRolagem}
                 />
               )}
               {secoes.proficiencias && (
