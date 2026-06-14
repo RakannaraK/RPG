@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { usePericiasFicha } from '../../../hooks/usePericiasFicha'
+import { useRolagem } from '../../../hooks/useRolagem'
 import { playDiceRoll } from '../../../lib/diceSound'
 import Dice3D from '../../dados/Dice3D'
 
-function buildNotacao(bonus) {
-  if (!bonus || bonus === 0) return '1d20'
-  if (bonus > 0) return `1d20+${bonus}`
-  return `1d20${bonus}`
+function buildNotacao(bonusPericia, atributoBaseValor) {
+  const total = (bonusPericia || 0) + (atributoBaseValor || 0)
+  if (total === 0) return '1d20'
+  if (total > 0) return `1d20+${total}`
+  return `1d20${total}`
 }
 
 export default function PainelPericias({
@@ -15,11 +17,11 @@ export default function PainelPericias({
   isDono,
   valoresAtributos,
   mesaId,
-  registrarRolagem,
 }) {
   const { periciasFicha, savePericia } = usePericiasFicha(fichaId)
+  const { registrarRolagem } = useRolagem()
   const [localBonus, setLocalBonus] = useState({})
-  const [rollAtivo, setRollAtivo] = useState(null) // { periciaId, resultado, rolando }
+  const [rollAtivo, setRollAtivo] = useState(null)
   const [rolando, setRolando] = useState(false)
 
   useEffect(() => {
@@ -54,18 +56,20 @@ export default function PainelPericias({
   }
 
   async function handleRolar(pericia) {
-    if (rolando || !registrarRolagem) return
+    if (rolando) return
     const pf = getPericiaFicha(pericia.id)
-    const bonus = pf.bonus ?? 0
-    const notacao = buildNotacao(bonus)
+    const atributoVal = getAtributoValor(pericia.atributo_base_id)
+    const notacao = buildNotacao(pf.bonus, atributoVal)
+
     setRolando(true)
     setRollAtivo({ periciaId: pericia.id, resultado: null, rolando: true })
     playDiceRoll()
+
     try {
       const res = await registrarRolagem({
         mesaId,
         fichaId,
-        rotulo: `Perícia: ${pericia.nome}`,
+        rotulo: `Teste de ${pericia.nome}`,
         notacao,
       })
       setRollAtivo({ periciaId: pericia.id, resultado: res, rolando: false })
@@ -81,6 +85,7 @@ export default function PainelPericias({
       <div className="px-4 py-3 border-b border-purple-900">
         <p className="text-purple-200 text-sm font-semibold">Perícias</p>
       </div>
+
       {pericias.length === 0 ? (
         <p className="px-4 py-4 text-purple-500 text-xs">Nenhuma perícia definida no sistema.</p>
       ) : (
@@ -94,6 +99,7 @@ export default function PainelPericias({
             return (
               <div key={pericia.id}>
                 <div className="flex items-center gap-2 px-3 py-2">
+
                   {/* Indicador de proficiência */}
                   {isDono ? (
                     <button
@@ -108,7 +114,9 @@ export default function PainelPericias({
                   ) : (
                     <div
                       className={`w-4 h-4 rounded-full shrink-0 border-2 ${
-                        pf.proficiente ? 'bg-amber-500 border-amber-400' : 'bg-transparent border-slate-600'
+                        pf.proficiente
+                          ? 'bg-amber-500 border-amber-400'
+                          : 'bg-transparent border-slate-600'
                       }`}
                     />
                   )}
@@ -138,13 +146,13 @@ export default function PainelPericias({
                     </span>
                   )}
 
-                  {/* Botão rolar */}
-                  {mesaId && registrarRolagem && (
+                  {/* Botão rolar — sempre visível quando há mesa */}
+                  {mesaId && (
                     <button
                       onClick={() => handleRolar(pericia)}
                       disabled={rolando}
-                      title={`Rolar ${pericia.nome}`}
-                      className="text-amber-500 hover:text-amber-300 disabled:opacity-40 transition-colors text-xs px-1 shrink-0"
+                      title={`Teste de ${pericia.nome}`}
+                      className="text-amber-500 hover:text-amber-300 disabled:opacity-40 transition-colors shrink-0 text-base leading-none"
                     >
                       🎲
                     </button>
