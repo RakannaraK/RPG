@@ -3,8 +3,9 @@ import { useSistema, useSaveSistema } from '../../hooks/useSistema'
 import { mergeConfigLayout } from '../../lib/sistemaDefaults'
 import AtributoEditor from './AtributoEditor'
 import LayoutEditor from './LayoutEditor'
+import RacasClassesEditor from './RacasClassesEditor'
 
-const TABS_EDITOR = ['Atributos', 'Layout da ficha']
+const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes']
 
 const REGRA_PADRAO = {
   tipo: 'dados',
@@ -284,6 +285,14 @@ export default function SistemaEditor({ mesaId, isMestre }) {
             onUpdatePericia={updatePericia}
             onRemovePericia={removePericia}
             atributos={atributos}
+          />
+        )}
+
+        {activeTab === 'Raças & Classes' && (
+          <RacasClassesEditor
+            sistemaId={sistemaDB?.id}
+            atributos={atributos}
+            camposCombate={configLayout.campos_combate || []}
           />
         )}
       </div>
