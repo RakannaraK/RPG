@@ -28,32 +28,37 @@ export default function PainelCombate({ campos, fichaId, isDono }) {
       <div className="px-4 py-3 border-b border-purple-900">
         <p className="text-purple-200 text-sm font-semibold">Combate</p>
       </div>
-      <div className="divide-y divide-purple-900/40">
-        {campos.map(campo => (
-          <div key={campo.id} className="flex items-center justify-between px-4 py-2.5 gap-2">
-            <span className="text-purple-300 text-sm truncate">{campo.nome}</span>
-            {isDono ? (
-              <div className="flex flex-col items-end gap-0.5">
+      <div className="grid grid-cols-2 gap-px bg-purple-900/30 p-px">
+        {campos.map(campo => {
+          const val = editando[campo.id] !== undefined ? editando[campo.id] : getValor(campo.id)
+
+          return (
+            <div
+              key={campo.id}
+              className="bg-slate-800 flex flex-col items-center justify-center py-3 px-2 gap-1"
+            >
+              {isDono ? (
                 <input
                   type="text"
-                  value={editando[campo.id] !== undefined ? editando[campo.id] : getValor(campo.id)}
-                  onChange={e =>
-                    setEditando(prev => ({ ...prev, [campo.id]: e.target.value }))
-                  }
+                  value={val}
+                  onChange={e => setEditando(prev => ({ ...prev, [campo.id]: e.target.value }))}
                   onBlur={() => handleBlur(campo.id)}
                   onKeyDown={e => e.key === 'Enter' && e.target.blur()}
                   placeholder="—"
-                  className="w-16 px-2 py-1 bg-purple-950 border border-purple-700 text-white text-center rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 shrink-0"
+                  className="w-full text-center text-white font-bold text-2xl leading-none bg-transparent border-b border-purple-700 focus:border-purple-400 focus:outline-none pb-0.5"
                 />
-                {erros[campo.id] && (
-                  <span className="text-red-400 text-[10px]">{erros[campo.id]}</span>
-                )}
-              </div>
-            ) : (
-              <span className="text-white font-semibold text-sm">{getValor(campo.id) || '—'}</span>
-            )}
-          </div>
-        ))}
+              ) : (
+                <p className="text-white font-bold text-2xl leading-none">
+                  {getValor(campo.id) || '—'}
+                </p>
+              )}
+              <p className="text-purple-400 text-[11px] text-center leading-tight">{campo.nome}</p>
+              {erros[campo.id] && (
+                <p className="text-red-400 text-[10px]">{erros[campo.id]}</p>
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )

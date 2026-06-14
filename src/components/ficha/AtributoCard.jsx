@@ -25,7 +25,16 @@ function buildNotacaoTeste(valor) {
   return '1d20'
 }
 
-export default function AtributoCard({ atributo, valorAtributo, onSave, canEdit, mesaId, fichaId, registrarRolagem }) {
+export default function AtributoCard({
+  atributo,
+  valorAtributo,
+  onSave,
+  canEdit,
+  mesaId,
+  fichaId,
+  registrarRolagem,
+  compact = false,
+}) {
   const [rolando, setRolando] = useState(false)
   const [editando, setEditando] = useState(false)
   const [valorManual, setValorManual] = useState('')
@@ -102,6 +111,141 @@ export default function AtributoCard({ atributo, valorAtributo, onSave, canEdit,
     }
   }
 
+  // ── Modo compacto ────────────────────────────────────────────────────────────
+  if (compact) {
+    return (
+      <div className="bg-slate-800 border border-purple-800 rounded-xl p-3 flex flex-col items-center">
+        {/* Nome */}
+        <p className="text-purple-400 text-[11px] font-medium uppercase tracking-wider truncate w-full text-center mb-1">
+          {atributo.nome}
+        </p>
+
+        {/* Valor */}
+        <p className="text-white font-bold text-4xl leading-none">
+          {valor !== undefined && valor !== null ? valor : '—'}
+        </p>
+
+        {/* Fórmula */}
+        <p className="text-amber-500 text-[10px] font-mono mt-1 opacity-70">
+          {formulaTexto(regra)}
+        </p>
+
+        {/* Botões */}
+        <div className="flex items-center gap-2 mt-2.5">
+          {mesaId && registrarRolagem && (
+            <button
+              type="button"
+              onClick={handleTestar}
+              disabled={testando}
+              title={`Teste de ${atributo.nome}`}
+              className="text-xs text-amber-500 hover:text-amber-300 disabled:opacity-40 transition-colors px-1.5 py-0.5 rounded hover:bg-amber-900/30"
+            >
+              🎲 Testar
+            </button>
+          )}
+          {canEdit && !rolando && !editando && (
+            <button
+              type="button"
+              onClick={() => { setEditando(true); setValorManual(valor !== undefined ? String(valor) : '') }}
+              className="text-[11px] text-purple-500 hover:text-purple-300 transition-colors"
+              title="Editar valor"
+            >
+              ✎
+            </button>
+          )}
+        </div>
+
+        {/* Resultado do teste inline (compacto) */}
+        {testeResultado && (
+          <div className="w-full mt-2 border-t border-purple-800 pt-2 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-purple-400 font-mono text-[10px]">{testeResultado.notacao}</span>
+              <button
+                type="button"
+                onClick={() => setTesteResultado(null)}
+                className="text-purple-600 hover:text-purple-400 text-[10px] transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-1 items-center justify-center">
+              {testeResultado.dados.map((d, i) => (
+                <Dice3D
+                  key={i}
+                  lados={d.lados}
+                  resultado={d.valor}
+                  rolando={testeRolando}
+                  descartado={d.descartado}
+                />
+              ))}
+              <span className="text-white font-bold text-xl leading-none ml-1">
+                {testeResultado.total}
+              </span>
+            </div>
+            {erroTeste && <p className="text-red-400 text-[10px] text-center">{erroTeste}</p>}
+          </div>
+        )}
+
+        {/* Rolar para definir valor */}
+        {rolando && (
+          <div className="w-full mt-2 border-t border-purple-800 pt-2">
+            <DiceRoller regra={regra} onConfirmar={handleConfirmar} />
+            <button
+              type="button"
+              onClick={() => setRolando(false)}
+              className="mt-1 text-[11px] text-purple-500 hover:text-purple-300 transition-colors w-full text-center"
+            >
+              Cancelar
+            </button>
+          </div>
+        )}
+
+        {/* Edição manual */}
+        {editando && !rolando && (
+          <div className="w-full mt-2 border-t border-purple-800 pt-2">
+            <div className="flex gap-1.5">
+              <input
+                type="number"
+                value={valorManual}
+                onChange={e => setValorManual(e.target.value)}
+                placeholder={valor !== undefined ? String(valor) : '0'}
+                autoFocus
+                className="flex-1 px-2 py-1 bg-purple-950 border border-purple-700 text-white rounded text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500"
+              />
+              <button
+                type="button"
+                onClick={handleSalvarManual}
+                disabled={salvando}
+                className="px-2 py-1 bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-sm rounded transition-colors"
+              >
+                ✓
+              </button>
+              <button
+                type="button"
+                onClick={() => { setEditando(false); setValorManual('') }}
+                className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            {podeRolar && (
+              <button
+                type="button"
+                onClick={() => { setEditando(false); setRolando(true) }}
+                className="mt-1.5 w-full py-1 text-[11px] bg-amber-800 hover:bg-amber-700 text-white rounded transition-colors"
+              >
+                🎲 Rolar dados
+              </button>
+            )}
+          </div>
+        )}
+
+        {erro && <p className="mt-1 text-red-400 text-[10px] text-center">{erro}</p>}
+      </div>
+    )
+  }
+
+  // ── Modo normal (sem compact) ────────────────────────────────────────────────
   return (
     <div className="bg-slate-800 border border-purple-800 rounded-xl p-4">
       <div className="flex items-start justify-between mb-3">
@@ -130,7 +274,6 @@ export default function AtributoCard({ atributo, valorAtributo, onSave, canEdit,
         </div>
       </div>
 
-      {/* Resultado do teste contextual */}
       {testeResultado && (
         <div className="border-t border-purple-800 pt-3 mb-3 space-y-2">
           <div className="flex items-center justify-between">
@@ -171,13 +314,9 @@ export default function AtributoCard({ atributo, valorAtributo, onSave, canEdit,
         </div>
       )}
 
-      {/* Roller inline */}
       {rolando && (
         <div className="border-t border-purple-800 pt-3">
-          <DiceRoller
-            regra={regra}
-            onConfirmar={handleConfirmar}
-          />
+          <DiceRoller regra={regra} onConfirmar={handleConfirmar} />
           <button
             type="button"
             onClick={() => setRolando(false)}
@@ -188,7 +327,6 @@ export default function AtributoCard({ atributo, valorAtributo, onSave, canEdit,
         </div>
       )}
 
-      {/* Edição manual */}
       {editando && !rolando && (
         <div className="border-t border-purple-800 pt-3">
           <div className="flex gap-2">
@@ -219,7 +357,6 @@ export default function AtributoCard({ atributo, valorAtributo, onSave, canEdit,
         </div>
       )}
 
-      {/* Botões de ação */}
       {canEdit && !rolando && !editando && (
         <div className="flex gap-2 mt-1">
           {podeRolar && (

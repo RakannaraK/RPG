@@ -50,7 +50,10 @@ export default function FichaPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-slate-900 to-black">
-        <div className="text-purple-400 text-lg">Carregando ficha...</div>
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-purple-400 text-sm">Carregando ficha...</p>
+        </div>
       </div>
     )
   }
