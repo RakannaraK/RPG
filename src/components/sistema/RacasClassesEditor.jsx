@@ -65,7 +65,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate }) {
     if (cfg.alvoTipo === 'atributo' && !alvo)       { setErro('Selecione um atributo.'); return }
     if (cfg.alvoTipo === 'combate' && !alvo)         { setErro('Selecione um campo de combate.'); return }
     if (cfg.alvoTipo === 'texto' && !alvo.trim())    { setErro('Informe o tipo de dano (ex: fogo).'); return }
-    if (cfg.hasValor && valor === '')                { setErro('Informe o valor numérico.'); return }
+    if (cfg.hasValor && (valor === '' || isNaN(Number(valor)))) { setErro('Informe um valor numérico válido.'); return }
 
     setSalvando(true)
     try {

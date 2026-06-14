@@ -182,6 +182,7 @@ export default function FichaPage() {
           registrarRolagem={registrarRolagem}
           dadoPadrao={dadoPadrao}
           valoresFinaisMotor={valoresFinais.atributos}
+          detalhamentoMotor={valoresFinais.detalhamento}
           onSaveValor={handleSaveValor}
         />
 

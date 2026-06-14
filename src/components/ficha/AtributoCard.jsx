@@ -36,6 +36,7 @@ export default function AtributoCard({
   registrarRolagem,
   dadoPadrao = 20,
   valorFinal,
+  fontesMod,
   compact = false,
 }) {
   const [rolando, setRolando] = useState(false)
@@ -125,13 +126,40 @@ export default function AtributoCard({
           {atributo.nome}
         </p>
 
-        {/* Valor */}
-        <p className="text-white font-bold text-4xl leading-none">
-          {display !== undefined && display !== null ? display : '—'}
-        </p>
-        {valorFinal !== undefined && valorFinal !== valor && valor !== undefined && valor !== null && (
-          <p className="text-purple-500 text-[9px] leading-none mt-0.5">base {valor}</p>
-        )}
+        {/* Valor com tooltip de rastreabilidade */}
+        <div className="relative group/val w-full flex flex-col items-center">
+          <p className="text-white font-bold text-4xl leading-none">
+            {display !== undefined && display !== null ? display : '—'}
+          </p>
+          {fontesMod && fontesMod.length > 0 && (
+            <p className="text-purple-500 text-[9px] leading-none mt-0.5">base {valor}</p>
+          )}
+          {/* Tooltip de rastreabilidade */}
+          {fontesMod && fontesMod.length > 0 && (
+            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 z-50
+                            pointer-events-none opacity-0 group-hover/val:opacity-100
+                            transition-opacity duration-150
+                            bg-slate-900 border border-purple-600/80 rounded-lg px-3 py-2
+                            shadow-2xl w-max">
+              <p className="text-purple-300 text-[11px] font-semibold mb-1">{atributo.nome}</p>
+              <p className="text-slate-400 text-[10px]">Base: {valor ?? '—'}</p>
+              {fontesMod.map((f, i) => {
+                const v = Number(f.valor)
+                const sinal = f.operacao === 'somar' ? (v >= 0 ? `+${v}` : String(v))
+                            : f.operacao === 'definir' ? `=${v}`
+                            : `×${v}`
+                return (
+                  <p key={i} className="text-white text-[10px]">
+                    {sinal} <span className="text-purple-400">{f.fonte}</span>
+                  </p>
+                )
+              })}
+              <p className="text-green-300 text-[10px] font-semibold border-t border-purple-800 mt-1 pt-1">
+                = {display}
+              </p>
+            </div>
+          )}
+        </div>
 
         {/* Fórmula */}
         <p className="text-amber-500 text-[10px] font-mono mt-1 opacity-70">
@@ -265,12 +293,38 @@ export default function AtributoCard({
           <p className="text-amber-500 text-xs font-mono mt-1">{formulaTexto(regra)}</p>
         </div>
         <div className="flex flex-col items-end gap-1 ml-4 shrink-0">
-          <p className="text-white font-bold text-3xl leading-none">
-            {display !== undefined && display !== null ? display : '—'}
-          </p>
-          {valorFinal !== undefined && valorFinal !== valor && valor !== undefined && valor !== null && (
-            <p className="text-purple-500 text-[10px] leading-none">base {valor}</p>
-          )}
+          <div className="relative group/val flex flex-col items-end">
+            <p className="text-white font-bold text-3xl leading-none">
+              {display !== undefined && display !== null ? display : '—'}
+            </p>
+            {fontesMod && fontesMod.length > 0 && (
+              <p className="text-purple-500 text-[10px] leading-none">base {valor}</p>
+            )}
+            {fontesMod && fontesMod.length > 0 && (
+              <div className="absolute right-0 bottom-full mb-1.5 z-50
+                              pointer-events-none opacity-0 group-hover/val:opacity-100
+                              transition-opacity duration-150
+                              bg-slate-900 border border-purple-600/80 rounded-lg px-3 py-2
+                              shadow-2xl w-max">
+                <p className="text-purple-300 text-[11px] font-semibold mb-1">{atributo.nome}</p>
+                <p className="text-slate-400 text-[10px]">Base: {valor ?? '—'}</p>
+                {fontesMod.map((f, i) => {
+                  const v = Number(f.valor)
+                  const sinal = f.operacao === 'somar' ? (v >= 0 ? `+${v}` : String(v))
+                              : f.operacao === 'definir' ? `=${v}`
+                              : `×${v}`
+                  return (
+                    <p key={i} className="text-white text-[10px]">
+                      {sinal} <span className="text-purple-400">{f.fonte}</span>
+                    </p>
+                  )
+                })}
+                <p className="text-green-300 text-[10px] font-semibold border-t border-purple-800 mt-1 pt-1">
+                  = {display}
+                </p>
+              </div>
+            )}
+          </div>
           {mesaId && registrarRolagem && (
             <button
               type="button"
