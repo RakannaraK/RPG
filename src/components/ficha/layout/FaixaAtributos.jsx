@@ -6,6 +6,7 @@ export default function FaixaAtributos({
   mesaId,
   fichaId,
   registrarRolagem,
+  dadoPadrao,
   onSaveValor,
 }) {
   if (!valoresAtributos || valoresAtributos.length === 0) {
@@ -37,6 +38,7 @@ export default function FaixaAtributos({
             mesaId={mesaId}
             fichaId={fichaId}
             registrarRolagem={registrarRolagem}
+            dadoPadrao={dadoPadrao}
             compact
           />
         ))}

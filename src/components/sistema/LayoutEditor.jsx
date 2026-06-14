@@ -86,8 +86,55 @@ export default function LayoutEditor({
   // Apenas atributos já salvos no banco (com ID real) podem ser vinculados a perícias
   const atributosSalvos = atributos.filter(a => !a.id?.startsWith('temp_'))
 
+  const ATALHOS_DADO = [4, 6, 8, 10, 12, 20, 100]
+
+  function handleDadoPadrao(raw) {
+    const v = parseInt(raw, 10)
+    if (!isNaN(v) && v >= 2) {
+      onConfigChange({ ...config, dado_padrao: v })
+    } else if (raw === '' || raw === '0' || raw === '1') {
+      onConfigChange({ ...config, dado_padrao: raw })
+    }
+  }
+
   return (
     <div className="space-y-8">
+      {/* Dado padrão dos testes */}
+      <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
+        <p className="text-purple-200 text-sm font-semibold">Dado padrão dos testes</p>
+        <p className="text-purple-500 text-xs">
+          Dado usado em testes de atributo e perícia. Aceita qualquer valor ≥ 2 (ex: d17, d1000).
+        </p>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="text-purple-400 text-sm shrink-0">1d</span>
+            <input
+              type="number"
+              min="2"
+              value={config.dado_padrao ?? 20}
+              onChange={e => handleDadoPadrao(e.target.value)}
+              className="w-20 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+          </div>
+          <div className="flex gap-1.5 flex-wrap">
+            {ATALHOS_DADO.map(lados => (
+              <button
+                key={lados}
+                type="button"
+                onClick={() => onConfigChange({ ...config, dado_padrao: lados })}
+                className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition-colors ${
+                  config.dado_padrao === lados
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-purple-900/60 text-purple-300 hover:bg-purple-800 hover:text-white'
+                }`}
+              >
+                d{lados}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Rótulo de vida */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
         <p className="text-purple-200 text-sm font-semibold">Rótulo de vida</p>

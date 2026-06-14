@@ -75,10 +75,11 @@ export default function FichaPage() {
   }
 
   const isDono = ficha.dono_id === session?.user?.id
-  const config = sistema?.config_layout || mergeConfigLayout(null)
+  const config = sistema?.config_layout ? mergeConfigLayout(sistema.config_layout) : mergeConfigLayout(null)
   const secoes = config.secoes
   const camposCombate = config.campos_combate || []
   const rotuloVida = config.rotulo_vida || 'Pontos de Vida'
+  const dadoPadrao = config.dado_padrao || 20
 
   const hasLeft = secoes.pericias || secoes.proficiencias
   const hasRight = secoes.combate || secoes.defesas || secoes.imagens
@@ -135,6 +136,7 @@ export default function FichaPage() {
           mesaId={mesaId}
           fichaId={fichaId}
           registrarRolagem={registrarRolagem}
+          dadoPadrao={dadoPadrao}
           onSaveValor={handleSaveValor}
         />
 
@@ -151,6 +153,7 @@ export default function FichaPage() {
                   isDono={isDono}
                   valoresAtributos={valoresAtributos}
                   mesaId={mesaId}
+                  dadoPadrao={dadoPadrao}
                 />
               )}
               {secoes.proficiencias && (

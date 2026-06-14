@@ -4,11 +4,12 @@ import { useRolagem } from '../../../hooks/useRolagem'
 import { playDiceRoll } from '../../../lib/diceSound'
 import Dice3D from '../../dados/Dice3D'
 
-function buildNotacao(bonusPericia, atributoBaseValor) {
+function buildNotacao(bonusPericia, atributoBaseValor, dadoPadrao) {
+  const lados = dadoPadrao && dadoPadrao >= 2 ? dadoPadrao : 20
   const total = (bonusPericia || 0) + (atributoBaseValor || 0)
-  if (total === 0) return '1d20'
-  if (total > 0) return `1d20+${total}`
-  return `1d20${total}`
+  if (total === 0) return `1d${lados}`
+  if (total > 0) return `1d${lados}+${total}`
+  return `1d${lados}${total}`
 }
 
 export default function PainelPericias({
@@ -17,6 +18,7 @@ export default function PainelPericias({
   isDono,
   valoresAtributos,
   mesaId,
+  dadoPadrao,
 }) {
   const { periciasFicha, savePericia } = usePericiasFicha(fichaId)
   const { registrarRolagem } = useRolagem()
@@ -59,7 +61,7 @@ export default function PainelPericias({
     if (rolando) return
     const pf = getPericiaFicha(pericia.id)
     const atributoVal = getAtributoValor(pericia.atributo_base_id)
-    const notacao = buildNotacao(pf.bonus, atributoVal)
+    const notacao = buildNotacao(pf.bonus, atributoVal, dadoPadrao)
 
     setRolando(true)
     setRollAtivo({ periciaId: pericia.id, resultado: null, rolando: true })

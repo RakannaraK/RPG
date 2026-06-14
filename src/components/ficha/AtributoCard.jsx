@@ -18,11 +18,12 @@ function formulaTexto(regra) {
   return ''
 }
 
-function buildNotacaoTeste(valor) {
-  if (valor === null || valor === undefined) return '1d20'
-  if (valor > 0) return `1d20+${valor}`
-  if (valor < 0) return `1d20${valor}`
-  return '1d20'
+function buildNotacaoTeste(valor, dadoPadrao) {
+  const lados = dadoPadrao && dadoPadrao >= 2 ? dadoPadrao : 20
+  if (valor === null || valor === undefined) return `1d${lados}`
+  if (valor > 0) return `1d${lados}+${valor}`
+  if (valor < 0) return `1d${lados}${valor}`
+  return `1d${lados}`
 }
 
 export default function AtributoCard({
@@ -33,6 +34,7 @@ export default function AtributoCard({
   mesaId,
   fichaId,
   registrarRolagem,
+  dadoPadrao = 20,
   compact = false,
 }) {
   const [rolando, setRolando] = useState(false)
@@ -95,7 +97,7 @@ export default function AtributoCard({
     setErroTeste('')
     playDiceRoll()
     try {
-      const notacao = buildNotacaoTeste(valor)
+      const notacao = buildNotacaoTeste(valor, dadoPadrao)
       const res = await registrarRolagem({
         mesaId,
         fichaId,
