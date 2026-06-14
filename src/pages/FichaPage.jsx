@@ -25,6 +25,8 @@ export default function FichaPage() {
   const { updateValorAtributo } = useUpdateFicha()
   const { registrarRolagem } = useRolagem()
 
+  console.log('[FichaPage 8.2] sistema:', sistema, 'config_layout:', sistema?.config_layout)
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
