@@ -7,21 +7,32 @@
  */
 
 /**
- * Coleta modificadores ativos de raça e classe da ficha.
- * Anota _fonte (nome da raça/classe) em cada modificador para rastreabilidade.
+ * Coleta modificadores ativos de raça, classe e habilidades da ficha.
+ * Anota _fonte em cada modificador para rastreabilidade.
  *
- * @param {{ raca?: object, classe?: object }} contexto
- *   raca  — objeto raça com campo modificadores[] (pode ser null)
- *   classe — objeto classe com campo modificadores[] (pode ser null)
+ * Regras para habilidades:
+ *   - passiva → modificadores sempre incluídos (independe do estado ativa)
+ *   - ativavel → incluídos SOMENTE se ativa === true
+ *
+ * @param {{ raca?, classe?, habilidadesFicha? }} contexto
+ *   habilidadesFicha — array de { habilidade: { nome, tipo, modificadores[] }, ativa: boolean }
  * @returns {Array} lista plana de modificadores ativos com campo _fonte
  */
-export function coletarModificadores({ raca, classe } = {}) {
+export function coletarModificadores({ raca, classe, habilidadesFicha = [] } = {}) {
   const lista = []
   if (raca?.modificadores?.length) {
     lista.push(...raca.modificadores.map(m => ({ ...m, _fonte: raca.nome })))
   }
   if (classe?.modificadores?.length) {
     lista.push(...classe.modificadores.map(m => ({ ...m, _fonte: classe.nome })))
+  }
+  for (const hf of habilidadesFicha) {
+    const hab = hf.habilidade
+    if (!hab?.modificadores?.length) continue
+    const deveIncluir = hab.tipo === 'passiva' || hf.ativa === true
+    if (deveIncluir) {
+      lista.push(...hab.modificadores.map(m => ({ ...m, _fonte: hab.nome })))
+    }
   }
   return lista
 }
