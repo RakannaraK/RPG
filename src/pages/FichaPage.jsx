@@ -239,6 +239,7 @@ export default function FichaPage() {
               onAdicionarHabilidade={adicionarHabilidade}
               onRemoverHabilidade={removerHabilidade}
               onAjustarRecurso={ajustarRecurso}
+              valoresFinais={valoresFinais}
             />
           </div>
 

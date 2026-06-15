@@ -64,6 +64,7 @@ export default function AbasCentrais({
   secoes, fichaId, donoId, isDono, mesaId, ficha, onRefetch,
   habilidades = [], habilidadesFicha = [],
   onToggleHabilidade, onAdicionarHabilidade, onRemoverHabilidade, onAjustarRecurso,
+  valoresFinais = {},
 }) {
   const temHabilidades = habilidades.length > 0 || habilidadesFicha.length > 0
   const tabsList = [
@@ -100,7 +101,7 @@ export default function AbasCentrais({
 
       <div className="p-4">
         {currentTab === 'acoes' && (
-          <AcoesTab fichaId={fichaId} isDono={isDono} mesaId={mesaId} />
+          <AcoesTab fichaId={fichaId} isDono={isDono} mesaId={mesaId} valoresFinais={valoresFinais} />
         )}
         {currentTab === 'inventario' && (
           <EquipamentosTab fichaId={fichaId} donoId={donoId} isDono={isDono} mesaId={mesaId} />

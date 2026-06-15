@@ -6,6 +6,28 @@ const NOTATION_RE =
   /^[+-]?(\d+d\d+(?:(?:kh|kl)\d+)?|\d+)([+-](\d+d\d+(?:(?:kh|kl)\d+)?|\d+))*$/i
 
 /**
+ * Resolve tokens @campo:{id} e @attr:{id} na notação, substituindo-os pelo
+ * valor final do motor. Retorna a notação resolvida (string numérica padrão).
+ *
+ * Uso: armas podem usar "1d8+@campo:{campoId}" para incluir valores dinâmicos.
+ * Após resolução a notação fica em formato padrão, ex: "1d8+6".
+ *
+ * @param {string} notacao
+ * @param {{ atributos?: object, combate?: object }} valoresFinais — saída de calcularValoresFinais
+ * @returns {string} notação com tokens substituídos por números
+ */
+export function resolverNotacao(notacao, valoresFinais = {}) {
+  if (!notacao) return notacao
+  return notacao.replace(/@(campo|attr):([a-zA-Z0-9_-]+)/g, (_, tipo, id) => {
+    const val = tipo === 'campo'
+      ? (valoresFinais.combate?.[id] ?? 0)
+      : (valoresFinais.atributos?.[id] ?? 0)
+    const n = Number(val) || 0
+    return n >= 0 ? `+${n}` : String(n)
+  })
+}
+
+/**
  * Valida se uma string é uma notação de dados reconhecida.
  * Case-insensitive. Retorna true/false.
  */

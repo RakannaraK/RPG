@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useItens } from '../../../hooks/useItens'
 import { useRolagem } from '../../../hooks/useRolagem'
-import { validarNotacao } from '../../../lib/diceNotation'
+import { validarNotacao, resolverNotacao } from '../../../lib/diceNotation'
 import { playDiceRoll } from '../../../lib/diceSound'
 import Dice3D from '../../dados/Dice3D'
 
@@ -24,7 +24,7 @@ function RollCompact({ label, resultado, rolando, onClose }) {
   )
 }
 
-export default function AcoesTab({ fichaId, isDono, mesaId }) {
+export default function AcoesTab({ fichaId, isDono, mesaId, valoresFinais = {} }) {
   const { itens } = useItens(fichaId)
   const { registrarRolagem } = useRolagem()
   const [rollState, setRollState] = useState({})
@@ -34,7 +34,8 @@ export default function AcoesTab({ fichaId, isDono, mesaId }) {
   )
 
   async function handleRolar(item, campo) {
-    const notacao = item.atributos_extras?.[campo]
+    const rawNotacao = item.atributos_extras?.[campo]
+    const notacao = resolverNotacao(rawNotacao, valoresFinais)
     if (!validarNotacao(notacao)) return
 
     playDiceRoll()
@@ -85,8 +86,12 @@ export default function AcoesTab({ fichaId, isDono, mesaId }) {
         const danoKey = `${item.id}_dano`
         const ataqueState = rollState[ataqueKey]
         const danoState = rollState[danoKey]
-        const temAtaque = item.atributos_extras?.ataque && validarNotacao(item.atributos_extras.ataque)
-        const temDano = item.atributos_extras?.dano && validarNotacao(item.atributos_extras.dano)
+        const ataqueRaw = item.atributos_extras?.ataque
+        const danoRaw   = item.atributos_extras?.dano
+        const ataqueResolvido = resolverNotacao(ataqueRaw, valoresFinais)
+        const danoResolvido   = resolverNotacao(danoRaw,   valoresFinais)
+        const temAtaque = ataqueRaw && validarNotacao(ataqueResolvido)
+        const temDano   = danoRaw   && validarNotacao(danoResolvido)
 
         return (
           <div
@@ -108,7 +113,7 @@ export default function AcoesTab({ fichaId, isDono, mesaId }) {
                       disabled={ataqueState?.rolando}
                       className="px-2 py-1 text-xs bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white rounded-lg transition-colors"
                     >
-                      🎲 {item.atributos_extras.ataque}
+                      🎲 {ataqueResolvido}
                     </button>
                   )}
                   {temDano && (
@@ -117,7 +122,7 @@ export default function AcoesTab({ fichaId, isDono, mesaId }) {
                       disabled={danoState?.rolando}
                       className="px-2 py-1 text-xs bg-red-800 hover:bg-red-700 disabled:opacity-50 text-white rounded-lg transition-colors"
                     >
-                      💥 {item.atributos_extras.dano}
+                      💥 {danoResolvido}
                     </button>
                   )}
                 </div>
