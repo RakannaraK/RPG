@@ -10,6 +10,7 @@ export function useSistema(mesaId) {
   const [pericias, setPericias] = useState([])
   const [racas, setRacas] = useState([])
   const [classes, setClasses] = useState([])
+  const [habilidades, setHabilidades] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -25,11 +26,12 @@ export function useSistema(mesaId) {
         .maybeSingle()
 
       if (sistemaData) {
-        const [atributosResp, periciasResp, racasResp, classesResp] = await Promise.all([
+        const [atributosResp, periciasResp, racasResp, classesResp, habResp] = await Promise.all([
           supabase.from('atributos').select('*').eq('sistema_id', sistemaData.id).order('ordem', { ascending: true }),
           supabase.from('pericias').select('*').eq('sistema_id', sistemaData.id).order('ordem', { ascending: true }),
           supabase.from('racas').select('*').eq('sistema_id', sistemaData.id).order('created_at'),
           supabase.from('classes').select('*').eq('sistema_id', sistemaData.id).order('created_at'),
+          supabase.from('habilidades').select('*').eq('sistema_id', sistemaData.id).order('created_at'),
         ])
 
         if (atributosResp.error) throw atributosResp.error
@@ -47,6 +49,13 @@ export function useSistema(mesaId) {
           modsClasses = data || []
         }
 
+        const habIds = (habResp.data || []).map(h => h.id)
+        let modsHabs = []
+        if (habIds.length > 0) {
+          const { data } = await supabase.from('modificadores').select('*').in('habilidade_id', habIds)
+          modsHabs = data || []
+        }
+
         setSistema({
           ...sistemaData,
           config_layout: mergeConfigLayout(sistemaData.config_layout),
@@ -55,12 +64,14 @@ export function useSistema(mesaId) {
         setPericias(periciasResp.data || [])
         setRacas((racasResp.data || []).map(r => ({ ...r, modificadores: modsRacas.filter(m => m.raca_id === r.id) })))
         setClasses((classesResp.data || []).map(c => ({ ...c, modificadores: modsClasses.filter(m => m.classe_id === c.id) })))
+        setHabilidades((habResp.data || []).map(h => ({ ...h, modificadores: modsHabs.filter(m => m.habilidade_id === h.id) })))
       } else {
         setSistema(null)
         setAtributos([])
         setPericias([])
         setRacas([])
         setClasses([])
+        setHabilidades([])
       }
     } catch (err) {
       setError(err.message || 'Erro ao carregar sistema.')
@@ -73,7 +84,7 @@ export function useSistema(mesaId) {
     fetchSistema()
   }, [fetchSistema])
 
-  return { sistema, atributos, pericias, racas, classes, loading, error, refetch: fetchSistema }
+  return { sistema, atributos, pericias, racas, classes, habilidades, loading, error, refetch: fetchSistema }
 }
 
 export function useSaveSistema() {
