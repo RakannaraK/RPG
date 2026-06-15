@@ -7,6 +7,7 @@ import { useRolagem } from '../hooks/useRolagem'
 import { supabase } from '../lib/supabase'
 import { mergeConfigLayout } from '../lib/sistemaDefaults'
 import { coletarModificadores, calcularValoresFinais, agregarDefesas } from '../lib/modifierEngine'
+import { useHabilidadesFicha } from '../hooks/useHabilidadesFicha'
 import CabecalhoPersonagem from '../components/ficha/layout/CabecalhoPersonagem'
 import FaixaAtributos from '../components/ficha/layout/FaixaAtributos'
 import PainelCombate from '../components/ficha/layout/PainelCombate'
@@ -22,9 +23,16 @@ export default function FichaPage() {
   const navigate = useNavigate()
 
   const { ficha, valoresAtributos, loading, error, refetch } = useFicha(fichaId)
-  const { sistema, pericias: periciasDoSistema, racas, classes } = useSistema(mesaId)
+  const { sistema, pericias: periciasDoSistema, racas, classes, habilidades } = useSistema(mesaId)
   const { updateValorAtributo, updateFicha } = useUpdateFicha()
   const { registrarRolagem } = useRolagem()
+  const {
+    habilidadesFicha,
+    toggleHabilidade,
+    adicionarHabilidade,
+    removerHabilidade,
+    ajustarRecurso,
+  } = useHabilidadesFicha(fichaId, habilidades)
 
   // Estado local de raça/classe para recálculo imediato sem esperar refetch
   const [racaId, setRacaId] = useState(null)
@@ -106,7 +114,7 @@ export default function FichaPage() {
   // Motor de modificadores
   const racaAtiva = racas.find(r => r.id === racaId) || null
   const classeAtiva = classes.find(c => c.id === classeId) || null
-  const modificadoresAtivos = coletarModificadores({ raca: racaAtiva, classe: classeAtiva })
+  const modificadoresAtivos = coletarModificadores({ raca: racaAtiva, classe: classeAtiva, habilidadesFicha })
   const baseMotor = {
     atributos: Object.fromEntries(
       valoresAtributos.filter(va => va.atributo?.id).map(va => [va.atributo.id, va.valor ?? 0])
@@ -212,7 +220,7 @@ export default function FichaPage() {
             </div>
           )}
 
-          {/* Coluna central — Abas: Ações / Inventário / Traços / Notas */}
+          {/* Coluna central — Abas: Ações / Inventário / Traços / Notas / Habilidades */}
           <div className="flex-1 min-w-0">
             <AbasCentrais
               secoes={secoes}
@@ -222,6 +230,12 @@ export default function FichaPage() {
               mesaId={mesaId}
               ficha={ficha}
               onRefetch={refetch}
+              habilidades={habilidades}
+              habilidadesFicha={habilidadesFicha}
+              onToggleHabilidade={toggleHabilidade}
+              onAdicionarHabilidade={adicionarHabilidade}
+              onRemoverHabilidade={removerHabilidade}
+              onAjustarRecurso={ajustarRecurso}
             />
           </div>
 

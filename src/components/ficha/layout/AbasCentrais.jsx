@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useUpdateFicha } from '../../../hooks/useFicha'
 import EquipamentosTab from '../EquipamentosTab'
 import AcoesTab from './AcoesTab'
+import PainelHabilidades from './PainelHabilidades'
 
 function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, onRefetch }) {
   const [valor, setValor] = useState(valorInicial)
@@ -59,12 +60,18 @@ function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, on
   )
 }
 
-export default function AbasCentrais({ secoes, fichaId, donoId, isDono, mesaId, ficha, onRefetch }) {
+export default function AbasCentrais({
+  secoes, fichaId, donoId, isDono, mesaId, ficha, onRefetch,
+  habilidades = [], habilidadesFicha = [],
+  onToggleHabilidade, onAdicionarHabilidade, onRemoverHabilidade, onAjustarRecurso,
+}) {
+  const temHabilidades = habilidades.length > 0 || habilidadesFicha.length > 0
   const tabsList = [
-    secoes.acoes      && { id: 'acoes',     label: 'Ações' },
-    secoes.inventario && { id: 'inventario', label: 'Inventário' },
-    secoes.tracos     && { id: 'tracos',     label: 'Traços' },
-    secoes.notas      && { id: 'notas',      label: 'Notas' },
+    secoes.acoes      && { id: 'acoes',       label: 'Ações' },
+    secoes.inventario && { id: 'inventario',  label: 'Inventário' },
+    secoes.tracos     && { id: 'tracos',      label: 'Traços' },
+    secoes.notas      && { id: 'notas',       label: 'Notas' },
+    temHabilidades    && { id: 'habilidades', label: 'Habilidades' },
   ].filter(Boolean)
 
   const [activeTab, setActiveTab] = useState(tabsList[0]?.id || '')
@@ -116,6 +123,17 @@ export default function AbasCentrais({ secoes, fichaId, donoId, isDono, mesaId, 
             isDono={isDono}
             placeholder="Histórico, anotações, segredos, contatos..."
             onRefetch={onRefetch}
+          />
+        )}
+        {currentTab === 'habilidades' && (
+          <PainelHabilidades
+            habilidades={habilidades}
+            habilidadesFicha={habilidadesFicha}
+            isDono={isDono}
+            onToggle={onToggleHabilidade}
+            onAdicionar={onAdicionarHabilidade}
+            onRemover={onRemoverHabilidade}
+            onAjustarRecurso={onAjustarRecurso}
           />
         )}
       </div>
