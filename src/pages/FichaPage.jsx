@@ -33,6 +33,7 @@ export default function FichaPage() {
     removerHabilidade,
     ajustarRecurso,
     sincronizarOrigem,
+    recuperarRecursos,
   } = useHabilidadesFicha(fichaId, habilidades)
 
   // Estado local de raça/classe para recálculo imediato sem esperar refetch
@@ -239,6 +240,7 @@ export default function FichaPage() {
               onAdicionarHabilidade={adicionarHabilidade}
               onRemoverHabilidade={removerHabilidade}
               onAjustarRecurso={ajustarRecurso}
+              onRecuperarRecursos={recuperarRecursos}
               valoresFinais={valoresFinais}
             />
           </div>

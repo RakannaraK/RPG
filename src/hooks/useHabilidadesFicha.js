@@ -133,9 +133,29 @@ export function useHabilidadesFicha(fichaId, habilidadesSistema = []) {
     }
   }
 
+  async function recuperarRecursos() {
+    const atualizacoes = rawRows
+      .map(row => {
+        const hab = habilidadesSistema.find(h => h.id === row.habilidade_id)
+        return hab?.recurso_max != null ? { id: row.id, recurso_atual: hab.recurso_max } : null
+      })
+      .filter(Boolean)
+
+    if (atualizacoes.length === 0) return
+    setRawRows(prev => prev.map(row => {
+      const u = atualizacoes.find(a => a.id === row.id)
+      return u ? { ...row, recurso_atual: u.recurso_atual } : row
+    }))
+    for (const { id, recurso_atual } of atualizacoes) {
+      try {
+        await supabase.from('habilidades_ficha').update({ recurso_atual }).eq('id', id)
+      } catch {}
+    }
+  }
+
   return {
     habilidadesFicha, loading, error, refetch: fetchAll,
     toggleHabilidade, adicionarHabilidade, removerHabilidade, ajustarRecurso,
-    sincronizarOrigem,
+    sincronizarOrigem, recuperarRecursos,
   }
 }

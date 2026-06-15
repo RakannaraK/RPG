@@ -62,13 +62,15 @@ export default function PainelHabilidades({
   onAdicionar,
   onRemover,
   onAjustarRecurso,
+  onRecuperarRecursos,
 }) {
   const [selecionada, setSelecionada] = useState('')
   const [adicionando, setAdicionando] = useState(false)
   const [addErro, setAddErro] = useState('')
 
-  const passivas  = habilidadesFicha.filter(hf => hf.habilidade?.tipo === 'passiva')
-  const ativaveis = habilidadesFicha.filter(hf => hf.habilidade?.tipo === 'ativavel')
+  const passivas   = habilidadesFicha.filter(hf => hf.habilidade?.tipo === 'passiva')
+  const ativaveis  = habilidadesFicha.filter(hf => hf.habilidade?.tipo === 'ativavel')
+  const temRecurso = ativaveis.some(hf => hf.habilidade?.recurso_nome)
 
   const fichaIds    = new Set(habilidadesFicha.map(hf => hf.habilidade_id))
   const disponíveis = habilidades.filter(h => !fichaIds.has(h.id))
@@ -201,6 +203,18 @@ export default function PainelHabilidades({
           {isDono && disponíveis.length > 0 && (
             <p className="text-purple-700 text-xs mt-1">Adicione uma abaixo.</p>
           )}
+        </div>
+      )}
+
+      {/* Recuperar recursos */}
+      {isDono && temRecurso && onRecuperarRecursos && (
+        <div className="border-t border-purple-900/60 pt-3">
+          <button
+            onClick={onRecuperarRecursos}
+            className="w-full py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-purple-300 hover:text-white rounded-lg transition-colors"
+          >
+            ♻ Recuperar todos os recursos
+          </button>
         </div>
       )}
 

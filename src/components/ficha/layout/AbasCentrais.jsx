@@ -63,7 +63,7 @@ function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, on
 export default function AbasCentrais({
   secoes, fichaId, donoId, isDono, mesaId, ficha, onRefetch,
   habilidades = [], habilidadesFicha = [],
-  onToggleHabilidade, onAdicionarHabilidade, onRemoverHabilidade, onAjustarRecurso,
+  onToggleHabilidade, onAdicionarHabilidade, onRemoverHabilidade, onAjustarRecurso, onRecuperarRecursos,
   valoresFinais = {},
 }) {
   const temHabilidades = habilidades.length > 0 || habilidadesFicha.length > 0
@@ -135,6 +135,7 @@ export default function AbasCentrais({
             onAdicionar={onAdicionarHabilidade}
             onRemover={onRemoverHabilidade}
             onAjustarRecurso={onAjustarRecurso}
+            onRecuperarRecursos={onRecuperarRecursos}
           />
         )}
       </div>

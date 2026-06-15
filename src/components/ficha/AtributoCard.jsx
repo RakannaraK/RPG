@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import DiceRoller from './DiceRoller'
 import Dice3D from '../dados/Dice3D'
 import { playDiceRoll } from '../../lib/diceSound'
@@ -54,6 +54,18 @@ export default function AtributoCard({
   // valorFinal vem do motor de modificadores; valor é sempre o base (usado na edição)
   const display = valorFinal !== undefined ? valorFinal : valor
   const regra = atributo?.regra_rolagem
+
+  // Flash de borda quando o valor final muda (feedback de toggle de habilidade)
+  const [pulsando, setPulsando] = useState(false)
+  const prevDisplay = useRef(display)
+  useEffect(() => {
+    if (prevDisplay.current !== display && prevDisplay.current !== undefined) {
+      setPulsando(true)
+      const t = setTimeout(() => setPulsando(false), 700)
+      return () => clearTimeout(t)
+    }
+    prevDisplay.current = display
+  }, [display])
   const podeRolar = canEdit && regra?.tipo !== 'fixo'
 
   async function handleConfirmar(resultado) {
@@ -118,9 +130,13 @@ export default function AtributoCard({
   }
 
   // ── Modo compacto ────────────────────────────────────────────────────────────
+  const buffado = fontesMod && fontesMod.length > 0
+
   if (compact) {
     return (
-      <div className="bg-slate-800 border border-purple-800 rounded-xl p-3 flex flex-col items-center">
+      <div className={`bg-slate-800 border rounded-xl p-3 flex flex-col items-center transition-all duration-300 ${
+        pulsando ? 'border-amber-400/80 ring-2 ring-amber-400/25' : 'border-purple-800'
+      }`}>
         {/* Nome */}
         <p className="text-purple-400 text-[11px] font-medium uppercase tracking-wider truncate w-full text-center mb-1">
           {atributo.nome}
@@ -128,7 +144,7 @@ export default function AtributoCard({
 
         {/* Valor com tooltip de rastreabilidade */}
         <div className="relative group/val w-full flex flex-col items-center">
-          <p className="text-white font-bold text-4xl leading-none">
+          <p className={`font-bold text-4xl leading-none transition-colors duration-300 ${buffado ? 'text-green-300' : 'text-white'}`}>
             {display !== undefined && display !== null ? display : '—'}
           </p>
           {fontesMod && fontesMod.length > 0 && (
@@ -283,7 +299,9 @@ export default function AtributoCard({
 
   // ── Modo normal (sem compact) ────────────────────────────────────────────────
   return (
-    <div className="bg-slate-800 border border-purple-800 rounded-xl p-4">
+    <div className={`bg-slate-800 border rounded-xl p-4 transition-all duration-300 ${
+      pulsando ? 'border-amber-400/80 ring-2 ring-amber-400/25' : 'border-purple-800'
+    }`}>
       <div className="flex items-start justify-between mb-3">
         <div>
           <p className="text-white font-semibold">{atributo.nome}</p>
@@ -294,7 +312,7 @@ export default function AtributoCard({
         </div>
         <div className="flex flex-col items-end gap-1 ml-4 shrink-0">
           <div className="relative group/val flex flex-col items-end">
-            <p className="text-white font-bold text-3xl leading-none">
+            <p className={`font-bold text-3xl leading-none transition-colors duration-300 ${buffado ? 'text-green-300' : 'text-white'}`}>
               {display !== undefined && display !== null ? display : '—'}
             </p>
             {fontesMod && fontesMod.length > 0 && (
