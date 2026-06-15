@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { useSistema } from '../../hooks/useSistema'
 import { useCreateFicha } from '../../hooks/useFicha'
 import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../lib/supabase'
 import DiceRoller from './DiceRoller'
 
 export default function FichaCreate({ mesaId, onCriada, onFechar }) {
   const { session } = useAuth()
-  const { sistema, atributos, loading: loadingSistema } = useSistema(mesaId)
+  const { sistema, atributos, racas, classes, habilidades, loading: loadingSistema } = useSistema(mesaId)
   const { createFicha, loading: criando } = useCreateFicha()
 
   const [step, setStep] = useState(0)
@@ -14,6 +15,8 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
     nome_personagem: '',
     raca: '',
     classe: '',
+    raca_id: null,
+    classe_id: null,
     nivel: 1,
     hp_maximo: '',
   })
@@ -87,11 +90,33 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
           nome_personagem: info.nome_personagem.trim(),
           raca: info.raca.trim() || null,
           classe: info.classe.trim() || null,
+          raca_id: info.raca_id || null,
+          classe_id: info.classe_id || null,
           nivel: Number(info.nivel) || 1,
           hp_maximo: info.hp_maximo !== '' ? info.hp_maximo : null,
         },
         valoresAtributos: valoresParaSalvar,
       })
+
+      // Auto-conceder habilidades da raça/classe selecionada (10.4)
+      const habsParaAdicionar = habilidades.filter(h =>
+        (info.raca_id && h.raca_id === info.raca_id) ||
+        (info.classe_id && h.classe_id === info.classe_id)
+      )
+      if (habsParaAdicionar.length > 0) {
+        try {
+          await supabase.from('habilidades_ficha').insert(
+            habsParaAdicionar.map(hab => ({
+              ficha_id: ficha.id,
+              habilidade_id: hab.id,
+              ativa: hab.tipo === 'passiva',
+              recurso_atual: hab.recurso_max ?? null,
+              origem: hab.raca_id === info.raca_id ? 'raca' : 'classe',
+            }))
+          )
+        } catch {}
+      }
+
       onCriada(ficha)
     } catch (err) {
       setErro(err.message || 'Erro ao criar ficha.')
@@ -137,23 +162,57 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-purple-200 mb-1">Raça</label>
-                  <input
-                    type="text"
-                    placeholder="Ex: Elfo, Humano"
-                    value={info.raca}
-                    onChange={e => setInfoField('raca', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
+                  {racas.length > 0 ? (
+                    <select
+                      value={info.raca_id ?? ''}
+                      onChange={e => {
+                        const id = e.target.value || null
+                        const obj = racas.find(r => r.id === id)
+                        setInfo(prev => ({ ...prev, raca_id: id, raca: obj?.nome || '' }))
+                      }}
+                      className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Nenhuma</option>
+                      {racas.map(r => (
+                        <option key={r.id} value={r.id}>{r.nome}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      placeholder="Ex: Elfo, Humano"
+                      value={info.raca}
+                      onChange={e => setInfoField('raca', e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-purple-200 mb-1">Classe</label>
-                  <input
-                    type="text"
-                    placeholder="Ex: Guerreiro, Mago"
-                    value={info.classe}
-                    onChange={e => setInfoField('classe', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
+                  {classes.length > 0 ? (
+                    <select
+                      value={info.classe_id ?? ''}
+                      onChange={e => {
+                        const id = e.target.value || null
+                        const obj = classes.find(c => c.id === id)
+                        setInfo(prev => ({ ...prev, classe_id: id, classe: obj?.nome || '' }))
+                      }}
+                      className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Nenhuma</option>
+                      {classes.map(c => (
+                        <option key={c.id} value={c.id}>{c.nome}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      placeholder="Ex: Guerreiro, Mago"
+                      value={info.classe}
+                      onChange={e => setInfoField('classe', e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">

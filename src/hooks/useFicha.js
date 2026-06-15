@@ -87,6 +87,8 @@ export function useCreateFicha() {
           nome_personagem: infoBasica.nome_personagem,
           raca: infoBasica.raca || null,
           classe: infoBasica.classe || null,
+          raca_id: infoBasica.raca_id || null,
+          classe_id: infoBasica.classe_id || null,
           nivel: infoBasica.nivel || 1,
           hp_atual: infoBasica.hp_maximo ? Number(infoBasica.hp_maximo) : null,
           hp_maximo: infoBasica.hp_maximo ? Number(infoBasica.hp_maximo) : null,
