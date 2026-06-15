@@ -102,8 +102,40 @@ export function useHabilidadesFicha(fichaId, habilidadesSistema = []) {
     } catch {}
   }
 
+  /**
+   * Ao trocar raça ou classe, remove habilidades da origem anterior
+   * e adiciona as da nova. Passivas entram ativas; ativáveis, desligadas.
+   * @param {'raca'|'classe'} tipoOrigem
+   * @param {string|null} novaOrigemId — id da nova raça/classe, ou null se removida
+   */
+  async function sincronizarOrigem(tipoOrigem, novaOrigemId) {
+    const rowsOrigem = rawRows.filter(row => row.origem === tipoOrigem)
+    const novasHabs = novaOrigemId
+      ? habilidadesSistema.filter(h =>
+          tipoOrigem === 'raca'   ? h.raca_id   === novaOrigemId :
+          tipoOrigem === 'classe' ? h.classe_id === novaOrigemId : false
+        )
+      : []
+    const novasIds    = new Set(novasHabs.map(h => h.id))
+    const presenteIds = new Set(rowsOrigem.map(r => r.habilidade_id))
+
+    // Remove saíram
+    for (const row of rowsOrigem) {
+      if (!novasIds.has(row.habilidade_id)) {
+        await removerHabilidade(row.id)
+      }
+    }
+    // Adiciona novas
+    for (const hab of novasHabs) {
+      if (!presenteIds.has(hab.id)) {
+        await adicionarHabilidade(hab.id, tipoOrigem)
+      }
+    }
+  }
+
   return {
     habilidadesFicha, loading, error, refetch: fetchAll,
     toggleHabilidade, adicionarHabilidade, removerHabilidade, ajustarRecurso,
+    sincronizarOrigem,
   }
 }

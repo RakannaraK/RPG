@@ -32,6 +32,7 @@ export default function FichaPage() {
     adicionarHabilidade,
     removerHabilidade,
     ajustarRecurso,
+    sincronizarOrigem,
   } = useHabilidadesFicha(fichaId, habilidades)
 
   // Estado local de raça/classe para recálculo imediato sem esperar refetch
@@ -69,11 +70,13 @@ export default function FichaPage() {
 
   async function handleRacaChange(id) {
     setRacaId(id || null)
+    await sincronizarOrigem('raca', id || null)
     try { await updateFicha(fichaId, { raca_id: id || null }) } catch {}
   }
 
   async function handleClasseChange(id) {
     setClasseId(id || null)
+    await sincronizarOrigem('classe', id || null)
     try { await updateFicha(fichaId, { classe_id: id || null }) } catch {}
   }
 
