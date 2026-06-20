@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { PreferenciasProvider } from './context/PreferenciasContext'
 import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import MesaPage from './pages/MesaPage'
@@ -87,7 +88,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <PreferenciasProvider>
+          <AppRoutes />
+        </PreferenciasProvider>
       </AuthProvider>
     </BrowserRouter>
   )

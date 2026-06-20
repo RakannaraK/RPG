@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useRolagem } from '../../hooks/useRolagem'
 import { validarNotacao } from '../../lib/diceNotation'
-import { playDiceRoll } from '../../lib/diceSound'
+import { tocarSomDado, estimarNumDados } from '../../lib/diceSounds'
+import { usePreferencias } from '../../context/PreferenciasContext'
 import Dice3D from './Dice3D'
 
 const ATALHOS = [
@@ -14,7 +15,7 @@ const ATALHOS = [
   { label: 'd100', notacao: '1d100' },
 ]
 
-function ResultadoDisplay({ resultado, rotulo, rolando }) {
+function ResultadoDisplay({ resultado, rotulo, rolando, skin }) {
   const { notacao, dados, mantidos, descartados, modificador, total } = resultado
 
   return (
@@ -34,6 +35,7 @@ function ResultadoDisplay({ resultado, rotulo, rolando }) {
               resultado={d.valor}
               rolando={rolando}
               descartado={d.descartado}
+              skin={skin}
             />
             {d.descartado && (
               <span className="text-red-500 text-[10px] leading-none">descartado</span>
@@ -74,6 +76,7 @@ function ResultadoDisplay({ resultado, rotulo, rolando }) {
  */
 export default function RoladorGenerico({ mesaId, fichaId = null }) {
   const { registrarRolagem, rolando: salvando, erro: erroHook } = useRolagem()
+  const { preferencias } = usePreferencias()
   const [notacao, setNotacao] = useState('')
   const [rotulo, setRotulo] = useState('')
   const [resultado, setResultado] = useState(null)
@@ -89,7 +92,11 @@ export default function RoladorGenerico({ mesaId, fichaId = null }) {
       return
     }
     setErroLocal('')
-    playDiceRoll()
+    tocarSomDado(preferencias.dado_skin, {
+      ativo: preferencias.som_ativo,
+      volume: preferencias.som_volume,
+      numDados: estimarNumDados(n),
+    })
 
     try {
       const res = await registrarRolagem({
@@ -174,6 +181,7 @@ export default function RoladorGenerico({ mesaId, fichaId = null }) {
           resultado={resultado}
           rotulo={rotuloDisplay}
           rolando={rolando}
+          skin={preferencias.dado_skin}
         />
       )}
     </div>

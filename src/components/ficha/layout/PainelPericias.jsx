@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { usePericiasFicha } from '../../../hooks/usePericiasFicha'
 import { useRolagem } from '../../../hooks/useRolagem'
-import { playDiceRoll } from '../../../lib/diceSound'
+import { tocarSomDado, estimarNumDados } from '../../../lib/diceSounds'
+import { usePreferencias } from '../../../context/PreferenciasContext'
 import Dice3D from '../../dados/Dice3D'
 
 function buildNotacao(bonusPericia, atributoBaseValor, dadoPadrao) {
@@ -22,6 +23,7 @@ export default function PainelPericias({
 }) {
   const { periciasFicha, savePericia } = usePericiasFicha(fichaId)
   const { registrarRolagem } = useRolagem()
+  const { preferencias } = usePreferencias()
   const [localBonus, setLocalBonus] = useState({})
   const [rollAtivo, setRollAtivo] = useState(null)
   const [rolando, setRolando] = useState(false)
@@ -65,7 +67,11 @@ export default function PainelPericias({
 
     setRolando(true)
     setRollAtivo({ periciaId: pericia.id, resultado: null, rolando: true })
-    playDiceRoll()
+    tocarSomDado(preferencias.dado_skin, {
+      ativo: preferencias.som_ativo,
+      volume: preferencias.som_volume,
+      numDados: estimarNumDados(notacao),
+    })
 
     try {
       const res = await registrarRolagem({
@@ -183,6 +189,7 @@ export default function PainelPericias({
                           resultado={d.valor}
                           rolando={rollAtivo.rolando}
                           descartado={d.descartado}
+                          skin={preferencias.dado_skin}
                         />
                       ))}
                       <span className="text-white font-bold text-lg leading-none ml-1">

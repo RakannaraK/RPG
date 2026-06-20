@@ -5,6 +5,7 @@ import { useMesas } from '../hooks/useMesa'
 import MesaCard from '../components/mesa/MesaCard'
 import MesaCreate from '../components/mesa/MesaCreate'
 import MesaInvite from '../components/mesa/MesaInvite'
+import PreferenciasModal from '../components/preferencias/PreferenciasModal'
 
 export default function DashboardPage() {
   const { session, logout } = useAuth()
@@ -13,6 +14,7 @@ export default function DashboardPage() {
 
   const [showCreate, setShowCreate] = useState(false)
   const [showInvite, setShowInvite] = useState(false)
+  const [showPrefs, setShowPrefs] = useState(false)
   const [logoutLoading, setLogoutLoading] = useState(false)
 
   async function handleLogout() {
@@ -45,6 +47,13 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-purple-300 text-sm hidden sm:block">{session?.user?.email}</span>
+          <button
+            onClick={() => setShowPrefs(true)}
+            title="Preferências"
+            className="p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
+          >
+            ⚙
+          </button>
           <button
             onClick={handleLogout}
             disabled={logoutLoading}
@@ -137,6 +146,8 @@ export default function DashboardPage() {
           onJoined={handleMesaJoined}
         />
       )}
+
+      {showPrefs && <PreferenciasModal onFechar={() => setShowPrefs(false)} />}
     </div>
   )
 }

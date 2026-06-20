@@ -2,16 +2,17 @@ import { useState } from 'react'
 import { useItens } from '../../../hooks/useItens'
 import { useRolagem } from '../../../hooks/useRolagem'
 import { validarNotacao, resolverNotacao } from '../../../lib/diceNotation'
-import { playDiceRoll } from '../../../lib/diceSound'
+import { tocarSomDado, estimarNumDados } from '../../../lib/diceSounds'
+import { usePreferencias } from '../../../context/PreferenciasContext'
 import Dice3D from '../../dados/Dice3D'
 
-function RollCompact({ label, resultado, rolando, onClose }) {
+function RollCompact({ label, resultado, rolando, onClose, skin }) {
   return (
     <div className="bg-slate-800 rounded-lg px-2 py-1.5 flex items-center gap-2 flex-wrap">
       <span className="text-purple-400 text-xs">{label}:</span>
       <span className="text-purple-300 font-mono text-xs">{resultado.notacao}</span>
       {resultado.dados.map((d, i) => (
-        <Dice3D key={i} lados={d.lados} resultado={d.valor} rolando={rolando} descartado={d.descartado} />
+        <Dice3D key={i} lados={d.lados} resultado={d.valor} rolando={rolando} descartado={d.descartado} skin={skin} />
       ))}
       <span className="text-white font-bold text-sm">{resultado.total}</span>
       <button
@@ -27,6 +28,7 @@ function RollCompact({ label, resultado, rolando, onClose }) {
 export default function AcoesTab({ fichaId, isDono, mesaId, valoresFinais = {} }) {
   const { itens } = useItens(fichaId)
   const { registrarRolagem } = useRolagem()
+  const { preferencias } = usePreferencias()
   const [rollState, setRollState] = useState({})
 
   const armas = itens.filter(
@@ -38,7 +40,11 @@ export default function AcoesTab({ fichaId, isDono, mesaId, valoresFinais = {} }
     const notacao = resolverNotacao(rawNotacao, valoresFinais)
     if (!validarNotacao(notacao)) return
 
-    playDiceRoll()
+    tocarSomDado(preferencias.dado_skin, {
+      ativo: preferencias.som_ativo,
+      volume: preferencias.som_volume,
+      numDados: estimarNumDados(notacao),
+    })
     const key = `${item.id}_${campo}`
     setRollState(prev => ({ ...prev, [key]: { resultado: null, rolando: true } }))
 
@@ -135,6 +141,7 @@ export default function AcoesTab({ fichaId, isDono, mesaId, valoresFinais = {} }
                 resultado={ataqueState.resultado}
                 rolando={ataqueState.rolando}
                 onClose={() => clearRoll(ataqueKey)}
+                skin={preferencias.dado_skin}
               />
             )}
             {danoState?.resultado && (
@@ -143,6 +150,7 @@ export default function AcoesTab({ fichaId, isDono, mesaId, valoresFinais = {} }
                 resultado={danoState.resultado}
                 rolando={danoState.rolando}
                 onClose={() => clearRoll(danoKey)}
+                skin={preferencias.dado_skin}
               />
             )}
           </div>

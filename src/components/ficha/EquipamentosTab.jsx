@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useItens } from '../../hooks/useItens'
 import { useRolagem } from '../../hooks/useRolagem'
 import { validarNotacao } from '../../lib/diceNotation'
-import { playDiceRoll } from '../../lib/diceSound'
+import { tocarSomDado, estimarNumDados } from '../../lib/diceSounds'
+import { usePreferencias } from '../../context/PreferenciasContext'
 import { redimensionarImagem } from '../../lib/imageUtils'
 import { supabase } from '../../lib/supabase'
 import ImageUpload from './ImageUpload'
@@ -38,7 +39,7 @@ function objectToPairs(obj) {
   return Object.entries(obj).map(([chave, valor]) => ({ chave, valor: String(valor) }))
 }
 
-function RollResultCompact({ resultado, rotulo, rolando, onClose }) {
+function RollResultCompact({ resultado, rotulo, rolando, onClose, skin }) {
   const { notacao, dados, mantidos, descartados, modificador, total } = resultado
   return (
     <div className="bg-slate-700/60 border border-purple-700/50 rounded-xl p-3 space-y-2">
@@ -63,6 +64,7 @@ function RollResultCompact({ resultado, rotulo, rolando, onClose }) {
               resultado={d.valor}
               rolando={rolando}
               descartado={d.descartado}
+              skin={skin}
             />
             {d.descartado && <span className="text-red-500 text-[9px]">desc.</span>}
           </div>
@@ -277,6 +279,7 @@ function ItemForm({ item, fichaId, donoId, onSalvar, onFechar }) {
 export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId }) {
   const { itens, loading, error, createItem, updateItem, deleteItem } = useItens(fichaId)
   const { registrarRolagem } = useRolagem()
+  const { preferencias } = usePreferencias()
   const [showForm, setShowForm] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
@@ -324,7 +327,11 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId }) {
     setRollProcessing(true)
     setRollItemId(item.id)
     setRollErro('')
-    playDiceRoll()
+    tocarSomDado(preferencias.dado_skin, {
+      ativo: preferencias.som_ativo,
+      volume: preferencias.som_volume,
+      numDados: estimarNumDados(notacao),
+    })
     try {
       const res = await registrarRolagem({
         mesaId,
@@ -497,6 +504,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId }) {
                             rotulo={rollRotulo}
                             rolando={rollRolando}
                             onClose={() => { setRollResultado(null); setRollItemId(null) }}
+                            skin={preferencias.dado_skin}
                           />
                         )}
                       </div>

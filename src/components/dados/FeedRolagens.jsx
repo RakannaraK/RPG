@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { usePreferencias } from '../../context/PreferenciasContext'
 import { playDiceNotify } from '../../lib/diceSound'
 import Dice3D from './Dice3D'
 
@@ -17,7 +18,7 @@ function tempoRelativo(ts) {
   return new Date(ts).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
 }
 
-function RolagemCard({ rolagem, animando }) {
+function RolagemCard({ rolagem, animando, ehMeu, minhaSkin }) {
   const { autor_nome, rotulo, notacao, resultados, total, created_at } = rolagem
   const dados = resultados?.dados || []
   const mantidos = resultados?.mantidos || []
@@ -38,17 +39,36 @@ function RolagemCard({ rolagem, animando }) {
       </div>
 
       <div className="flex flex-wrap gap-2 items-center">
-        {dados.map((d, i) => (
-          <div key={i} className="flex flex-col items-center gap-0.5">
-            <Dice3D
-              lados={d.lados}
-              resultado={d.valor}
-              rolando={animando}
-              descartado={d.descartado}
-            />
-            {d.descartado && <span className="text-red-500 text-[9px]">desc.</span>}
-          </div>
-        ))}
+        {ehMeu ? (
+          // Minhas rolagens: dado 3D com a minha skin
+          dados.map((d, i) => (
+            <div key={i} className="flex flex-col items-center gap-0.5">
+              <Dice3D
+                lados={d.lados}
+                resultado={d.valor}
+                rolando={animando}
+                descartado={d.descartado}
+                skin={minhaSkin}
+              />
+              {d.descartado && <span className="text-red-500 text-[9px]">desc.</span>}
+            </div>
+          ))
+        ) : (
+          // Rolagens de outros: só o resultado (valores em texto)
+          dados.map((d, i) => (
+            <span
+              key={i}
+              className={`px-2 h-8 flex items-center justify-center rounded-lg border text-sm font-bold ${
+                d.descartado
+                  ? 'bg-slate-800 border-slate-700 text-slate-500 line-through opacity-50'
+                  : 'bg-purple-950/60 border-purple-800 text-purple-100'
+              }`}
+              title={`d${d.lados}`}
+            >
+              {d.valor}
+            </span>
+          ))
+        )}
         <div className="flex items-baseline gap-1.5 ml-1">
           <span className="text-purple-400 text-xs">Total:</span>
           <span className="text-2xl font-bold text-white leading-none">{total}</span>
@@ -72,6 +92,7 @@ function RolagemCard({ rolagem, animando }) {
 
 export default function FeedRolagens({ mesaId, onNovaRolagem }) {
   const { session } = useAuth()
+  const { preferencias } = usePreferencias()
   const [rolagens, setRolagens] = useState([])
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState('')
@@ -163,6 +184,8 @@ export default function FeedRolagens({ mesaId, onNovaRolagem }) {
             key={r.id}
             rolagem={r}
             animando={animandoId === r.id}
+            ehMeu={r.autor_id === session?.user?.id}
+            minhaSkin={preferencias.dado_skin}
           />
         ))}
       </div>

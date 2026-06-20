@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import DiceRoller from './DiceRoller'
 import Dice3D from '../dados/Dice3D'
-import { playDiceRoll } from '../../lib/diceSound'
+import { tocarSomDado, estimarNumDados } from '../../lib/diceSounds'
+import { usePreferencias } from '../../context/PreferenciasContext'
 
 function formulaTexto(regra) {
   if (!regra) return ''
@@ -39,6 +40,7 @@ export default function AtributoCard({
   fontesMod,
   compact = false,
 }) {
+  const { preferencias } = usePreferencias()
   const [rolando, setRolando] = useState(false)
   const [editando, setEditando] = useState(false)
   const [valorManual, setValorManual] = useState('')
@@ -111,9 +113,13 @@ export default function AtributoCard({
     if (testando || !registrarRolagem) return
     setTestando(true)
     setErroTeste('')
-    playDiceRoll()
+    const notacao = buildNotacaoTeste(display, dadoPadrao)
+    tocarSomDado(preferencias.dado_skin, {
+      ativo: preferencias.som_ativo,
+      volume: preferencias.som_volume,
+      numDados: estimarNumDados(notacao),
+    })
     try {
-      const notacao = buildNotacaoTeste(display, dadoPadrao)
       const res = await registrarRolagem({
         mesaId,
         fichaId,
@@ -228,6 +234,7 @@ export default function AtributoCard({
                   resultado={d.valor}
                   rolando={testeRolando}
                   descartado={d.descartado}
+                  skin={preferencias.dado_skin}
                 />
               ))}
               <span className="text-white font-bold text-xl leading-none ml-1">
@@ -377,6 +384,7 @@ export default function AtributoCard({
                   resultado={d.valor}
                   rolando={testeRolando}
                   descartado={d.descartado}
+                  skin={preferencias.dado_skin}
                 />
                 {d.descartado && <span className="text-red-500 text-[9px]">desc.</span>}
               </div>

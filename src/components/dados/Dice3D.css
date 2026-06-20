@@ -94,3 +94,13 @@
 .dice-generic-rolling {
   animation: spin-flat 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
+
+/* Respeita "reduzir movimento" do sistema — animação mais curta e sutil */
+@media (prefers-reduced-motion: reduce) {
+  .dice-cube.rolling {
+    animation-duration: 0.4s;
+  }
+  .dice-generic-rolling {
+    animation-duration: 0.4s;
+  }
+}

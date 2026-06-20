@@ -7,6 +7,7 @@ import { useFichas } from '../hooks/useFicha'
 import FichaCreate from '../components/ficha/FichaCreate'
 import RoladorGenerico from '../components/dados/RoladorGenerico'
 import FeedRolagens from '../components/dados/FeedRolagens'
+import PreferenciasModal from '../components/preferencias/PreferenciasModal'
 
 const TABS = ['Fichas', 'Dados', 'Sistema', 'Membros']
 
@@ -24,6 +25,7 @@ export default function MesaPage() {
   const [copiado, setCopiado] = useState(false)
   const [showFichaCreate, setShowFichaCreate] = useState(false)
   const [novasRolagens, setNovasRolagens] = useState(0)
+  const [showPrefs, setShowPrefs] = useState(false)
 
   // delete mesa
   const [showDeleteMesa, setShowDeleteMesa] = useState(false)
@@ -175,6 +177,13 @@ export default function MesaPage() {
             }`}>
               {meuRole === 'mestre' ? 'Mestre' : 'Jogador'}
             </span>
+            <button
+              onClick={() => setShowPrefs(true)}
+              title="Preferências"
+              className="p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
+            >
+              ⚙
+            </button>
             {isCriador && (
               <button
                 onClick={() => setShowDeleteMesa(true)}
@@ -442,6 +451,8 @@ export default function MesaPage() {
           </div>
         </div>
       )}
+
+      {showPrefs && <PreferenciasModal onFechar={() => setShowPrefs(false)} />}
     </div>
   )
 }
