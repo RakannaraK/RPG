@@ -293,6 +293,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
             sistemaId={sistemaDB?.id}
             atributos={atributos}
             camposCombate={configLayout.campos_combate || []}
+            pericias={pericias}
           />
         )}
       </div>

@@ -85,5 +85,42 @@ export function useRolagem() {
     return resultado
   }
 
-  return { registrarRolagem, rolando, erro, autorNome }
+  /**
+   * Registra um EVENTO já resolvido no feed (sem rolar de novo) — usado por
+   * efeitos pontuais de habilidade como cura e vida temporária (Fase 12.4).
+   * O chamador já calculou o total (e os dados, se rolou); aqui só persiste.
+   *
+   * @param {Object} params
+   * @param {string} params.mesaId
+   * @param {string} [params.fichaId]
+   * @param {string} params.rotulo  — ex: "Cura — Segundo Fôlego"
+   * @param {string} [params.notacao] — ex: "1d10+2" ou "" para fixo
+   * @param {number} params.total   — quantidade final (curada / vida temp)
+   * @param {Array}  [params.dados] — [{lados, valor, descartado}] se houve rolagem
+   */
+  async function registrarEvento({ mesaId, fichaId = null, rotulo, notacao = '', total, dados = [] }) {
+    try {
+      const { error } = await supabase.from('rolagens').insert({
+        mesa_id: mesaId,
+        autor_id: session.user.id,
+        autor_nome: autorNome || session.user.email,
+        ficha_id: fichaId || null,
+        rotulo: rotulo || null,
+        notacao: notacao || '',
+        resultados: {
+          dados,
+          individuais: dados.map(d => d.valor),
+          mantidos: dados.filter(d => !d.descartado).map(d => d.valor),
+          descartados: dados.filter(d => d.descartado).map(d => d.valor),
+          modificador: 0,
+        },
+        total,
+      })
+      if (error) throw error
+    } catch (err) {
+      setErro(err.message || 'Erro ao registrar evento.')
+    }
+  }
+
+  return { registrarRolagem, registrarEvento, rolando, erro, autorNome }
 }

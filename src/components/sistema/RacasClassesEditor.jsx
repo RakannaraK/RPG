@@ -1,15 +1,26 @@
 import { useState } from 'react'
 import { useRacasClasses } from '../../hooks/useRacasClasses'
 import { useHabilidades } from '../../hooks/useHabilidades'
+import {
+  usaAtributoAlvo, usaCombateAlvo, usaTextoAlvo, usaValorNum, usaOperacao,
+  ehAcertoDano, ehVantagem, ehAcao, montarEfeitoPayload,
+} from '../../lib/efeitoForm'
 
+// Fase 12.5 — vocabulário ampliado de efeitos. `grupo` só organiza o dropdown.
 const TIPOS_MOD = [
-  { value: 'atributo',        label: 'Atributo',          alvoTipo: 'atributo', hasValor: true,  hasOperacao: true  },
-  { value: 'vida_max',        label: 'Vida máxima',       alvoTipo: null,       hasValor: true,  hasOperacao: true  },
-  { value: 'vida_temp',       label: 'Vida temporária',   alvoTipo: null,       hasValor: true,  hasOperacao: false },
-  { value: 'resistencia',     label: 'Resistência',       alvoTipo: 'texto',    hasValor: false, hasOperacao: false },
-  { value: 'imunidade',       label: 'Imunidade',         alvoTipo: 'texto',    hasValor: false, hasOperacao: false },
-  { value: 'vulnerabilidade', label: 'Vulnerabilidade',   alvoTipo: 'texto',    hasValor: false, hasOperacao: false },
-  { value: 'combate',         label: 'Campo de combate',  alvoTipo: 'combate',  hasValor: true,  hasOperacao: true  },
+  { value: 'atributo',        label: 'Atributo' },
+  { value: 'vida_max',        label: 'Vida máxima' },
+  { value: 'vida_temp',       label: 'Vida temporária (contínua)' },
+  { value: 'resistencia',     label: 'Resistência' },
+  { value: 'imunidade',       label: 'Imunidade' },
+  { value: 'vulnerabilidade', label: 'Vulnerabilidade' },
+  { value: 'combate',         label: 'Campo de combate' },
+  { value: 'acerto',          label: 'Acerto (ataque)' },
+  { value: 'dano',            label: 'Dano' },
+  { value: 'vantagem',        label: 'Vantagem (teste)' },
+  { value: 'desvantagem',     label: 'Desvantagem (teste)' },
+  { value: 'cura',            label: 'Cura (ação)' },
+  { value: 'vida_temp_acao',  label: 'Vida temp. (ação)' },
 ]
 
 const OPERACOES = [
@@ -18,57 +29,112 @@ const OPERACOES = [
   { value: 'multiplicar', label: '× Multiplicar' },
 ]
 
-function labelModificador(mod, atributos, camposCombate) {
+function descCondicao(mod, atributos) {
+  if (mod.condicao_tipo === 'manual') return mod.condicao_config?.rotulo || 'manual'
+  if (mod.condicao_tipo === 'auto') {
+    const c = mod.condicao_config || {}
+    if (c.metrica === 'vida_percent') return `vida ${c.operador} ${c.valor}%`
+    if (c.metrica === 'nivel') return `nível ${c.operador} ${c.valor}`
+    if (c.metrica === 'habilidade_ativa') return 'habilidade ativa'
+  }
+  return null
+}
+
+function labelModificador(mod, atributos, camposCombate, pericias = []) {
   const op = mod.operacao === 'somar' ? '+' : mod.operacao === 'definir' ? '=' : '×'
+  let base
   switch (mod.tipo) {
     case 'atributo': {
       const attr = atributos.find(a => a.id === mod.alvo)
-      return `${op}${mod.valor} em ${attr?.nome || '?'}`
+      base = `${op}${mod.valor} em ${attr?.nome || '?'}`; break
     }
-    case 'vida_max':        return `${op}${mod.valor} Vida máx.`
-    case 'vida_temp':       return `+${mod.valor} Vida temp.`
-    case 'resistencia':     return `Resistência: ${mod.alvo || '?'}`
-    case 'imunidade':       return `Imunidade: ${mod.alvo || '?'}`
-    case 'vulnerabilidade': return `Vulnerabilidade: ${mod.alvo || '?'}`
+    case 'vida_max':        base = `${op}${mod.valor} Vida máx.`; break
+    case 'vida_temp':       base = `+${mod.valor} Vida temp.`; break
+    case 'resistencia':     base = `Resistência: ${mod.alvo || '?'}`; break
+    case 'imunidade':       base = `Imunidade: ${mod.alvo || '?'}`; break
+    case 'vulnerabilidade': base = `Vulnerabilidade: ${mod.alvo || '?'}`; break
     case 'combate': {
       const campo = camposCombate.find(c => c.id === mod.alvo)
-      return `${op}${mod.valor} ${campo?.nome || '?'}`
+      base = `${op}${mod.valor} ${campo?.nome || '?'}`; break
     }
-    default: return mod.tipo
+    case 'acerto':
+    case 'dano': {
+      const partes = []
+      if (mod.valor) partes.push(`+${mod.valor}`)
+      if (mod.dados_extras) partes.push(`+${mod.dados_extras}`)
+      const escopo = mod.escopo_categoria ? ` (${mod.escopo_categoria})` : ' global'
+      base = `${mod.tipo === 'acerto' ? 'Acerto' : 'Dano'} ${partes.join(' ') || '+0'}${escopo}`; break
+    }
+    case 'vantagem':
+    case 'desvantagem': {
+      const lista = mod.valor === 'pericia' ? pericias : atributos
+      const alvoNome = lista.find(x => x.id === mod.alvo)?.nome || '?'
+      base = `${mod.tipo === 'vantagem' ? 'Vantagem' : 'Desvantagem'} em ${alvoNome}`; break
+    }
+    case 'cura':
+      base = `Cura ${mod.valor || '?'}${mod.operacao === 'continua' ? ' (contínua)' : ''}`; break
+    case 'vida_temp_acao':
+      base = `Vida temp. ${mod.valor || '?'} (ação)`; break
+    default: base = mod.tipo
   }
+  const cond = descCondicao(mod, atributos)
+  return cond ? `${base} [${cond}]` : base
 }
 
-function ModificadorForm({ onAdd, atributos, camposCombate }) {
+function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
   const [tipo, setTipo] = useState('atributo')
   const [alvo, setAlvo] = useState('')
   const [operacao, setOperacao] = useState('somar')
   const [valor, setValor] = useState('')
+  const [dadosExtras, setDadosExtras] = useState('')
+  const [escopoCategoria, setEscopoCategoria] = useState('')
+  const [vantTipoAlvo, setVantTipoAlvo] = useState('atributo')
+  const [curaModo, setCuraModo] = useState('pontual')
+  // condição
+  const [condTipo, setCondTipo] = useState('nenhuma')
+  const [condMetrica, setCondMetrica] = useState('vida_percent')
+  const [condOperador, setCondOperador] = useState('<')
+  const [condValor, setCondValor] = useState('')
+  const [condRotulo, setCondRotulo] = useState('')
+
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
 
-  const cfg = TIPOS_MOD.find(t => t.value === tipo)
-
   function handleTipoChange(novo) {
-    setTipo(novo); setAlvo(''); setValor(''); setErro('')
+    setTipo(novo); setAlvo(''); setValor(''); setDadosExtras(''); setEscopoCategoria('')
+    setVantTipoAlvo('atributo'); setCuraModo('pontual'); setErro('')
   }
 
   async function handleAdd() {
     setErro('')
-    if (cfg.alvoTipo === 'atributo' && !alvo)     { setErro('Selecione um atributo.'); return }
-    if (cfg.alvoTipo === 'combate' && !alvo)       { setErro('Selecione um campo de combate.'); return }
-    if (cfg.alvoTipo === 'texto' && !alvo.trim())  { setErro('Informe o tipo de dano (ex: fogo).'); return }
-    if (cfg.hasValor && (valor === '' || isNaN(Number(valor)))) { setErro('Informe um valor numérico válido.'); return }
+    // Validação por tipo
+    if (usaAtributoAlvo(tipo) && !alvo)  { setErro('Selecione um atributo.'); return }
+    if (usaCombateAlvo(tipo) && !alvo)   { setErro('Selecione um campo de combate.'); return }
+    if (usaTextoAlvo(tipo) && !alvo.trim()) { setErro('Informe o tipo de dano (ex: fogo).'); return }
+    if (usaValorNum(tipo) && (valor === '' || isNaN(Number(valor)))) { setErro('Informe um valor numérico válido.'); return }
+    if (ehAcertoDano(tipo) && !String(valor).trim() && !dadosExtras.trim()) { setErro('Informe um valor fixo e/ou dados extras.'); return }
+    if (ehVantagem(tipo) && !alvo) { setErro('Selecione o alvo (atributo ou perícia).'); return }
+    if (ehAcao(tipo) && !String(valor).trim()) { setErro('Informe a quantidade ou notação (ex: 2d4+2).'); return }
+    // Validação da condição
+    if (condTipo === 'auto' && condMetrica !== 'habilidade_ativa' && (condValor === '' || isNaN(Number(condValor)))) {
+      setErro('Informe o valor da condição automática.'); return
+    }
+    if (condTipo === 'manual' && !condRotulo.trim()) { setErro('Informe o rótulo da condição manual.'); return }
+
+    // Monta o payload (lógica pura — ver lib/efeitoForm.js)
+    const payload = montarEfeitoPayload({
+      tipo, alvo, operacao, valor, dadosExtras, escopoCategoria, vantTipoAlvo, curaModo,
+      condTipo, condMetrica, condOperador, condValor, condRotulo,
+    })
+
     setSalvando(true)
     try {
-      await onAdd({
-        tipo,
-        alvo: alvo.trim() || null,
-        operacao: cfg.hasOperacao ? operacao : 'somar',
-        valor: cfg.hasValor ? valor : null,
-      })
-      setAlvo(''); setValor('')
+      await onAdd(payload)
+      // limpa campos de valor mas mantém o tipo selecionado
+      setAlvo(''); setValor(''); setDadosExtras(''); setEscopoCategoria('')
+      setCondTipo('nenhuma'); setCondValor(''); setCondRotulo('')
     } catch (err) {
-      setErro(err.message || 'Erro ao adicionar modificador.')
+      setErro(err.message || 'Erro ao adicionar efeito.')
     } finally {
       setSalvando(false)
     }
@@ -78,68 +144,144 @@ function ModificadorForm({ onAdd, atributos, camposCombate }) {
 
   return (
     <div className="space-y-2 bg-slate-700/40 border border-purple-800/50 rounded-lg p-3">
-      <p className="text-purple-400 text-xs font-medium">Adicionar modificador</p>
+      <p className="text-purple-400 text-xs font-medium">Adicionar efeito</p>
       <div className="flex flex-wrap gap-2 items-center">
         <select value={tipo} onChange={e => handleTipoChange(e.target.value)} className={ic}>
           {TIPOS_MOD.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
-        {cfg.alvoTipo === 'atributo' && (
+
+        {usaAtributoAlvo(tipo) && (
           <select value={alvo} onChange={e => setAlvo(e.target.value)} className={ic}>
             <option value="">Atributo...</option>
             {atributos.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
           </select>
         )}
-        {cfg.alvoTipo === 'combate' && (
+        {usaCombateAlvo(tipo) && (
           <select value={alvo} onChange={e => setAlvo(e.target.value)} className={ic}>
             <option value="">Campo...</option>
             {camposCombate.map(c => <option key={c.id} value={c.id}>{c.nome || '(sem nome)'}</option>)}
           </select>
         )}
-        {cfg.alvoTipo === 'texto' && (
+        {usaTextoAlvo(tipo) && (
           <input type="text" value={alvo} onChange={e => setAlvo(e.target.value)}
             placeholder="Tipo de dano (ex: fogo)" className={`${ic} w-40`} />
         )}
-        {cfg.hasOperacao && (
+        {usaOperacao(tipo) && (
           <select value={operacao} onChange={e => setOperacao(e.target.value)} className={ic}>
             {OPERACOES.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         )}
-        {cfg.hasValor && (
+        {usaValorNum(tipo) && (
           <input type="number" value={valor} onChange={e => setValor(e.target.value)}
             placeholder="Valor" className={`${ic} w-16 text-center`} />
         )}
+
+        {/* Acerto / Dano */}
+        {ehAcertoDano(tipo) && (
+          <>
+            <input type="number" value={valor} onChange={e => setValor(e.target.value)}
+              placeholder="Fixo" className={`${ic} w-16 text-center`} title="Bônus fixo (opcional)" />
+            <input type="text" value={dadosExtras} onChange={e => setDadosExtras(e.target.value)}
+              placeholder="Dados extras (ex: 1d6)" className={`${ic} w-32`} />
+            <input type="text" value={escopoCategoria} onChange={e => setEscopoCategoria(e.target.value)}
+              placeholder="Categoria (vazio = global)" className={`${ic} w-44`}
+              title="Categoria de ação — vazio aplica a tudo" />
+          </>
+        )}
+
+        {/* Vantagem / Desvantagem */}
+        {ehVantagem(tipo) && (
+          <>
+            <select value={vantTipoAlvo} onChange={e => { setVantTipoAlvo(e.target.value); setAlvo('') }} className={ic}>
+              <option value="atributo">Atributo</option>
+              <option value="pericia">Perícia</option>
+            </select>
+            <select value={alvo} onChange={e => setAlvo(e.target.value)} className={ic}>
+              <option value="">{vantTipoAlvo === 'pericia' ? 'Perícia...' : 'Atributo...'}</option>
+              {(vantTipoAlvo === 'pericia' ? pericias : atributos).map(x => (
+                <option key={x.id} value={x.id}>{x.nome}</option>
+              ))}
+            </select>
+          </>
+        )}
+
+        {/* Cura / Vida temp ação */}
+        {ehAcao(tipo) && (
+          <>
+            <input type="text" value={valor} onChange={e => setValor(e.target.value)}
+              placeholder="Qtd ou notação (ex: 2d4+2)" className={`${ic} w-40`} />
+            <select value={curaModo} onChange={e => setCuraModo(e.target.value)} className={ic}>
+              <option value="pontual">Pontual (botão)</option>
+              <option value="continua">Contínua</option>
+            </select>
+          </>
+        )}
+
         <button onClick={handleAdd} disabled={salvando}
           className="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors">
           {salvando ? '...' : '+ Adicionar'}
         </button>
       </div>
+
+      {/* Condição */}
+      <div className="flex flex-wrap gap-2 items-center border-t border-purple-900/50 pt-2">
+        <span className="text-purple-500 text-[11px]">Condição:</span>
+        <select value={condTipo} onChange={e => setCondTipo(e.target.value)} className={ic}>
+          <option value="nenhuma">Nenhuma</option>
+          <option value="auto">Automática</option>
+          <option value="manual">Manual (situacional)</option>
+        </select>
+        {condTipo === 'auto' && (
+          <>
+            <select value={condMetrica} onChange={e => setCondMetrica(e.target.value)} className={ic}>
+              <option value="vida_percent">Vida %</option>
+              <option value="nivel">Nível</option>
+            </select>
+            <select value={condOperador} onChange={e => setCondOperador(e.target.value)} className={ic}>
+              <option value="<">&lt;</option>
+              <option value="<=">≤</option>
+              <option value=">">&gt;</option>
+              <option value=">=">≥</option>
+              <option value="==">=</option>
+            </select>
+            <input type="number" value={condValor} onChange={e => setCondValor(e.target.value)}
+              placeholder={condMetrica === 'vida_percent' ? '50' : '5'} className={`${ic} w-16 text-center`} />
+            {condMetrica === 'vida_percent' && <span className="text-purple-500 text-[11px]">%</span>}
+          </>
+        )}
+        {condTipo === 'manual' && (
+          <input type="text" value={condRotulo} onChange={e => setCondRotulo(e.target.value)}
+            placeholder="Rótulo (ex: Contra mortos-vivos)" className={`${ic} w-56`} />
+        )}
+      </div>
+
       {erro && <p className="text-red-400 text-[11px]">{erro}</p>}
     </div>
   )
 }
 
-function ModificadoresExpandido({ modificadores, onAddMod, onRemoveMod, atributos, camposCombate }) {
+function ModificadoresExpandido({ modificadores, onAddMod, onRemoveMod, atributos, camposCombate, pericias = [] }) {
   return (
     <div className="border-t border-purple-900 p-4 space-y-3">
-      <p className="text-purple-500 text-xs font-medium uppercase tracking-wider">Modificadores</p>
+      <p className="text-purple-500 text-xs font-medium uppercase tracking-wider">Efeitos</p>
       {modificadores.length === 0 ? (
-        <p className="text-purple-600 text-xs">Nenhum modificador ainda.</p>
+        <p className="text-purple-600 text-xs">Nenhum efeito ainda.</p>
       ) : (
         <div className="flex flex-wrap gap-1.5">
           {modificadores.map(mod => (
             <div key={mod.id}
               className="flex items-center gap-1.5 bg-purple-900/40 border border-purple-700/50 rounded-lg pl-2.5 pr-1.5 py-1">
               <span className="text-purple-200 text-xs font-medium">
-                {labelModificador(mod, atributos, camposCombate)}
+                {labelModificador(mod, atributos, camposCombate, pericias)}
               </span>
               <button onClick={() => onRemoveMod(mod.id)}
                 className="text-red-600 hover:text-red-400 text-xs transition-colors leading-none"
-                title="Remover modificador">✕</button>
+                title="Remover efeito">✕</button>
             </div>
           ))}
         </div>
       )}
-      <ModificadorForm onAdd={onAddMod} atributos={atributos} camposCombate={camposCombate} />
+      <ModificadorForm onAdd={onAddMod} atributos={atributos} camposCombate={camposCombate} pericias={pericias} />
     </div>
   )
 }
@@ -153,7 +295,7 @@ const INP = 'w-full px-3 py-1.5 rounded-lg bg-purple-950 border border-purple-70
 
 // Card compartilhado: usado tanto dentro da seção da raça/classe quanto na seção de avulsas.
 // Não expõe seletor de raça/classe no formulário de edição — vínculo é gerenciado pelo contexto.
-function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, onUpdate, onDelete, onAddMod, onRemoveMod }) {
+function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericias = [], onUpdate, onDelete, onAddMod, onRemoveMod }) {
   const [expandido, setExpandido] = useState(false)
   const [editando, setEditando] = useState(false)
   const [editNome, setEditNome] = useState('')
@@ -292,6 +434,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, onUpdat
           onRemoveMod={onRemoveMod}
           atributos={atributos}
           camposCombate={camposCombate}
+          pericias={pericias}
         />
       )}
     </div>
@@ -301,7 +444,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, onUpdat
 // Seção de habilidades vinculadas que aparece dentro do card expandido de uma raça ou classe.
 function HabilidadesVinculadas({
   parentId, parentTipo,
-  habilidades, atributos, camposCombate,
+  habilidades, atributos, camposCombate, pericias = [],
   onCreate, onUpdate, onDelete, onAddMod, onRemoveMod,
 }) {
   const [addingNew, setAddingNew] = useState(false)
@@ -414,6 +557,7 @@ function HabilidadesVinculadas({
           habilidade={h}
           atributos={atributos}
           camposCombate={camposCombate}
+          pericias={pericias}
           onUpdate={onUpdate}
           onDelete={onDelete}
           onAddMod={mod => onAddMod({ habilidade_id: h.id, ...mod })}
@@ -431,7 +575,7 @@ function HabilidadesVinculadas({
 function ItemCard({
   item, parentTipo,
   onUpdate, onDelete, onAddMod, onRemoveMod,
-  atributos, camposCombate,
+  atributos, camposCombate, pericias = [],
   habilidades, onCreateHabilidade, onUpdateHabilidade, onDeleteHabilidade,
   onAddHabilidadeMod, onRemoveHabilidadeMod,
 }) {
@@ -522,6 +666,7 @@ function ItemCard({
             onRemoveMod={onRemoveMod}
             atributos={atributos}
             camposCombate={camposCombate}
+            pericias={pericias}
           />
           <HabilidadesVinculadas
             parentId={item.id}
@@ -529,6 +674,7 @@ function ItemCard({
             habilidades={habilidades}
             atributos={atributos}
             camposCombate={camposCombate}
+            pericias={pericias}
             onCreate={onCreateHabilidade}
             onUpdate={onUpdateHabilidade}
             onDelete={onDeleteHabilidade}
@@ -544,7 +690,7 @@ function ItemCard({
 function SecaoRacaClasse({
   titulo, descTipo, itens, parentTipo,
   onCreate, onUpdate, onDelete, onAddMod, onRemoveMod,
-  atributos, camposCombate,
+  atributos, camposCombate, pericias = [],
   habilidades, onCreateHabilidade, onUpdateHabilidade, onDeleteHabilidade,
   onAddHabilidadeMod, onRemoveHabilidadeMod,
 }) {
@@ -627,6 +773,7 @@ function SecaoRacaClasse({
               onRemoveMod={onRemoveMod}
               atributos={atributos}
               camposCombate={camposCombate}
+              pericias={pericias}
               habilidades={habilidades}
               onCreateHabilidade={onCreateHabilidade}
               onUpdateHabilidade={onUpdateHabilidade}
@@ -645,7 +792,7 @@ function SecaoRacaClasse({
 // Habilidades avulsas (sem raça nem classe)
 // ──────────────────────────────────────────────────────────
 
-function SecaoHabilidades({ habilidades, atributos, camposCombate, onCreate, onUpdate, onDelete, onAddMod, onRemoveMod }) {
+function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = [], onCreate, onUpdate, onDelete, onAddMod, onRemoveMod }) {
   const avulsas = habilidades.filter(h => !h.raca_id && !h.classe_id)
 
   const [addingNew, setAddingNew] = useState(false)
@@ -763,6 +910,7 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, onCreate, onU
               habilidade={h}
               atributos={atributos}
               camposCombate={camposCombate}
+              pericias={pericias}
               onUpdate={onUpdate}
               onDelete={onDelete}
               onAddMod={mod => onAddMod({ habilidade_id: h.id, ...mod })}
@@ -777,7 +925,7 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, onCreate, onU
 
 // ──────────────────────────────────────────────────────────
 
-export default function RacasClassesEditor({ sistemaId, atributos, camposCombate }) {
+export default function RacasClassesEditor({ sistemaId, atributos, camposCombate, pericias = [] }) {
   const {
     racas, classes, loading, error,
     createRaca, updateRaca, deleteRaca,
@@ -812,6 +960,7 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
   }
 
   const atributosSalvos = atributos.filter(a => a.id && !a.id.startsWith('temp_'))
+  const periciasSalvas = pericias.filter(p => p.id && !p.id.startsWith('temp_'))
 
   // Após deletar raça/classe, o CASCADE do banco remove as habilidades vinculadas.
   // Fazemos refetch para sincronizar o estado local.
@@ -839,6 +988,7 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
         onRemoveMod={removeModificador}
         atributos={atributosSalvos}
         camposCombate={camposCombate}
+        pericias={periciasSalvas}
         habilidades={habilidades}
         onCreateHabilidade={createHabilidade}
         onUpdateHabilidade={updateHabilidade}
@@ -861,6 +1011,7 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
         onRemoveMod={removeModificador}
         atributos={atributosSalvos}
         camposCombate={camposCombate}
+        pericias={periciasSalvas}
         habilidades={habilidades}
         onCreateHabilidade={createHabilidade}
         onUpdateHabilidade={updateHabilidade}
@@ -875,6 +1026,7 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
         habilidades={habilidades}
         atributos={atributosSalvos}
         camposCombate={camposCombate}
+        pericias={periciasSalvas}
         onCreate={createHabilidade}
         onUpdate={updateHabilidade}
         onDelete={deleteHabilidade}

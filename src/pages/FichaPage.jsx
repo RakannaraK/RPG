@@ -6,8 +6,10 @@ import { useSistema } from '../hooks/useSistema'
 import { useRolagem } from '../hooks/useRolagem'
 import { supabase } from '../lib/supabase'
 import { mergeConfigLayout } from '../lib/sistemaDefaults'
-import { coletarModificadores, calcularValoresFinais, agregarDefesas } from '../lib/modifierEngine'
+import { coletarModificadores, calcularValoresFinais, agregarDefesas, listarCondicoesManuais } from '../lib/modifierEngine'
+import { validarNotacao, rolarNotacao } from '../lib/diceNotation'
 import { useHabilidadesFicha } from '../hooks/useHabilidadesFicha'
+import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
 import CabecalhoPersonagem from '../components/ficha/layout/CabecalhoPersonagem'
 import FaixaAtributos from '../components/ficha/layout/FaixaAtributos'
 import PainelCombate from '../components/ficha/layout/PainelCombate'
@@ -25,7 +27,7 @@ export default function FichaPage() {
   const { ficha, valoresAtributos, loading, error, refetch } = useFicha(fichaId)
   const { sistema, pericias: periciasDoSistema, racas, classes, habilidades } = useSistema(mesaId)
   const { updateValorAtributo, updateFicha } = useUpdateFicha()
-  const { registrarRolagem } = useRolagem()
+  const { registrarRolagem, registrarEvento } = useRolagem()
   const {
     habilidadesFicha,
     toggleHabilidade,
@@ -35,6 +37,7 @@ export default function FichaPage() {
     sincronizarOrigem,
     recuperarRecursos,
   } = useHabilidadesFicha(fichaId, habilidades)
+  const { condicoesManuais, toggleCondicao } = useCondicoesManuais(fichaId)
 
   // Estado local de raça/classe para recálculo imediato sem esperar refetch
   const [racaId, setRacaId] = useState(null)
@@ -118,7 +121,32 @@ export default function FichaPage() {
   // Motor de modificadores
   const racaAtiva = racas.find(r => r.id === racaId) || null
   const classeAtiva = classes.find(c => c.id === classeId) || null
-  const modificadoresAtivos = coletarModificadores({ raca: racaAtiva, classe: classeAtiva, habilidadesFicha })
+  // Estado da ficha para condições automáticas (Fase 12). Usa vida_max BASE
+  // (hp_maximo) no cálculo de % para evitar dependência circular com o motor.
+  const habilidadesAtivasIds = new Set(
+    habilidadesFicha
+      .filter(hf => hf.habilidade && (hf.habilidade.tipo === 'passiva' || hf.ativa === true))
+      .map(hf => hf.habilidade.id)
+  )
+  const estadoFicha = {
+    vida_atual: ficha.hp_atual ?? 0,
+    vida_max: ficha.hp_maximo ?? 0,
+    nivel: ficha.nivel ?? 1,
+    habilidadesAtivas: habilidadesAtivasIds,
+  }
+  const modificadoresAtivos = coletarModificadores({
+    raca: racaAtiva,
+    classe: classeAtiva,
+    habilidadesFicha,
+    estadoFicha,
+    condicoesManuais,
+  })
+  // 12.6 — interruptores situacionais: todos os mods de condição manual em jogo
+  const condicoesManuaisDisponiveis = listarCondicoesManuais({
+    raca: racaAtiva,
+    classe: classeAtiva,
+    habilidadesFicha,
+  })
   const baseMotor = {
     atributos: Object.fromEntries(
       valoresAtributos.filter(va => va.atributo?.id).map(va => [va.atributo.id, va.valor ?? 0])
@@ -128,6 +156,52 @@ export default function FichaPage() {
   }
   const valoresFinais = calcularValoresFinais(baseMotor, modificadoresAtivos)
   const defesas = agregarDefesas(modificadoresAtivos)
+
+  // 12.7 — mapa id→nome para resumos legíveis (atributos, perícias, combate)
+  const nomesAlvos = {}
+  valoresAtributos.forEach(va => { if (va.atributo?.id) nomesAlvos[va.atributo.id] = va.atributo.nome })
+  ;(periciasDoSistema || []).forEach(p => { if (p?.id) nomesAlvos[p.id] = p.nome })
+  ;(camposCombate || []).forEach(c => { if (c?.id) nomesAlvos[c.id] = c.nome })
+
+  // 12.4 — usa um efeito pontual (cura ou vida_temp_acao) de uma habilidade:
+  // rola se for notação, aplica à vida e registra no feed.
+  async function handleUsarAcao(mod, nomeHab) {
+    const valorStr = (mod.valor ?? '').toString().trim()
+    let total = 0
+    let dados = []
+    if (valorStr && /\dd\d/i.test(valorStr) && validarNotacao(valorStr)) {
+      const r = rolarNotacao(valorStr)
+      total = r.total
+      dados = r.dados
+    } else {
+      total = Number(valorStr) || 0
+    }
+    if (total <= 0) return
+
+    try {
+      if (mod.tipo === 'cura') {
+        const max = valoresFinais.vida_max || ficha.hp_maximo || 0
+        const atual = ficha.hp_atual ?? 0
+        const novo = max > 0 ? Math.min(max, atual + total) : atual + total
+        await updateFicha(fichaId, { hp_atual: novo })
+      } else if (mod.tipo === 'vida_temp_acao') {
+        // Vida temporária não acumula: fica a maior
+        const novoTemp = Math.max(ficha.vida_temp_atual ?? 0, total)
+        await updateFicha(fichaId, { vida_temp_atual: novoTemp })
+      }
+      await registrarEvento({
+        mesaId,
+        fichaId,
+        rotulo: `${mod.tipo === 'cura' ? 'Cura' : 'Vida temporária'} — ${nomeHab}`,
+        notacao: dados.length ? valorStr : '',
+        total,
+        dados,
+      })
+      refetch()
+    } catch {
+      // erro silenciado — a vida não muda se falhar
+    }
+  }
 
   const hasLeft = secoes.pericias || secoes.proficiencias
   const hasRight = secoes.combate || secoes.defesas || secoes.imagens
@@ -183,6 +257,7 @@ export default function FichaPage() {
           onClasseChange={handleClasseChange}
           vidaMaxFinal={valoresFinais.vida_max}
           vidaTemp={valoresFinais.vida_temp}
+          vidaTempPontual={ficha.vida_temp_atual ?? 0}
         />
 
         {/* Faixa de atributos */}
@@ -196,6 +271,7 @@ export default function FichaPage() {
           valoresFinaisMotor={valoresFinais.atributos}
           detalhamentoMotor={valoresFinais.detalhamento}
           onSaveValor={handleSaveValor}
+          modificadoresAtivos={modificadoresAtivos}
         />
 
         {/* Layout de 3 colunas */}
@@ -212,6 +288,7 @@ export default function FichaPage() {
                   valoresAtributos={valoresAtributos}
                   mesaId={mesaId}
                   dadoPadrao={dadoPadrao}
+                  modificadoresAtivos={modificadoresAtivos}
                 />
               )}
               {secoes.proficiencias && (
@@ -242,6 +319,12 @@ export default function FichaPage() {
               onAjustarRecurso={ajustarRecurso}
               onRecuperarRecursos={recuperarRecursos}
               valoresFinais={valoresFinais}
+              modificadoresAtivos={modificadoresAtivos}
+              onUsarAcaoHabilidade={handleUsarAcao}
+              condicoesManuais={condicoesManuais}
+              condicoesManuaisDisponiveis={condicoesManuaisDisponiveis}
+              onToggleCondicao={toggleCondicao}
+              nomesAlvos={nomesAlvos}
             />
           </div>
 

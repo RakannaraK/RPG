@@ -82,13 +82,17 @@ export function useHabilidades(sistemaId) {
     setHabilidades(prev => prev.filter(h => h.id !== id))
   }
 
-  async function addModificador({ habilidade_id, tipo, alvo, operacao, valor }) {
+  async function addModificador({ habilidade_id, tipo, alvo, operacao, valor, dados_extras, escopo_categoria, condicao_tipo, condicao_config }) {
     const payload = {
       habilidade_id,
       tipo,
       alvo: alvo || null,
       operacao: operacao || 'somar',
       valor: valor !== undefined && valor !== null && valor !== '' ? String(valor) : null,
+      dados_extras: dados_extras || null,
+      escopo_categoria: escopo_categoria || null,
+      condicao_tipo: condicao_tipo || null,
+      condicao_config: condicao_config || null,
     }
     const { data, error } = await supabase.from('modificadores').insert(payload).select().single()
     if (error) throw error

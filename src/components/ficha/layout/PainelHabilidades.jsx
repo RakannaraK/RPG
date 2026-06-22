@@ -54,6 +54,152 @@ function OrigemBadge({ origem }) {
   return null
 }
 
+// Botões de efeitos pontuais (cura / vida temporária) da habilidade — Fase 12.4
+function AcoesPontuais({ hf, onUsarAcao, isDono }) {
+  if (!isDono || !onUsarAcao) return null
+  const mods = (hf.habilidade?.modificadores || []).filter(
+    m => (m.tipo === 'cura' || m.tipo === 'vida_temp_acao') && m.operacao !== 'continua'
+  )
+  if (mods.length === 0) return null
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-2">
+      {mods.map(m => {
+        const ehCura = m.tipo === 'cura'
+        const valor = (m.valor ?? '').toString().trim() || '0'
+        return (
+          <button
+            key={m.id}
+            onClick={() => onUsarAcao(m, hf.habilidade.nome)}
+            className={`px-2 py-1 text-xs rounded-lg text-white transition-colors ${
+              ehCura ? 'bg-green-700 hover:bg-green-600' : 'bg-sky-700 hover:bg-sky-600'
+            }`}
+          >
+            {ehCura ? `💚 Curar ${valor}` : `🛡 +${valor} vida temp`}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+// Descrição curta e legível do efeito de um modificador (Fase 12.7). Resolve o
+// alvo (id de atributo/perícia/combate) para nome via `nomes` quando possível.
+function descreverEfeito(m, nomes = {}) {
+  const sinal = m.operacao === 'multiplicar' ? '×' : m.operacao === 'definir' ? '=' : '+'
+  const v = (m.valor ?? '').toString().trim()
+  const extra = (m.dados_extras ?? '').toString().trim()
+  const alvoTxt = (m.alvo ?? '').toString().trim()
+  const nomeAlvo = nomes[m.alvo] || alvoTxt
+  // acerto/dano: valor é bônus fixo, dados_extras são dados adicionais — ambos somam
+  const comSinal = n => (n.startsWith('-') || n.startsWith('+') ? n : `+${n}`)
+  const acDano = [v && comSinal(v), extra && comSinal(extra)].filter(Boolean).join(' ')
+  switch (m.tipo) {
+    case 'acerto':          return `Acerto ${acDano}`.trim()
+    case 'dano':            return `Dano ${acDano}`.trim()
+    case 'resistencia':     return `Resistência: ${alvoTxt || v}`
+    case 'imunidade':       return `Imunidade: ${alvoTxt || v}`
+    case 'vulnerabilidade': return `Vulnerabilidade: ${alvoTxt || v}`
+    case 'vantagem':        return `Vantagem${nomeAlvo ? ` em ${nomeAlvo}` : ''}`
+    case 'desvantagem':     return `Desvantagem${nomeAlvo ? ` em ${nomeAlvo}` : ''}`
+    case 'vida_max':        return `Vida máx ${sinal}${v}`
+    case 'vida_temp':       return `Vida temp +${v}`
+    case 'cura':            return `Cura ${v}`
+    case 'vida_temp_acao':  return `Vida temp ${v}`
+    case 'atributo':        return `${nomeAlvo || 'Atributo'} ${sinal}${v}`
+    case 'combate':         return `${nomeAlvo || 'Combate'} ${sinal}${v}`
+    default:                return m.tipo
+  }
+}
+
+// Texto curto da condição de um modificador (auto/manual), ou null se incondicional.
+function descreverCondicao(m) {
+  if (m.condicao_tipo === 'manual') return (m.condicao_config?.rotulo || '').trim() || 'manual'
+  if (m.condicao_tipo === 'auto') {
+    const c = m.condicao_config || {}
+    if (c.metrica === 'vida_percent')    return `se vida ${c.operador || ''} ${c.valor}%`
+    if (c.metrica === 'nivel')           return `se nível ${c.operador || ''} ${c.valor}`
+    if (c.metrica === 'habilidade_ativa') return 'se habilidade ativa'
+    return 'condicional'
+  }
+  return null
+}
+
+// Resumo legível dos efeitos de uma habilidade na ficha (Fase 12.7). Efeitos
+// condicionais ganham um ponto verde (condição satisfeita agora) ou cinza
+// (suprimido), dando feedback quando um bônus entra/sai sozinho.
+function ResumoEfeitos({ modificadores = [], idsAtivos, nomes = {}, emJogo }) {
+  if (!modificadores || modificadores.length === 0) return null
+  return (
+    <div className="flex flex-wrap gap-1 mt-1.5">
+      {modificadores.map(m => {
+        const cond = descreverCondicao(m)
+        const ativo = emJogo && idsAtivos?.has(m.id)
+        const base = cond
+          ? (ativo
+              ? 'bg-green-900/30 border-green-700/60 text-green-300'
+              : 'bg-slate-800 border-purple-900/60 text-purple-500')
+          : 'bg-slate-700/50 border-purple-800/50 text-purple-300'
+        return (
+          <span
+            key={m.id}
+            className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md border ${base}`}
+            title={cond ? (ativo ? 'Ativo agora' : 'Inativo — condição não satisfeita') : undefined}
+          >
+            {cond && (
+              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${ativo ? 'bg-green-400' : 'bg-slate-500'}`} />
+            )}
+            {descreverEfeito(m, nomes)}
+            {cond && <span className="text-purple-600">· {cond}</span>}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
+// Fase 12.6 — interruptores situacionais (modificadores com condição manual)
+function CondicoesManuais({ condicoes, estado, onToggle, isDono, nomes = {} }) {
+  if (!condicoes || condicoes.length === 0) return null
+  return (
+    <div className="space-y-2">
+      <p className="text-purple-400 text-xs font-medium uppercase tracking-wider">Condições situacionais</p>
+      {condicoes.map(m => {
+        const ativa = estado?.[m.id] === true
+        const rotulo = (m.condicao_config?.rotulo || '').trim() || 'Condição'
+        return (
+          <div
+            key={m.id}
+            className={`rounded-xl border px-4 py-2.5 transition-colors duration-200 ${
+              ativa ? 'bg-slate-800 border-amber-600/70' : 'bg-slate-900/40 border-purple-900/50'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              {isDono ? (
+                <Toggle ativa={ativa} onChange={novo => onToggle(m.id, novo)} />
+              ) : (
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full shrink-0 ${
+                  ativa
+                    ? 'bg-green-900/60 border border-green-700/60 text-green-300'
+                    : 'bg-slate-700 border border-slate-600 text-slate-400'
+                }`}>
+                  {ativa ? 'Ativa' : 'Inativa'}
+                </span>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-medium ${ativa ? 'text-amber-200' : 'text-purple-400'}`}>{rotulo}</p>
+                <p className="text-purple-500 text-xs mt-0.5 truncate">
+                  {descreverEfeito(m, nomes)}
+                  {m._fonte && <span className="text-purple-700"> · {m._fonte}</span>}
+                </p>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function PainelHabilidades({
   habilidades = [],
   habilidadesFicha = [],
@@ -63,10 +209,20 @@ export default function PainelHabilidades({
   onRemover,
   onAjustarRecurso,
   onRecuperarRecursos,
+  onUsarAcao,
+  condicoesManuais = {},
+  condicoesManuaisDisponiveis = [],
+  onToggleCondicao,
+  modificadoresAtivos = [],
+  nomesAlvos = {},
 }) {
   const [selecionada, setSelecionada] = useState('')
   const [adicionando, setAdicionando] = useState(false)
   const [addErro, setAddErro] = useState('')
+
+  // 12.7 — ids dos modificadores atualmente em vigor (pós-filtro de condição),
+  // para marcar quais efeitos condicionais estão ativos agora.
+  const idsAtivos = new Set(modificadoresAtivos.map(m => m.id))
 
   const passivas   = habilidadesFicha.filter(hf => hf.habilidade?.tipo === 'passiva')
   const ativaveis  = habilidadesFicha.filter(hf => hf.habilidade?.tipo === 'ativavel')
@@ -89,7 +245,7 @@ export default function PainelHabilidades({
     }
   }
 
-  if (habilidadesFicha.length === 0 && habilidades.length === 0) {
+  if (habilidadesFicha.length === 0 && habilidades.length === 0 && condicoesManuaisDisponiveis.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-purple-500 text-sm">Nenhuma habilidade configurada no sistema.</p>
@@ -145,6 +301,13 @@ export default function PainelHabilidades({
                       <p className="text-purple-500 text-xs mt-0.5">{hab.descricao}</p>
                     )}
                     <RecursoCounter hf={hf} onAjustar={onAjustarRecurso} isDono={isDono} />
+                    <ResumoEfeitos
+                      modificadores={hab.modificadores}
+                      idsAtivos={idsAtivos}
+                      nomes={nomesAlvos}
+                      emJogo={hf.ativa}
+                    />
+                    <AcoesPontuais hf={hf} onUsarAcao={onUsarAcao} isDono={isDono} />
                   </div>
                   {isDono && hf.origem === 'manual' && (
                     <button
@@ -181,6 +344,13 @@ export default function PainelHabilidades({
                     {hab.descricao && (
                       <p className="text-purple-500 text-xs mt-0.5">{hab.descricao}</p>
                     )}
+                    <ResumoEfeitos
+                      modificadores={hab.modificadores}
+                      idsAtivos={idsAtivos}
+                      nomes={nomesAlvos}
+                      emJogo={true}
+                    />
+                    <AcoesPontuais hf={hf} onUsarAcao={onUsarAcao} isDono={isDono} />
                   </div>
                   {isDono && hf.origem === 'manual' && (
                     <button
@@ -196,8 +366,17 @@ export default function PainelHabilidades({
         </div>
       )}
 
+      {/* Condições situacionais (Fase 12.6) */}
+      <CondicoesManuais
+        condicoes={condicoesManuaisDisponiveis}
+        estado={condicoesManuais}
+        onToggle={onToggleCondicao}
+        isDono={isDono}
+        nomes={nomesAlvos}
+      />
+
       {/* Estado vazio */}
-      {habilidadesFicha.length === 0 && (
+      {habilidadesFicha.length === 0 && condicoesManuaisDisponiveis.length === 0 && (
         <div className="text-center py-5 border border-dashed border-purple-900 rounded-xl">
           <p className="text-purple-600 text-sm">Nenhuma habilidade nesta ficha.</p>
           {isDono && disponíveis.length > 0 && (

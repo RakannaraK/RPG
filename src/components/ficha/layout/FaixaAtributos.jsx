@@ -10,6 +10,7 @@ export default function FaixaAtributos({
   valoresFinaisMotor,
   detalhamentoMotor,
   onSaveValor,
+  modificadoresAtivos = [],
 }) {
   if (!valoresAtributos || valoresAtributos.length === 0) {
     return (
@@ -47,6 +48,7 @@ export default function FaixaAtributos({
                 ? detalhamentoMotor.atributos[va.atributo.id].fontes
                 : undefined
             }
+            modificadoresAtivos={modificadoresAtivos}
             compact
           />
         ))}

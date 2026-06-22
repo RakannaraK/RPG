@@ -14,6 +14,7 @@ export default function CabecalhoPersonagem({
   onClasseChange,
   vidaMaxFinal,
   vidaTemp = 0,
+  vidaTempPontual = 0,
 }) {
   const { updateFicha } = useUpdateFicha()
   const [hpAtual, setHpAtual] = useState(ficha.hp_atual ?? '')
@@ -55,6 +56,17 @@ export default function CabecalhoPersonagem({
 
   async function salvarTextoLegado(campo, valor) {
     try { await updateFicha(ficha.id, { [campo]: valor || null }) } catch {}
+  }
+
+  // Vida temporária efetiva: não acumula, fica a maior entre a pontual
+  // (armazenada, Fase 12.4) e a contínua (do motor de modificadores).
+  const vidaTempEfetiva = Math.max(Number(vidaTemp) || 0, Number(vidaTempPontual) || 0)
+
+  async function limparVidaTemp() {
+    try {
+      await updateFicha(ficha.id, { vida_temp_atual: 0 })
+      onRefetch()
+    } catch {}
   }
 
   const hpNum = Number(hpAtual || 0)
@@ -228,9 +240,18 @@ export default function CabecalhoPersonagem({
               </div>
             )}
 
-            {vidaTemp > 0 && (
-              <p className="text-sky-400 text-xs mt-1.5 font-medium">
-                +{vidaTemp} Vida Temporária
+            {vidaTempEfetiva > 0 && (
+              <p className="text-sky-400 text-xs mt-1.5 font-medium flex items-center gap-1.5">
+                +{vidaTempEfetiva} Vida Temporária
+                {isDono && vidaTempPontual > 0 && (
+                  <button
+                    onClick={limparVidaTemp}
+                    className="text-sky-600 hover:text-sky-300 transition-colors"
+                    title="Limpar vida temporária"
+                  >
+                    ✕
+                  </button>
+                )}
               </p>
             )}
           </div>

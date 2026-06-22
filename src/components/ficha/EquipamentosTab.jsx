@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useItens } from '../../hooks/useItens'
 import { useRolagem } from '../../hooks/useRolagem'
-import { validarNotacao } from '../../lib/diceNotation'
+import { validarNotacao, resolverNotacao } from '../../lib/diceNotation'
+import { montarNotacaoComModificadores } from '../../lib/rollModifiers'
 import { tocarSomDado, estimarNumDados } from '../../lib/diceSounds'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import { redimensionarImagem } from '../../lib/imageUtils'
@@ -39,8 +40,9 @@ function objectToPairs(obj) {
   return Object.entries(obj).map(([chave, valor]) => ({ chave, valor: String(valor) }))
 }
 
-function RollResultCompact({ resultado, rotulo, rolando, onClose, skin }) {
+function RollResultCompact({ resultado, rotulo, rolando, onClose, skin, detalhamento }) {
   const { notacao, dados, mantidos, descartados, modificador, total } = resultado
+  const extras = (detalhamento || []).filter(d => d.fonte)
   return (
     <div className="bg-slate-700/60 border border-purple-700/50 rounded-xl p-3 space-y-2">
       <div className="flex items-center justify-between">
@@ -83,6 +85,17 @@ function RollResultCompact({ resultado, rotulo, rolando, onClose, skin }) {
       )}
       {descartados.length > 0 && (
         <p className="text-red-500 text-xs">descartados: {descartados.join(', ')}</p>
+      )}
+      {extras.length > 0 && (
+        <p className="text-purple-500 text-[10px] leading-tight">
+          {extras.map((d, i) => (
+            <span key={i}>
+              {i > 0 && ' · '}
+              {d.fonte}: {d.tipo === 'dados' ? d.valor : (d.valor > 0 ? `+${d.valor}` : d.valor)}
+              {d.escopo ? ` (${d.escopo})` : ''}
+            </span>
+          ))}
+        </p>
       )}
     </div>
   )
@@ -276,7 +289,7 @@ function ItemForm({ item, fichaId, donoId, onSalvar, onFechar }) {
   )
 }
 
-export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId }) {
+export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [] }) {
   const { itens, loading, error, createItem, updateItem, deleteItem } = useItens(fichaId)
   const { registrarRolagem } = useRolagem()
   const { preferencias } = usePreferencias()
@@ -287,6 +300,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId }) {
 
   const [rollResultado, setRollResultado] = useState(null)
   const [rollRotulo, setRollRotulo] = useState('')
+  const [rollDetalhamento, setRollDetalhamento] = useState(null)
   const [rollRolando, setRollRolando] = useState(false)
   const [rollProcessing, setRollProcessing] = useState(false)
   const [rollItemId, setRollItemId] = useState(null)
@@ -317,12 +331,19 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId }) {
 
   async function handleRolarItem(item, campo) {
     if (rollProcessing) return
-    const notacao = String(item.atributos_extras?.[campo] || '')
-    if (!validarNotacao(notacao)) {
+    const notacaoBase = resolverNotacao(String(item.atributos_extras?.[campo] || ''), valoresFinais)
+    if (!validarNotacao(notacaoBase)) {
       setRollItemId(item.id)
-      setRollErro(`Notação inválida: "${notacao}". Ex: 1d8+4, 1d20+5`)
+      setRollErro(`Notação inválida: "${notacaoBase}". Ex: 1d8+4, 1d20+5`)
       return
     }
+    // Aplica modificadores de acerto/dano ativos (globais + categoria da arma) — Fase 12.2
+    const { notacaoFinal, detalhamento } = montarNotacaoComModificadores({
+      tipo: campo === 'dano' ? 'dano' : 'acerto',
+      notacaoBase,
+      categoria: item.atributos_extras?.categoria || null,
+      modificadoresAtivos,
+    })
     const rotulo = `${campo === 'dano' ? 'Dano' : 'Ataque'} — ${item.nome}`
     setRollProcessing(true)
     setRollItemId(item.id)
@@ -330,17 +351,18 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId }) {
     tocarSomDado(preferencias.dado_skin, {
       ativo: preferencias.som_ativo,
       volume: preferencias.som_volume,
-      numDados: estimarNumDados(notacao),
+      numDados: estimarNumDados(notacaoFinal),
     })
     try {
       const res = await registrarRolagem({
         mesaId,
         fichaId,
         rotulo,
-        notacao,
+        notacao: notacaoFinal,
       })
       setRollResultado(res)
       setRollRotulo(rotulo)
+      setRollDetalhamento(detalhamento)
       setRollRolando(true)
       setTimeout(() => { setRollRolando(false); setRollProcessing(false) }, 1400)
     } catch {
@@ -505,6 +527,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId }) {
                             rolando={rollRolando}
                             onClose={() => { setRollResultado(null); setRollItemId(null) }}
                             skin={preferencias.dado_skin}
+                            detalhamento={rollDetalhamento}
                           />
                         )}
                       </div>

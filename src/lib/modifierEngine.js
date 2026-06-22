@@ -7,6 +7,71 @@
  */
 
 /**
+ * Compara dois números segundo um operador textual.
+ * @param {number} a
+ * @param {string} operador — '<' | '<=' | '>' | '>=' | '==' | '=' | '!='
+ * @param {number} b
+ */
+function comparar(a, operador, b) {
+  switch (operador) {
+    case '<':  return a < b
+    case '<=': return a <= b
+    case '>':  return a > b
+    case '>=': return a >= b
+    case '==':
+    case '=':  return a === b
+    case '!=': return a !== b
+    default:   return false
+  }
+}
+
+/**
+ * Avalia uma condição AUTOMÁTICA de um modificador contra o estado atual da ficha.
+ * Só sabe avaliar métricas que o app conhece (vida%, nível, habilidade ativa) —
+ * "vs mortos-vivos" e afins são condições manuais (ver coletarModificadores).
+ *
+ * @param {object} modificador — { condicao_config: { metrica, operador, valor, habilidade_id } }
+ * @param {object|null} estadoFicha — { vida_atual, vida_max, nivel, habilidadesAtivas: Set }
+ * @returns {boolean} true se a condição é satisfeita
+ */
+export function avaliarCondicao(modificador, estadoFicha) {
+  if (!estadoFicha) return false // sem contexto não dá para avaliar auto
+  const cfg = modificador.condicao_config || {}
+
+  switch (cfg.metrica) {
+    case 'vida_percent': {
+      const max = Number(estadoFicha.vida_max) || 0
+      if (max <= 0) return false
+      const pct = ((Number(estadoFicha.vida_atual) || 0) / max) * 100
+      return comparar(pct, cfg.operador, Number(cfg.valor))
+    }
+    case 'nivel':
+      return comparar(Number(estadoFicha.nivel) || 0, cfg.operador, Number(cfg.valor))
+    case 'habilidade_ativa':
+      return estadoFicha.habilidadesAtivas instanceof Set
+        ? estadoFicha.habilidadesAtivas.has(cfg.habilidade_id)
+        : false
+    default:
+      return false
+  }
+}
+
+/**
+ * Decide se um modificador entra, conforme sua condição (Fase 12).
+ *   - sem condicao_tipo ou 'nenhuma' → entra
+ *   - 'auto'   → entra se avaliarCondicao() for verdadeira
+ *   - 'manual' → entra se condicoesManuais[modificador.id] === true
+ *   - tipo desconhecido → entra (não silenciar por engano)
+ */
+function condicaoSatisfeita(mod, estadoFicha, condicoesManuais) {
+  const tipo = mod.condicao_tipo
+  if (!tipo || tipo === 'nenhuma') return true
+  if (tipo === 'auto')   return avaliarCondicao(mod, estadoFicha)
+  if (tipo === 'manual') return condicoesManuais?.[mod.id] === true
+  return true
+}
+
+/**
  * Coleta modificadores ativos de raça, classe e habilidades da ficha.
  * Anota _fonte em cada modificador para rastreabilidade.
  *
@@ -14,11 +79,18 @@
  *   - passiva → modificadores sempre incluídos (independe do estado ativa)
  *   - ativavel → incluídos SOMENTE se ativa === true
  *
- * @param {{ raca?, classe?, habilidadesFicha? }} contexto
- *   habilidadesFicha — array de { habilidade: { nome, tipo, modificadores[] }, ativa: boolean }
+ * Fase 12 — após o filtro de habilidade ativa, cada modificador ainda passa
+ * pela avaliação de condição (auto/manual) antes de entrar na lista final.
+ *
+ * @param {object} contexto
+ * @param {object} [contexto.raca]
+ * @param {object} [contexto.classe]
+ * @param {Array}  [contexto.habilidadesFicha] — { habilidade: { id, nome, tipo, modificadores[] }, ativa }
+ * @param {object} [contexto.estadoFicha] — { vida_atual, vida_max, nivel, habilidadesAtivas: Set } (condições auto)
+ * @param {object} [contexto.condicoesManuais] — { [modificador_id]: boolean } (condições manuais)
  * @returns {Array} lista plana de modificadores ativos com campo _fonte
  */
-export function coletarModificadores({ raca, classe, habilidadesFicha = [] } = {}) {
+function coletarEmJogo({ raca, classe, habilidadesFicha = [] }) {
   const lista = []
   if (raca?.modificadores?.length) {
     lista.push(...raca.modificadores.map(m => ({ ...m, _fonte: raca.nome })))
@@ -35,6 +107,31 @@ export function coletarModificadores({ raca, classe, habilidadesFicha = [] } = {
     }
   }
   return lista
+}
+
+export function coletarModificadores({
+  raca,
+  classe,
+  habilidadesFicha = [],
+  estadoFicha = null,
+  condicoesManuais = {},
+} = {}) {
+  // Fase 12 — filtra por condição (auto/manual) antes de devolver
+  return coletarEmJogo({ raca, classe, habilidadesFicha })
+    .filter(mod => condicaoSatisfeita(mod, estadoFicha, condicoesManuais))
+}
+
+/**
+ * Fase 12.6 — lista os modificadores de condição MANUAL atualmente "em jogo"
+ * (raça/classe sempre; habilidade só se passiva ou ativável ligada),
+ * independente de o interruptor estar ligado. Alimenta os interruptores
+ * situacionais na ficha. Cada item traz _fonte e condicao_config.rotulo.
+ *
+ * @returns {Array} modificadores com condicao_tipo === 'manual'
+ */
+export function listarCondicoesManuais({ raca, classe, habilidadesFicha = [] } = {}) {
+  return coletarEmJogo({ raca, classe, habilidadesFicha })
+    .filter(mod => mod.condicao_tipo === 'manual')
 }
 
 /**

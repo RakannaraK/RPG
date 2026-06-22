@@ -64,9 +64,10 @@ export default function AbasCentrais({
   secoes, fichaId, donoId, isDono, mesaId, ficha, onRefetch,
   habilidades = [], habilidadesFicha = [],
   onToggleHabilidade, onAdicionarHabilidade, onRemoverHabilidade, onAjustarRecurso, onRecuperarRecursos,
-  valoresFinais = {},
+  valoresFinais = {}, modificadoresAtivos = [], onUsarAcaoHabilidade,
+  condicoesManuais = {}, condicoesManuaisDisponiveis = [], onToggleCondicao, nomesAlvos = {},
 }) {
-  const temHabilidades = habilidades.length > 0 || habilidadesFicha.length > 0
+  const temHabilidades = habilidades.length > 0 || habilidadesFicha.length > 0 || condicoesManuaisDisponiveis.length > 0
   const tabsList = [
     secoes.acoes      && { id: 'acoes',       label: 'Ações' },
     secoes.inventario && { id: 'inventario',  label: 'Inventário' },
@@ -101,10 +102,23 @@ export default function AbasCentrais({
 
       <div className="p-4">
         {currentTab === 'acoes' && (
-          <AcoesTab fichaId={fichaId} isDono={isDono} mesaId={mesaId} valoresFinais={valoresFinais} />
+          <AcoesTab
+            fichaId={fichaId}
+            isDono={isDono}
+            mesaId={mesaId}
+            valoresFinais={valoresFinais}
+            modificadoresAtivos={modificadoresAtivos}
+          />
         )}
         {currentTab === 'inventario' && (
-          <EquipamentosTab fichaId={fichaId} donoId={donoId} isDono={isDono} mesaId={mesaId} />
+          <EquipamentosTab
+            fichaId={fichaId}
+            donoId={donoId}
+            isDono={isDono}
+            mesaId={mesaId}
+            valoresFinais={valoresFinais}
+            modificadoresAtivos={modificadoresAtivos}
+          />
         )}
         {currentTab === 'tracos' && (
           <TextoTab
@@ -136,6 +150,12 @@ export default function AbasCentrais({
             onRemover={onRemoverHabilidade}
             onAjustarRecurso={onAjustarRecurso}
             onRecuperarRecursos={onRecuperarRecursos}
+            onUsarAcao={onUsarAcaoHabilidade}
+            condicoesManuais={condicoesManuais}
+            condicoesManuaisDisponiveis={condicoesManuaisDisponiveis}
+            onToggleCondicao={onToggleCondicao}
+            modificadoresAtivos={modificadoresAtivos}
+            nomesAlvos={nomesAlvos}
           />
         )}
       </div>

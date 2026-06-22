@@ -2,8 +2,23 @@ import { useState, useEffect } from 'react'
 import { usePericiasFicha } from '../../../hooks/usePericiasFicha'
 import { useRolagem } from '../../../hooks/useRolagem'
 import { tocarSomDado, estimarNumDados } from '../../../lib/diceSounds'
+import { resolverVantagem, aplicarVantagem } from '../../../lib/rollModifiers'
 import { usePreferencias } from '../../../context/PreferenciasContext'
 import Dice3D from '../../dados/Dice3D'
+
+function AvisoVantagem({ estado }) {
+  if (!estado || estado === 'normal') return null
+  const cfg = {
+    vantagem:    { txt: '⬆ Vantagem',    cls: 'bg-green-900/70 text-green-300 border-green-700' },
+    desvantagem: { txt: '⬇ Desvantagem', cls: 'bg-red-900/70 text-red-300 border-red-700' },
+    anulada:     { txt: 'anuladas',      cls: 'bg-slate-700 text-slate-300 border-slate-600' },
+  }[estado]
+  return (
+    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${cfg.cls}`}>
+      {cfg.txt}
+    </span>
+  )
+}
 
 function buildNotacao(bonusPericia, atributoBaseValor, dadoPadrao) {
   const lados = dadoPadrao && dadoPadrao >= 2 ? dadoPadrao : 20
@@ -20,6 +35,7 @@ export default function PainelPericias({
   valoresAtributos,
   mesaId,
   dadoPadrao,
+  modificadoresAtivos = [],
 }) {
   const { periciasFicha, savePericia } = usePericiasFicha(fichaId)
   const { registrarRolagem } = useRolagem()
@@ -63,10 +79,16 @@ export default function PainelPericias({
     if (rolando) return
     const pf = getPericiaFicha(pericia.id)
     const atributoVal = getAtributoValor(pericia.atributo_base_id)
-    const notacao = buildNotacao(pf.bonus, atributoVal, dadoPadrao)
+    const notacaoBase = buildNotacao(pf.bonus, atributoVal, dadoPadrao)
+
+    // Vantagem/desvantagem desta perícia (12.3)
+    const estado = resolverVantagem({ alvo: pericia.id, modificadoresAtivos })
+    const notacao = aplicarVantagem(notacaoBase, estado)
+    const sufixo = estado === 'vantagem' ? ' (vantagem)'
+      : estado === 'desvantagem' ? ' (desvantagem)' : ''
 
     setRolando(true)
-    setRollAtivo({ periciaId: pericia.id, resultado: null, rolando: true })
+    setRollAtivo({ periciaId: pericia.id, resultado: null, rolando: true, estado })
     tocarSomDado(preferencias.dado_skin, {
       ativo: preferencias.som_ativo,
       volume: preferencias.som_volume,
@@ -77,10 +99,10 @@ export default function PainelPericias({
       const res = await registrarRolagem({
         mesaId,
         fichaId,
-        rotulo: `Teste de ${pericia.nome}`,
+        rotulo: `Teste de ${pericia.nome}${sufixo}`,
         notacao,
       })
-      setRollAtivo({ periciaId: pericia.id, resultado: res, rolando: false })
+      setRollAtivo({ periciaId: pericia.id, resultado: res, rolando: false, estado })
     } catch {
       setRollAtivo(null)
     } finally {
@@ -170,16 +192,19 @@ export default function PainelPericias({
                 {/* Resultado inline */}
                 {esteRoll && rollAtivo?.resultado && (
                   <div className="mx-3 mb-2 bg-slate-700/70 border border-purple-700/50 rounded-lg px-2 py-1.5">
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center justify-between gap-1 mb-1">
                       <span className="text-purple-400 font-mono text-xs">
                         {rollAtivo.resultado.notacao}
                       </span>
-                      <button
-                        onClick={() => setRollAtivo(null)}
-                        className="text-purple-600 hover:text-purple-400 text-xs transition-colors"
-                      >
-                        ✕
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <AvisoVantagem estado={rollAtivo.estado} />
+                        <button
+                          onClick={() => setRollAtivo(null)}
+                          className="text-purple-600 hover:text-purple-400 text-xs transition-colors"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5 items-center">
                       {rollAtivo.resultado.dados.map((d, i) => (

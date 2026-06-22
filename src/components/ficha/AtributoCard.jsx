@@ -2,7 +2,23 @@ import { useState, useEffect, useRef } from 'react'
 import DiceRoller from './DiceRoller'
 import Dice3D from '../dados/Dice3D'
 import { tocarSomDado, estimarNumDados } from '../../lib/diceSounds'
+import { resolverVantagem, aplicarVantagem } from '../../lib/rollModifiers'
 import { usePreferencias } from '../../context/PreferenciasContext'
+
+// Aviso visual de vantagem/desvantagem/anulada (Fase 12.3)
+function AvisoVantagem({ estado }) {
+  if (!estado || estado === 'normal') return null
+  const cfg = {
+    vantagem:    { txt: '⬆ Vantagem',    cls: 'bg-green-900/70 text-green-300 border-green-700' },
+    desvantagem: { txt: '⬇ Desvantagem', cls: 'bg-red-900/70 text-red-300 border-red-700' },
+    anulada:     { txt: 'Vant./Desv. anuladas', cls: 'bg-slate-700 text-slate-300 border-slate-600' },
+  }[estado]
+  return (
+    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${cfg.cls}`}>
+      {cfg.txt}
+    </span>
+  )
+}
 
 function formulaTexto(regra) {
   if (!regra) return ''
@@ -38,6 +54,7 @@ export default function AtributoCard({
   dadoPadrao = 20,
   valorFinal,
   fontesMod,
+  modificadoresAtivos = [],
   compact = false,
 }) {
   const { preferencias } = usePreferencias()
@@ -48,9 +65,13 @@ export default function AtributoCard({
   const [erro, setErro] = useState('')
 
   const [testeResultado, setTesteResultado] = useState(null)
+  const [testeVantagem, setTesteVantagem] = useState('normal')
   const [testeRolando, setTesteRolando] = useState(false)
   const [testando, setTestando] = useState(false)
   const [erroTeste, setErroTeste] = useState('')
+
+  // Vantagem/desvantagem deste atributo, a partir dos modificadores ativos (12.3)
+  const vantagemEstado = resolverVantagem({ alvo: atributo?.id, modificadoresAtivos })
 
   const valor = valorAtributo?.valor
   // valorFinal vem do motor de modificadores; valor é sempre o base (usado na edição)
@@ -113,7 +134,10 @@ export default function AtributoCard({
     if (testando || !registrarRolagem) return
     setTestando(true)
     setErroTeste('')
-    const notacao = buildNotacaoTeste(display, dadoPadrao)
+    const notacaoBase = buildNotacaoTeste(display, dadoPadrao)
+    const notacao = aplicarVantagem(notacaoBase, vantagemEstado)
+    const sufixo = vantagemEstado === 'vantagem' ? ' (vantagem)'
+      : vantagemEstado === 'desvantagem' ? ' (desvantagem)' : ''
     tocarSomDado(preferencias.dado_skin, {
       ativo: preferencias.som_ativo,
       volume: preferencias.som_volume,
@@ -123,10 +147,11 @@ export default function AtributoCard({
       const res = await registrarRolagem({
         mesaId,
         fichaId,
-        rotulo: `Teste de ${atributo.nome}`,
+        rotulo: `Teste de ${atributo.nome}${sufixo}`,
         notacao,
       })
       setTesteResultado(res)
+      setTesteVantagem(vantagemEstado)
       setTesteRolando(true)
       setTimeout(() => { setTesteRolando(false); setTestando(false) }, 1400)
     } catch (err) {
@@ -216,15 +241,18 @@ export default function AtributoCard({
         {/* Resultado do teste inline (compacto) */}
         {testeResultado && (
           <div className="w-full mt-2 border-t border-purple-800 pt-2 space-y-1.5">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-1">
               <span className="text-purple-400 font-mono text-[10px]">{testeResultado.notacao}</span>
-              <button
-                type="button"
-                onClick={() => setTesteResultado(null)}
-                className="text-purple-600 hover:text-purple-400 text-[10px] transition-colors"
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-1">
+                <AvisoVantagem estado={testeVantagem} />
+                <button
+                  type="button"
+                  onClick={() => setTesteResultado(null)}
+                  className="text-purple-600 hover:text-purple-400 text-[10px] transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
             <div className="flex flex-wrap gap-1 items-center justify-center">
               {testeResultado.dados.map((d, i) => (
@@ -366,15 +394,18 @@ export default function AtributoCard({
 
       {testeResultado && (
         <div className="border-t border-purple-800 pt-3 mb-3 space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <span className="text-purple-400 font-mono text-xs">{testeResultado.notacao}</span>
-            <button
-              type="button"
-              onClick={() => setTesteResultado(null)}
-              className="text-purple-600 hover:text-purple-400 text-xs transition-colors"
-            >
-              ✕
-            </button>
+            <div className="flex items-center gap-2">
+              <AvisoVantagem estado={testeVantagem} />
+              <button
+                type="button"
+                onClick={() => setTesteResultado(null)}
+                className="text-purple-600 hover:text-purple-400 text-xs transition-colors"
+              >
+                ✕
+              </button>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2 items-center">
             {testeResultado.dados.map((d, i) => (
