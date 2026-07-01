@@ -39,21 +39,29 @@ export function useHabilidadesFicha(fichaId, habilidadesSistema = []) {
   useEffect(() => { fetchAll() }, [fetchAll])
 
   async function toggleHabilidade(habilidadeFichaId, novoEstado) {
+    const row = rawRows.find(r => r.id === habilidadeFichaId)
+    const hab = habilidadesSistema.find(h => h.id === row?.habilidade_id)
+    const temRecurso = hab?.recurso_max != null
+
+    // Fase 15.5 — ativar consome 1 uso (clamp em 0); desativar NÃO devolve
+    const patch = { ativa: novoEstado }
+    if (novoEstado === true && temRecurso) {
+      const atual = row?.recurso_atual ?? hab.recurso_max
+      patch.recurso_atual = Math.max(0, atual - 1)
+    }
+    const anterior = { ativa: row?.ativa, recurso_atual: row?.recurso_atual }
+
     // Optimistic update — recálculo imediato sem aguardar banco
-    setRawRows(prev => prev.map(row =>
-      row.id === habilidadeFichaId ? { ...row, ativa: novoEstado } : row
-    ))
+    setRawRows(prev => prev.map(r => (r.id === habilidadeFichaId ? { ...r, ...patch } : r)))
     try {
       const { error: err } = await supabase
         .from('habilidades_ficha')
-        .update({ ativa: novoEstado })
+        .update(patch)
         .eq('id', habilidadeFichaId)
       if (err) throw err
     } catch {
       // Revert se falhar
-      setRawRows(prev => prev.map(row =>
-        row.id === habilidadeFichaId ? { ...row, ativa: !novoEstado } : row
-      ))
+      setRawRows(prev => prev.map(r => (r.id === habilidadeFichaId ? { ...r, ...anterior } : r)))
     }
   }
 
@@ -133,6 +141,14 @@ export function useHabilidadesFicha(fichaId, habilidadesSistema = []) {
     }
   }
 
+  // Define o recurso_atual de uma habilidade (valor absoluto) — usado pelo descanso (15.3)
+  async function definirRecurso(habilidadeFichaId, valor) {
+    setRawRows(prev => prev.map(r => (r.id === habilidadeFichaId ? { ...r, recurso_atual: valor } : r)))
+    try {
+      await supabase.from('habilidades_ficha').update({ recurso_atual: valor }).eq('id', habilidadeFichaId)
+    } catch { /* erro silenciado — o valor local já atualizou */ }
+  }
+
   async function recuperarRecursos() {
     const atualizacoes = rawRows
       .map(row => {
@@ -156,6 +172,6 @@ export function useHabilidadesFicha(fichaId, habilidadesSistema = []) {
   return {
     habilidadesFicha, loading, error, refetch: fetchAll,
     toggleHabilidade, adicionarHabilidade, removerHabilidade, ajustarRecurso,
-    sincronizarOrigem, recuperarRecursos,
+    sincronizarOrigem, recuperarRecursos, definirRecurso,
   }
 }

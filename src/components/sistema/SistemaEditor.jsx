@@ -4,8 +4,9 @@ import { mergeConfigLayout } from '../../lib/sistemaDefaults'
 import AtributoEditor from './AtributoEditor'
 import LayoutEditor from './LayoutEditor'
 import RacasClassesEditor from './RacasClassesEditor'
+import DescansosEditor from './DescansosEditor'
 
-const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes']
+const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes', 'Descansos']
 
 const REGRA_PADRAO = {
   tipo: 'dados',
@@ -294,6 +295,13 @@ export default function SistemaEditor({ mesaId, isMestre }) {
             atributos={atributos}
             camposCombate={configLayout.campos_combate || []}
             pericias={pericias}
+          />
+        )}
+
+        {activeTab === 'Descansos' && (
+          <DescansosEditor
+            descansos={configLayout.descansos || []}
+            onChange={descansos => setConfigLayout(prev => ({ ...prev, descansos }))}
           />
         )}
       </div>

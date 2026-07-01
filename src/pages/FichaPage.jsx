@@ -10,6 +10,7 @@ import { coletarModificadores, calcularValoresFinais, agregarDefesas, listarCond
 import { validarNotacao, rolarNotacao } from '../lib/diceNotation'
 import { useHabilidadesFicha } from '../hooks/useHabilidadesFicha'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
+import DescansoBar from '../components/ficha/DescansoBar'
 import CabecalhoPersonagem from '../components/ficha/layout/CabecalhoPersonagem'
 import FaixaAtributos from '../components/ficha/layout/FaixaAtributos'
 import PainelCombate from '../components/ficha/layout/PainelCombate'
@@ -36,6 +37,7 @@ export default function FichaPage() {
     ajustarRecurso,
     sincronizarOrigem,
     recuperarRecursos,
+    definirRecurso,
   } = useHabilidadesFicha(fichaId, habilidades)
   const { condicoesManuais, toggleCondicao } = useCondicoesManuais(fichaId)
 
@@ -203,6 +205,35 @@ export default function FichaPage() {
     }
   }
 
+  // 15.3 — aplica um descanso (calculado no DescansoBar) à ficha e recursos
+  async function handleAplicarDescanso(tipo, resultado) {
+    const patch = { hp_atual: resultado.vida.para }
+    if (resultado.vida_temp.para !== resultado.vida_temp.de) patch.vida_temp_atual = resultado.vida_temp.para
+    try {
+      await updateFicha(fichaId, patch)
+      for (const r of resultado.recursos) {
+        await definirRecurso(r.habilidadeFichaId, r.para)
+      }
+      try {
+        await supabase.from('descansos_log').insert({
+          ficha_id: fichaId,
+          sessao_id: null,
+          tipo_descanso: tipo.nome,
+          recuperado: { vida: resultado.vida.recuperado, recursos: resultado.recursos },
+        })
+      } catch { /* tabela de log é opcional */ }
+      await registrarEvento({
+        mesaId,
+        fichaId,
+        rotulo: `${tipo.nome} — ${ficha.nome_personagem}`,
+        notacao: resultado.vida.notacao || '',
+        total: resultado.vida.recuperado,
+        dados: resultado.vida.dados || [],
+      })
+      refetch()
+    } catch { /* falha silenciada — não quebra a ficha */ }
+  }
+
   const hasLeft = secoes.pericias || secoes.proficiencias
   const hasRight = secoes.combate || secoes.defesas || secoes.imagens
 
@@ -259,6 +290,17 @@ export default function FichaPage() {
           vidaTemp={valoresFinais.vida_temp}
           vidaTempPontual={ficha.vida_temp_atual ?? 0}
         />
+
+        {/* Descanso (Fase 15) — só dono, só se o sistema configurou descansos */}
+        {isDono && (config.descansos?.length > 0) && (
+          <DescansoBar
+            descansos={config.descansos}
+            ficha={ficha}
+            valoresFinais={valoresFinais}
+            habilidadesFicha={habilidadesFicha}
+            onAplicar={handleAplicarDescanso}
+          />
+        )}
 
         {/* Faixa de atributos */}
         <FaixaAtributos

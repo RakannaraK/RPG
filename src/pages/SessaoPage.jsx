@@ -8,9 +8,11 @@ import { usePresencaSessao } from '../hooks/usePresencaSessao'
 import { useSessaoFichas } from '../hooks/useSessaoFichas'
 import { useEncontro } from '../hooks/useEncontro'
 import { useRolagem } from '../hooks/useRolagem'
+import { calcularDescanso } from '../lib/restEngine'
 import PresencaBar from '../components/sessao/PresencaBar'
 import PainelFichas from '../components/sessao/PainelFichas'
 import CombatePanel from '../components/sessao/CombatePanel'
+import DescansoGrupo from '../components/sessao/DescansoGrupo'
 import FeedRolagens from '../components/dados/FeedRolagens'
 
 /**
@@ -38,6 +40,7 @@ export default function SessaoPage() {
     [racas, classes, habilidades, atributos, pericias]
   )
   const camposCombate = sistema?.config_layout?.campos_combate || []
+  const descansos = sistema?.config_layout?.descansos || []
   const { cards, loading: loadingCards, error: erroCards, conectado } = useSessaoFichas(mesaId, sistemaBundle)
 
   // Encontro de combate (Fase 14)
@@ -113,6 +116,48 @@ export default function SessaoPage() {
     } catch {
       // silenciado — sem permissão (RLS) ou falha de rede não deve quebrar a UI
     }
+  }
+
+  // Descanso do grupo (15.4): calcula e aplica por ficha; retorna resumo por personagem.
+  // Requer RLS de UPDATE em fichas e habilidades_ficha para o mestre (senão só o próprio dono).
+  async function handleDescansoGrupo(tipo) {
+    const fichaIds = cards.map(c => c.id)
+    let habsRows = []
+    if (fichaIds.length) {
+      const { data } = await supabase.from('habilidades_ficha').select('*').in('ficha_id', fichaIds)
+      habsRows = data || []
+    }
+    const itens = []
+    for (const card of cards) {
+      const hfList = habsRows
+        .filter(r => r.ficha_id === card.id)
+        .map(r => ({ ...r, habilidade: habilidades.find(h => h.id === r.habilidade_id) || null }))
+      const resultado = calcularDescanso({
+        tipoDescanso: tipo,
+        ficha: card.ficha,
+        valoresFinais: { vida_max: card.hpMax },
+        habilidadesFicha: hfList,
+      })
+      const patch = { hp_atual: resultado.vida.para }
+      if (resultado.vida_temp.para !== resultado.vida_temp.de) patch.vida_temp_atual = resultado.vida_temp.para
+      try { await updateFicha(card.id, patch) } catch { /* RLS */ }
+      for (const r of resultado.recursos) {
+        try { await supabase.from('habilidades_ficha').update({ recurso_atual: r.para }).eq('id', r.habilidadeFichaId) } catch { /* RLS */ }
+      }
+      try {
+        await supabase.from('descansos_log').insert({
+          ficha_id: card.id, sessao_id: sessaoId, tipo_descanso: tipo.nome,
+          recuperado: { vida: resultado.vida.recuperado, recursos: resultado.recursos },
+        })
+      } catch { /* log opcional */ }
+      itens.push({ nome: card.nome, resumo: resultado.resumo })
+    }
+    await registrarEvento({
+      mesaId, sessaoId,
+      rotulo: `O grupo fez um ${tipo.nome} — todos recuperados`,
+      notacao: '', total: 0, dados: [],
+    })
+    return itens
   }
 
   // Avança turno e avisa no feed as condições que expiraram na virada de rodada (14.4)
@@ -258,6 +303,11 @@ export default function SessaoPage() {
             onAplicarHp={handleAplicarHp}
             onReordenar={encontroApi.reordenar}
           />
+        )}
+
+        {/* Descanso do grupo (Fase 15.4) — só mestre, sessão ativa, se houver descansos */}
+        {sessao.ativa && isMestre && descansos.length > 0 && (
+          <DescansoGrupo descansos={descansos} onDescansar={handleDescansoGrupo} />
         )}
 
         {/* Abas — só no mobile */}

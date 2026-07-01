@@ -59,7 +59,9 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis) {
   const chips = []
   for (const hf of habilidadesFicha) {
     if (hf.habilidade?.tipo === 'ativavel' && hf.ativa === true) {
-      chips.push({ key: `hab-${hf.id}`, tipo: 'habilidade', label: hf.habilidade.nome })
+      const hab = hf.habilidade
+      const rec = hab.recurso_max != null ? ` ${hf.recurso_atual ?? hab.recurso_max}/${hab.recurso_max}` : ''
+      chips.push({ key: `hab-${hf.id}`, tipo: 'habilidade', label: `${hab.nome}${rec}` })
     }
   }
   const rotulosVistos = new Set()

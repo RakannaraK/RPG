@@ -14,6 +14,7 @@ export const CONFIG_LAYOUT_DEFAULT = {
   campos_combate: [],
   rotulo_vida: 'Pontos de Vida',
   dado_padrao: 20,
+  descansos: [], // Fase 15 — tipos de descanso configurados pelo mestre
 }
 
 // Mescla config parcial do banco com os defaults, garantindo que nenhuma chave falte
@@ -28,5 +29,6 @@ export function mergeConfigLayout(raw) {
     campos_combate: (raw || {}).campos_combate || [],
     rotulo_vida: (raw || {}).rotulo_vida || 'Pontos de Vida',
     dado_padrao: (raw || {}).dado_padrao || 20,
+    descansos: (raw || {}).descansos || [],
   }
 }

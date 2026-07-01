@@ -219,6 +219,21 @@ export default function PainelHabilidades({
   const [selecionada, setSelecionada] = useState('')
   const [adicionando, setAdicionando] = useState(false)
   const [addErro, setAddErro] = useState('')
+  const [avisos, setAvisos] = useState({}) // 15.5 — aviso de recurso zerado
+
+  // 15.5 — ativar consome recurso (no hook); aqui só avisamos se ativou sem usos
+  function handleToggle(hf, novoEstado) {
+    const hab = hf.habilidade
+    const semRecurso = novoEstado && hab?.recurso_max != null && (hf.recurso_atual ?? hab.recurso_max) <= 0
+    setAvisos(prev => {
+      const n = { ...prev }
+      if (semRecurso) n[hf.id] = `Sem ${hab.recurso_nome || 'usos'} disponíveis — ativada mesmo assim.`
+      else delete n[hf.id]
+      return n
+    })
+    if (semRecurso) setTimeout(() => setAvisos(prev => { const n = { ...prev }; delete n[hf.id]; return n }), 4000)
+    onToggle(hf.id, novoEstado)
+  }
 
   // 12.7 — ids dos modificadores atualmente em vigor (pós-filtro de condição),
   // para marcar quais efeitos condicionais estão ativos agora.
@@ -278,7 +293,7 @@ export default function PainelHabilidades({
                 <div className="flex items-start gap-3">
                   {isDono && (
                     <div className="pt-0.5">
-                      <Toggle ativa={hf.ativa} onChange={novoEstado => onToggle(hf.id, novoEstado)} />
+                      <Toggle ativa={hf.ativa} onChange={novoEstado => handleToggle(hf, novoEstado)} />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
@@ -301,6 +316,7 @@ export default function PainelHabilidades({
                       <p className="text-purple-500 text-xs mt-0.5">{hab.descricao}</p>
                     )}
                     <RecursoCounter hf={hf} onAjustar={onAjustarRecurso} isDono={isDono} />
+                    {avisos[hf.id] && <p className="text-amber-400 text-xs mt-1">⚠ {avisos[hf.id]}</p>}
                     <ResumoEfeitos
                       modificadores={hab.modificadores}
                       idsAtivos={idsAtivos}
