@@ -3,10 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useSistema } from '../hooks/useSistema'
+import { useUpdateFicha } from '../hooks/useFicha'
 import { usePresencaSessao } from '../hooks/usePresencaSessao'
 import { useSessaoFichas } from '../hooks/useSessaoFichas'
+import { useEncontro } from '../hooks/useEncontro'
+import { useRolagem } from '../hooks/useRolagem'
 import PresencaBar from '../components/sessao/PresencaBar'
 import PainelFichas from '../components/sessao/PainelFichas'
+import CombatePanel from '../components/sessao/CombatePanel'
 import FeedRolagens from '../components/dados/FeedRolagens'
 
 /**
@@ -21,6 +25,7 @@ export default function SessaoPage() {
   const navigate = useNavigate()
 
   const [sessao, setSessao] = useState(null)
+  const [isMestre, setIsMestre] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -34,6 +39,93 @@ export default function SessaoPage() {
   )
   const camposCombate = sistema?.config_layout?.campos_combate || []
   const { cards, loading: loadingCards, error: erroCards, conectado } = useSessaoFichas(mesaId, sistemaBundle)
+
+  // Encontro de combate (Fase 14)
+  const encontroApi = useEncontro(sessaoId, mesaId)
+  const { registrarRolagem, registrarEvento } = useRolagem()
+  const { updateFicha } = useUpdateFicha()
+
+  // Iniciativa (14.2): 1d{padrão} + campo de combate cujo nome contenha "inici"
+  const dadoPadrao = sistema?.config_layout?.dado_padrao || 20
+  const campoIniciativa = camposCombate.find(c => /inici/i.test(c.nome || '')) || null
+  // Campo de CA (para condições que afetam a CA, 14.4)
+  const campoCa = camposCombate.find(cc => {
+    const n = (cc.nome || '').trim().toLowerCase()
+    return n === 'ca' || n.includes('armadura') || n.includes('defesa')
+  }) || null
+
+  async function handleRolarIniciativa(c) {
+    let mod = 0
+    if (c.ficha_id && campoIniciativa) {
+      const card = cards.find(cd => cd.id === c.ficha_id)
+      mod = Number(card?.combate?.[campoIniciativa.id]) || 0
+    }
+    const notacao = mod > 0 ? `1d${dadoPadrao}+${mod}` : mod < 0 ? `1d${dadoPadrao}${mod}` : `1d${dadoPadrao}`
+    const res = await registrarRolagem({ mesaId, sessaoId, rotulo: `Iniciativa — ${c.nome}`, notacao })
+    await encontroApi.atualizarCombatente(c.id, { iniciativa: res.total })
+  }
+
+  async function handleRolarIniciativaTodos() {
+    for (const c of encontroApi.combatentes) {
+      await handleRolarIniciativa(c)
+    }
+  }
+
+  function handleSetIniciativa(id, val) {
+    return encontroApi.atualizarCombatente(id, { iniciativa: val === '' ? null : Number(val) })
+  }
+
+  // Aplica dano (delta<0) ou cura (delta>0) a um combatente (14.5).
+  // Jogador → HP da ficha (vida temp consumida antes); inimigo → HP do combatente.
+  async function handleAplicarHp(c, delta) {
+    if (!delta) return
+    try {
+      if (c.ficha_id) {
+        const card = cards.find(cd => cd.id === c.ficha_id)
+        if (!card) return
+        const max = card.hpMax || card.hpMaxBase || 0
+        let hp = card.hpAtual ?? 0
+        if (delta < 0) {
+          let dano = -delta
+          let temp = card.ficha?.vida_temp_atual ?? 0
+          const patch = {}
+          if (temp > 0) {
+            const consumido = Math.min(temp, dano)
+            temp -= consumido; dano -= consumido
+            patch.vida_temp_atual = temp
+          }
+          patch.hp_atual = hp - dano
+          await updateFicha(c.ficha_id, patch)
+        } else {
+          await updateFicha(c.ficha_id, { hp_atual: max > 0 ? Math.min(max, hp + delta) : hp + delta })
+        }
+      } else {
+        let hp = c.hp_atual ?? 0
+        const max = c.hp_maximo
+        const novo = delta > 0 && max != null ? Math.min(max, hp + delta) : hp + delta
+        await encontroApi.atualizarCombatente(c.id, { hp_atual: novo })
+      }
+      await registrarEvento({
+        mesaId, sessaoId, fichaId: c.ficha_id || null,
+        rotulo: `${c.nome} ${delta < 0 ? `sofreu ${-delta} de dano` : `recuperou ${delta} de vida`}`,
+        notacao: '', total: Math.abs(delta), dados: [],
+      })
+    } catch {
+      // silenciado — sem permissão (RLS) ou falha de rede não deve quebrar a UI
+    }
+  }
+
+  // Avança turno e avisa no feed as condições que expiraram na virada de rodada (14.4)
+  async function handleProximoTurno() {
+    const res = await encontroApi.proximoTurno()
+    for (const cond of res?.expiradas || []) {
+      await registrarEvento({
+        mesaId, sessaoId,
+        rotulo: `${cond.nome} expirou em ${cond.combatenteNome}`,
+        notacao: '', total: 0, dados: [],
+      })
+    }
+  }
 
   // Aba ativa no mobile (no desktop painel e feed aparecem lado a lado)
   const [abaMobile, setAbaMobile] = useState('fichas')
@@ -50,6 +142,13 @@ export default function SessaoPage() {
           .single()
         if (err) throw err
         setSessao(data)
+        // Mestre = criador da mesa (para controles de combate)
+        const { data: mesaData } = await supabase
+          .from('mesas')
+          .select('criador_id')
+          .eq('id', mesaId)
+          .single()
+        setIsMestre(mesaData?.criador_id === session.user.id)
       } catch (err) {
         setError(err.message || 'Erro ao carregar sessão.')
       } finally {
@@ -57,7 +156,7 @@ export default function SessaoPage() {
       }
     }
     if (session && sessaoId) carregar()
-  }, [session, sessaoId])
+  }, [session, sessaoId, mesaId])
 
   if (loading) {
     return (
@@ -130,6 +229,35 @@ export default function SessaoPage() {
           <div className="mb-4 rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-3 text-purple-300 text-sm">
             Esta sessão foi encerrada. Você está vendo o registro dela.
           </div>
+        )}
+
+        {/* Painel de combate (Fase 14) — só em sessão ativa */}
+        {sessao.ativa && (
+          <CombatePanel
+            encontro={encontroApi.encontro}
+            combatentes={encontroApi.combatentes}
+            condicoes={encontroApi.condicoes}
+            campoCaId={campoCa?.id || null}
+            isMestre={isMestre}
+            meuUserId={session?.user?.id}
+            mesaId={mesaId}
+            sessaoId={sessaoId}
+            fichasSessao={cards}
+            onIniciar={encontroApi.iniciarCombate}
+            onEncerrar={encontroApi.encerrarCombate}
+            onAdicionarJogadores={encontroApi.adicionarJogadores}
+            onAdicionarInimigos={encontroApi.adicionarInimigos}
+            onRemoverCombatente={encontroApi.removerCombatente}
+            onRolarIniciativa={handleRolarIniciativa}
+            onRolarIniciativaTodos={handleRolarIniciativaTodos}
+            onSetIniciativa={handleSetIniciativa}
+            onProximoTurno={handleProximoTurno}
+            onTurnoAnterior={encontroApi.turnoAnterior}
+            onAplicarCondicao={encontroApi.aplicarCondicao}
+            onRemoverCondicao={encontroApi.removerCondicao}
+            onAplicarHp={handleAplicarHp}
+            onReordenar={encontroApi.reordenar}
+          />
         )}
 
         {/* Abas — só no mobile */}

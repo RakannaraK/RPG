@@ -104,6 +104,7 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis) {
     combate: valoresFinais.combate,
     defesas,
     chips,
+    modificadoresAtivos, // 14.6 — para ataques/dano com os buffs ativos
   }
 }
 
