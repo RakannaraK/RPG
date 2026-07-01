@@ -42,7 +42,7 @@ export function useRolagem() {
    * @param {string}  params.notacao  — Ex: "2d6+3", "1d20"
    * @returns {Promise<{ notacao, individuais, mantidos, descartados, modificador, total }>}
    */
-  async function registrarRolagem({ mesaId, fichaId = null, rotulo = null, notacao }) {
+  async function registrarRolagem({ mesaId, fichaId = null, rotulo = null, notacao, sessaoId = null }) {
     setErro('')
     setRolando(true)
 
@@ -58,7 +58,7 @@ export function useRolagem() {
 
     // 2. Persiste no Supabase (aguarda para garantir que o feed dos outros jogadores funcione)
     try {
-      const { error } = await supabase.from('rolagens').insert({
+      const payload = {
         mesa_id: mesaId,
         autor_id: session.user.id,
         autor_nome: autorNome || session.user.email,
@@ -73,7 +73,10 @@ export function useRolagem() {
           modificador: resultado.modificador,
         },
         total: resultado.total,
-      })
+      }
+      // Só inclui sessao_id quando há sessão (evita depender da coluna antes do ALTER)
+      if (sessaoId) payload.sessao_id = sessaoId
+      const { error } = await supabase.from('rolagens').insert(payload)
       if (error) throw error
     } catch (err) {
       // A rolagem local aconteceu — apenas exibe o erro sem quebrar a animação
@@ -98,9 +101,9 @@ export function useRolagem() {
    * @param {number} params.total   — quantidade final (curada / vida temp)
    * @param {Array}  [params.dados] — [{lados, valor, descartado}] se houve rolagem
    */
-  async function registrarEvento({ mesaId, fichaId = null, rotulo, notacao = '', total, dados = [] }) {
+  async function registrarEvento({ mesaId, fichaId = null, rotulo, notacao = '', total, dados = [], sessaoId = null }) {
     try {
-      const { error } = await supabase.from('rolagens').insert({
+      const payload = {
         mesa_id: mesaId,
         autor_id: session.user.id,
         autor_nome: autorNome || session.user.email,
@@ -115,7 +118,9 @@ export function useRolagem() {
           modificador: 0,
         },
         total,
-      })
+      }
+      if (sessaoId) payload.sessao_id = sessaoId
+      const { error } = await supabase.from('rolagens').insert(payload)
       if (error) throw error
     } catch (err) {
       setErro(err.message || 'Erro ao registrar evento.')

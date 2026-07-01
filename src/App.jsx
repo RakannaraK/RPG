@@ -5,6 +5,7 @@ import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import MesaPage from './pages/MesaPage'
 import FichaPage from './pages/FichaPage'
+import SessaoPage from './pages/SessaoPage'
 import DadosTestePage from './pages/DadosTestePage'
 
 function ProtectedRoute({ children }) {
@@ -75,6 +76,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <FichaPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mesa/:id/sessao/:sessaoId"
+        element={
+          <ProtectedRoute>
+            <SessaoPage />
           </ProtectedRoute>
         }
       />

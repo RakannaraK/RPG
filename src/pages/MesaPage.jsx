@@ -8,6 +8,8 @@ import FichaCreate from '../components/ficha/FichaCreate'
 import RoladorGenerico from '../components/dados/RoladorGenerico'
 import FeedRolagens from '../components/dados/FeedRolagens'
 import PreferenciasModal from '../components/preferencias/PreferenciasModal'
+import SessaoBanner from '../components/sessao/SessaoBanner'
+import SessoesHistorico from '../components/sessao/SessoesHistorico'
 
 const TABS = ['Fichas', 'Dados', 'Sistema', 'Membros']
 
@@ -198,6 +200,11 @@ export default function MesaPage() {
       </header>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        {/* Fase 13.1 — banner de sessão ao vivo */}
+        <SessaoBanner mesaId={id} isCriador={isCriador} />
+        {/* Fase 13.5 — histórico de sessões encerradas */}
+        <SessoesHistorico mesaId={id} />
+
         <div className="flex border-b border-purple-900 mt-6 overflow-x-auto">
           {TABS.map(tab => (
             <button

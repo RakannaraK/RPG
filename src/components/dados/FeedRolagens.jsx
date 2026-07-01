@@ -90,7 +90,7 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin }) {
   )
 }
 
-export default function FeedRolagens({ mesaId, onNovaRolagem }) {
+export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate = null, aoVivo = true }) {
   const { session } = useAuth()
   const { preferencias } = usePreferencias()
   const [rolagens, setRolagens] = useState([])
@@ -100,11 +100,17 @@ export default function FeedRolagens({ mesaId, onNovaRolagem }) {
 
   useEffect(() => {
     if (!mesaId) return
+    setLoading(true)
 
-    supabase
+    let query = supabase
       .from('rolagens')
       .select('*')
       .eq('mesa_id', mesaId)
+    // Fase 13.5 — janela de tempo (log de uma sessão encerrada)
+    if (desde) query = query.gte('created_at', desde)
+    if (ate) query = query.lte('created_at', ate)
+
+    query
       .order('created_at', { ascending: false })
       .limit(50)
       .then(({ data, error }) => {
@@ -112,6 +118,9 @@ export default function FeedRolagens({ mesaId, onNovaRolagem }) {
         else setRolagens(data || [])
         setLoading(false)
       })
+
+    // Log histórico (sessão encerrada): estático, sem tempo real
+    if (!aoVivo) return
 
     const channel = supabase
       .channel(`feed-${mesaId}`)
@@ -136,7 +145,7 @@ export default function FeedRolagens({ mesaId, onNovaRolagem }) {
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [mesaId, session?.user?.id])
+  }, [mesaId, session?.user?.id, desde, ate, aoVivo])
 
   if (loading) {
     return (
