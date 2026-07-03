@@ -103,24 +103,17 @@ export function useJoinMesa() {
     setLoading(true)
     setError(null)
     try {
-      const { data: mesa, error: searchError } = await supabase
-        .from('mesas')
-        .select('id, nome')
-        .eq('codigo_convite', codigo.trim().toLowerCase())
-        .single()
+      // A validação do convite e o insert acontecem no banco (RPC SECURITY
+      // DEFINER) — o insert direto em membros_mesa é bloqueado por RLS.
+      const { data, error: rpcError } = await supabase.rpc('entrar_na_mesa', {
+        codigo: codigo.trim(),
+      })
+      if (rpcError) throw new Error(rpcError.message || 'Erro ao entrar na mesa.')
 
-      if (searchError || !mesa) throw new Error('Código de convite inválido ou mesa não encontrada.')
+      const row = Array.isArray(data) ? data[0] : data
+      if (!row) throw new Error('Código de convite inválido ou mesa não encontrada.')
 
-      const { error: membroError } = await supabase
-        .from('membros_mesa')
-        .insert({ mesa_id: mesa.id, usuario_id: session.user.id, role: 'jogador' })
-
-      if (membroError) {
-        if (membroError.code === '23505') throw new Error('Você já é membro desta mesa.')
-        throw membroError
-      }
-
-      return mesa
+      return { id: row.mesa_id, nome: row.nome }
     } catch (err) {
       const msg = err.message || 'Erro ao entrar na mesa.'
       setError(msg)
