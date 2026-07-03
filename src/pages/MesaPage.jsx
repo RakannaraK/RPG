@@ -50,9 +50,11 @@ export default function MesaPage() {
           .from('mesas')
           .select('*')
           .eq('id', id)
-          .single()
+          .maybeSingle()
 
         if (mesaError) throw mesaError
+        // RLS: não-membros não recebem a linha da mesa
+        if (!mesaData) throw new Error('Mesa não encontrada ou você não tem acesso a ela.')
 
         const { data: membrosData, error: membrosError } = await supabase
           .from('membros_mesa')

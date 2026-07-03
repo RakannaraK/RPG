@@ -184,8 +184,10 @@ export default function SessaoPage() {
           .from('sessoes')
           .select('*')
           .eq('id', sessaoId)
-          .single()
+          .maybeSingle()
         if (err) throw err
+        // RLS: não-membros não recebem a sessão
+        if (!data) throw new Error('Sessão não encontrada ou você não tem acesso a ela.')
         setSessao(data)
         // Mestre = criador da mesa (para controles de combate)
         const { data: mesaData } = await supabase

@@ -45,8 +45,10 @@ export function useFicha(fichaId) {
         .from('fichas')
         .select('*')
         .eq('id', fichaId)
-        .single()
+        .maybeSingle()
       if (fichaErr) throw fichaErr
+      // RLS: quem não é membro da mesa não recebe a ficha
+      if (!fichaData) throw new Error('Ficha não encontrada ou você não tem acesso a ela.')
 
       const { data: valoresData, error: valoresErr } = await supabase
         .from('valores_atributos')
