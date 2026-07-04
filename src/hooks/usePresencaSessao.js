@@ -12,7 +12,7 @@ import { useAuth } from '../context/AuthContext'
  *
  * @returns {{ conectados: Array<{id, nome, conexoes}> }}
  */
-export function usePresencaSessao(sessaoId) {
+export function usePresencaSessao(sessaoId, mesaId) {
   const { session } = useAuth()
   const [conectados, setConectados] = useState([])
 
@@ -24,16 +24,27 @@ export function usePresencaSessao(sessaoId) {
     let channel
 
     async function setup() {
-      // Nome de exibição (username do perfil; fallback e-mail)
+      // Nome/avatar de exibição: apelido+avatar da mesa (16.6), fallback username, fallback e-mail
       let nome = session.user.email
-      try {
-        const { data } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', userId)
-          .single()
-        if (data?.username) nome = data.username
-      } catch { /* mantém fallback */ }
+      let avatar = null
+      if (mesaId) {
+        try {
+          const { data: membro } = await supabase
+            .from('membros_mesa')
+            .select('apelido, avatar_url')
+            .eq('mesa_id', mesaId)
+            .eq('usuario_id', userId)
+            .maybeSingle()
+          if (membro?.apelido) nome = membro.apelido
+          if (membro?.avatar_url) avatar = membro.avatar_url
+        } catch { /* segue p/ fallback */ }
+      }
+      if (nome === session.user.email) {
+        try {
+          const { data } = await supabase.from('profiles').select('username').eq('id', userId).single()
+          if (data?.username) nome = data.username
+        } catch { /* mantém e-mail */ }
+      }
       if (cancelled) return
 
       channel = supabase.channel(`sessao-${sessaoId}`, {
@@ -45,6 +56,7 @@ export function usePresencaSessao(sessaoId) {
         const lista = Object.entries(state).map(([key, metas]) => ({
           id: key,
           nome: metas[0]?.nome || 'Jogador',
+          avatar: metas[0]?.avatar || null,
           conexoes: metas.length,
         }))
         setConectados(lista)
@@ -52,7 +64,7 @@ export function usePresencaSessao(sessaoId) {
 
       channel.subscribe(async status => {
         if (status === 'SUBSCRIBED') {
-          await channel.track({ id: userId, nome, online_at: new Date().toISOString() })
+          await channel.track({ id: userId, nome, avatar, online_at: new Date().toISOString() })
         }
       })
     }
@@ -66,7 +78,7 @@ export function usePresencaSessao(sessaoId) {
         supabase.removeChannel(channel)
       }
     }
-  }, [sessaoId, session?.user?.id, session?.user?.email])
+  }, [sessaoId, mesaId, session?.user?.id, session?.user?.email])
 
   return { conectados }
 }

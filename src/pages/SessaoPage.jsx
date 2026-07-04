@@ -31,7 +31,7 @@ export default function SessaoPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const { conectados } = usePresencaSessao(sessaoId)
+  const { conectados } = usePresencaSessao(sessaoId, mesaId)
 
   // Sistema da mesa (para o motor de modificadores no painel de fichas)
   const { sistema, racas, classes, habilidades, atributos, pericias } = useSistema(mesaId)

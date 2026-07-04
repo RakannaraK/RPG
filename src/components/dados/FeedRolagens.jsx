@@ -18,8 +18,9 @@ function tempoRelativo(ts) {
   return new Date(ts).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
 }
 
-function RolagemCard({ rolagem, animando, ehMeu, minhaSkin }) {
+function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
   const { autor_nome, rotulo, notacao, resultados, total, created_at } = rolagem
+  const nome = nomeExibicao || autor_nome
   const dados = resultados?.dados || []
   const mantidos = resultados?.mantidos || []
   const descartados = resultados?.descartados || []
@@ -29,7 +30,7 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin }) {
     <div className="bg-slate-800/60 border border-purple-800/40 rounded-xl p-3 space-y-2">
       <div className="flex items-baseline justify-between gap-2 flex-wrap">
         <div className="flex items-baseline gap-2 flex-wrap min-w-0">
-          <span className="text-purple-300 text-xs font-semibold shrink-0">{autor_nome}</span>
+          <span className="text-purple-300 text-xs font-semibold shrink-0">{nome}</span>
           {rotulo && (
             <span className="text-white text-sm font-medium">{rotulo}</span>
           )}
@@ -97,6 +98,24 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState('')
   const [animandoId, setAnimandoId] = useState(null)
+  const [apelidos, setApelidos] = useState({}) // 16.6 — autor_id → apelido da mesa
+
+  // Apelidos por autor (fallback para autor_nome gravado na rolagem)
+  useEffect(() => {
+    if (!mesaId) return
+    let ativo = true
+    supabase
+      .from('membros_mesa')
+      .select('usuario_id, apelido')
+      .eq('mesa_id', mesaId)
+      .then(({ data }) => {
+        if (!ativo) return
+        const m = {}
+        for (const row of data || []) if (row.apelido) m[row.usuario_id] = row.apelido
+        setApelidos(m)
+      })
+    return () => { ativo = false }
+  }, [mesaId])
 
   useEffect(() => {
     if (!mesaId) return
@@ -195,6 +214,7 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
             animando={animandoId === r.id}
             ehMeu={r.autor_id === session?.user?.id}
             minhaSkin={preferencias.dado_skin}
+            nomeExibicao={apelidos[r.autor_id]}
           />
         ))}
       </div>

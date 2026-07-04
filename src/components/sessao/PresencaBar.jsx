@@ -27,17 +27,27 @@ export default function PresencaBar({ conectados = [], meuId }) {
         {conectados.length} online
       </span>
       <div className="flex -space-x-2">
-        {conectados.map(c => (
-          <div
-            key={c.id}
-            title={`${c.nome}${c.id === meuId ? ' (você)' : ''}${c.conexoes > 1 ? ` · ${c.conexoes} abas` : ''}`}
-            className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold border-2 ${
-              c.id === meuId ? 'border-emerald-400' : 'border-slate-900'
-            } ${corDe(c.id)}`}
-          >
-            {iniciais(c.nome)}
-          </div>
-        ))}
+        {conectados.map(c => {
+          const titulo = `${c.nome}${c.id === meuId ? ' (você)' : ''}${c.conexoes > 1 ? ` · ${c.conexoes} abas` : ''}`
+          const borda = c.id === meuId ? 'border-emerald-400' : 'border-slate-900'
+          return c.avatar ? (
+            <img
+              key={c.id}
+              src={c.avatar}
+              alt={c.nome}
+              title={titulo}
+              className={`w-7 h-7 rounded-full object-cover border-2 ${borda}`}
+            />
+          ) : (
+            <div
+              key={c.id}
+              title={titulo}
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold border-2 ${borda} ${corDe(c.id)}`}
+            >
+              {iniciais(c.nome)}
+            </div>
+          )
+        })}
       </div>
     </div>
   )

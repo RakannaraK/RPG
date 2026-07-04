@@ -10,6 +10,7 @@ import FeedRolagens from '../components/dados/FeedRolagens'
 import PreferenciasModal from '../components/preferencias/PreferenciasModal'
 import SessaoBanner from '../components/sessao/SessaoBanner'
 import SessoesHistorico from '../components/sessao/SessoesHistorico'
+import MeuPerfilMesa from '../components/mesa/MeuPerfilMesa'
 
 const TABS = ['Fichas', 'Dados', 'Sistema', 'Membros']
 
@@ -89,7 +90,7 @@ export default function MesaPage() {
 
         const { data: membrosData, error: membrosError } = await supabase
           .from('membros_mesa')
-          .select(`role, joined_at, usuario:usuario_id (id, username)`)
+          .select(`role, joined_at, apelido, avatar_url, usuario:usuario_id (id, username)`)
           .eq('mesa_id', id)
 
         if (membrosError) throw membrosError
@@ -301,6 +302,13 @@ export default function MesaPage() {
   const isCriador = mesa?.criador_id === session?.user?.id
   const isGestor = isCriador || meuRole === 'co-mestre' // dono ou co-mestre (16.2)
   const membroIds = new Set(membros.map(m => m.usuario?.id))
+  const meuMembro = membros.find(m => m.usuario?.id === session?.user?.id) // 16.6
+
+  function onPerfilSalvo(apelido, avatarUrl) {
+    setMembros(prev => prev.map(m =>
+      m.usuario?.id === session?.user?.id ? { ...m, apelido, avatar_url: avatarUrl } : m
+    ))
+  }
 
   // Quem o usuário atual pode expulsar (espelha as regras da RPC expulsar_membro)
   function podeExpulsar(m) {
@@ -577,6 +585,18 @@ export default function MesaPage() {
                 </div>
               )}
 
+              {/* Meu perfil nesta mesa (16.6) */}
+              {meuMembro && (
+                <MeuPerfilMesa
+                  mesaId={id}
+                  usuarioId={session.user.id}
+                  username={meuMembro.usuario?.username}
+                  apelidoInicial={meuMembro.apelido}
+                  avatarInicial={meuMembro.avatar_url}
+                  onSaved={onPerfilSalvo}
+                />
+              )}
+
               <div className="bg-slate-800 border border-purple-800 rounded-xl overflow-hidden">
                 <div className="px-5 py-3 border-b border-purple-900">
                   <p className="text-purple-200 font-medium text-sm">Membros ({membros.length})</p>
@@ -584,10 +604,22 @@ export default function MesaPage() {
                 <ul className="divide-y divide-purple-900">
                   {membros.map(m => (
                     <li key={m.usuario.id} className="flex items-center justify-between gap-2 px-5 py-3">
-                      <span className="text-white text-sm truncate">
-                        {m.usuario.username}
-                        {m.usuario.id === session?.user?.id && <span className="text-purple-500"> (você)</span>}
-                      </span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        {m.avatar_url ? (
+                          <img src={m.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover border border-purple-700 shrink-0" />
+                        ) : (
+                          <div className="w-7 h-7 rounded-full bg-purple-950 border border-purple-800 flex items-center justify-center shrink-0">
+                            <span className="text-purple-300 text-[10px] font-bold">
+                              {(m.apelido || m.usuario.username || '?').slice(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <span className="text-white text-sm truncate">
+                          {m.apelido || m.usuario.username}
+                          {m.apelido && <span className="text-purple-600 text-xs"> ({m.usuario.username})</span>}
+                          {m.usuario.id === session?.user?.id && <span className="text-purple-500"> (você)</span>}
+                        </span>
+                      </div>
                       <div className="flex items-center gap-2 shrink-0">
                         {/* Dono altera papel (16.5) de todos exceto ele mesmo e o próprio 'mestre' */}
                         {isCriador && m.usuario.id !== session?.user?.id && m.role !== 'mestre' ? (
