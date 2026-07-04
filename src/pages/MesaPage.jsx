@@ -164,6 +164,23 @@ export default function MesaPage() {
     }
   }
 
+  async function handleDefinirRole(usuarioId, novoRole) {
+    // Otimista; a RPC valida (só o dono; roles válidos: co-mestre/jogador/espectador)
+    const anterior = membros.find(m => m.usuario.id === usuarioId)?.role
+    setMembros(prev => prev.map(m => (m.usuario.id === usuarioId ? { ...m, role: novoRole } : m)))
+    try {
+      const { error: err } = await supabase.rpc('definir_role', {
+        p_mesa_id: id,
+        p_usuario_id: usuarioId,
+        p_role: novoRole,
+      })
+      if (err) throw err
+    } catch {
+      // reverte
+      setMembros(prev => prev.map(m => (m.usuario.id === usuarioId ? { ...m, role: anterior } : m)))
+    }
+  }
+
   async function handleTransferirPosse() {
     if (!novoDonoId) { setTransferError('Escolha o novo dono.'); return }
     setTransferring(true)
@@ -345,7 +362,7 @@ export default function MesaPage() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         {/* Fase 13.1 — banner de sessão ao vivo */}
-        <SessaoBanner mesaId={id} isCriador={isCriador} />
+        <SessaoBanner mesaId={id} isGestor={isGestor} />
         {/* Fase 13.5 — histórico de sessões encerradas */}
         <SessoesHistorico mesaId={id} />
 
@@ -498,7 +515,7 @@ export default function MesaPage() {
           )}
 
           {activeTab === 'Sistema' && (
-            <SistemaEditor mesaId={id} isMestre={meuRole === 'mestre'} />
+            <SistemaEditor mesaId={id} isMestre={isGestor} />
           )}
 
           {activeTab === 'Membros' && (
@@ -572,9 +589,23 @@ export default function MesaPage() {
                         {m.usuario.id === session?.user?.id && <span className="text-purple-500"> (você)</span>}
                       </span>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${roleInfo(m.role).cls}`}>
-                          {roleInfo(m.role).label}
-                        </span>
+                        {/* Dono altera papel (16.5) de todos exceto ele mesmo e o próprio 'mestre' */}
+                        {isCriador && m.usuario.id !== session?.user?.id && m.role !== 'mestre' ? (
+                          <select
+                            value={m.role}
+                            onChange={e => handleDefinirRole(m.usuario.id, e.target.value)}
+                            className="text-xs px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            title="Papel na mesa"
+                          >
+                            <option value="co-mestre">Co-mestre</option>
+                            <option value="jogador">Jogador</option>
+                            <option value="espectador">Espectador</option>
+                          </select>
+                        ) : (
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${roleInfo(m.role).cls}`}>
+                            {roleInfo(m.role).label}
+                          </span>
+                        )}
                         {podeExpulsar(m) && (
                           <button
                             onClick={() => { setExpelError(''); setMembroToExpel(m) }}

@@ -189,13 +189,23 @@ export default function SessaoPage() {
         // RLS: não-membros não recebem a sessão
         if (!data) throw new Error('Sessão não encontrada ou você não tem acesso a ela.')
         setSessao(data)
-        // Mestre = criador da mesa (para controles de combate)
+        // Gestor = criador OU co-mestre (controles de combate/descanso) — Fase 16.5
         const { data: mesaData } = await supabase
           .from('mesas')
           .select('criador_id')
           .eq('id', mesaId)
-          .single()
-        setIsMestre(mesaData?.criador_id === session.user.id)
+          .maybeSingle()
+        let gestor = mesaData?.criador_id === session.user.id
+        if (!gestor) {
+          const { data: membro } = await supabase
+            .from('membros_mesa')
+            .select('role')
+            .eq('mesa_id', mesaId)
+            .eq('usuario_id', session.user.id)
+            .maybeSingle()
+          gestor = membro?.role === 'co-mestre'
+        }
+        setIsMestre(gestor)
       } catch (err) {
         setError(err.message || 'Erro ao carregar sessão.')
       } finally {

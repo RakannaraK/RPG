@@ -7,7 +7,7 @@ import { useSessoes } from '../../hooks/useSessoes'
  *  - Sem sessão ativa: mestre vê "Iniciar sessão"; jogador vê estado neutro.
  *  - Com sessão ativa: todos veem "AO VIVO" + "Entrar"; mestre também "Encerrar".
  */
-export default function SessaoBanner({ mesaId, isCriador }) {
+export default function SessaoBanner({ mesaId, isGestor }) {
   const navigate = useNavigate()
   const { sessaoAtiva, loading, error, iniciarSessao, encerrarSessao } = useSessoes(mesaId)
   const [busy, setBusy] = useState(false)
@@ -71,7 +71,7 @@ export default function SessaoBanner({ mesaId, isCriador }) {
             >
               Entrar na sessão →
             </button>
-            {isCriador && !confirmEncerrar && (
+            {isGestor && !confirmEncerrar && (
               <button
                 onClick={() => setConfirmEncerrar(true)}
                 disabled={busy}
@@ -80,7 +80,7 @@ export default function SessaoBanner({ mesaId, isCriador }) {
                 Encerrar
               </button>
             )}
-            {isCriador && confirmEncerrar && (
+            {isGestor && confirmEncerrar && (
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={handleEncerrar}
@@ -106,7 +106,7 @@ export default function SessaoBanner({ mesaId, isCriador }) {
   }
 
   // ---- Sem sessão ativa ----
-  if (isCriador) {
+  if (isGestor) {
     return (
       <div className="mt-6 rounded-2xl border border-purple-800/60 bg-slate-800/50 px-5 py-4">
         <div className="flex items-center gap-3 flex-wrap">
