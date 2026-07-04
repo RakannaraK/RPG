@@ -13,6 +13,15 @@ import SessoesHistorico from '../components/sessao/SessoesHistorico'
 
 const TABS = ['Fichas', 'Dados', 'Sistema', 'Membros']
 
+// Fase 16 — rótulo/cor por papel (mestre/co-mestre/jogador/espectador)
+const ROLE_INFO = {
+  mestre:      { label: 'Mestre',     cls: 'bg-amber-500 text-amber-950' },
+  'co-mestre': { label: 'Co-mestre',  cls: 'bg-orange-500 text-orange-950' },
+  jogador:     { label: 'Jogador',    cls: 'bg-purple-700 text-white' },
+  espectador:  { label: 'Espectador', cls: 'bg-slate-600 text-slate-100' },
+}
+const roleInfo = role => ROLE_INFO[role] || ROLE_INFO.jogador
+
 export default function MesaPage() {
   const { id } = useParams()
   const { session } = useAuth()
@@ -33,6 +42,28 @@ export default function MesaPage() {
   const [showDeleteMesa, setShowDeleteMesa] = useState(false)
   const [deletingMesa, setDeletingMesa] = useState(false)
   const [deleteMesaError, setDeleteMesaError] = useState('')
+
+  // sair da mesa (16.1) — destino das fichas: false = deixar (padrão seguro)
+  const [showLeave, setShowLeave] = useState(false)
+  const [leaving, setLeaving] = useState(false)
+  const [leaveError, setLeaveError] = useState('')
+  const [deletarFichas, setDeletarFichas] = useState(false)
+
+  // expulsar membro (16.2)
+  const [membroToExpel, setMembroToExpel] = useState(null)
+  const [expelling, setExpelling] = useState(false)
+  const [expelError, setExpelError] = useState('')
+
+  // regenerar convite (16.3)
+  const [confirmandoRegen, setConfirmandoRegen] = useState(false)
+  const [regenerating, setRegenerating] = useState(false)
+  const [regenError, setRegenError] = useState('')
+
+  // transferir posse (16.4)
+  const [showTransferir, setShowTransferir] = useState(false)
+  const [novoDonoId, setNovoDonoId] = useState('')
+  const [transferring, setTransferring] = useState(false)
+  const [transferError, setTransferError] = useState('')
 
   // delete ficha
   const [fichaToDelete, setFichaToDelete] = useState(null)
@@ -115,6 +146,99 @@ export default function MesaPage() {
     }
   }
 
+  async function handleLeaveMesa() {
+    setLeaving(true)
+    setLeaveError('')
+    try {
+      // Toda a lógica (bloqueio do dono, deleção opcional das fichas, remoção
+      // da linha de membro) vive na RPC SECURITY DEFINER — sem delete do cliente.
+      const { error: err } = await supabase.rpc('sair_da_mesa', {
+        p_mesa_id: id,
+        p_deletar_fichas: deletarFichas,
+      })
+      if (err) throw err
+      navigate('/dashboard')
+    } catch (err) {
+      setLeaveError(err.message || 'Erro ao sair da mesa.')
+      setLeaving(false)
+    }
+  }
+
+  async function handleTransferirPosse() {
+    if (!novoDonoId) { setTransferError('Escolha o novo dono.'); return }
+    setTransferring(true)
+    setTransferError('')
+    try {
+      const { error: err } = await supabase.rpc('transferir_posse', {
+        p_mesa_id: id,
+        p_novo_dono: novoDonoId,
+      })
+      if (err) throw err
+      // Reflete a nova hierarquia localmente: eu viro co-mestre, o alvo vira mestre
+      setMesa(prev => ({ ...prev, criador_id: novoDonoId }))
+      setMeuRole('co-mestre')
+      setMembros(prev => prev.map(m =>
+        m.usuario.id === novoDonoId ? { ...m, role: 'mestre' }
+        : m.usuario.id === session.user.id ? { ...m, role: 'co-mestre' }
+        : m
+      ))
+      setShowTransferir(false)
+    } catch (err) {
+      setTransferError(err.message || 'Erro ao transferir posse.')
+    } finally {
+      setTransferring(false)
+    }
+  }
+
+  async function handleRegenerarConvite() {
+    setRegenerating(true)
+    setRegenError('')
+    try {
+      const { data: novo, error: err } = await supabase.rpc('regenerar_convite', { p_mesa_id: id })
+      if (err) throw err
+      setMesa(prev => ({ ...prev, codigo_convite: novo }))
+      setConfirmandoRegen(false)
+    } catch (err) {
+      setRegenError(err.message || 'Erro ao gerar novo código.')
+    } finally {
+      setRegenerating(false)
+    }
+  }
+
+  async function handleExpulsar() {
+    if (!membroToExpel) return
+    setExpelling(true)
+    setExpelError('')
+    try {
+      // RPC valida permissão (dono/co-mestre, não expulsa dono nem co-mestre por co-mestre)
+      const { error: err } = await supabase.rpc('expulsar_membro', {
+        p_mesa_id: id,
+        p_usuario_id: membroToExpel.usuario.id,
+      })
+      if (err) throw err
+      setMembros(prev => prev.filter(m => m.usuario.id !== membroToExpel.usuario.id))
+      setMembroToExpel(null)
+      refetchFichas() // fichas do expulso viram órfãs
+    } catch (err) {
+      setExpelError(err.message || 'Erro ao expulsar.')
+    } finally {
+      setExpelling(false)
+    }
+  }
+
+  async function handleDeletarFichaOrfa(ficha) {
+    setDeleteFichaError('')
+    try {
+      // RPC: gestor deleta ficha cujo dono não é mais membro (órfã)
+      const { error: err } = await supabase.rpc('deletar_ficha_orfa', { p_ficha_id: ficha.id })
+      if (err) throw err
+      setFichaToDelete(null)
+      refetchFichas()
+    } catch (err) {
+      setDeleteFichaError(err.message || 'Erro ao deletar ficha órfã.')
+    }
+  }
+
   async function handleDeleteFicha() {
     if (!fichaToDelete) return
     setDeletingFicha(true)
@@ -158,6 +282,17 @@ export default function MesaPage() {
   }
 
   const isCriador = mesa?.criador_id === session?.user?.id
+  const isGestor = isCriador || meuRole === 'co-mestre' // dono ou co-mestre (16.2)
+  const membroIds = new Set(membros.map(m => m.usuario?.id))
+
+  // Quem o usuário atual pode expulsar (espelha as regras da RPC expulsar_membro)
+  function podeExpulsar(m) {
+    if (m.usuario.id === session?.user?.id) return false // a si mesmo → usar "sair"
+    if (m.role === 'mestre') return false                // ninguém expulsa o dono
+    if (isCriador) return true                           // dono expulsa qualquer não-dono
+    if (meuRole === 'co-mestre') return m.role !== 'co-mestre' // co-mestre não expulsa co-mestre
+    return false
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
@@ -176,10 +311,8 @@ export default function MesaPage() {
             )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-              meuRole === 'mestre' ? 'bg-amber-500 text-amber-950' : 'bg-purple-700 text-white'
-            }`}>
-              {meuRole === 'mestre' ? 'Mestre' : 'Jogador'}
+            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${roleInfo(meuRole).cls}`}>
+              {roleInfo(meuRole).label}
             </span>
             <button
               onClick={() => setShowPrefs(true)}
@@ -188,6 +321,15 @@ export default function MesaPage() {
             >
               ⚙
             </button>
+            {!isCriador && (
+              <button
+                onClick={() => { setLeaveError(''); setDeletarFichas(false); setShowLeave(true) }}
+                className="p-2 text-purple-300 hover:text-red-400 hover:bg-red-950/40 rounded-lg transition-colors"
+                title="Sair da mesa"
+              >
+                🚪
+              </button>
+            )}
             {isCriador && (
               <button
                 onClick={() => setShowDeleteMesa(true)}
@@ -271,10 +413,15 @@ export default function MesaPage() {
                 <div className="grid gap-3">
                   {fichas.map(f => {
                     const ehDono = f.dono?.id === session?.user?.id
+                    // Órfã: dono não é mais membro da mesa (saiu/expulso) — Fase 16.2
+                    const orfa = !f.dono?.id || !membroIds.has(f.dono.id)
+                    const podeDeletar = ehDono || (orfa && isGestor)
                     return (
                       <div
                         key={f.id}
-                        className="flex bg-slate-800 border border-purple-800 hover:border-purple-600 rounded-xl transition-all overflow-hidden"
+                        className={`flex bg-slate-800 border rounded-xl transition-all overflow-hidden ${
+                          orfa ? 'border-amber-800/60 hover:border-amber-600' : 'border-purple-800 hover:border-purple-600'
+                        }`}
                       >
                         <button
                           onClick={() => navigate(`/mesa/${id}/ficha/${f.id}`)}
@@ -282,7 +429,14 @@ export default function MesaPage() {
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <p className="text-white font-semibold">{f.nome_personagem}</p>
+                              <p className="text-white font-semibold flex items-center gap-2">
+                                {f.nome_personagem}
+                                {orfa && (
+                                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-950 border border-amber-700/60 text-amber-300">
+                                    órfã
+                                  </span>
+                                )}
+                              </p>
                               <p className="text-purple-400 text-sm mt-0.5">
                                 {[f.raca, f.classe, f.nivel ? `Nível ${f.nivel}` : null]
                                   .filter(Boolean)
@@ -295,15 +449,17 @@ export default function MesaPage() {
                                   {f.hp_atual ?? '?'}/{f.hp_maximo} HP
                                 </p>
                               )}
-                              <p className="text-purple-500 text-xs mt-0.5">{f.dono?.username}</p>
+                              <p className="text-purple-500 text-xs mt-0.5">
+                                {orfa ? 'ex-membro' : f.dono?.username}
+                              </p>
                             </div>
                           </div>
                         </button>
-                        {ehDono && (
+                        {podeDeletar && (
                           <button
                             onClick={() => { setDeleteFichaError(''); setFichaToDelete(f) }}
                             className="px-3 text-red-500 hover:text-red-400 hover:bg-red-950/40 border-l border-purple-800 transition-colors"
-                            title="Deletar ficha"
+                            title={orfa ? 'Deletar ficha órfã' : 'Deletar ficha'}
                           >
                             🗑
                           </button>
@@ -347,7 +503,7 @@ export default function MesaPage() {
 
           {activeTab === 'Membros' && (
             <div className="space-y-4">
-              {meuRole === 'mestre' && (
+              {isGestor && (
                 <div className="bg-slate-800 border border-purple-800 rounded-xl p-5">
                   <p className="text-purple-300 text-sm font-medium mb-2">Código de convite</p>
                   <div className="flex items-center gap-3">
@@ -366,6 +522,41 @@ export default function MesaPage() {
                   <p className="text-purple-500 text-xs mt-2">
                     Compartilhe este código com seus jogadores para eles entrarem na mesa.
                   </p>
+
+                  {/* Regenerar convite (16.3) */}
+                  <div className="mt-3 pt-3 border-t border-purple-900/60">
+                    {!confirmandoRegen ? (
+                      <button
+                        onClick={() => { setRegenError(''); setConfirmandoRegen(true) }}
+                        className="text-xs text-purple-400 hover:text-white transition-colors"
+                      >
+                        ↻ Gerar novo código
+                      </button>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="text-amber-300 text-xs">
+                          O código antigo <strong>deixará de funcionar</strong>. Quem já é membro continua na mesa.
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={handleRegenerarConvite}
+                            disabled={regenerating}
+                            className="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors"
+                          >
+                            {regenerating ? 'Gerando...' : 'Confirmar novo código'}
+                          </button>
+                          <button
+                            onClick={() => { setConfirmandoRegen(false); setRegenError('') }}
+                            disabled={regenerating}
+                            className="px-3 py-1.5 text-purple-400 hover:text-white text-xs transition-colors disabled:opacity-50"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    {regenError && <p className="text-red-400 text-xs mt-1">{regenError}</p>}
+                  </div>
                 </div>
               )}
 
@@ -375,17 +566,45 @@ export default function MesaPage() {
                 </div>
                 <ul className="divide-y divide-purple-900">
                   {membros.map(m => (
-                    <li key={m.usuario.id} className="flex items-center justify-between px-5 py-3">
-                      <span className="text-white text-sm">{m.usuario.username}</span>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                        m.role === 'mestre' ? 'bg-amber-500 text-amber-950' : 'bg-purple-700 text-white'
-                      }`}>
-                        {m.role === 'mestre' ? 'Mestre' : 'Jogador'}
+                    <li key={m.usuario.id} className="flex items-center justify-between gap-2 px-5 py-3">
+                      <span className="text-white text-sm truncate">
+                        {m.usuario.username}
+                        {m.usuario.id === session?.user?.id && <span className="text-purple-500"> (você)</span>}
                       </span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${roleInfo(m.role).cls}`}>
+                          {roleInfo(m.role).label}
+                        </span>
+                        {podeExpulsar(m) && (
+                          <button
+                            onClick={() => { setExpelError(''); setMembroToExpel(m) }}
+                            className="p-1 text-red-800 hover:text-red-400 transition-colors"
+                            title={`Expulsar ${m.usuario.username}`}
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>
               </div>
+
+              {/* Transferir posse (16.4) — só o dono */}
+              {isCriador && membros.length > 1 && (
+                <div className="bg-slate-800 border border-amber-800/40 rounded-xl p-5">
+                  <p className="text-purple-300 text-sm font-medium mb-1">Transferir posse</p>
+                  <p className="text-purple-500 text-xs mb-3">
+                    Passe a mesa para outro membro. Você deixa de ser o dono e vira co-mestre.
+                  </p>
+                  <button
+                    onClick={() => { setTransferError(''); setNovoDonoId(''); setShowTransferir(true) }}
+                    className="px-4 py-2 bg-amber-800/70 hover:bg-amber-700 text-amber-50 text-sm rounded-lg transition-colors"
+                  >
+                    Transferir posse da mesa
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -450,11 +669,150 @@ export default function MesaPage() {
                 Cancelar
               </button>
               <button
-                onClick={handleDeleteFicha}
+                onClick={() => (
+                  fichaToDelete.dono?.id === session?.user?.id
+                    ? handleDeleteFicha()          // própria → delete direto (RLS dono)
+                    : handleDeletarFichaOrfa(fichaToDelete) // órfã → RPC (gestor)
+                )}
                 disabled={deletingFicha}
                 className="flex-1 py-2.5 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors"
               >
                 {deletingFicha ? 'Deletando...' : 'Deletar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: sair da mesa (16.1) */}
+      {showLeave && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-purple-700/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-white font-bold text-lg mb-2">Sair da mesa?</h3>
+            <p className="text-purple-300 text-sm mb-4">
+              Você deixará <strong className="text-purple-200">{mesa?.nome}</strong> e ela sairá do seu dashboard.
+              O que fazer com as suas fichas desta mesa?
+            </p>
+
+            <div className="space-y-2 mb-5">
+              <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${
+                !deletarFichas ? 'border-purple-600 bg-purple-950/40' : 'border-purple-900 hover:border-purple-700'
+              }`}>
+                <input type="radio" name="destinoFichas" checked={!deletarFichas} onChange={() => setDeletarFichas(false)} className="mt-0.5 accent-purple-500" />
+                <span>
+                  <span className="text-white text-sm font-medium block">Deixar na mesa</span>
+                  <span className="text-purple-400 text-xs">As fichas ficam para o mestre decidir. Se você voltar, elas ainda são suas.</span>
+                </span>
+              </label>
+              <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${
+                deletarFichas ? 'border-red-600 bg-red-950/30' : 'border-purple-900 hover:border-purple-700'
+              }`}>
+                <input type="radio" name="destinoFichas" checked={deletarFichas} onChange={() => setDeletarFichas(true)} className="mt-0.5 accent-red-500" />
+                <span>
+                  <span className="text-white text-sm font-medium block">Deletar minhas fichas</span>
+                  <span className="text-purple-400 text-xs">Apaga permanentemente as suas fichas desta mesa. Não pode ser desfeito.</span>
+                </span>
+              </label>
+            </div>
+
+            {leaveError && <p className="text-red-400 text-sm mb-3">{leaveError}</p>}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowLeave(false); setLeaveError('') }}
+                disabled={leaving}
+                className="flex-1 py-2.5 text-purple-300 hover:text-white border border-purple-700 hover:border-purple-500 rounded-xl text-sm transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleLeaveMesa}
+                disabled={leaving}
+                className={`flex-1 py-2.5 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors ${
+                  deletarFichas ? 'bg-red-700 hover:bg-red-600' : 'bg-purple-600 hover:bg-purple-700'
+                }`}
+              >
+                {leaving ? 'Saindo...' : 'Sair da mesa'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: expulsar membro (16.2) */}
+      {membroToExpel && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-red-800/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-white font-bold text-lg mb-2">Expulsar da mesa?</h3>
+            <p className="text-purple-300 text-sm mb-1">
+              Remover <strong className="text-purple-200">{membroToExpel.usuario.username}</strong> da mesa?
+            </p>
+            <p className="text-purple-400 text-xs mb-5">
+              As fichas dele(a) ficam como <span className="text-amber-300">órfãs</span> — você pode deletá-las ou mantê-las depois. A pessoa recebe uma notificação.
+            </p>
+            {expelError && <p className="text-red-400 text-sm mb-3">{expelError}</p>}
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setMembroToExpel(null); setExpelError('') }}
+                disabled={expelling}
+                className="flex-1 py-2.5 text-purple-300 hover:text-white border border-purple-700 hover:border-purple-500 rounded-xl text-sm transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleExpulsar}
+                disabled={expelling}
+                className="flex-1 py-2.5 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors"
+              >
+                {expelling ? 'Expulsando...' : 'Expulsar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: transferir posse (16.4) */}
+      {showTransferir && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-amber-700/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-white font-bold text-lg mb-2">Transferir posse da mesa</h3>
+            <p className="text-purple-300 text-sm mb-4">
+              O novo dono ganha todos os controles de mestre. <strong className="text-amber-300">Você vira co-mestre</strong> e
+              só o novo dono poderá te devolver a posse. Ação séria.
+            </p>
+
+            <label className="block text-purple-300 text-xs font-medium mb-1">Novo dono</label>
+            <select
+              value={novoDonoId}
+              onChange={e => setNovoDonoId(e.target.value)}
+              className="w-full px-3 py-2 mb-4 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+            >
+              <option value="">Selecionar membro...</option>
+              {membros
+                .filter(m => m.usuario.id !== session?.user?.id)
+                .map(m => (
+                  <option key={m.usuario.id} value={m.usuario.id}>
+                    {m.usuario.username} — {roleInfo(m.role).label}
+                  </option>
+                ))}
+            </select>
+
+            {transferError && <p className="text-red-400 text-sm mb-3">{transferError}</p>}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowTransferir(false); setTransferError('') }}
+                disabled={transferring}
+                className="flex-1 py-2.5 text-purple-300 hover:text-white border border-purple-700 hover:border-purple-500 rounded-xl text-sm transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleTransferirPosse}
+                disabled={transferring || !novoDonoId}
+                className="flex-1 py-2.5 bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors"
+              >
+                {transferring ? 'Transferindo...' : 'Transferir'}
               </button>
             </div>
           </div>
