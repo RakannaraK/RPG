@@ -11,6 +11,8 @@ export default function FaixaAtributos({
   detalhamentoMotor,
   onSaveValor,
   modificadoresAtivos = [],
+  formulaModificador = '',
+  contextoFormula = null,
 }) {
   if (!valoresAtributos || valoresAtributos.length === 0) {
     return (
@@ -49,6 +51,8 @@ export default function FaixaAtributos({
                 : undefined
             }
             modificadoresAtivos={modificadoresAtivos}
+            formulaMod={formulaModificador}
+            contextoFormula={contextoFormula}
             compact
           />
         ))}

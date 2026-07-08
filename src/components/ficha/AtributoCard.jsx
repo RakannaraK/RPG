@@ -3,6 +3,7 @@ import DiceRoller from './DiceRoller'
 import Dice3D from '../dados/Dice3D'
 import { tocarSomDado, estimarNumDados } from '../../lib/diceSounds'
 import { resolverVantagem, aplicarVantagem } from '../../lib/rollModifiers'
+import { avaliarFormula } from '../../lib/formulaEngine'
 import { usePreferencias } from '../../context/PreferenciasContext'
 
 // Aviso visual de vantagem/desvantagem/anulada (Fase 12.3)
@@ -55,6 +56,8 @@ export default function AtributoCard({
   valorFinal,
   fontesMod,
   modificadoresAtivos = [],
+  formulaMod = '',
+  contextoFormula = null,
   compact = false,
 }) {
   const { preferencias } = usePreferencias()
@@ -77,6 +80,15 @@ export default function AtributoCard({
   // valorFinal vem do motor de modificadores; valor é sempre o base (usado na edição)
   const display = valorFinal !== undefined ? valorFinal : valor
   const regra = atributo?.regra_rolagem
+
+  // 17.3 — modificador calculado pela fórmula do sistema (reage aos buffs via display)
+  let modAtributo = null
+  if (formulaMod && display !== undefined && display !== null && display !== '') {
+    try { modAtributo = avaliarFormula(formulaMod, { ...(contextoFormula || {}), _x: Number(display) }) }
+    catch { modAtributo = null }
+  }
+  const temMod = modAtributo !== null && Number.isFinite(modAtributo)
+  const fmtMod = m => (m >= 0 ? `+${m}` : String(m))
 
   // Flash de borda quando o valor final muda (feedback de toggle de habilidade)
   const [pulsando, setPulsando] = useState(false)
@@ -134,7 +146,9 @@ export default function AtributoCard({
     if (testando || !registrarRolagem) return
     setTestando(true)
     setErroTeste('')
-    const notacaoBase = buildNotacaoTeste(display, dadoPadrao)
+    // Com fórmula de modificador, o teste usa o MODIFICADOR (ex: 1d20+mod), não o valor
+    const valorTeste = temMod ? modAtributo : display
+    const notacaoBase = buildNotacaoTeste(valorTeste, dadoPadrao)
     const notacao = aplicarVantagem(notacaoBase, vantagemEstado)
     const sufixo = vantagemEstado === 'vantagem' ? ' (vantagem)'
       : vantagemEstado === 'desvantagem' ? ' (desvantagem)' : ''
@@ -176,9 +190,11 @@ export default function AtributoCard({
         {/* Valor com tooltip de rastreabilidade */}
         <div className="relative group/val w-full flex flex-col items-center">
           <p className={`font-bold text-4xl leading-none transition-colors duration-300 ${buffado ? 'text-green-300' : 'text-white'}`}>
-            {display !== undefined && display !== null ? display : '—'}
+            {temMod ? fmtMod(modAtributo) : (display !== undefined && display !== null ? display : '—')}
           </p>
-          {fontesMod && fontesMod.length > 0 && (
+          {temMod ? (
+            <p className="text-purple-400 text-[10px] leading-none mt-0.5">valor {display}</p>
+          ) : fontesMod && fontesMod.length > 0 && (
             <p className="text-purple-500 text-[9px] leading-none mt-0.5">base {valor}</p>
           )}
           {/* Tooltip de rastreabilidade */}
@@ -348,9 +364,11 @@ export default function AtributoCard({
         <div className="flex flex-col items-end gap-1 ml-4 shrink-0">
           <div className="relative group/val flex flex-col items-end">
             <p className={`font-bold text-3xl leading-none transition-colors duration-300 ${buffado ? 'text-green-300' : 'text-white'}`}>
-              {display !== undefined && display !== null ? display : '—'}
+              {temMod ? fmtMod(modAtributo) : (display !== undefined && display !== null ? display : '—')}
             </p>
-            {fontesMod && fontesMod.length > 0 && (
+            {temMod ? (
+              <p className="text-purple-400 text-[10px] leading-none">valor {display}</p>
+            ) : fontesMod && fontesMod.length > 0 && (
               <p className="text-purple-500 text-[10px] leading-none">base {valor}</p>
             )}
             {fontesMod && fontesMod.length > 0 && (

@@ -165,6 +165,26 @@ export default function FichaPage() {
   ;(periciasDoSistema || []).forEach(p => { if (p?.id) nomesAlvos[p.id] = p.nome })
   ;(camposCombate || []).forEach(c => { if (c?.id) nomesAlvos[c.id] = c.nome })
 
+  // 17.3 — contexto de fórmula (atributos FINAIS por id e por nome) + fórmula do modificador
+  const formulaModificador = config.formula_modificador || ''
+  const atributosCtx = {}
+  valoresAtributos.forEach(va => {
+    if (!va.atributo?.id) return
+    const vf = valoresFinais.atributos[va.atributo.id]
+    const val = vf !== undefined ? vf : (va.valor ?? 0)
+    atributosCtx[va.atributo.id] = val
+    if (va.atributo.nome) atributosCtx[va.atributo.nome] = val
+  })
+  const contextoFormula = {
+    atributos: atributosCtx,
+    formulaModificador,
+    nivel: ficha.nivel ?? 1,
+    vida_atual: ficha.hp_atual ?? 0,
+    vida_max: valoresFinais.vida_max ?? ficha.hp_maximo ?? 0,
+    pericias: {},
+    recursos: {},
+  }
+
   // 12.4 — usa um efeito pontual (cura ou vida_temp_acao) de uma habilidade:
   // rola se for notação, aplica à vida e registra no feed.
   async function handleUsarAcao(mod, nomeHab) {
@@ -314,6 +334,8 @@ export default function FichaPage() {
           detalhamentoMotor={valoresFinais.detalhamento}
           onSaveValor={handleSaveValor}
           modificadoresAtivos={modificadoresAtivos}
+          formulaModificador={formulaModificador}
+          contextoFormula={contextoFormula}
         />
 
         {/* Layout de 3 colunas */}

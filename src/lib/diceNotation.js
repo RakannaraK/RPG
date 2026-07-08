@@ -1,4 +1,5 @@
 import { rolarDados } from './dice.js'
+import { avaliarFormula } from './formulaEngine.js'
 
 // Valida a notação completa: um token inicial + zero ou mais tokens com sinal
 // Token: grupo de dados (ex: 2d6kh3) ou número plano (ex: 3)
@@ -25,6 +26,78 @@ export function resolverNotacao(notacao, valoresFinais = {}) {
     const n = Number(val) || 0
     return n >= 0 ? `+${n}` : String(n)
   })
+}
+
+// --- Fase 17.2 — notação com variáveis/fórmulas -----------------------------
+
+// Divide a notação em termos de topo por +/- respeitando parênteses (fórmulas
+// têm +/- internos que NÃO separam termos).
+function dividirTermos(s) {
+  const termos = []
+  let depth = 0, atual = '', sinal = '+'
+  for (const c of s) {
+    if (c === '(') { depth++; atual += c }
+    else if (c === ')') { depth--; atual += c }
+    else if ((c === '+' || c === '-') && depth === 0) {
+      if (atual.trim() !== '') termos.push({ sinal, texto: atual.trim() })
+      sinal = c
+      atual = ''
+    } else atual += c
+  }
+  if (atual.trim() !== '') termos.push({ sinal, texto: atual.trim() })
+  return termos
+}
+
+const RE_DADO_PAREN = /^\((.+)\)d(\d+)((?:kh|kl)\d+)?$/i // (formula)dN[kh/kl]
+const RE_DADO_NUM   = /^\d+d\d+((?:kh|kl)\d+)?$/i         // NdN[kh/kl]
+const RE_NUM        = /^\d+(\.\d+)?$/
+
+/**
+ * Fase 17.2 — resolve fórmulas/variáveis dentro de uma notação de dado, usando o
+ * formulaEngine, e devolve a notação CONCRETA + o detalhamento das substituições.
+ *
+ *   "4d4+(vitalidade)d3" com Vitalidade 5  →  "4d4+5d3"
+ *   "1d8+mod(forca)"     (Força 19, D&D)   →  "1d8+4"
+ *
+ * Atalho (Fase 17.2): nome solto (não embutido) = atributo. Quantidade de dados:
+ * piso, mínimo 0 (0 dados = grupo omitido). Notações sem fórmula passam intactas.
+ *
+ * @param {string} notacao
+ * @param {object} contexto — mesmo do formulaEngine (atributos, nivel, ...)
+ * @returns {{ notacao: string, substituicoes: Array<{expr,valor,tipo}> }}
+ */
+export function resolverNotacaoFormula(notacao, contexto = {}) {
+  if (!notacao || typeof notacao !== 'string') return { notacao, substituicoes: [] }
+  const ctx = { ...contexto, _nomeSoltoEhAtributo: true }
+  const substituicoes = []
+  const partes = [] // { sinal, texto }
+
+  for (const t of dividirTermos(notacao.trim())) {
+    let m
+    if ((m = t.texto.match(RE_DADO_PAREN))) {
+      const formula = m[1].trim()
+      const lados = m[2]
+      const keep = m[3] || ''
+      const qtd = Math.max(0, Math.floor(avaliarFormula(formula, ctx)))
+      substituicoes.push({ expr: formula, valor: qtd, tipo: 'quantidade' })
+      if (qtd > 0) partes.push({ sinal: t.sinal, texto: `${qtd}d${lados}${keep}` })
+      // qtd 0 → grupo ignorado
+    } else if (RE_DADO_NUM.test(t.texto) || RE_NUM.test(t.texto)) {
+      partes.push({ sinal: t.sinal, texto: t.texto })
+    } else {
+      // termo é uma fórmula (modificador plano)
+      const n = Math.floor(avaliarFormula(t.texto, ctx))
+      substituicoes.push({ expr: t.texto, valor: n, tipo: 'modificador' })
+      const net = (t.sinal === '-' ? -1 : 1) * n
+      partes.push({ sinal: net < 0 ? '-' : '+', texto: String(Math.abs(net)) })
+    }
+  }
+
+  let out = ''
+  partes.forEach((p, i) => {
+    out += i === 0 && p.sinal === '+' ? p.texto : `${p.sinal}${p.texto}`
+  })
+  return { notacao: out, substituicoes }
 }
 
 /**

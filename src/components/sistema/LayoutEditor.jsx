@@ -1,4 +1,5 @@
 // Editor de layout/seções do sistema — usado pelo mestre no SistemaEditor
+import FormulaInput from './FormulaInput'
 
 const SECOES = [
   { id: 'acoes',         label: 'Ações / Ataques',      desc: 'Lista de ataques e habilidades ativas' },
@@ -133,6 +134,25 @@ export default function LayoutEditor({
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Fórmula do modificador de atributo (17.3) */}
+      <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
+        <p className="text-purple-200 text-sm font-semibold">Modificador de atributo</p>
+        <p className="text-purple-500 text-xs">
+          Como o modificador de cada atributo sai do valor. Use <span className="font-mono text-purple-300">x</span> para
+          o valor do atributo. Vazio = sem modificador (usa o valor puro, ex: Infinit Corridor).
+          A ficha exibe o modificador calculado quando há fórmula.
+        </p>
+        <FormulaInput
+          value={config.formula_modificador || ''}
+          onChange={f => onConfigChange({ ...config, formula_modificador: f })}
+          placeholder="ex: piso((x-10)/2)"
+          presets={[
+            { label: 'Sem modificador (valor puro)', valor: '' },
+            { label: 'piso((x-10)/2)  (D&D)', valor: 'piso((x-10)/2)' },
+          ]}
+        />
       </div>
 
       {/* Rótulo de vida */}

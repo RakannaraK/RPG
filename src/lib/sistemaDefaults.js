@@ -15,6 +15,7 @@ export const CONFIG_LAYOUT_DEFAULT = {
   rotulo_vida: 'Pontos de Vida',
   dado_padrao: 20,
   descansos: [], // Fase 15 — tipos de descanso configurados pelo mestre
+  formula_modificador: '', // Fase 17.3 — fórmula do modificador de atributo ('' = valor puro)
 }
 
 // Mescla config parcial do banco com os defaults, garantindo que nenhuma chave falte
@@ -30,5 +31,6 @@ export function mergeConfigLayout(raw) {
     rotulo_vida: (raw || {}).rotulo_vida || 'Pontos de Vida',
     dado_padrao: (raw || {}).dado_padrao || 20,
     descansos: (raw || {}).descansos || [],
+    formula_modificador: (raw || {}).formula_modificador || '',
   }
 }
