@@ -14,6 +14,7 @@ import PainelFichas from '../components/sessao/PainelFichas'
 import CombatePanel from '../components/sessao/CombatePanel'
 import DescansoGrupo from '../components/sessao/DescansoGrupo'
 import FeedRolagens from '../components/dados/FeedRolagens'
+import Sininho from '../components/notificacoes/Sininho'
 
 /**
  * Fase 13 — tela da sessão ao vivo.
@@ -266,6 +267,7 @@ export default function SessaoPage() {
             )}
           </div>
           <div className="ml-auto shrink-0 flex items-center gap-3">
+            <Sininho />
             <span
               className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${
                 conectado ? 'text-emerald-300' : 'text-amber-300'

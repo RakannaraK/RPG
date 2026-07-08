@@ -73,6 +73,16 @@ export function useSessoes(mesaId) {
       .single()
     if (err) throw err
     setSessaoAtiva(data)
+    // Notifica os demais membros da mesa (16.7) — best-effort, não bloqueia
+    try {
+      await supabase.rpc('notificar_mesa', {
+        p_mesa_id: mesaId,
+        p_tipo: 'sessao_iniciada',
+        p_titulo: 'Sessão iniciada',
+        p_corpo: tituloFinal,
+        p_link: `/mesa/${mesaId}/sessao/${data.id}`,
+      })
+    } catch { /* notificação é opcional */ }
     return data
   }
 

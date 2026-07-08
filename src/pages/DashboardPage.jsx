@@ -6,6 +6,7 @@ import MesaCard from '../components/mesa/MesaCard'
 import MesaCreate from '../components/mesa/MesaCreate'
 import MesaInvite from '../components/mesa/MesaInvite'
 import PreferenciasModal from '../components/preferencias/PreferenciasModal'
+import Sininho from '../components/notificacoes/Sininho'
 
 export default function DashboardPage() {
   const { session, logout } = useAuth()
@@ -16,6 +17,11 @@ export default function DashboardPage() {
   const [showInvite, setShowInvite] = useState(false)
   const [showPrefs, setShowPrefs] = useState(false)
   const [logoutLoading, setLogoutLoading] = useState(false)
+  const [showArquivadas, setShowArquivadas] = useState(false)
+
+  // 16.8 — separa mesas ativas das arquivadas
+  const ativas = mesas.filter(m => !m.arquivada)
+  const arquivadas = mesas.filter(m => m.arquivada)
 
   async function handleLogout() {
     setLogoutLoading(true)
@@ -47,6 +53,7 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-purple-300 text-sm hidden sm:block">{session?.user?.email}</span>
+          <Sininho />
           <button
             onClick={() => setShowPrefs(true)}
             title="Preferências"
@@ -69,7 +76,7 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-white">Suas Mesas</h1>
             <p className="text-purple-400 mt-1 text-sm">
-              {mesas.length === 0 ? 'Nenhuma mesa ainda' : `${mesas.length} ${mesas.length === 1 ? 'mesa' : 'mesas'}`}
+              {ativas.length === 0 ? 'Nenhuma mesa ativa' : `${ativas.length} ${ativas.length === 1 ? 'mesa' : 'mesas'}`}
             </p>
           </div>
           <div className="flex gap-2 sm:gap-3">
@@ -104,7 +111,7 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-        ) : mesas.length === 0 ? (
+        ) : ativas.length === 0 && arquivadas.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-purple-800 rounded-2xl">
             <div className="text-5xl mb-4">🗺️</div>
             <p className="text-purple-300 text-lg font-medium mb-2">Nenhuma mesa ainda</p>
@@ -125,11 +132,38 @@ export default function DashboardPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {mesas.map(mesa => (
-              <MesaCard key={mesa.id} mesa={mesa} />
-            ))}
-          </div>
+          <>
+            {ativas.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {ativas.map(mesa => (
+                  <MesaCard key={mesa.id} mesa={mesa} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-purple-500 text-sm py-6 text-center border border-dashed border-purple-900 rounded-2xl">
+                Nenhuma mesa ativa. Suas mesas arquivadas estão abaixo.
+              </p>
+            )}
+
+            {/* Arquivadas (16.8) */}
+            {arquivadas.length > 0 && (
+              <div className="mt-8">
+                <button
+                  onClick={() => setShowArquivadas(a => !a)}
+                  className="text-purple-400 hover:text-purple-200 text-sm transition-colors"
+                >
+                  {showArquivadas ? '▾' : '▸'} 📦 Arquivadas ({arquivadas.length})
+                </button>
+                {showArquivadas && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3 opacity-75">
+                    {arquivadas.map(mesa => (
+                      <MesaCard key={mesa.id} mesa={mesa} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
       </main>
 

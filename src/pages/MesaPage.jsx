@@ -11,6 +11,7 @@ import PreferenciasModal from '../components/preferencias/PreferenciasModal'
 import SessaoBanner from '../components/sessao/SessaoBanner'
 import SessoesHistorico from '../components/sessao/SessoesHistorico'
 import MeuPerfilMesa from '../components/mesa/MeuPerfilMesa'
+import Sininho from '../components/notificacoes/Sininho'
 
 const TABS = ['Fichas', 'Dados', 'Sistema', 'Membros']
 
@@ -303,6 +304,17 @@ export default function MesaPage() {
   const isGestor = isCriador || meuRole === 'co-mestre' // dono ou co-mestre (16.2)
   const membroIds = new Set(membros.map(m => m.usuario?.id))
   const meuMembro = membros.find(m => m.usuario?.id === session?.user?.id) // 16.6
+  const souEspectador = meuRole === 'espectador' // 16.8
+  const arquivada = mesa?.arquivada === true
+  const podeEscrever = !souEspectador && !arquivada // criar ficha, rolar, iniciar sessão
+
+  async function handleArquivar(novoValor) {
+    try {
+      const { error: err } = await supabase.from('mesas').update({ arquivada: novoValor }).eq('id', id)
+      if (err) throw err
+      setMesa(prev => ({ ...prev, arquivada: novoValor }))
+    } catch { /* dono tem UPDATE em mesas; falha silenciosa */ }
+  }
 
   function onPerfilSalvo(apelido, avatarUrl) {
     setMembros(prev => prev.map(m =>
@@ -339,6 +351,7 @@ export default function MesaPage() {
             <span className={`text-xs font-semibold px-2 py-1 rounded-full ${roleInfo(meuRole).cls}`}>
               {roleInfo(meuRole).label}
             </span>
+            <Sininho />
             <button
               onClick={() => setShowPrefs(true)}
               title="Preferências"
@@ -369,8 +382,23 @@ export default function MesaPage() {
       </header>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        {/* Fase 13.1 — banner de sessão ao vivo */}
-        <SessaoBanner mesaId={id} isGestor={isGestor} />
+        {/* Arquivada (16.8) — somente leitura */}
+        {arquivada && (
+          <div className="mt-6 rounded-xl border border-amber-800/50 bg-amber-950/30 px-4 py-3 flex items-center justify-between gap-2 flex-wrap">
+            <p className="text-amber-200 text-sm">📦 Esta mesa está arquivada — somente leitura.</p>
+            {isCriador && (
+              <button
+                onClick={() => handleArquivar(false)}
+                className="px-3 py-1.5 bg-amber-800/70 hover:bg-amber-700 text-amber-50 text-sm rounded-lg transition-colors"
+              >
+                Desarquivar
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Fase 13.1 — banner de sessão ao vivo (não em mesa arquivada) */}
+        {!arquivada && <SessaoBanner mesaId={id} isGestor={isGestor} />}
         {/* Fase 13.5 — histórico de sessões encerradas */}
         <SessoesHistorico mesaId={id} />
 
@@ -406,12 +434,14 @@ export default function MesaPage() {
                     ? `${fichas.length} ficha${fichas.length > 1 ? 's' : ''}`
                     : 'Nenhuma ficha ainda'}
                 </p>
-                <button
-                  onClick={() => setShowFichaCreate(true)}
-                  className="text-sm px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-lg transition-colors"
-                >
-                  + Nova ficha
-                </button>
+                {podeEscrever && (
+                  <button
+                    onClick={() => setShowFichaCreate(true)}
+                    className="text-sm px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-lg transition-colors"
+                  >
+                    + Nova ficha
+                  </button>
+                )}
               </div>
 
               {loadingFichas ? (
@@ -425,14 +455,18 @@ export default function MesaPage() {
                   <div className="text-4xl mb-4">📜</div>
                   <p className="text-purple-300 text-lg font-medium mb-2">Nenhuma ficha criada</p>
                   <p className="text-purple-500 text-sm mb-5">
-                    Crie sua primeira ficha de personagem para começar a aventura!
+                    {podeEscrever
+                      ? 'Crie sua primeira ficha de personagem para começar a aventura!'
+                      : arquivada ? 'Mesa arquivada — somente leitura.' : 'Como espectador, você não cria fichas.'}
                   </p>
-                  <button
-                    onClick={() => setShowFichaCreate(true)}
-                    className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors"
-                  >
-                    + Criar ficha
-                  </button>
+                  {podeEscrever && (
+                    <button
+                      onClick={() => setShowFichaCreate(true)}
+                      className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors"
+                    >
+                      + Criar ficha
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="grid gap-3">
@@ -511,10 +545,12 @@ export default function MesaPage() {
 
           {activeTab === 'Dados' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-              <div>
-                <p className="text-purple-200 font-medium text-sm mb-4">Rolar dados</p>
-                <RoladorGenerico mesaId={id} />
-              </div>
+              {podeEscrever && (
+                <div>
+                  <p className="text-purple-200 font-medium text-sm mb-4">Rolar dados</p>
+                  <RoladorGenerico mesaId={id} />
+                </div>
+              )}
               <div>
                 <p className="text-purple-200 font-medium text-sm mb-4">Histórico da sessão</p>
                 <FeedRolagens mesaId={id} onNovaRolagem={() => setNovasRolagens(n => n + 1)} />
@@ -665,6 +701,24 @@ export default function MesaPage() {
                     className="px-4 py-2 bg-amber-800/70 hover:bg-amber-700 text-amber-50 text-sm rounded-lg transition-colors"
                   >
                     Transferir posse da mesa
+                  </button>
+                </div>
+              )}
+
+              {/* Arquivar mesa (16.8) — só o dono */}
+              {isCriador && (
+                <div className="bg-slate-800 border border-purple-800 rounded-xl p-5">
+                  <p className="text-purple-300 text-sm font-medium mb-1">{arquivada ? 'Mesa arquivada' : 'Arquivar mesa'}</p>
+                  <p className="text-purple-500 text-xs mb-3">
+                    {arquivada
+                      ? 'A mesa está em somente leitura. Desarquive para voltar a jogar.'
+                      : 'Guarda a mesa em somente leitura (sem novas sessões, fichas ou rolagens). Some da lista principal e pode ser desarquivada depois.'}
+                  </p>
+                  <button
+                    onClick={() => handleArquivar(!arquivada)}
+                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-purple-100 text-sm rounded-lg transition-colors"
+                  >
+                    {arquivada ? 'Desarquivar mesa' : 'Arquivar mesa'}
                   </button>
                 </div>
               )}

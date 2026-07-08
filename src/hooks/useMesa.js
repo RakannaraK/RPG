@@ -22,7 +22,8 @@ export function useMesas() {
             nome,
             descricao,
             codigo_convite,
-            created_at
+            created_at,
+            arquivada
           )
         `)
         .eq('usuario_id', session.user.id)

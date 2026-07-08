@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom'
 
-const ROLE_LABELS = { mestre: 'Mestre', jogador: 'Jogador' }
+const ROLE_LABELS = { mestre: 'Mestre', 'co-mestre': 'Co-mestre', jogador: 'Jogador', espectador: 'Espectador' }
 const ROLE_COLORS = {
   mestre: 'bg-amber-500 text-amber-950',
+  'co-mestre': 'bg-orange-500 text-orange-950',
   jogador: 'bg-purple-600 text-white',
+  espectador: 'bg-slate-600 text-slate-100',
 }
 
 export default function MesaCard({ mesa }) {
@@ -29,9 +31,9 @@ export default function MesaCard({ mesa }) {
 
       <div className="flex items-center gap-4 text-purple-400 text-xs">
         <span>👥 {mesa.totalMembros} {mesa.totalMembros === 1 ? 'membro' : 'membros'}</span>
-        {mesa.role === 'mestre' && (
-          <span className="text-amber-500">⚔️ Você é o Mestre</span>
-        )}
+        {mesa.role === 'mestre' && <span className="text-amber-500">⚔️ Você é o Mestre</span>}
+        {mesa.role === 'co-mestre' && <span className="text-orange-400">🛡 Co-mestre</span>}
+        {mesa.arquivada && <span className="text-purple-500">📦 Arquivada</span>}
       </div>
     </button>
   )
