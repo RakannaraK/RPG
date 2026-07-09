@@ -5,9 +5,10 @@ import AtributoEditor from './AtributoEditor'
 import LayoutEditor from './LayoutEditor'
 import RacasClassesEditor from './RacasClassesEditor'
 import PoolsEditor from './PoolsEditor'
+import PoderesEditor from './PoderesEditor'
 import DescansosEditor from './DescansosEditor'
 
-const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes', 'Descansos', 'Recursos']
+const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes', 'Descansos', 'Recursos', 'Poderes']
 
 const REGRA_PADRAO = {
   tipo: 'dados',
@@ -312,6 +313,15 @@ export default function SistemaEditor({ mesaId, isMestre }) {
             <PoolsEditor sistemaId={sistemaDB.id} descansos={configLayout.descansos || []} />
           ) : (
             <p className="text-purple-500 text-sm">Salve o sistema antes de criar recursos.</p>
+          )
+        )}
+
+        {/* Fase 20.2 — catálogo de poderes */}
+        {activeTab === 'Poderes' && (
+          sistemaDB?.id ? (
+            <PoderesEditor sistemaId={sistemaDB.id} />
+          ) : (
+            <p className="text-purple-500 text-sm">Salve o sistema antes de criar poderes.</p>
           )
         )}
       </div>
