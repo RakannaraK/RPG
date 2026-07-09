@@ -42,7 +42,7 @@ export function useHabilidades(sistemaId) {
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
-  async function createHabilidade({ nome, descricao, tipo, recurso_nome, recurso_max, raca_id, classe_id }) {
+  async function createHabilidade({ nome, descricao, tipo, recurso_nome, recurso_max, raca_id, classe_id, nivel_minimo }) {
     const payload = {
       sistema_id: sistemaId,
       nome: nome.trim(),
@@ -53,6 +53,8 @@ export function useHabilidades(sistemaId) {
         ? Number(recurso_max) : null,
       raca_id: raca_id || null,
       classe_id: classe_id || null,
+      // 19.5 — null = sem requisito de nível
+      nivel_minimo: nivel_minimo !== '' && nivel_minimo != null ? Number(nivel_minimo) : null,
     }
     const { data, error } = await supabase.from('habilidades').insert(payload).select().single()
     if (error) throw error
@@ -70,6 +72,8 @@ export function useHabilidades(sistemaId) {
       ? Number(updates.recurso_max) : null
     if (updates.raca_id !== undefined)    payload.raca_id = updates.raca_id || null
     if (updates.classe_id !== undefined)  payload.classe_id = updates.classe_id || null
+    if (updates.nivel_minimo !== undefined) payload.nivel_minimo =
+      updates.nivel_minimo !== '' && updates.nivel_minimo !== null ? Number(updates.nivel_minimo) : null
 
     const { error } = await supabase.from('habilidades').update(payload).eq('id', id)
     if (error) throw error
@@ -82,7 +86,7 @@ export function useHabilidades(sistemaId) {
     setHabilidades(prev => prev.filter(h => h.id !== id))
   }
 
-  async function addModificador({ habilidade_id, tipo, alvo, operacao, valor, dados_extras, escopo_categoria, valor_e_formula, percentual_rolagem, condicao_tipo, condicao_config }) {
+  async function addModificador({ habilidade_id, tipo, alvo, operacao, valor, dados_extras, escopo_categoria, valor_e_formula, percentual_rolagem, condicao_tipo, condicao_config, faixas, nivel_minimo }) {
     const payload = {
       habilidade_id,
       tipo,
@@ -95,6 +99,8 @@ export function useHabilidades(sistemaId) {
       percentual_rolagem: percentual_rolagem != null && percentual_rolagem !== '' ? Number(percentual_rolagem) : null,
       condicao_tipo: condicao_tipo || null,
       condicao_config: condicao_config || null,
+      faixas: faixas || null, // 19.4
+      nivel_minimo: nivel_minimo != null && nivel_minimo !== '' ? Number(nivel_minimo) : null, // 19.5
     }
     const { data, error } = await supabase.from('modificadores').insert(payload).select().single()
     if (error) throw error

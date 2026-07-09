@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { atendeNivelMinimo } from '../lib/requisitos'
 
 /**
  * Gerencia habilidades de uma ficha específica.
@@ -145,12 +146,20 @@ export function useHabilidadesFicha(fichaId, habilidadesSistema = []) {
    * Fase 19.1 — auto-concessão multiclasse. Sincroniza as habilidades de origem
    * 'classe' contra o CONJUNTO atual de classes da ficha: remove as de classes
    * que saíram, adiciona as das classes presentes que ainda faltam.
+   *
+   * Fase 19.5 — só concede o que atingiu o `nivel_minimo` (medido pelo nível da
+   * classe de origem). Chamada também ao subir de nível: o que destrava entra
+   * sozinho, o que deixa de valer sai.
+   *
    * @param {string[]} classeIdsAtuais — ids de todas as classes da ficha agora
+   * @param {object} [contexto] — { nivel, niveisClasse } para o requisito de nível
    */
-  async function sincronizarClasses(classeIdsAtuais) {
+  async function sincronizarClasses(classeIdsAtuais, contexto = {}) {
     const idSet = new Set(classeIdsAtuais || [])
     const rowsClasse = rawRows.filter(row => row.origem === 'classe')
-    const desejadas = habilidadesSistema.filter(h => h.classe_id && idSet.has(h.classe_id))
+    const desejadas = habilidadesSistema.filter(
+      h => h.classe_id && idSet.has(h.classe_id) && atendeNivelMinimo(h, contexto)
+    )
     const desejadasIds = new Set(desejadas.map(h => h.id))
     const presentesIds = new Set(rowsClasse.map(r => r.habilidade_id))
 

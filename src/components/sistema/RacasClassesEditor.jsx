@@ -99,6 +99,8 @@ function labelModificador(mod, atributos, camposCombate, pericias = []) {
     const extremos = fs.length > 1 ? `${fs[0].valor} → ${fs[fs.length - 1].valor}` : `${fs[0].valor}`
     base = `${base} ↗ ${extremos} por faixa`
   }
+  // 19.5 — requisito de nível
+  if (mod.nivel_minimo != null) base = `${base} · nv ${mod.nivel_minimo}+`
   const cond = descCondicao(mod, atributos)
   return cond ? `${base} [${cond}]` : base
 }
@@ -111,6 +113,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], class
   const [valorEhFormula, setValorEhFormula] = useState(false) // 17.5
   const [escalaFaixa, setEscalaFaixa] = useState(false) // 19.4
   const [faixaSpec, setFaixaSpec] = useState({ variavel: 'nivel', campo: 'valor', faixas: [] })
+  const [nivelMinimo, setNivelMinimo] = useState('') // 19.5
   const [dadosExtras, setDadosExtras] = useState('')
   const [percRolagem, setPercRolagem] = useState('') // 18.3
   const [escopoCategoria, setEscopoCategoria] = useState('')
@@ -130,6 +133,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], class
     setTipo(novo); setAlvo(''); setValor(''); setValorEhFormula(false); setDadosExtras(''); setPercRolagem(''); setEscopoCategoria('')
     setVantTipoAlvo('atributo'); setCuraModo('pontual'); setErro('')
     setEscalaFaixa(false); setFaixaSpec({ variavel: 'nivel', campo: 'valor', faixas: [] })
+    setNivelMinimo('')
   }
 
   // 17.5 — tipos cujo valor pode ser fórmula (número → fórmula com nivel/recurso/perícia)
@@ -176,6 +180,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], class
       dadosExtras, percentualRolagem: percRolagem, escopoCategoria, vantTipoAlvo, curaModo,
       condTipo, condMetrica, condOperador, condValor, condRotulo,
       faixas: escalando ? faixaSpec : null,
+      nivelMinimo,
     })
 
     setSalvando(true)
@@ -185,6 +190,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], class
       setAlvo(''); setValor(''); setValorEhFormula(false); setDadosExtras(''); setPercRolagem(''); setEscopoCategoria('')
       setCondTipo('nenhuma'); setCondValor(''); setCondRotulo('')
       setEscalaFaixa(false); setFaixaSpec({ variavel: 'nivel', campo: 'valor', faixas: [] })
+      setNivelMinimo('')
     } catch (err) {
       setErro(err.message || 'Erro ao adicionar efeito.')
     } finally {
@@ -334,6 +340,15 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], class
         </div>
       )}
 
+      {/* Nível mínimo (19.5) */}
+      <div className="flex flex-wrap gap-2 items-center border-t border-purple-900/50 pt-2">
+        <span className="text-purple-500 text-[11px]">Nível mínimo:</span>
+        <input type="number" min={1} value={nivelMinimo} onChange={e => setNivelMinimo(e.target.value)}
+          placeholder="—" className={`${ic} w-16 text-center`}
+          title="Só entra em jogo a partir deste nível (da classe de origem; raça/avulso usam o nível total). Vazio = sem requisito." />
+        <span className="text-purple-600 text-[11px]">vazio = sem requisito</span>
+      </div>
+
       {/* Condição */}
       <div className="flex flex-wrap gap-2 items-center border-t border-purple-900/50 pt-2">
         <span className="text-purple-500 text-[11px]">Condição:</span>
@@ -414,6 +429,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
   const [editTipo, setEditTipo] = useState('passiva')
   const [editRecNome, setEditRecNome] = useState('')
   const [editRecMax, setEditRecMax] = useState('')
+  const [editNivelMin, setEditNivelMin] = useState('') // 19.5
   const [salvando, setSalvando] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [erro, setErro] = useState('')
@@ -430,6 +446,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
         nome: editNome, descricao: editDesc, tipo: editTipo,
         recurso_nome: editTipo === 'ativavel' ? editRecNome : '',
         recurso_max: editTipo === 'ativavel' && editRecNome.trim() ? editRecMax : null,
+        nivel_minimo: editNivelMin,
       })
       setEditando(false)
     } catch (err) {
@@ -451,6 +468,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
     setEditTipo(habilidade.tipo || 'passiva')
     setEditRecNome(habilidade.recurso_nome || '')
     setEditRecMax(habilidade.recurso_max != null ? String(habilidade.recurso_max) : '')
+    setEditNivelMin(habilidade.nivel_minimo != null ? String(habilidade.nivel_minimo) : '')
     setErro(''); setEditando(true)
   }
 
@@ -491,6 +509,13 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
                   )}
                 </>
               )}
+              {/* 19.5 — requisito de nível */}
+              <div>
+                <p className="text-purple-400 text-xs mb-1">Nível mínimo</p>
+                <input type="number" value={editNivelMin} onChange={e => setEditNivelMin(e.target.value)}
+                  min="1" placeholder="—" className={`${SEL} w-20 text-center`}
+                  title="Só é concedida a partir deste nível (da classe de origem; raça/avulsa usam o nível total)." />
+              </div>
             </div>
             {erro && <p className="text-red-400 text-xs">{erro}</p>}
             <div className="flex gap-2">
@@ -564,6 +589,7 @@ function HabilidadesVinculadas({
   const [novoTipo, setNovoTipo] = useState('passiva')
   const [novoRecNome, setNovoRecNome] = useState('')
   const [novoRecMax, setNovoRecMax] = useState('')
+  const [novoNivelMin, setNovoNivelMin] = useState('') // 19.5
   const [criando, setCriando] = useState(false)
   const [erroNovo, setErroNovo] = useState('')
 
@@ -573,7 +599,7 @@ function HabilidadesVinculadas({
 
   function resetNovo() {
     setNovoNome(''); setNovaDesc(''); setNovoTipo('passiva')
-    setNovoRecNome(''); setNovoRecMax(''); setErroNovo('')
+    setNovoRecNome(''); setNovoRecMax(''); setNovoNivelMin(''); setErroNovo('')
   }
 
   async function handleCreate() {
@@ -590,6 +616,7 @@ function HabilidadesVinculadas({
         nome: novoNome, descricao: novaDesc, tipo: novoTipo,
         recurso_nome: novoTipo === 'ativavel' ? novoRecNome : '',
         recurso_max: novoTipo === 'ativavel' && novoRecNome.trim() ? novoRecMax : null,
+        nivel_minimo: novoNivelMin, // 19.5
         [idField]: parentId,
         [otherField]: null,
       })
@@ -644,6 +671,13 @@ function HabilidadesVinculadas({
                 )}
               </>
             )}
+            {/* 19.5 — requisito de nível */}
+            <div>
+              <p className="text-purple-400 text-xs mb-1">Nível mínimo</p>
+              <input type="number" value={novoNivelMin} onChange={e => setNovoNivelMin(e.target.value)}
+                min="1" placeholder="—" className={`${SEL} w-20 text-center`}
+                title="Só é concedida a partir deste nível (da classe de origem; raça/avulsa usam o nível total)." />
+            </div>
           </div>
           {erroNovo && <p className="text-red-400 text-xs">{erroNovo}</p>}
           <div className="flex gap-2">
@@ -912,12 +946,13 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
   const [novoTipo, setNovoTipo] = useState('passiva')
   const [novoRecNome, setNovoRecNome] = useState('')
   const [novoRecMax, setNovoRecMax] = useState('')
+  const [novoNivelMin, setNovoNivelMin] = useState('') // 19.5
   const [criando, setCriando] = useState(false)
   const [erroNovo, setErroNovo] = useState('')
 
   function resetNovo() {
     setNovoNome(''); setNovaDesc(''); setNovoTipo('passiva')
-    setNovoRecNome(''); setNovoRecMax(''); setErroNovo('')
+    setNovoRecNome(''); setNovoRecMax(''); setNovoNivelMin(''); setErroNovo('')
   }
 
   async function handleCreate() {
@@ -932,6 +967,7 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
         nome: novoNome, descricao: novaDesc, tipo: novoTipo,
         recurso_nome: novoTipo === 'ativavel' ? novoRecNome : '',
         recurso_max: novoTipo === 'ativavel' && novoRecNome.trim() ? novoRecMax : null,
+        nivel_minimo: novoNivelMin, // 19.5
         raca_id: null,
         classe_id: null,
       })
@@ -992,6 +1028,13 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
                 )}
               </>
             )}
+            {/* 19.5 — requisito de nível */}
+            <div>
+              <p className="text-purple-400 text-xs mb-1">Nível mínimo</p>
+              <input type="number" value={novoNivelMin} onChange={e => setNovoNivelMin(e.target.value)}
+                min="1" placeholder="—" className={`${SEL} w-20 text-center`}
+                title="Só é concedida a partir deste nível (da classe de origem; raça/avulsa usam o nível total)." />
+            </div>
           </div>
           {erroNovo && <p className="text-red-400 text-xs">{erroNovo}</p>}
           <div className="flex gap-2">

@@ -6,6 +6,7 @@
  * Cada modificador deve ter { tipo, alvo, operacao, valor, _fonte }.
  */
 import { avaliarFormula } from './formulaEngine.js'
+import { atendeNivelMinimo } from './requisitos.js'
 
 /**
  * Fase 17.5 — resolve o `valor` dos modificadores marcados `valor_e_formula`,
@@ -107,26 +108,33 @@ function condicaoSatisfeita(mod, estadoFicha, condicoesManuais) {
  * @param {object} [contexto.condicoesManuais] — { [modificador_id]: boolean } (condições manuais)
  * @returns {Array} lista plana de modificadores ativos com campo _fonte
  */
-function coletarEmJogo({ raca, classe, classes, habilidadesFicha = [] }) {
+function coletarEmJogo({ raca, classe, classes, habilidadesFicha = [], estadoFicha = null }) {
   const lista = []
+  // Fase 19.5 — `_origemClasseId`/`_origemRacaId` dizem contra qual nível o
+  // requisito do modificador é medido (classe de origem, ou total).
   if (raca?.modificadores?.length) {
-    lista.push(...raca.modificadores.map(m => ({ ...m, _fonte: raca.nome })))
+    lista.push(...raca.modificadores.map(m => ({ ...m, _fonte: raca.nome, _origemRacaId: raca.id })))
   }
   // Fase 19 — multiclasse: aceita `classes` (array) ou `classe` (single, retrocompat).
   // Uma ficha Bárbaro 9 / Paladino 4 coleta os modificadores das duas classes.
   const listaClasses = (classes && classes.length) ? classes : (classe ? [classe] : [])
   for (const cl of listaClasses) {
     if (cl?.modificadores?.length) {
-      lista.push(...cl.modificadores.map(m => ({ ...m, _fonte: cl.nome })))
+      lista.push(...cl.modificadores.map(m => ({ ...m, _fonte: cl.nome, _origemClasseId: cl.id })))
     }
   }
   for (const hf of habilidadesFicha) {
     const hab = hf.habilidade
     if (!hab?.modificadores?.length) continue
     const deveIncluir = hab.tipo === 'passiva' || hf.ativa === true
-    if (deveIncluir) {
-      lista.push(...hab.modificadores.map(m => ({ ...m, _fonte: hab.nome })))
-    }
+    // 19.5 — habilidade abaixo do requisito não entra em jogo
+    if (!deveIncluir || !atendeNivelMinimo(hab, estadoFicha || {})) continue
+    lista.push(...hab.modificadores.map(m => ({
+      ...m,
+      _fonte: hab.nome,
+      _origemClasseId: hab.classe_id || undefined,
+      _origemRacaId: hab.raca_id || undefined,
+    })))
   }
   return lista
 }
@@ -139,8 +147,9 @@ export function coletarModificadores({
   estadoFicha = null,
   condicoesManuais = {},
 } = {}) {
-  // Fase 12 — filtra por condição (auto/manual) antes de devolver
-  return coletarEmJogo({ raca, classe, classes, habilidadesFicha })
+  // Fase 12 — filtra por condição (auto/manual); Fase 19.5 — e por nível mínimo
+  return coletarEmJogo({ raca, classe, classes, habilidadesFicha, estadoFicha })
+    .filter(mod => atendeNivelMinimo(mod, estadoFicha || {}))
     .filter(mod => condicaoSatisfeita(mod, estadoFicha, condicoesManuais))
 }
 
@@ -152,8 +161,9 @@ export function coletarModificadores({
  *
  * @returns {Array} modificadores com condicao_tipo === 'manual'
  */
-export function listarCondicoesManuais({ raca, classe, classes, habilidadesFicha = [] } = {}) {
-  return coletarEmJogo({ raca, classe, classes, habilidadesFicha })
+export function listarCondicoesManuais({ raca, classe, classes, habilidadesFicha = [], estadoFicha = null } = {}) {
+  return coletarEmJogo({ raca, classe, classes, habilidadesFicha, estadoFicha })
+    .filter(mod => atendeNivelMinimo(mod, estadoFicha || {}))
     .filter(mod => mod.condicao_tipo === 'manual')
 }
 

@@ -13,6 +13,7 @@ import { useClassesFicha } from '../hooks/useClassesFicha'
 import { nivelTotalDe } from '../components/ficha/layout/ClassesFicha'
 import { modoProgressao } from '../lib/progressaoEngine'
 import { resolverFaixas } from '../lib/faixas'
+import { bloqueadosPorNivel } from '../lib/requisitos'
 import BarraXp from '../components/ficha/BarraXp'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
 import DescansoBar from '../components/ficha/DescansoBar'
@@ -129,27 +130,43 @@ export default function FichaPage() {
     try { await updateFicha(fichaId, { raca_id: id || null }) } catch {}
   }
 
+  // 19.5 — contexto de nível derivado de uma lista de classes (para o requisito)
+  function ctxNivel(lista) {
+    const niveisClasse = {}
+    for (const cf of lista) {
+      const n = Number(cf.nivel) || 0
+      if (cf.classe_id) niveisClasse[cf.classe_id] = n
+      if (cf.classe?.nome) niveisClasse[cf.classe.nome] = n
+    }
+    return { nivel: lista.reduce((s, cf) => s + (Number(cf.nivel) || 0), 0), niveisClasse }
+  }
+
   // Fase 19.1 — multiclasse: adicionar/remover classe re-sincroniza as
   // habilidades auto-concedidas contra o CONJUNTO de classes; o cache de nível
   // é atualizado pelo efeito acima.
+  // Fase 19.5 — a sincronização também roda ao mudar de nível: o que destrava
+  // entra sozinho, o que deixa de atender ao requisito sai.
   async function handleAddClasse(classeId) {
     try {
       await adicionarClasse(classeId)
-      const ids = [...classesFicha.map(cf => cf.classe_id), classeId]
-      await sincronizarClasses(ids)
+      const novas = [...classesFicha, { classe_id: classeId, nivel: 1, classe: classes.find(c => c.id === classeId) }]
+      await sincronizarClasses(novas.map(cf => cf.classe_id), ctxNivel(novas))
     } catch {}
   }
 
   async function handleRemoveClasse(rowId, classeId) {
     try {
       await removerClasse(rowId)
-      const ids = classesFicha.map(cf => cf.classe_id).filter(id => id !== classeId)
-      await sincronizarClasses(ids)
+      const novas = classesFicha.filter(cf => cf.classe_id !== classeId)
+      await sincronizarClasses(novas.map(cf => cf.classe_id), ctxNivel(novas))
     } catch {}
   }
 
   async function handleSetNivel(rowId, nivel) {
     await definirNivel(rowId, nivel)
+    const n = Math.max(1, Math.floor(Number(nivel) || 1))
+    const novas = classesFicha.map(cf => (cf.id === rowId ? { ...cf, nivel: n } : cf))
+    await sincronizarClasses(novas.map(cf => cf.classe_id), ctxNivel(novas))
   }
 
   // 19.3 — XP passa por RPC SECURITY DEFINER (dono ou gestor); erro sobe p/ a UI.
@@ -168,7 +185,11 @@ export default function FichaPage() {
   async function handleSubirNivel(rowId) {
     if (rowId) {
       const cf = classesFicha.find(c => c.id === rowId)
-      await definirNivel(rowId, (Number(cf?.nivel) || 1) + 1)
+      const novo = (Number(cf?.nivel) || 1) + 1
+      await definirNivel(rowId, novo)
+      // 19.5 — habilidades destravadas pelo novo nível entram automaticamente
+      const novas = classesFicha.map(c => (c.id === rowId ? { ...c, nivel: novo } : c))
+      await sincronizarClasses(novas.map(c => c.classe_id), ctxNivel(novas))
     } else {
       // Sistema sem classes estruturadas: o nível vive só em fichas.nivel
       await updateFicha(fichaId, { nivel: nivelTotalAtual() + 1 })
@@ -251,6 +272,7 @@ export default function FichaPage() {
     vida_atual: ficha.hp_atual ?? 0,
     vida_max: ficha.hp_maximo ?? 0,
     nivel: nivelTotal,
+    niveisClasse, // 19.5 — requisito medido pelo nível da classe de origem
     habilidadesAtivas: habilidadesAtivasIds,
   }
   // 17.5 — contexto p/ fórmulas de MODIFICADOR (sem atributos → anti-auto-referência)
@@ -288,11 +310,22 @@ export default function FichaPage() {
     ),
     ctxModificador
   )
+  // 19.5 — habilidades das classes/raça da ficha que ainda não atingiram o
+  // requisito: aparecem bloqueadas, para o jogador planejar a progressão.
+  const habilidadesBloqueadas = bloqueadosPorNivel(
+    (habilidades || []).filter(h =>
+      (h.classe_id && classesAtivas.some(c => c.id === h.classe_id)) ||
+      (h.raca_id && racaAtiva?.id === h.raca_id)
+    ),
+    estadoFicha
+  )
+
   // 12.6 — interruptores situacionais: todos os mods de condição manual em jogo
   const condicoesManuaisDisponiveis = listarCondicoesManuais({
     raca: racaAtiva,
     classes: classesAtivas,
     habilidadesFicha,
+    estadoFicha, // 19.5 — não oferece interruptor de efeito ainda bloqueado
   })
   const baseMotor = {
     atributos: Object.fromEntries(
@@ -557,6 +590,7 @@ export default function FichaPage() {
               condicoesManuaisDisponiveis={condicoesManuaisDisponiveis}
               onToggleCondicao={toggleCondicao}
               nomesAlvos={nomesAlvos}
+              habilidadesBloqueadas={habilidadesBloqueadas}
             />
           </div>
 

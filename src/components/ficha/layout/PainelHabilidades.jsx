@@ -235,6 +235,7 @@ export default function PainelHabilidades({
   onToggleCondicao,
   modificadoresAtivos = [],
   nomesAlvos = {},
+  habilidadesBloqueadas = [], // 19.5 — visíveis, mas inativas até o nível
 }) {
   const [selecionada, setSelecionada] = useState('')
   const [adicionando, setAdicionando] = useState(false)
@@ -459,6 +460,23 @@ export default function PainelHabilidades({
             </button>
           </div>
           {addErro && <p className="text-red-400 text-xs">{addErro}</p>}
+        </div>
+      )}
+
+      {/* 19.5 — habilidades futuras da classe: visíveis para planejar, inativas */}
+      {habilidadesBloqueadas.length > 0 && (
+        <div className="border-t border-purple-900 pt-3 mt-3 space-y-1.5">
+          <p className="text-purple-500 text-xs font-medium">Ainda bloqueadas</p>
+          {habilidadesBloqueadas.map(h => (
+            <div
+              key={h.id}
+              className="flex items-center justify-between gap-2 bg-slate-800/40 border border-purple-900/50 rounded-lg px-2.5 py-1.5 opacity-60"
+              title={`Disponível ao atingir o nível ${h.nivel_minimo}`}
+            >
+              <span className="text-purple-300 text-sm truncate">🔒 {h.nome}</span>
+              <span className="text-amber-500/80 text-[11px] font-mono shrink-0">nv {h.nivel_minimo}</span>
+            </div>
+          ))}
         </div>
       )}
     </div>

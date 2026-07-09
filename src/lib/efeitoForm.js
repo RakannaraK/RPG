@@ -50,6 +50,7 @@ export function montarEfeitoPayload(s) {
     valor_e_formula: !!s.valorEhFormula, // Fase 17.5 — valor é fórmula
     percentual_rolagem: null, // Fase 18.3
     faixas: s.faixas || null, // Fase 19.4 — escalonamento por faixa (null = valor fixo)
+    nivel_minimo: s.nivelMinimo !== '' && s.nivelMinimo != null ? Number(s.nivelMinimo) : null, // 19.5
     ...cond,
   }
   const t = s.tipo

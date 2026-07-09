@@ -61,6 +61,7 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
     vida_atual: fichaRow.hp_atual ?? 0,
     vida_max: fichaRow.hp_maximo ?? 0, // BASE — evita circularidade (igual FichaPage)
     nivel: nivelTotal,
+    niveisClasse, // 19.5 — requisito de nível medido pela classe de origem
     habilidadesAtivas,
   }
   // 17.5 — contexto de fórmula de modificador (sem atributos, anti-auto-ref)
