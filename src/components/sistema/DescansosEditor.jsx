@@ -2,7 +2,9 @@
  * Fase 15.1 — editor de tipos de descanso do sistema (salvo em config_layout.descansos).
  * Cada descanso define como recupera vida, vida temporária e recursos de habilidade.
  * Nada é fixo em D&D: nomes e regras são livres.
+ * Fase 17.5 — modos fixo/dado aceitam fórmula/notação com variáveis.
  */
+import FormulaInput from './FormulaInput'
 
 const inputCls = 'px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
 const selectCls = inputCls
@@ -17,24 +19,37 @@ function novoDescanso() {
   }
 }
 
-// Editor genérico de uma regra { modo, valor } com os modos disponíveis
+// Editor genérico de uma regra { modo, valor, valor_e_formula } com os modos disponíveis
 function RegraEditor({ label, regra, modos, onChange }) {
   const modo = regra?.modo || modos[0].value
   const precisaValor = { fixo: 'num', fracao: 'frac', parcial: 'frac', dado: 'texto' }[modo]
+  const ehFormula = !!regra?.valor_e_formula
+  const setRegra = patch => onChange({ modo, valor: regra?.valor, valor_e_formula: ehFormula, ...patch })
   return (
-    <div className="flex items-center gap-2 flex-wrap">
-      <span className="text-purple-300 text-xs w-28 shrink-0">{label}</span>
-      <select value={modo} onChange={e => onChange({ modo: e.target.value, valor: regra?.valor })} className={selectCls}>
+    <div className="flex items-start gap-2 flex-wrap">
+      <span className="text-purple-300 text-xs w-28 shrink-0 pt-1.5">{label}</span>
+      <select value={modo} onChange={e => onChange({ modo: e.target.value, valor: regra?.valor, valor_e_formula: ehFormula })} className={selectCls}>
         {modos.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
       </select>
-      {precisaValor === 'num' && (
-        <input type="number" value={regra?.valor ?? ''} onChange={e => onChange({ modo, valor: e.target.value })} placeholder="ex: 10" className={`${inputCls} w-20`} />
+      {precisaValor === 'num' && !ehFormula && (
+        <input type="number" value={regra?.valor ?? ''} onChange={e => setRegra({ valor: e.target.value })} placeholder="ex: 10" className={`${inputCls} w-20`} />
       )}
       {precisaValor === 'frac' && (
-        <input type="number" step="0.05" min="0" max="1" value={regra?.valor ?? ''} onChange={e => onChange({ modo, valor: e.target.value })} placeholder="0.5" className={`${inputCls} w-20`} title="Fração do máximo (0 a 1)" />
+        <input type="number" step="0.05" min="0" max="1" value={regra?.valor ?? ''} onChange={e => setRegra({ valor: e.target.value })} placeholder="0.5" className={`${inputCls} w-20`} title="Fração do máximo (0 a 1)" />
       )}
       {precisaValor === 'texto' && (
-        <input type="text" value={regra?.valor ?? ''} onChange={e => onChange({ modo, valor: e.target.value })} placeholder="ex: 1d8" className={`${inputCls} w-24`} />
+        <input type="text" value={regra?.valor ?? ''} onChange={e => setRegra({ valor: e.target.value })} placeholder="ex: 1d8+nivel" className={`${inputCls} w-32`} title="Notação; aceita variáveis (ex: 1d8+nivel)" />
+      )}
+      {modo === 'fixo' && (
+        <label className="text-purple-400 text-[11px] flex items-center gap-1 cursor-pointer pt-1.5" title="Usar fórmula (ex: 5*nivel)">
+          <input type="checkbox" checked={ehFormula} onChange={e => setRegra({ valor_e_formula: e.target.checked })} className="accent-purple-500" />
+          ƒ
+        </label>
+      )}
+      {precisaValor === 'num' && ehFormula && (
+        <div className="w-52">
+          <FormulaInput value={regra?.valor ?? ''} onChange={v => setRegra({ valor: v })} placeholder="ex: 5*nivel" />
+        </div>
       )}
     </div>
   )

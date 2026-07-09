@@ -1,7 +1,17 @@
 import { useState } from 'react'
 import { useValoresCombate } from '../../../hooks/useValoresCombate'
+import { avaliarFormula } from '../../../lib/formulaEngine'
 
-export default function PainelCombate({ campos, fichaId, isDono }) {
+// 17.4 — valor de um campo calculado (read-only). Falha alto e claro: "—" + erro no tooltip
+function calcularCampo(campo, contextoFormula) {
+  try {
+    return { ok: true, valor: avaliarFormula(campo.formula, contextoFormula || {}) }
+  } catch (e) {
+    return { ok: false, erro: e.message }
+  }
+}
+
+export default function PainelCombate({ campos, fichaId, isDono, contextoFormula = null }) {
   const { valoresCombate, saveValor } = useValoresCombate(fichaId)
   const [editando, setEditando] = useState({})
   const [erros, setErros] = useState({})
@@ -30,8 +40,31 @@ export default function PainelCombate({ campos, fichaId, isDono }) {
       </div>
       <div className="grid grid-cols-2 gap-px bg-purple-900/30 p-px">
         {campos.map(campo => {
-          const val = editando[campo.id] !== undefined ? editando[campo.id] : getValor(campo.id)
+          // 17.4 — campo calculado: read-only, valor via fórmula, tooltip com a conta
+          if (campo.tipo === 'calculado') {
+            const r = calcularCampo(campo, contextoFormula)
+            return (
+              <div key={campo.id} className="bg-slate-800 flex flex-col items-center justify-center py-3 px-2 gap-1 relative group/calc">
+                <p className={`font-bold text-2xl leading-none ${r.ok ? 'text-purple-200' : 'text-red-400'}`}>
+                  {r.ok ? r.valor : '—'}
+                </p>
+                <p className="text-purple-400 text-[11px] text-center leading-tight">
+                  {campo.nome} <span className="text-purple-600">ƒ</span>
+                </p>
+                {/* Tooltip com a fórmula/erro */}
+                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 z-50 pointer-events-none
+                                opacity-0 group-hover/calc:opacity-100 transition-opacity
+                                bg-slate-900 border border-purple-600/80 rounded-lg px-2.5 py-1.5 shadow-2xl w-max max-w-[16rem]">
+                  <p className="text-purple-300 text-[10px] font-mono break-all">{campo.formula}</p>
+                  <p className={`text-[10px] mt-0.5 ${r.ok ? 'text-green-300' : 'text-red-400'}`}>
+                    {r.ok ? `= ${r.valor}` : r.erro}
+                  </p>
+                </div>
+              </div>
+            )
+          }
 
+          const val = editando[campo.id] !== undefined ? editando[campo.id] : getValor(campo.id)
           return (
             <div
               key={campo.id}

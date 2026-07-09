@@ -1,4 +1,10 @@
-import { rolarNotacao, validarNotacao } from './diceNotation.js'
+import { rolarNotacao, validarNotacao, resolverNotacaoFormula } from './diceNotation.js'
+import { avaliarFormula } from './formulaEngine.js'
+
+// 17.5 — avalia uma fórmula com segurança (falha → 0)
+function safeFormula(f, contexto) {
+  try { return avaliarFormula(f, contexto || {}) } catch { return 0 }
+}
 
 /**
  * Fase 15.2 — motor de recuperação de descanso (função PURA).
@@ -8,19 +14,25 @@ import { rolarNotacao, validarNotacao } from './diceNotation.js'
  * Arredondamento: frações para BAIXO. Vida nunca passa do máximo (final, com mods).
  */
 
-// Aplica um modo de recuperação de VIDA e retorna o novo valor (+ dados se rolou)
-function aplicarModoVida(de, max, regra) {
+// Aplica um modo de recuperação de VIDA e retorna o novo valor (+ dados se rolou).
+// Fase 17.5: 'fixo' aceita fórmula (regra.valor_e_formula); 'dado' aceita notação
+// com variáveis, resolvida via 17.2 com o contexto da ficha.
+function aplicarModoVida(de, max, regra, contexto) {
   const modo = regra?.modo || 'nada'
   const valor = regra?.valor
   switch (modo) {
     case 'total': return { para: max }
-    case 'fixo':  return { para: Math.min(max, de + (Number(valor) || 0)) }
+    case 'fixo': {
+      const v = regra?.valor_e_formula ? safeFormula(valor, contexto) : (Number(valor) || 0)
+      return { para: Math.min(max, de + v) }
+    }
     case 'fracao': {
       const rec = Math.floor(max * (Number(valor) || 0))
       return { para: Math.min(max, de + rec) }
     }
     case 'dado': {
-      const nota = String(valor || '').trim()
+      let nota = String(valor || '').trim()
+      if (contexto) { try { nota = resolverNotacaoFormula(nota, contexto).notacao } catch { /* mantém original */ } }
       if (nota && validarNotacao(nota)) {
         const r = rolarNotacao(nota)
         return { para: Math.min(max, de + r.total), notacao: nota, rolado: r.total, dados: r.dados }
@@ -40,10 +52,10 @@ function aplicarModoVida(de, max, regra) {
  * @param {Array}  params.habilidadesFicha - [{ id, recurso_atual, habilidade: { id, nome, recurso_nome, recurso_max, recupera_em } }]
  * @returns {{ vida, vida_temp, recursos, resumo }}
  */
-export function calcularDescanso({ tipoDescanso, ficha, valoresFinais, habilidadesFicha = [] }) {
+export function calcularDescanso({ tipoDescanso, ficha, valoresFinais, habilidadesFicha = [], contexto = null }) {
   const max = Number(valoresFinais?.vida_max ?? ficha?.hp_maximo ?? 0) || 0
   const hpDe = Number(ficha?.hp_atual ?? 0) || 0
-  const vr = aplicarModoVida(hpDe, max, tipoDescanso?.vida)
+  const vr = aplicarModoVida(hpDe, max, tipoDescanso?.vida, contexto)
   const vida = {
     de: hpDe,
     para: vr.para,

@@ -5,6 +5,23 @@
  * Fonte esperada de `modificadores`: saída de coletarModificadores().
  * Cada modificador deve ter { tipo, alvo, operacao, valor, _fonte }.
  */
+import { avaliarFormula } from './formulaEngine.js'
+
+/**
+ * Fase 17.5 — resolve o `valor` dos modificadores marcados `valor_e_formula`,
+ * avaliando a fórmula com o contexto da ficha (sem atributos — anti-auto-ref).
+ * Guarda a fórmula original em `_valorFormula` para rastreabilidade. Falha → 0.
+ */
+export function resolverValoresFormula(modificadores, contexto) {
+  return (modificadores || []).map(m => {
+    if (!m.valor_e_formula) return m
+    try {
+      return { ...m, valor: avaliarFormula(m.valor, contexto), _valorFormula: m.valor }
+    } catch {
+      return { ...m, valor: 0, _valorFormula: m.valor, _valorErro: true }
+    }
+  })
+}
 
 /**
  * Compara dois números segundo um operador textual.

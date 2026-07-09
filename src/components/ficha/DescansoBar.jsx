@@ -6,7 +6,7 @@ import { calcularDescanso } from '../../lib/restEngine'
  * Calcula pelo motor puro (restEngine); só aplica após o usuário confirmar.
  * Oculto se o sistema não tem descansos configurados.
  */
-export default function DescansoBar({ descansos = [], ficha, valoresFinais, habilidadesFicha = [], onAplicar }) {
+export default function DescansoBar({ descansos = [], ficha, valoresFinais, habilidadesFicha = [], contextoFormula = null, onAplicar }) {
   const [preview, setPreview] = useState(null) // { tipo, resultado }
   const [aplicando, setAplicando] = useState(false)
   const [feito, setFeito] = useState('')
@@ -14,7 +14,7 @@ export default function DescansoBar({ descansos = [], ficha, valoresFinais, habi
   if (!descansos || descansos.length === 0) return null
 
   function abrir(tipo) {
-    const resultado = calcularDescanso({ tipoDescanso: tipo, ficha, valoresFinais, habilidadesFicha })
+    const resultado = calcularDescanso({ tipoDescanso: tipo, ficha, valoresFinais, habilidadesFicha, contexto: contextoFormula })
     setPreview({ tipo, resultado })
   }
 

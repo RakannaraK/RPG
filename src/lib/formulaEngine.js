@@ -266,6 +266,14 @@ export function avaliarFormula(formula, contexto = {}) {
 }
 
 /**
+ * Fase 17.5 — detecta uso de atributo()/mod() (proibido em fórmula de modificador,
+ * para evitar auto-referência/dependência circular com o motor).
+ */
+export function usaAtributoOuMod(texto) {
+  return /(^|[^a-z0-9_])(atributo|mod)\s*\(/i.test(normalizar(texto))
+}
+
+/**
  * Valida a SINTAXE (não avalia). Para feedback ao vivo nos editores.
  * @returns {{ valida: boolean, erro?: string, pos?: number }}
  */

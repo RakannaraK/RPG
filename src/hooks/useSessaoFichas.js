@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import { coletarModificadores, calcularValoresFinais, agregarDefesas } from '../lib/modifierEngine'
+import { coletarModificadores, calcularValoresFinais, agregarDefesas, resolverValoresFormula } from '../lib/modifierEngine'
 
 function groupBy(rows, key) {
   const out = {}
@@ -37,9 +37,27 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis) {
     nivel: fichaRow.nivel ?? 1,
     habilidadesAtivas,
   }
-  const modificadoresAtivos = coletarModificadores({
-    raca, classe, habilidadesFicha, estadoFicha, condicoesManuais,
-  })
+  // 17.5 — contexto de fórmula de modificador (sem atributos, anti-auto-ref)
+  const recursosCtx = {}
+  for (const hf of habilidadesFicha) {
+    const h = hf.habilidade
+    if (h?.recurso_max != null) {
+      const v = hf.recurso_atual ?? h.recurso_max
+      if (h.recurso_nome) recursosCtx[h.recurso_nome] = v
+      if (h.id) recursosCtx[h.id] = v
+    }
+  }
+  const modificadoresAtivos = resolverValoresFormula(
+    coletarModificadores({ raca, classe, habilidadesFicha, estadoFicha, condicoesManuais }),
+    {
+      nivel: fichaRow.nivel ?? 1,
+      vida_atual: fichaRow.hp_atual ?? 0,
+      vida_max: fichaRow.hp_maximo ?? 0,
+      recursos: recursosCtx,
+      pericias: {},
+      formulaModificador: (sis.formula_modificador || ''),
+    }
+  )
 
   const baseCombate = {}
   for (const r of combateRows || []) {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { avaliarFormula, parseFormula, validarFormula, FormulaError } from './formulaEngine'
+import { avaliarFormula, parseFormula, validarFormula, usaAtributoOuMod, FormulaError } from './formulaEngine'
 
 // Contextos das DUAS fichas de referência (regressão permanente)
 const KRAD = {
@@ -164,6 +164,20 @@ describe('validarFormula (só sintaxe)', () => {
     const r = validarFormula('2 +')
     expect(r.valida).toBe(false)
     expect(typeof r.erro).toBe('string')
+  })
+})
+
+describe('17.5 — usaAtributoOuMod (anti-auto-referência em modificadores)', () => {
+  it('detecta atributo()/mod()', () => {
+    expect(usaAtributoOuMod('10 + mod(forca)')).toBe(true)
+    expect(usaAtributoOuMod('atributo(destreza)')).toBe(true)
+    expect(usaAtributoOuMod('MOD(Força)')).toBe(true)
+  })
+  it('permite nivel/recurso/pericia/vida', () => {
+    expect(usaAtributoOuMod('piso(nivel/2)')).toBe(false)
+    expect(usaAtributoOuMod('5 * nivel')).toBe(false)
+    expect(usaAtributoOuMod('recurso(furia) + vida_max')).toBe(false)
+    expect(usaAtributoOuMod('pericia(atletismo)')).toBe(false)
   })
 })
 

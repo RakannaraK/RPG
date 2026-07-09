@@ -1,5 +1,6 @@
 // Editor de layout/seções do sistema — usado pelo mestre no SistemaEditor
 import FormulaInput from './FormulaInput'
+import { avaliarFormula } from '../../lib/formulaEngine'
 
 const SECOES = [
   { id: 'acoes',         label: 'Ações / Ataques',      desc: 'Lista de ataques e habilidades ativas' },
@@ -63,16 +64,16 @@ export default function LayoutEditor({
       ...config,
       campos_combate: [
         ...config.campos_combate,
-        { id: `campo_${Date.now()}`, nome: '' },
+        { id: `campo_${Date.now()}`, nome: '', tipo: 'manual', formula: '' },
       ],
     })
   }
 
-  function updateCampoCombate(index, nome) {
+  function updateCampoCombate(index, patch) {
     onConfigChange({
       ...config,
       campos_combate: config.campos_combate.map((c, i) =>
-        i === index ? { ...c, nome } : c
+        i === index ? { ...c, ...patch } : c
       ),
     })
   }
@@ -86,6 +87,18 @@ export default function LayoutEditor({
 
   // Apenas atributos já salvos no banco (com ID real) podem ser vinculados a perícias
   const atributosSalvos = atributos.filter(a => !a.id?.startsWith('temp_'))
+
+  // 17.4 — contexto de EXEMPLO para prévia dos campos calculados (atributos = 10)
+  const ctxExemplo = {
+    atributos: Object.fromEntries((atributos || []).flatMap(a => (a.nome ? [[a.nome, 10], [a.id, 10]] : []))),
+    formulaModificador: config.formula_modificador || '',
+    nivel: 5, vida_atual: 10, vida_max: 10, pericias: {}, recursos: {},
+  }
+  function previaCampo(formula) {
+    if (!formula || !formula.trim()) return null
+    try { return { ok: true, valor: avaliarFormula(formula, ctxExemplo) } }
+    catch (e) { return { ok: false, erro: e.message } }
+  }
 
   const ATALHOS_DADO = [4, 6, 8, 10, 12, 20, 100]
 
@@ -215,7 +228,8 @@ export default function LayoutEditor({
             <div>
               <p className="text-purple-200 text-sm font-semibold">Campos de combate</p>
               <p className="text-purple-500 text-xs mt-0.5">
-                Cada campo vira uma caixa editável na ficha.
+                Cada campo é uma caixa na ficha. <span className="text-purple-400">Manual</span> = editável;{' '}
+                <span className="text-purple-400">Calculado</span> = fórmula (read-only, recalcula sozinho).
               </p>
             </div>
             <button
@@ -232,25 +246,59 @@ export default function LayoutEditor({
               Nenhum campo ainda. Ex: Classe de Armadura, Iniciativa, Deslocamento
             </p>
           ) : (
-            <div className="space-y-2">
-              {config.campos_combate.map((campo, i) => (
-                <div key={campo.id} className="flex gap-2 items-center">
-                  <input
-                    type="text"
-                    value={campo.nome}
-                    onChange={e => updateCampoCombate(i, e.target.value)}
-                    placeholder="Ex: Classe de Armadura"
-                    className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeCampoCombate(i)}
-                    className="p-2 text-red-500 hover:text-red-400 hover:bg-red-950 rounded-lg transition-colors text-sm"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
+            <div className="space-y-3">
+              {config.campos_combate.map((campo, i) => {
+                const calculado = campo.tipo === 'calculado'
+                const previa = calculado ? previaCampo(campo.formula) : null
+                return (
+                  <div key={campo.id} className="bg-slate-900/40 border border-purple-900/50 rounded-xl p-3 space-y-2">
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        value={campo.nome}
+                        onChange={e => updateCampoCombate(i, { nome: e.target.value })}
+                        placeholder="Ex: Classe de Armadura"
+                        className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                      <select
+                        value={campo.tipo || 'manual'}
+                        onChange={e => updateCampoCombate(i, { tipo: e.target.value })}
+                        className="px-2 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        title="Tipo do campo"
+                      >
+                        <option value="manual">Manual</option>
+                        <option value="calculado">Calculado</option>
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => removeCampoCombate(i)}
+                        className="p-2 text-red-500 hover:text-red-400 hover:bg-red-950 rounded-lg transition-colors text-sm"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {calculado && (
+                      <div className="pl-1">
+                        <FormulaInput
+                          value={campo.formula || ''}
+                          onChange={f => updateCampoCombate(i, { formula: f })}
+                          placeholder="ex: 10 + mod(destreza) + mod(constituicao)"
+                          variaveis={['atributo(', 'mod(', 'nivel', 'pericia(', ' + ', ' - ']}
+                        />
+                        {previa && (
+                          previa.ok
+                            ? <p className="text-purple-500 text-xs mt-1">Prévia (atributos=10, nível=5): <span className="text-green-400 font-mono">{previa.valor}</span></p>
+                            : <p className="text-red-400 text-xs mt-1">⚠ {previa.erro}</p>
+                        )}
+                        <p className="text-purple-600 text-[11px] mt-1">
+                          Pode usar atributos, mod, nível, perícias — mas não outro campo (evita ciclos).
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>

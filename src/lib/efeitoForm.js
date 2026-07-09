@@ -47,6 +47,7 @@ export function montarEfeitoPayload(s) {
     valor: null,
     dados_extras: null,
     escopo_categoria: null,
+    valor_e_formula: !!s.valorEhFormula, // Fase 17.5 — valor é fórmula
     ...cond,
   }
   const t = s.tipo

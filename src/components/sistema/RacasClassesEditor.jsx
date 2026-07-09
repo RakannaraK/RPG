@@ -5,6 +5,8 @@ import {
   usaAtributoAlvo, usaCombateAlvo, usaTextoAlvo, usaValorNum, usaOperacao,
   ehAcertoDano, ehVantagem, ehAcao, montarEfeitoPayload,
 } from '../../lib/efeitoForm'
+import { validarFormula, usaAtributoOuMod } from '../../lib/formulaEngine'
+import FormulaInput from './FormulaInput'
 
 // Fase 12.5 — vocabulário ampliado de efeitos. `grupo` só organiza o dropdown.
 const TIPOS_MOD = [
@@ -86,6 +88,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
   const [alvo, setAlvo] = useState('')
   const [operacao, setOperacao] = useState('somar')
   const [valor, setValor] = useState('')
+  const [valorEhFormula, setValorEhFormula] = useState(false) // 17.5
   const [dadosExtras, setDadosExtras] = useState('')
   const [escopoCategoria, setEscopoCategoria] = useState('')
   const [vantTipoAlvo, setVantTipoAlvo] = useState('atributo')
@@ -101,9 +104,12 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
   const [erro, setErro] = useState('')
 
   function handleTipoChange(novo) {
-    setTipo(novo); setAlvo(''); setValor(''); setDadosExtras(''); setEscopoCategoria('')
+    setTipo(novo); setAlvo(''); setValor(''); setValorEhFormula(false); setDadosExtras(''); setEscopoCategoria('')
     setVantTipoAlvo('atributo'); setCuraModo('pontual'); setErro('')
   }
+
+  // 17.5 — tipos cujo valor pode ser fórmula (número → fórmula com nivel/recurso/perícia)
+  const valorPodeFormula = usaValorNum(tipo) || ehAcertoDano(tipo)
 
   async function handleAdd() {
     setErro('')
@@ -111,8 +117,17 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
     if (usaAtributoAlvo(tipo) && !alvo)  { setErro('Selecione um atributo.'); return }
     if (usaCombateAlvo(tipo) && !alvo)   { setErro('Selecione um campo de combate.'); return }
     if (usaTextoAlvo(tipo) && !alvo.trim()) { setErro('Informe o tipo de dano (ex: fogo).'); return }
-    if (usaValorNum(tipo) && (valor === '' || isNaN(Number(valor)))) { setErro('Informe um valor numérico válido.'); return }
-    if (ehAcertoDano(tipo) && !String(valor).trim() && !dadosExtras.trim()) { setErro('Informe um valor fixo e/ou dados extras.'); return }
+    if (valorEhFormula && valorPodeFormula) {
+      if (!String(valor).trim()) { setErro('Informe a fórmula.'); return }
+      const vf = validarFormula(valor)
+      if (!vf.valida) { setErro(`Fórmula inválida: ${vf.erro}`); return }
+      if (usaAtributoOuMod(valor)) {
+        setErro('Fórmula de modificador não pode usar atributo() nem mod() (evita auto-referência). Use nivel, recurso(), pericia() ou vida_*.'); return
+      }
+    } else {
+      if (usaValorNum(tipo) && (valor === '' || isNaN(Number(valor)))) { setErro('Informe um valor numérico válido.'); return }
+      if (ehAcertoDano(tipo) && !String(valor).trim() && !dadosExtras.trim()) { setErro('Informe um valor fixo e/ou dados extras.'); return }
+    }
     if (ehVantagem(tipo) && !alvo) { setErro('Selecione o alvo (atributo ou perícia).'); return }
     if (ehAcao(tipo) && !String(valor).trim()) { setErro('Informe a quantidade ou notação (ex: 2d4+2).'); return }
     // Validação da condição
@@ -123,7 +138,8 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
 
     // Monta o payload (lógica pura — ver lib/efeitoForm.js)
     const payload = montarEfeitoPayload({
-      tipo, alvo, operacao, valor, dadosExtras, escopoCategoria, vantTipoAlvo, curaModo,
+      tipo, alvo, operacao, valor, valorEhFormula: valorEhFormula && valorPodeFormula,
+      dadosExtras, escopoCategoria, vantTipoAlvo, curaModo,
       condTipo, condMetrica, condOperador, condValor, condRotulo,
     })
 
@@ -131,7 +147,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
     try {
       await onAdd(payload)
       // limpa campos de valor mas mantém o tipo selecionado
-      setAlvo(''); setValor(''); setDadosExtras(''); setEscopoCategoria('')
+      setAlvo(''); setValor(''); setValorEhFormula(false); setDadosExtras(''); setEscopoCategoria('')
       setCondTipo('nenhuma'); setCondValor(''); setCondRotulo('')
     } catch (err) {
       setErro(err.message || 'Erro ao adicionar efeito.')
@@ -171,16 +187,24 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
             {OPERACOES.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         )}
-        {usaValorNum(tipo) && (
+        {usaValorNum(tipo) && !valorEhFormula && (
           <input type="number" value={valor} onChange={e => setValor(e.target.value)}
             placeholder="Valor" className={`${ic} w-16 text-center`} />
+        )}
+        {valorPodeFormula && (
+          <label className="text-purple-400 text-[11px] flex items-center gap-1 cursor-pointer" title="Usar fórmula (ex: piso(nivel/2))">
+            <input type="checkbox" checked={valorEhFormula} onChange={e => setValorEhFormula(e.target.checked)} className="accent-purple-500" />
+            ƒ fórmula
+          </label>
         )}
 
         {/* Acerto / Dano */}
         {ehAcertoDano(tipo) && (
           <>
-            <input type="number" value={valor} onChange={e => setValor(e.target.value)}
-              placeholder="Fixo" className={`${ic} w-16 text-center`} title="Bônus fixo (opcional)" />
+            {!valorEhFormula && (
+              <input type="number" value={valor} onChange={e => setValor(e.target.value)}
+                placeholder="Fixo" className={`${ic} w-16 text-center`} title="Bônus fixo (opcional)" />
+            )}
             <input type="text" value={dadosExtras} onChange={e => setDadosExtras(e.target.value)}
               placeholder="Dados extras (ex: 1d6)" className={`${ic} w-32`} />
             <input type="text" value={escopoCategoria} onChange={e => setEscopoCategoria(e.target.value)}
@@ -222,6 +246,23 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
           {salvando ? '...' : '+ Adicionar'}
         </button>
       </div>
+
+      {/* Fórmula do valor (17.5) — só nivel/recurso/perícia/vida (sem atributo/mod) */}
+      {valorEhFormula && valorPodeFormula && (
+        <div className="border-t border-purple-900/50 pt-2">
+          <FormulaInput
+            value={valor}
+            onChange={setValor}
+            placeholder="ex: piso(nivel/2)"
+            variaveis={['nivel', 'piso(', 'recurso(', 'pericia(', ' + ', ' - ', ' / ']}
+          />
+          <p className="text-purple-600 text-[11px] mt-1">
+            Pode usar <span className="font-mono">nivel</span>, <span className="font-mono">recurso()</span>,{' '}
+            <span className="font-mono">pericia()</span>, <span className="font-mono">vida_*</span> — não{' '}
+            <span className="font-mono">atributo()</span>/<span className="font-mono">mod()</span> (evita auto-referência).
+          </p>
+        </div>
+      )}
 
       {/* Condição */}
       <div className="flex flex-wrap gap-2 items-center border-t border-purple-900/50 pt-2">

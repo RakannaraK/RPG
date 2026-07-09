@@ -6,7 +6,7 @@ import { useSistema } from '../hooks/useSistema'
 import { useRolagem } from '../hooks/useRolagem'
 import { supabase } from '../lib/supabase'
 import { mergeConfigLayout } from '../lib/sistemaDefaults'
-import { coletarModificadores, calcularValoresFinais, agregarDefesas, listarCondicoesManuais } from '../lib/modifierEngine'
+import { coletarModificadores, calcularValoresFinais, agregarDefesas, listarCondicoesManuais, resolverValoresFormula } from '../lib/modifierEngine'
 import { validarNotacao, rolarNotacao } from '../lib/diceNotation'
 import { useHabilidadesFicha } from '../hooks/useHabilidadesFicha'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
@@ -136,13 +136,34 @@ export default function FichaPage() {
     nivel: ficha.nivel ?? 1,
     habilidadesAtivas: habilidadesAtivasIds,
   }
-  const modificadoresAtivos = coletarModificadores({
-    raca: racaAtiva,
-    classe: classeAtiva,
-    habilidadesFicha,
-    estadoFicha,
-    condicoesManuais,
+  // 17.5 — contexto p/ fórmulas de MODIFICADOR (sem atributos → anti-auto-referência)
+  const recursosCtx = {}
+  habilidadesFicha.forEach(hf => {
+    const h = hf.habilidade
+    if (h?.recurso_max != null) {
+      const v = hf.recurso_atual ?? h.recurso_max
+      if (h.recurso_nome) recursosCtx[h.recurso_nome] = v
+      if (h.id) recursosCtx[h.id] = v
+    }
   })
+  const ctxModificador = {
+    nivel: ficha.nivel ?? 1,
+    vida_atual: ficha.hp_atual ?? 0,
+    vida_max: ficha.hp_maximo ?? 0,
+    recursos: recursosCtx,
+    pericias: {},
+    formulaModificador: config.formula_modificador || '',
+  }
+  const modificadoresAtivos = resolverValoresFormula(
+    coletarModificadores({
+      raca: racaAtiva,
+      classe: classeAtiva,
+      habilidadesFicha,
+      estadoFicha,
+      condicoesManuais,
+    }),
+    ctxModificador
+  )
   // 12.6 — interruptores situacionais: todos os mods de condição manual em jogo
   const condicoesManuaisDisponiveis = listarCondicoesManuais({
     raca: racaAtiva,
@@ -318,6 +339,7 @@ export default function FichaPage() {
             ficha={ficha}
             valoresFinais={valoresFinais}
             habilidadesFicha={habilidadesFicha}
+            contextoFormula={contextoFormula}
             onAplicar={handleAplicarDescanso}
           />
         )}
@@ -400,6 +422,7 @@ export default function FichaPage() {
                   campos={camposCombate}
                   fichaId={fichaId}
                   isDono={isDono}
+                  contextoFormula={contextoFormula}
                 />
               )}
               {secoes.defesas && (

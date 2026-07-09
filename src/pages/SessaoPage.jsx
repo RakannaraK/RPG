@@ -138,6 +138,14 @@ export default function SessaoPage() {
         ficha: card.ficha,
         valoresFinais: { vida_max: card.hpMax },
         habilidadesFicha: hfList,
+        // 17.5 — contexto p/ fórmulas do descanso (nível/vida; atributos não estão no card)
+        contexto: {
+          nivel: card.ficha?.nivel ?? 1,
+          vida_atual: card.ficha?.hp_atual ?? 0,
+          vida_max: card.hpMax ?? 0,
+          atributos: {}, recursos: {},
+          formulaModificador: sistema?.config_layout?.formula_modificador || '',
+        },
       })
       const patch = { hp_atual: resultado.vida.para }
       if (resultado.vida_temp.para !== resultado.vida_temp.de) patch.vida_temp_atual = resultado.vida_temp.para
