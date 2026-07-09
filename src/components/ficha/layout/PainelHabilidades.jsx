@@ -85,14 +85,17 @@ function AcoesPontuais({ hf, onUsarAcao, isDono }) {
 // Descrição curta e legível do efeito de um modificador (Fase 12.7). Resolve o
 // alvo (id de atributo/perícia/combate) para nome via `nomes` quando possível.
 function descreverEfeito(m, nomes = {}) {
-  const sinal = m.operacao === 'multiplicar' ? '×' : m.operacao === 'definir' ? '=' : '+'
+  const perc = m.operacao === 'percentual'
+  const sinal = perc ? '' : m.operacao === 'multiplicar' ? '×' : m.operacao === 'definir' ? '=' : '+'
   const v = (m.valor ?? '').toString().trim()
+  const suf = perc ? '%' : '' // Fase 18 — percentual leva sufixo %
+  const sinalPre = perc ? (v.startsWith('-') ? '' : '+') : sinal
   const extra = (m.dados_extras ?? '').toString().trim()
   const alvoTxt = (m.alvo ?? '').toString().trim()
   const nomeAlvo = nomes[m.alvo] || alvoTxt
   // acerto/dano: valor é bônus fixo, dados_extras são dados adicionais — ambos somam
   const comSinal = n => (n.startsWith('-') || n.startsWith('+') ? n : `+${n}`)
-  const acDano = [v && comSinal(v), extra && comSinal(extra)].filter(Boolean).join(' ')
+  const acDano = [v && comSinal(v), extra && comSinal(extra), m.percentual_rolagem && `+${m.percentual_rolagem}%`].filter(Boolean).join(' ')
   switch (m.tipo) {
     case 'acerto':          return `Acerto ${acDano}`.trim()
     case 'dano':            return `Dano ${acDano}`.trim()
@@ -101,12 +104,12 @@ function descreverEfeito(m, nomes = {}) {
     case 'vulnerabilidade': return `Vulnerabilidade: ${alvoTxt || v}`
     case 'vantagem':        return `Vantagem${nomeAlvo ? ` em ${nomeAlvo}` : ''}`
     case 'desvantagem':     return `Desvantagem${nomeAlvo ? ` em ${nomeAlvo}` : ''}`
-    case 'vida_max':        return `Vida máx ${sinal}${v}`
+    case 'vida_max':        return `Vida máx ${sinalPre}${v}${suf}`
     case 'vida_temp':       return `Vida temp +${v}`
     case 'cura':            return `Cura ${v}`
     case 'vida_temp_acao':  return `Vida temp ${v}`
-    case 'atributo':        return `${nomeAlvo || 'Atributo'} ${sinal}${v}`
-    case 'combate':         return `${nomeAlvo || 'Combate'} ${sinal}${v}`
+    case 'atributo':        return `${nomeAlvo || 'Atributo'} ${sinalPre}${v}${suf}`
+    case 'combate':         return `${nomeAlvo || 'Combate'} ${sinalPre}${v}${suf}`
     default:                return m.tipo
   }
 }

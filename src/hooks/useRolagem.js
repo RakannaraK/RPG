@@ -42,7 +42,7 @@ export function useRolagem() {
    * @param {string}  params.notacao  — Ex: "2d6+3", "1d20"
    * @returns {Promise<{ notacao, individuais, mantidos, descartados, modificador, total }>}
    */
-  async function registrarRolagem({ mesaId, fichaId = null, rotulo = null, notacao, sessaoId = null }) {
+  async function registrarRolagem({ mesaId, fichaId = null, rotulo = null, notacao, sessaoId = null, percentual = 0 }) {
     setErro('')
     setRolando(true)
 
@@ -54,6 +54,17 @@ export function useRolagem() {
       setErro(err.message || 'Notação inválida.')
       setRolando(false)
       throw err
+    }
+
+    // Fase 18.3 — percentual de rolagem: aplica sobre o TOTAL (após vant/desv e fixos), piso
+    if (percentual) {
+      const totalBase = resultado.total
+      resultado = {
+        ...resultado,
+        total: Math.floor(totalBase * (1 + percentual / 100)),
+        total_base: totalBase,
+        percentual,
+      }
     }
 
     // 2. Persiste no Supabase (aguarda para garantir que o feed dos outros jogadores funcione)
@@ -71,6 +82,7 @@ export function useRolagem() {
           mantidos: resultado.mantidos,
           descartados: resultado.descartados,
           modificador: resultado.modificador,
+          ...(percentual ? { percentual, total_base: resultado.total_base } : {}),
         },
         total: resultado.total,
       }

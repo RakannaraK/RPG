@@ -36,6 +36,15 @@ function formulaTexto(regra) {
   return ''
 }
 
+// Fase 18.4 — formata uma fonte do detalhamento (inclui percentual)
+function sinalFonte(f) {
+  const v = Number(f.valor)
+  if (f.operacao === 'percentual')  return `${v >= 0 ? '+' : ''}${v}%`
+  if (f.operacao === 'definir')     return `=${v}`
+  if (f.operacao === 'multiplicar') return `×${v}`
+  return v >= 0 ? `+${v}` : String(v)
+}
+
 function buildNotacaoTeste(valor, dadoPadrao) {
   const lados = dadoPadrao && dadoPadrao >= 2 ? dadoPadrao : 20
   if (valor === null || valor === undefined) return `1d${lados}`
@@ -207,10 +216,7 @@ export default function AtributoCard({
               <p className="text-purple-300 text-[11px] font-semibold mb-1">{atributo.nome}</p>
               <p className="text-slate-400 text-[10px]">Base: {valor ?? '—'}</p>
               {fontesMod.map((f, i) => {
-                const v = Number(f.valor)
-                const sinal = f.operacao === 'somar' ? (v >= 0 ? `+${v}` : String(v))
-                            : f.operacao === 'definir' ? `=${v}`
-                            : `×${v}`
+                const sinal = sinalFonte(f)
                 return (
                   <p key={i} className="text-white text-[10px]">
                     {sinal} <span className="text-purple-400">{f.fonte}</span>
@@ -380,10 +386,7 @@ export default function AtributoCard({
                 <p className="text-purple-300 text-[11px] font-semibold mb-1">{atributo.nome}</p>
                 <p className="text-slate-400 text-[10px]">Base: {valor ?? '—'}</p>
                 {fontesMod.map((f, i) => {
-                  const v = Number(f.valor)
-                  const sinal = f.operacao === 'somar' ? (v >= 0 ? `+${v}` : String(v))
-                              : f.operacao === 'definir' ? `=${v}`
-                              : `×${v}`
+                  const sinal = sinalFonte(f)
                   return (
                     <p key={i} className="text-white text-[10px]">
                       {sinal} <span className="text-purple-400">{f.fonte}</span>

@@ -82,7 +82,7 @@ export function useHabilidades(sistemaId) {
     setHabilidades(prev => prev.filter(h => h.id !== id))
   }
 
-  async function addModificador({ habilidade_id, tipo, alvo, operacao, valor, dados_extras, escopo_categoria, valor_e_formula, condicao_tipo, condicao_config }) {
+  async function addModificador({ habilidade_id, tipo, alvo, operacao, valor, dados_extras, escopo_categoria, valor_e_formula, percentual_rolagem, condicao_tipo, condicao_config }) {
     const payload = {
       habilidade_id,
       tipo,
@@ -92,6 +92,7 @@ export function useHabilidades(sistemaId) {
       dados_extras: dados_extras || null,
       escopo_categoria: escopo_categoria || null,
       valor_e_formula: !!valor_e_formula,
+      percentual_rolagem: percentual_rolagem != null && percentual_rolagem !== '' ? Number(percentual_rolagem) : null,
       condicao_tipo: condicao_tipo || null,
       condicao_config: condicao_config || null,
     }

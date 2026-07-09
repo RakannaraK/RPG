@@ -73,7 +73,7 @@ export default function AcoesTab({ fichaId, isDono, mesaId, valoresFinais = {}, 
     const notacaoBase = resolverNotacao(rawNotacao, valoresFinais)
     if (!validarNotacao(notacaoBase)) return
 
-    const { notacaoFinal, detalhamento } = notacaoComMods(item, campo, notacaoBase)
+    const { notacaoFinal, detalhamento, percentual } = notacaoComMods(item, campo, notacaoBase)
 
     tocarSomDado(preferencias.dado_skin, {
       ativo: preferencias.som_ativo,
@@ -89,6 +89,7 @@ export default function AcoesTab({ fichaId, isDono, mesaId, valoresFinais = {}, 
         fichaId,
         rotulo: `${item.nome} — ${campo === 'ataque' ? 'Ataque' : 'Dano'}`,
         notacao: notacaoFinal,
+        percentual,
       })
       setRollState(prev => ({ ...prev, [key]: { resultado: res, rolando: false, detalhamento } }))
     } catch {

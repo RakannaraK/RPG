@@ -75,6 +75,7 @@ function labelModificador(mod, atributos, camposCombate, pericias = []) {
       const partes = []
       if (mod.valor) partes.push(`+${mod.valor}`)
       if (mod.dados_extras) partes.push(`+${mod.dados_extras}`)
+      if (mod.percentual_rolagem) partes.push(`+${mod.percentual_rolagem}%`)
       const escopo = mod.escopo_categoria ? ` (${mod.escopo_categoria})` : ' global'
       base = `${mod.tipo === 'acerto' ? 'Acerto' : 'Dano'} ${partes.join(' ') || '+0'}${escopo}`; break
     }
@@ -101,6 +102,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
   const [valor, setValor] = useState('')
   const [valorEhFormula, setValorEhFormula] = useState(false) // 17.5
   const [dadosExtras, setDadosExtras] = useState('')
+  const [percRolagem, setPercRolagem] = useState('') // 18.3
   const [escopoCategoria, setEscopoCategoria] = useState('')
   const [vantTipoAlvo, setVantTipoAlvo] = useState('atributo')
   const [curaModo, setCuraModo] = useState('pontual')
@@ -115,7 +117,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
   const [erro, setErro] = useState('')
 
   function handleTipoChange(novo) {
-    setTipo(novo); setAlvo(''); setValor(''); setValorEhFormula(false); setDadosExtras(''); setEscopoCategoria('')
+    setTipo(novo); setAlvo(''); setValor(''); setValorEhFormula(false); setDadosExtras(''); setPercRolagem(''); setEscopoCategoria('')
     setVantTipoAlvo('atributo'); setCuraModo('pontual'); setErro('')
   }
 
@@ -150,7 +152,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
     // Monta o payload (lógica pura — ver lib/efeitoForm.js)
     const payload = montarEfeitoPayload({
       tipo, alvo, operacao, valor, valorEhFormula: valorEhFormula && valorPodeFormula,
-      dadosExtras, escopoCategoria, vantTipoAlvo, curaModo,
+      dadosExtras, percentualRolagem: percRolagem, escopoCategoria, vantTipoAlvo, curaModo,
       condTipo, condMetrica, condOperador, condValor, condRotulo,
     })
 
@@ -158,7 +160,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
     try {
       await onAdd(payload)
       // limpa campos de valor mas mantém o tipo selecionado
-      setAlvo(''); setValor(''); setValorEhFormula(false); setDadosExtras(''); setEscopoCategoria('')
+      setAlvo(''); setValor(''); setValorEhFormula(false); setDadosExtras(''); setPercRolagem(''); setEscopoCategoria('')
       setCondTipo('nenhuma'); setCondValor(''); setCondRotulo('')
     } catch (err) {
       setErro(err.message || 'Erro ao adicionar efeito.')
@@ -221,6 +223,11 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
             )}
             <input type="text" value={dadosExtras} onChange={e => setDadosExtras(e.target.value)}
               placeholder="Dados extras (ex: 1d6)" className={`${ic} w-32`} />
+            <span className="flex items-center gap-1">
+              <input type="number" value={percRolagem} onChange={e => setPercRolagem(e.target.value)}
+                placeholder="%" className={`${ic} w-14 text-center`} title="Percentual sobre o total da rolagem (ex: 20)" />
+              <span className="text-purple-400 text-xs">%</span>
+            </span>
             <input type="text" value={escopoCategoria} onChange={e => setEscopoCategoria(e.target.value)}
               placeholder="Categoria (vazio = global)" className={`${ic} w-44`}
               title="Categoria de ação — vazio aplica a tudo" />

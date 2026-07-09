@@ -47,7 +47,7 @@ export default function AcoesCombate({
     const raw = item.atributos_extras?.[campo]
     const base = resolverNotacao(raw, valoresFinais)
     if (!validarNotacao(base)) return
-    const { notacaoFinal } = montarNotacaoComModificadores({
+    const { notacaoFinal, percentual } = montarNotacaoComModificadores({
       tipo: campo === 'ataque' ? 'acerto' : 'dano',
       notacaoBase: base,
       categoria: item.atributos_extras?.categoria || null,
@@ -57,6 +57,7 @@ export default function AcoesCombate({
       mesaId, sessaoId, fichaId,
       rotulo: `${item.nome} — ${campo === 'ataque' ? 'Ataque' : 'Dano'}`,
       notacao: notacaoFinal,
+      percentual,
     })
     if (campo === 'dano' && alvoId && onAplicarHp) {
       const alvo = combatentes.find(c => c.id === alvoId)

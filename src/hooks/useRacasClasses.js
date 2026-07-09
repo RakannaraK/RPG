@@ -107,7 +107,7 @@ export function useRacasClasses(sistemaId) {
     setClasses(prev => prev.filter(c => c.id !== id))
   }
 
-  async function addModificador({ raca_id, classe_id, tipo, alvo, operacao, valor, dados_extras, escopo_categoria, valor_e_formula, condicao_tipo, condicao_config }) {
+  async function addModificador({ raca_id, classe_id, tipo, alvo, operacao, valor, dados_extras, escopo_categoria, valor_e_formula, percentual_rolagem, condicao_tipo, condicao_config }) {
     const payload = {
       tipo,
       alvo: alvo || null,
@@ -116,6 +116,7 @@ export function useRacasClasses(sistemaId) {
       dados_extras: dados_extras || null,
       escopo_categoria: escopo_categoria || null,
       valor_e_formula: !!valor_e_formula,
+      percentual_rolagem: percentual_rolagem != null && percentual_rolagem !== '' ? Number(percentual_rolagem) : null,
       condicao_tipo: condicao_tipo || null,
       condicao_config: condicao_config || null,
     }

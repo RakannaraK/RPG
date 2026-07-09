@@ -25,6 +25,8 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
   const mantidos = resultados?.mantidos || []
   const descartados = resultados?.descartados || []
   const modificador = resultados?.modificador || 0
+  const percentual = resultados?.percentual // Fase 18.3
+  const totalBase = resultados?.total_base
 
   return (
     <div className="bg-slate-800/60 border border-purple-800/40 rounded-xl p-3 space-y-2">
@@ -81,6 +83,12 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
           ({mantidos.join(' + ')}
           {modificador > 0 && ` + ${modificador}`}
           {modificador < 0 && ` − ${Math.abs(modificador)}`})
+        </p>
+      )}
+
+      {percentual != null && percentual !== 0 && (
+        <p className="text-amber-400 text-xs">
+          {totalBase} → {percentual > 0 ? '+' : ''}{percentual}% → <span className="font-bold">{total}</span>
         </p>
       )}
 

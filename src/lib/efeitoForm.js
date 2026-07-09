@@ -48,6 +48,7 @@ export function montarEfeitoPayload(s) {
     dados_extras: null,
     escopo_categoria: null,
     valor_e_formula: !!s.valorEhFormula, // Fase 17.5 — valor é fórmula
+    percentual_rolagem: null, // Fase 18.3
     ...cond,
   }
   const t = s.tipo
@@ -67,6 +68,7 @@ export function montarEfeitoPayload(s) {
     p.valor = String(s.valor ?? '').trim() || null
     p.dados_extras = (s.dadosExtras || '').trim() || null
     p.escopo_categoria = (s.escopoCategoria || '').trim() || null
+    p.percentual_rolagem = s.percentualRolagem !== '' && s.percentualRolagem != null ? Number(s.percentualRolagem) : null
   } else if (ehVantagem(t)) {
     p.alvo = s.alvo
     p.valor = s.vantTipoAlvo

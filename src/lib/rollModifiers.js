@@ -47,8 +47,9 @@ function renderNotacao(grupos, modificador) {
  * @param {string} params.notacaoBase — notação já resolvida (tokens @attr/@campo trocados)
  * @param {string|null} [params.categoria] — categoria de ação da arma/ação (para o escopo)
  * @param {Array} [params.modificadoresAtivos] — saída de coletarModificadores()
- * @returns {{ notacaoFinal: string, detalhamento: Array }}
- *   detalhamento: [{ origem:'base', notacao }, { fonte, tipo:'fixo'|'dados', valor, escopo }]
+ * @returns {{ notacaoFinal: string, detalhamento: Array, percentual: number }}
+ *   detalhamento: [{ origem:'base', notacao }, { fonte, tipo:'fixo'|'dados'|'percentual', valor, escopo }]
+ *   percentual: soma dos percentual_rolagem aplicáveis (Fase 18.3) — aplicado sobre o TOTAL após rolar
  */
 export function montarNotacaoComModificadores({ tipo, notacaoBase, categoria = null, modificadoresAtivos = [] }) {
   const aplicaveis = modificadoresAtivos.filter(
@@ -67,10 +68,12 @@ export function montarNotacaoComModificadores({ tipo, notacaoBase, categoria = n
   }
 
   const detalhamento = [{ origem: 'base', notacao: notacaoBase }]
+  let percentual = 0
 
   for (const m of aplicaveis) {
     const fixo = Number(m.valor) || 0
     const dadosExtras = (m.dados_extras || '').toString().trim()
+    const perc = Number(m.percentual_rolagem) || 0
 
     if (fixo) {
       modificador += fixo
@@ -86,10 +89,14 @@ export function montarNotacaoComModificadores({ tipo, notacaoBase, categoria = n
         // dados_extras inválido → ignora silenciosamente
       }
     }
+    if (perc) {
+      percentual += perc
+      detalhamento.push({ fonte: m._fonte || '?', tipo: 'percentual', valor: perc, escopo: m.escopo_categoria || null })
+    }
   }
 
   const notacaoFinal = baseOk ? renderNotacao(grupos, modificador) : notacaoBase
-  return { notacaoFinal, detalhamento }
+  return { notacaoFinal, detalhamento, percentual }
 }
 
 /**

@@ -338,7 +338,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
       return
     }
     // Aplica modificadores de acerto/dano ativos (globais + categoria da arma) — Fase 12.2
-    const { notacaoFinal, detalhamento } = montarNotacaoComModificadores({
+    const { notacaoFinal, detalhamento, percentual } = montarNotacaoComModificadores({
       tipo: campo === 'dano' ? 'dano' : 'acerto',
       notacaoBase,
       categoria: item.atributos_extras?.categoria || null,
@@ -359,6 +359,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
         fichaId,
         rotulo,
         notacao: notacaoFinal,
+        percentual,
       })
       setRollResultado(res)
       setRollRotulo(rotulo)

@@ -10,6 +10,11 @@ function AjudaGramatica() {
       <p className="text-purple-300"><span className="font-semibold">Variáveis:</span> <span className="font-mono">atributo(nome) mod(nome) nivel pericia(nome) recurso(nome) vida_atual vida_max</span></p>
       <p className="text-purple-500"><span className="font-semibold">Ex:</span> <span className="font-mono">10 + mod(destreza) + mod(constituicao)</span> · <span className="font-mono">piso((x-10)/2)</span> · <span className="font-mono">5 * nivel</span></p>
       <p className="text-purple-600">Na fórmula do modificador de atributo, <span className="font-mono">x</span> é o valor do atributo.</p>
+      <div className="border-t border-purple-900 pt-1.5 mt-1.5">
+        <p className="text-purple-300 font-semibold mb-0.5">Como os bônus se combinam (ordem)</p>
+        <p className="text-purple-500">base → somas → <span className="text-amber-400">percentuais (somados entre si)</span> → multiplicadores → definir</p>
+        <p className="text-purple-500">Ex: base 20, +5, <span className="text-amber-400">+13% e +10% = +23%</span> → piso(25 × 1,23) = <span className="text-green-400">30</span></p>
+      </div>
     </div>
   )
 }
