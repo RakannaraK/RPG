@@ -107,13 +107,18 @@ function condicaoSatisfeita(mod, estadoFicha, condicoesManuais) {
  * @param {object} [contexto.condicoesManuais] — { [modificador_id]: boolean } (condições manuais)
  * @returns {Array} lista plana de modificadores ativos com campo _fonte
  */
-function coletarEmJogo({ raca, classe, habilidadesFicha = [] }) {
+function coletarEmJogo({ raca, classe, classes, habilidadesFicha = [] }) {
   const lista = []
   if (raca?.modificadores?.length) {
     lista.push(...raca.modificadores.map(m => ({ ...m, _fonte: raca.nome })))
   }
-  if (classe?.modificadores?.length) {
-    lista.push(...classe.modificadores.map(m => ({ ...m, _fonte: classe.nome })))
+  // Fase 19 — multiclasse: aceita `classes` (array) ou `classe` (single, retrocompat).
+  // Uma ficha Bárbaro 9 / Paladino 4 coleta os modificadores das duas classes.
+  const listaClasses = (classes && classes.length) ? classes : (classe ? [classe] : [])
+  for (const cl of listaClasses) {
+    if (cl?.modificadores?.length) {
+      lista.push(...cl.modificadores.map(m => ({ ...m, _fonte: cl.nome })))
+    }
   }
   for (const hf of habilidadesFicha) {
     const hab = hf.habilidade
@@ -129,12 +134,13 @@ function coletarEmJogo({ raca, classe, habilidadesFicha = [] }) {
 export function coletarModificadores({
   raca,
   classe,
+  classes,
   habilidadesFicha = [],
   estadoFicha = null,
   condicoesManuais = {},
 } = {}) {
   // Fase 12 — filtra por condição (auto/manual) antes de devolver
-  return coletarEmJogo({ raca, classe, habilidadesFicha })
+  return coletarEmJogo({ raca, classe, classes, habilidadesFicha })
     .filter(mod => condicaoSatisfeita(mod, estadoFicha, condicoesManuais))
 }
 
@@ -146,8 +152,8 @@ export function coletarModificadores({
  *
  * @returns {Array} modificadores com condicao_tipo === 'manual'
  */
-export function listarCondicoesManuais({ raca, classe, habilidadesFicha = [] } = {}) {
-  return coletarEmJogo({ raca, classe, habilidadesFicha })
+export function listarCondicoesManuais({ raca, classe, classes, habilidadesFicha = [] } = {}) {
+  return coletarEmJogo({ raca, classe, classes, habilidadesFicha })
     .filter(mod => mod.condicao_tipo === 'manual')
 }
 

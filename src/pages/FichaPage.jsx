@@ -9,6 +9,8 @@ import { mergeConfigLayout } from '../lib/sistemaDefaults'
 import { coletarModificadores, calcularValoresFinais, agregarDefesas, listarCondicoesManuais, resolverValoresFormula } from '../lib/modifierEngine'
 import { validarNotacao, rolarNotacao } from '../lib/diceNotation'
 import { useHabilidadesFicha } from '../hooks/useHabilidadesFicha'
+import { useClassesFicha } from '../hooks/useClassesFicha'
+import { nivelTotalDe } from '../components/ficha/layout/ClassesFicha'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
 import DescansoBar from '../components/ficha/DescansoBar'
 import CabecalhoPersonagem from '../components/ficha/layout/CabecalhoPersonagem'
@@ -36,9 +38,16 @@ export default function FichaPage() {
     removerHabilidade,
     ajustarRecurso,
     sincronizarOrigem,
+    sincronizarClasses,
     recuperarRecursos,
     definirRecurso,
   } = useHabilidadesFicha(fichaId, habilidades)
+  const {
+    classesFicha,
+    adicionarClasse,
+    removerClasse,
+    definirNivel,
+  } = useClassesFicha(fichaId, classes)
   const { condicoesManuais, toggleCondicao } = useCondicoesManuais(fichaId)
 
   // Estado local de raça/classe para recálculo imediato sem esperar refetch
@@ -51,6 +60,21 @@ export default function FichaPage() {
       setClasseId(ficha.classe_id || null)
     }
   }, [ficha?.id])
+
+  // Fase 19.1 — mantém o cache derivado em sincronia: fichas.nivel = soma dos
+  // níveis de classe; fichas.classe_id = classe primária (ordem 0). Só o dono
+  // escreve, e só quando há classes_ficha (fichas ainda não migradas ficam no
+  // fallback legado, sem escrita). Guarda por igualdade evita loop de update.
+  const somaNiveis = classesFicha.reduce((s, cf) => s + (Number(cf.nivel) || 0), 0)
+  const classePrimaria = classesFicha[0]?.classe_id || null
+  useEffect(() => {
+    if (!ficha) return
+    const dono = ficha.dono_id === session?.user?.id
+    if (!dono || classesFicha.length === 0) return
+    if (somaNiveis === (ficha.nivel ?? null) && classePrimaria === (ficha.classe_id ?? null)) return
+    updateFicha(fichaId, { nivel: somaNiveis, classe_id: classePrimaria }).catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [somaNiveis, classePrimaria, ficha?.id, classesFicha.length])
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -80,10 +104,27 @@ export default function FichaPage() {
     try { await updateFicha(fichaId, { raca_id: id || null }) } catch {}
   }
 
-  async function handleClasseChange(id) {
-    setClasseId(id || null)
-    await sincronizarOrigem('classe', id || null)
-    try { await updateFicha(fichaId, { classe_id: id || null }) } catch {}
+  // Fase 19.1 — multiclasse: adicionar/remover classe re-sincroniza as
+  // habilidades auto-concedidas contra o CONJUNTO de classes; o cache de nível
+  // é atualizado pelo efeito acima.
+  async function handleAddClasse(classeId) {
+    try {
+      await adicionarClasse(classeId)
+      const ids = [...classesFicha.map(cf => cf.classe_id), classeId]
+      await sincronizarClasses(ids)
+    } catch {}
+  }
+
+  async function handleRemoveClasse(rowId, classeId) {
+    try {
+      await removerClasse(rowId)
+      const ids = classesFicha.map(cf => cf.classe_id).filter(id => id !== classeId)
+      await sincronizarClasses(ids)
+    } catch {}
+  }
+
+  async function handleSetNivel(rowId, nivel) {
+    await definirNivel(rowId, nivel)
   }
 
   if (loading) {
@@ -123,6 +164,14 @@ export default function FichaPage() {
   // Motor de modificadores
   const racaAtiva = racas.find(r => r.id === racaId) || null
   const classeAtiva = classes.find(c => c.id === classeId) || null
+  // Fase 19.1 — classes ativas: multiclasse (classes_ficha) quando houver; senão
+  // fallback legado (uma única classe via classe_id), sem mudar comportamento.
+  const classesAtivas = classesFicha.length
+    ? classesFicha.filter(cf => cf.classe).map(cf => cf.classe)
+    : (classeAtiva ? [classeAtiva] : [])
+  // Nível total = soma das classes (fonte de verdade); fallback = ficha.nivel legado.
+  const nivelTotal = classesFicha.length ? nivelTotalDe(classesFicha) : (ficha.nivel ?? 1)
+
   // Estado da ficha para condições automáticas (Fase 12). Usa vida_max BASE
   // (hp_maximo) no cálculo de % para evitar dependência circular com o motor.
   const habilidadesAtivasIds = new Set(
@@ -133,7 +182,7 @@ export default function FichaPage() {
   const estadoFicha = {
     vida_atual: ficha.hp_atual ?? 0,
     vida_max: ficha.hp_maximo ?? 0,
-    nivel: ficha.nivel ?? 1,
+    nivel: nivelTotal,
     habilidadesAtivas: habilidadesAtivasIds,
   }
   // 17.5 — contexto p/ fórmulas de MODIFICADOR (sem atributos → anti-auto-referência)
@@ -147,7 +196,7 @@ export default function FichaPage() {
     }
   })
   const ctxModificador = {
-    nivel: ficha.nivel ?? 1,
+    nivel: nivelTotal,
     vida_atual: ficha.hp_atual ?? 0,
     vida_max: ficha.hp_maximo ?? 0,
     recursos: recursosCtx,
@@ -157,7 +206,7 @@ export default function FichaPage() {
   const modificadoresAtivos = resolverValoresFormula(
     coletarModificadores({
       raca: racaAtiva,
-      classe: classeAtiva,
+      classes: classesAtivas,
       habilidadesFicha,
       estadoFicha,
       condicoesManuais,
@@ -167,7 +216,7 @@ export default function FichaPage() {
   // 12.6 — interruptores situacionais: todos os mods de condição manual em jogo
   const condicoesManuaisDisponiveis = listarCondicoesManuais({
     raca: racaAtiva,
-    classe: classeAtiva,
+    classes: classesAtivas,
     habilidadesFicha,
   })
   const baseMotor = {
@@ -199,7 +248,7 @@ export default function FichaPage() {
   const contextoFormula = {
     atributos: atributosCtx,
     formulaModificador,
-    nivel: ficha.nivel ?? 1,
+    nivel: nivelTotal,
     vida_atual: ficha.hp_atual ?? 0,
     vida_max: valoresFinais.vida_max ?? ficha.hp_maximo ?? 0,
     pericias: {},
@@ -324,9 +373,13 @@ export default function FichaPage() {
           racas={racas}
           classes={classes}
           racaId={racaId}
-          classeId={classeId}
           onRacaChange={handleRacaChange}
-          onClasseChange={handleClasseChange}
+          classesFicha={classesFicha}
+          nivelTotal={nivelTotal}
+          classeFallbackNome={classeAtiva?.nome || null}
+          onAddClasse={handleAddClasse}
+          onRemoveClasse={handleRemoveClasse}
+          onSetNivel={handleSetNivel}
           vidaMaxFinal={valoresFinais.vida_max}
           vidaTemp={valoresFinais.vida_temp}
           vidaTempPontual={ficha.vida_temp_atual ?? 0}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calcularValoresFinais, resolverValoresFormula } from './modifierEngine'
+import { calcularValoresFinais, resolverValoresFormula, coletarModificadores } from './modifierEngine'
 
 // Aplica uma lista de operações a um único atributo 'a' com base dada
 function calc(base, ops) {
@@ -110,5 +110,29 @@ describe('18.1 — percentual com fórmula no valor (via 17.5 antes do pipeline)
     )
     const final = calcularValoresFinais({ atributos: { a: 50 }, vida_max: 0, combate: {} }, mods).atributos.a
     expect(final).toBe(60) // 50 × 1.20
+  })
+})
+
+describe('19.1 — coleta multiclasse (várias classes)', () => {
+  const forca = { tipo: 'atributo', alvo: 'a', operacao: 'somar', valor: 2 }
+  const carisma = { tipo: 'atributo', alvo: 'a', operacao: 'somar', valor: 3 }
+  const barbaro = { nome: 'Bárbaro', modificadores: [forca] }
+  const paladino = { nome: 'Paladino', modificadores: [carisma] }
+
+  it('coleta modificadores de TODAS as classes da ficha', () => {
+    const mods = coletarModificadores({ classes: [barbaro, paladino] })
+    expect(mods).toHaveLength(2)
+    expect(mods.map(m => m._fonte).sort()).toEqual(['Bárbaro', 'Paladino'])
+  })
+
+  it('retrocompat: `classe` (single) continua funcionando igual', () => {
+    const mods = coletarModificadores({ classe: barbaro })
+    expect(mods).toHaveLength(1)
+    expect(mods[0]._fonte).toBe('Bárbaro')
+  })
+
+  it('classes vazio/ausente → nenhum modificador de classe', () => {
+    expect(coletarModificadores({ classes: [] })).toHaveLength(0)
+    expect(coletarModificadores({})).toHaveLength(0)
   })
 })

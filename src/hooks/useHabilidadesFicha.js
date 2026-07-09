@@ -141,6 +141,33 @@ export function useHabilidadesFicha(fichaId, habilidadesSistema = []) {
     }
   }
 
+  /**
+   * Fase 19.1 — auto-concessão multiclasse. Sincroniza as habilidades de origem
+   * 'classe' contra o CONJUNTO atual de classes da ficha: remove as de classes
+   * que saíram, adiciona as das classes presentes que ainda faltam.
+   * @param {string[]} classeIdsAtuais — ids de todas as classes da ficha agora
+   */
+  async function sincronizarClasses(classeIdsAtuais) {
+    const idSet = new Set(classeIdsAtuais || [])
+    const rowsClasse = rawRows.filter(row => row.origem === 'classe')
+    const desejadas = habilidadesSistema.filter(h => h.classe_id && idSet.has(h.classe_id))
+    const desejadasIds = new Set(desejadas.map(h => h.id))
+    const presentesIds = new Set(rowsClasse.map(r => r.habilidade_id))
+
+    // Remove habilidades cuja classe não faz mais parte da ficha
+    for (const row of rowsClasse) {
+      if (!desejadasIds.has(row.habilidade_id)) {
+        await removerHabilidade(row.id)
+      }
+    }
+    // Adiciona as habilidades das classes atuais que ainda não estão na ficha
+    for (const hab of desejadas) {
+      if (!presentesIds.has(hab.id)) {
+        await adicionarHabilidade(hab.id, 'classe')
+      }
+    }
+  }
+
   // Define o recurso_atual de uma habilidade (valor absoluto) — usado pelo descanso (15.3)
   async function definirRecurso(habilidadeFichaId, valor) {
     setRawRows(prev => prev.map(r => (r.id === habilidadeFichaId ? { ...r, recurso_atual: valor } : r)))
@@ -172,6 +199,6 @@ export function useHabilidadesFicha(fichaId, habilidadesSistema = []) {
   return {
     habilidadesFicha, loading, error, refetch: fetchAll,
     toggleHabilidade, adicionarHabilidade, removerHabilidade, ajustarRecurso,
-    sincronizarOrigem, recuperarRecursos, definirRecurso,
+    sincronizarOrigem, sincronizarClasses, recuperarRecursos, definirRecurso,
   }
 }

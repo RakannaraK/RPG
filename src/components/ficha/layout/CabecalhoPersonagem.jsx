@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useUpdateFicha } from '../../../hooks/useFicha'
+import ClassesFicha, { resumoClasses } from './ClassesFicha'
 
 export default function CabecalhoPersonagem({
   ficha,
@@ -9,9 +10,14 @@ export default function CabecalhoPersonagem({
   racas = [],
   classes = [],
   racaId,
-  classeId,
   onRacaChange,
-  onClasseChange,
+  // Fase 19.1 — multiclasse
+  classesFicha = [],
+  nivelTotal,
+  classeFallbackNome = null,
+  onAddClasse,
+  onRemoveClasse,
+  onSetNivel,
   vidaMaxFinal,
   vidaTemp = 0,
   vidaTempPontual = 0,
@@ -81,10 +87,20 @@ export default function CabecalhoPersonagem({
   const temSistemaClasses = classes.length > 0
 
   const racaAtiva = racas.find(r => r.id === racaId)
-  const classeAtiva = classes.find(c => c.id === classeId)
   const racaNome = racaAtiva?.nome || ficha.raca || null
-  const classeNome = classeAtiva?.nome || ficha.classe || null
-  const subtitulo = [racaNome, classeNome, ficha.nivel ? `Nível ${ficha.nivel}` : null]
+
+  // Fase 19.1 — classe no subtítulo:
+  //   2+ classes → "Bárbaro 9 / Paladino 4" + "Nível 13" (total)
+  //   1 classe   → "Bárbaro" + "Nível 9" (idêntico ao layout antigo)
+  //   nenhuma linha → fallback legado (classe_id → nome, ou texto ficha.classe)
+  const temClasses = classesFicha.length > 0
+  const classeLabel = classesFicha.length > 1
+    ? resumoClasses(classesFicha)
+    : temClasses
+      ? (classesFicha[0].classe?.nome || null)
+      : (classeFallbackNome || ficha.classe || null)
+  const nivelLabel = temClasses ? nivelTotal : ficha.nivel
+  const subtitulo = [racaNome, classeLabel, nivelLabel ? `Nível ${nivelLabel}` : null]
     .filter(Boolean)
     .join(' · ')
 
@@ -121,46 +137,50 @@ export default function CabecalhoPersonagem({
 
           {/* Seletores de raça/classe — apenas para o dono */}
           {isDono && (
-            <div className="flex flex-wrap gap-2 items-center">
-              {temSistemaRacas ? (
-                <select
-                  value={racaId || ''}
-                  onChange={e => onRacaChange(e.target.value || null)}
-                  className={selectCls}
-                  title="Raça"
-                >
-                  <option value="">Sem raça</option>
-                  {racas.map(r => <option key={r.id} value={r.id}>{r.nome}</option>)}
-                </select>
-              ) : (
-                <input
-                  type="text"
-                  value={racaTexto}
-                  onChange={e => setRacaTexto(e.target.value)}
-                  onBlur={e => salvarTextoLegado('raca', e.target.value)}
-                  placeholder="Raça"
-                  className={`${inputCls} w-28`}
-                />
-              )}
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2 items-center">
+                {temSistemaRacas ? (
+                  <select
+                    value={racaId || ''}
+                    onChange={e => onRacaChange(e.target.value || null)}
+                    className={selectCls}
+                    title="Raça"
+                  >
+                    <option value="">Sem raça</option>
+                    {racas.map(r => <option key={r.id} value={r.id}>{r.nome}</option>)}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={racaTexto}
+                    onChange={e => setRacaTexto(e.target.value)}
+                    onBlur={e => salvarTextoLegado('raca', e.target.value)}
+                    placeholder="Raça"
+                    className={`${inputCls} w-28`}
+                  />
+                )}
 
-              {temSistemaClasses ? (
-                <select
-                  value={classeId || ''}
-                  onChange={e => onClasseChange(e.target.value || null)}
-                  className={selectCls}
-                  title="Classe"
-                >
-                  <option value="">Sem classe</option>
-                  {classes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
-                </select>
-              ) : (
-                <input
-                  type="text"
-                  value={classeTexto}
-                  onChange={e => setClasseTexto(e.target.value)}
-                  onBlur={e => salvarTextoLegado('classe', e.target.value)}
-                  placeholder="Classe"
-                  className={`${inputCls} w-28`}
+                {/* Sistemas sem classes estruturadas: mantém o campo texto legado */}
+                {!temSistemaClasses && (
+                  <input
+                    type="text"
+                    value={classeTexto}
+                    onChange={e => setClasseTexto(e.target.value)}
+                    onBlur={e => salvarTextoLegado('classe', e.target.value)}
+                    placeholder="Classe"
+                    className={`${inputCls} w-28`}
+                  />
+                )}
+              </div>
+
+              {/* Fase 19.1 — multiclasse (sistemas com classes) */}
+              {temSistemaClasses && (
+                <ClassesFicha
+                  classesFicha={classesFicha}
+                  classesSistema={classes}
+                  onAdd={onAddClasse}
+                  onRemove={onRemoveClasse}
+                  onSetNivel={onSetNivel}
                 />
               )}
             </div>
