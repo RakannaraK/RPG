@@ -28,6 +28,7 @@ export default function BarraXp({
   const [erro, setErro] = useState('')
   const [ocupado, setOcupado] = useState(false)
   const [escolhendo, setEscolhendo] = useState(false)
+  const [subiuPara, setSubiuPara] = useState(null) // 19.7 — feedback visual
 
   const modo = modoProgressao(progressao)
   let prog
@@ -64,7 +65,9 @@ export default function BarraXp({
     setOcupado(true)
     setEscolhendo(false)
     try {
-      await onSubirNivel(rowId)
+      const novo = await onSubirNivel(rowId)
+      setSubiuPara(novo ?? null)
+      setTimeout(() => setSubiuPara(null), 4000)
     } catch (e) {
       setErro(e.message || 'Não foi possível subir de nível.')
     } finally {
@@ -81,9 +84,16 @@ export default function BarraXp({
   return (
     <div className="bg-slate-800 border border-purple-800 rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-baseline gap-2 flex-wrap">
           <span className="text-purple-400 text-xs font-medium uppercase tracking-wider">Nível</span>
-          <span className="text-white text-xl font-bold">{nivelTotal}</span>
+          <span className={`text-xl font-bold transition-colors duration-700 ${subiuPara ? 'text-amber-300' : 'text-white'}`}>
+            {nivelTotal}
+          </span>
+          {subiuPara && (
+            <span className="text-amber-400 text-xs font-semibold bg-amber-950/60 border border-amber-700/60 px-2 py-0.5 rounded-full animate-pulse">
+              ✨ Subiu para o nível {subiuPara}!
+            </span>
+          )}
           {modo !== 'nenhum' && (
             <span className="text-purple-500 text-sm font-mono ml-1">
               {fmt(xp)}

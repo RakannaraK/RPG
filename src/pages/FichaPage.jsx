@@ -197,16 +197,34 @@ export default function FichaPage() {
       await definirNivel(rowId, novo)
       // 19.5 — habilidades destravadas pelo novo nível entram automaticamente
       const novas = classesFicha.map(c => (c.id === rowId ? { ...c, nivel: novo } : c))
+      const total = ctxNivel(novas).nivel
       await sincronizarClasses(novas.map(c => c.classe_id), ctxNivel(novas))
       // 19.6 — recompensas daquele nível (da classe escolhida + do nível total)
-      await gerarRecompensas(cf?.classe_id ?? null, novo, ctxNivel(novas).nivel)
-    } else {
-      // Sistema sem classes estruturadas: o nível vive só em fichas.nivel
-      const total = nivelTotalAtual() + 1
-      await updateFicha(fichaId, { nivel: total })
-      await gerarRecompensas(null, 0, total)
-      refetch()
+      await gerarRecompensas(cf?.classe_id ?? null, novo, total)
+      await anunciarNivel(total, cf?.classe?.nome ? `${cf.classe.nome} ${novo}` : null)
+      return total
     }
+    // Sistema sem classes estruturadas: o nível vive só em fichas.nivel
+    const total = nivelTotalAtual() + 1
+    await updateFicha(fichaId, { nivel: total })
+    await gerarRecompensas(null, 0, total)
+    await anunciarNivel(total, null)
+    refetch()
+    return total
+  }
+
+  // 19.7 — o feed da mesa anuncia a subida de nível (o ganho de XP é silencioso)
+  async function anunciarNivel(nivelNovo, detalheClasse) {
+    try {
+      await registrarEvento({
+        mesaId,
+        fichaId,
+        rotulo: `${ficha.nome_personagem} subiu para o nível ${nivelNovo}!${detalheClasse ? ` (${detalheClasse})` : ''}`,
+        notacao: '',
+        total: nivelNovo,
+        dados: [],
+      })
+    } catch { /* o level-up não depende do feed */ }
   }
 
   // 19.6 — as recompensas são checklist-guia: só viram pendência, nada é aplicado.
