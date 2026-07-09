@@ -6,7 +6,10 @@ import { calcularDescanso } from '../../lib/restEngine'
  * Calcula pelo motor puro (restEngine); só aplica após o usuário confirmar.
  * Oculto se o sistema não tem descansos configurados.
  */
-export default function DescansoBar({ descansos = [], ficha, valoresFinais, habilidadesFicha = [], contextoFormula = null, onAplicar }) {
+export default function DescansoBar({
+  descansos = [], ficha, valoresFinais, habilidadesFicha = [], contextoFormula = null, onAplicar,
+  pools = [], linhasPools = [], maximosPools = {}, // 20.1
+}) {
   const [preview, setPreview] = useState(null) // { tipo, resultado }
   const [aplicando, setAplicando] = useState(false)
   const [feito, setFeito] = useState('')
@@ -14,7 +17,10 @@ export default function DescansoBar({ descansos = [], ficha, valoresFinais, habi
   if (!descansos || descansos.length === 0) return null
 
   function abrir(tipo) {
-    const resultado = calcularDescanso({ tipoDescanso: tipo, ficha, valoresFinais, habilidadesFicha, contexto: contextoFormula })
+    const resultado = calcularDescanso({
+      tipoDescanso: tipo, ficha, valoresFinais, habilidadesFicha, contexto: contextoFormula,
+      pools, linhasPools, maximosPools,
+    })
     setPreview({ tipo, resultado })
   }
 
@@ -76,9 +82,17 @@ export default function DescansoBar({ descansos = [], ficha, valoresFinais, habi
                   <span className="text-white font-medium">{r.de} → {r.para}</span>
                 </div>
               ))}
+              {/* 20.1 — pools recuperados */}
+              {(preview.resultado.pools || []).map(p => (
+                <div key={p.poolId} className="flex justify-between">
+                  <span className="text-sky-400">{p.nome}</span>
+                  <span className="text-white font-medium">{p.de} → {p.para}</span>
+                </div>
+              ))}
               {preview.resultado.vida.recuperado === 0
                 && preview.resultado.vida_temp.para === preview.resultado.vida_temp.de
-                && preview.resultado.recursos.length === 0 && (
+                && preview.resultado.recursos.length === 0
+                && (preview.resultado.pools || []).length === 0 && (
                 <p className="text-purple-500">Nada seria recuperado.</p>
               )}
             </div>

@@ -6,6 +6,7 @@ import { useSistema } from '../hooks/useSistema'
 import { useUpdateFicha } from '../hooks/useFicha'
 import { usePresencaSessao } from '../hooks/usePresencaSessao'
 import { useSessaoFichas } from '../hooks/useSessaoFichas'
+import { usePools } from '../hooks/usePools'
 import { useEncontro } from '../hooks/useEncontro'
 import { useRolagem } from '../hooks/useRolagem'
 import { calcularDescanso } from '../lib/restEngine'
@@ -36,9 +37,18 @@ export default function SessaoPage() {
 
   // Sistema da mesa (para o motor de modificadores no painel de fichas)
   const { sistema, racas, classes, habilidades, atributos, pericias } = useSistema(mesaId)
+  const { pools } = usePools(sistema?.id) // 20.1
+  // construirCard lê formula_modificador/formula_proficiencia do bundle — sem elas,
+  // as fórmulas do painel de sessão rodariam sem a regra do sistema.
+  const formulaModificador = sistema?.config_layout?.formula_modificador || ''
+  const formulaProficiencia = sistema?.config_layout?.formula_proficiencia || ''
   const sistemaBundle = useMemo(
-    () => ({ racas, classes, habilidades, atributos, pericias }),
-    [racas, classes, habilidades, atributos, pericias]
+    () => ({
+      racas, classes, habilidades, atributos, pericias, pools,
+      formula_modificador: formulaModificador,
+      formula_proficiencia: formulaProficiencia,
+    }),
+    [racas, classes, habilidades, atributos, pericias, pools, formulaModificador, formulaProficiencia]
   )
   const camposCombate = sistema?.config_layout?.campos_combate || []
   const descansos = sistema?.config_layout?.descansos || []

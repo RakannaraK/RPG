@@ -17,6 +17,9 @@ import { bloqueadosPorNivel } from '../lib/requisitos'
 import { recompensasAoSubir } from '../lib/recompensas'
 import { useRecompensas, useRecompensasFicha } from '../hooks/useRecompensas'
 import PainelRecompensas from '../components/ficha/PainelRecompensas'
+import { calcularMaximos, mapaPools, atualDePool } from '../lib/poolEngine'
+import { usePools, usePoolsFicha } from '../hooks/usePools'
+import PainelPools from '../components/ficha/PainelPools'
 import BarraXp from '../components/ficha/BarraXp'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
 import DescansoBar from '../components/ficha/DescansoBar'
@@ -59,6 +62,9 @@ export default function FichaPage() {
   // 19.6 — catálogo do sistema + checklist da ficha
   const { recompensas } = useRecompensas(sistema?.id)
   const { recompensasFicha, gerarPendencias, marcarConcluida } = useRecompensasFicha(fichaId)
+  // 20.1 — pools do sistema + estado na ficha
+  const { pools } = usePools(sistema?.id)
+  const { linhasPools, definirAtual } = usePoolsFicha(fichaId)
 
   // Estado local de raça/classe para recálculo imediato sem esperar refetch
   const [racaId, setRacaId] = useState(null)
@@ -323,10 +329,38 @@ export default function FichaPage() {
       if (h.id) recursosCtx[h.id] = v
     }
   })
+  // 20.1 — os máximos de pool são DERIVADOS (nunca armazenados). Calculados com os
+  // atributos BASE: um máximo pode usar atributo() e um modificador pode usar pool(),
+  // então usar os atributos finais fecharia um ciclo. Mesmo precedente do estadoFicha,
+  // que já usa a vida BASE pelo mesmo motivo.
+  const atributosBase = {}
+  valoresAtributos.forEach(va => {
+    if (!va.atributo?.id) return
+    const v = va.valor ?? 0
+    atributosBase[va.atributo.id] = v
+    if (va.atributo.nome) atributosBase[va.atributo.nome] = v
+  })
+  const ctxPools = {
+    atributos: atributosBase,
+    nivel: nivelTotal,
+    niveisClasse,
+    formula_proficiencia: formulaProficiencia,
+    formulaModificador: config.formula_modificador || '',
+    vida_atual: ficha.hp_atual ?? 0,
+    vida_max: ficha.hp_maximo ?? 0,
+    recursos: recursosCtx,
+    pericias: {},
+  }
+  const { maximos: maximosPools, erros: errosPools } = calcularMaximos(pools, ctxPools)
+  const poolsMap = mapaPools(pools, linhasPools, maximosPools)
+  const atualDoPool = poolId =>
+    atualDePool(linhasPools.find(l => l.pool_id === poolId), maximosPools[poolId] ?? 0)
+
   const ctxModificador = {
     nivel: nivelTotal,
     niveisClasse,
     formula_proficiencia: formulaProficiencia,
+    pools: poolsMap, // 20.1 — pool(nome) = valor atual
     vida_atual: ficha.hp_atual ?? 0,
     vida_max: ficha.hp_maximo ?? 0,
     recursos: recursosCtx,
@@ -399,6 +433,7 @@ export default function FichaPage() {
     nivel: nivelTotal,
     niveisClasse,
     formula_proficiencia: formulaProficiencia,
+    pools: poolsMap, // 20.1
     vida_atual: ficha.hp_atual ?? 0,
     vida_max: valoresFinais.vida_max ?? ficha.hp_maximo ?? 0,
     pericias: {},
@@ -454,6 +489,10 @@ export default function FichaPage() {
       for (const r of resultado.recursos) {
         await definirRecurso(r.habilidadeFichaId, r.para)
       }
+      // 20.1 — pools recuperados pelo descanso
+      for (const p of resultado.pools || []) {
+        await definirAtual(p.poolId, p.para)
+      }
       try {
         await supabase.from('descansos_log').insert({
           ficha_id: fichaId,
@@ -472,6 +511,31 @@ export default function FichaPage() {
       })
       refetch()
     } catch { /* falha silenciada — não quebra a ficha */ }
+  }
+
+  // 20.1 — rolagem de um pool de DADOS vai ao feed
+  async function handleRolagemPool({ pool, notacao, total, dados }) {
+    try {
+      await registrarEvento({
+        mesaId,
+        fichaId,
+        rotulo: `${pool.nome} — ${ficha.nome_personagem}`,
+        notacao,
+        total,
+        dados,
+      })
+    } catch { /* o gasto já aconteceu; o feed é best-effort */ }
+  }
+
+  // 20.1 — aplicar o resultado do pool de dados à vida (uso típico: curar)
+  async function handleCurarComPool(total) {
+    const max = valoresFinais.vida_max || ficha.hp_maximo || 0
+    const atual = ficha.hp_atual ?? 0
+    const novo = max > 0 ? Math.min(max, atual + total) : atual + total
+    try {
+      await updateFicha(fichaId, { hp_atual: novo })
+      refetch()
+    } catch { /* vida não muda se falhar */ }
   }
 
   const hasLeft = secoes.pericias || secoes.proficiencias
@@ -549,6 +613,19 @@ export default function FichaPage() {
           />
         )}
 
+        {/* Pools/Recursos (20.1) — adaptativo: some se o sistema não tem pools */}
+        <PainelPools
+          pools={pools}
+          linhasPools={linhasPools}
+          maximos={maximosPools}
+          erros={errosPools}
+          isDono={isDono}
+          atualDe={atualDoPool}
+          onDefinirAtual={definirAtual}
+          onRolagem={handleRolagemPool}
+          onCurar={handleCurarComPool}
+        />
+
         {/* Recompensas de nível (19.6) — checklist-guia, some se não houver nenhuma */}
         <PainelRecompensas
           recompensasFicha={recompensasFicha}
@@ -566,6 +643,9 @@ export default function FichaPage() {
             valoresFinais={valoresFinais}
             habilidadesFicha={habilidadesFicha}
             contextoFormula={contextoFormula}
+            pools={pools}
+            linhasPools={linhasPools}
+            maximosPools={maximosPools}
             onAplicar={handleAplicarDescanso}
           />
         )}

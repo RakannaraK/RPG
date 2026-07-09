@@ -4,9 +4,10 @@ import { mergeConfigLayout } from '../../lib/sistemaDefaults'
 import AtributoEditor from './AtributoEditor'
 import LayoutEditor from './LayoutEditor'
 import RacasClassesEditor from './RacasClassesEditor'
+import PoolsEditor from './PoolsEditor'
 import DescansosEditor from './DescansosEditor'
 
-const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes', 'Descansos']
+const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes', 'Descansos', 'Recursos']
 
 const REGRA_PADRAO = {
   tipo: 'dados',
@@ -303,6 +304,15 @@ export default function SistemaEditor({ mesaId, isMestre }) {
             descansos={configLayout.descansos || []}
             onChange={descansos => setConfigLayout(prev => ({ ...prev, descansos }))}
           />
+        )}
+
+        {/* Fase 20.1 — pools/recursos gastáveis */}
+        {activeTab === 'Recursos' && (
+          sistemaDB?.id ? (
+            <PoolsEditor sistemaId={sistemaDB.id} descansos={configLayout.descansos || []} />
+          ) : (
+            <p className="text-purple-500 text-sm">Salve o sistema antes de criar recursos.</p>
+          )
         )}
       </div>
 

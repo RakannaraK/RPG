@@ -8,7 +8,8 @@
  * Gramática (contrato — não mudar sem registrar na spec):
  *   números (int/decimal), + - * / ( ) com precedência padrão
  *   variáveis-função (arg = nome/id bruto): atributo(x) mod(x) pericia(x) recurso(x)
- *     nivel(classe)[F19: nível na classe, 0 se ausente] · reservadas: pool(x)[F20] maestria(x)[F21]
+ *     nivel(classe)[F19: nível na classe, 0 se ausente] · pool(x)[F20: valor atual]
+ *     reservada (parseia, avaliação falha): maestria(x)[F21]
  *   variáveis simples: nivel, proficiencia[F19], vida_atual, vida_max, x (só na fórmula de modificador)
  *   funções matemáticas: piso teto arredondar abs (1 arg) · min max (2 args)
  *   case-insensitive; nomes resolvidos por id OU nome normalizado (sem acento, minúsculo)
@@ -239,7 +240,8 @@ function evalCall(fn, arg, ctx) {
       return avaliarFormula(f, { ...ctx, _x: attr })
     }
     case 'nivel':    return resolverNivelClasse(ctx.niveisClasse, arg) // Fase 19
-    case 'pool':     throw new FormulaError("'pool()' estará disponível na Fase 20")
+    // Fase 20 — valor ATUAL do pool (mesma semântica de recurso())
+    case 'pool':     return resolverNome(ctx.pools, arg, 'pool')
     case 'maestria': throw new FormulaError("'maestria()' estará disponível na Fase 21")
     default: throw new FormulaError(`Função '${fn}' desconhecida`)
   }

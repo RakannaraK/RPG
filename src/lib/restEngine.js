@@ -1,5 +1,6 @@
 import { rolarNotacao, validarNotacao, resolverNotacaoFormula } from './diceNotation.js'
 import { avaliarFormula } from './formulaEngine.js'
+import { atualDePool, recuperarPool } from './poolEngine.js'
 
 // 17.5 — avalia uma fórmula com segurança (falha → 0)
 function safeFormula(f, contexto) {
@@ -50,9 +51,15 @@ function aplicarModoVida(de, max, regra, contexto) {
  * @param {object} params.ficha          - { hp_atual, hp_maximo, vida_temp_atual }
  * @param {object} params.valoresFinais  - { vida_max } (final, do motor de modificadores)
  * @param {Array}  params.habilidadesFicha - [{ id, recurso_atual, habilidade: { id, nome, recurso_nome, recurso_max, recupera_em } }]
- * @returns {{ vida, vida_temp, recursos, resumo }}
+ * @param {Array}  [params.pools]         - Fase 20.1: pools do sistema
+ * @param {Array}  [params.linhasPools]   - Fase 20.1: pools_ficha (linha ausente = cheio)
+ * @param {object} [params.maximosPools]  - Fase 20.1: { [poolId]: maximo } já derivado
+ * @returns {{ vida, vida_temp, recursos, pools, resumo }}
  */
-export function calcularDescanso({ tipoDescanso, ficha, valoresFinais, habilidadesFicha = [], contexto = null }) {
+export function calcularDescanso({
+  tipoDescanso, ficha, valoresFinais, habilidadesFicha = [], contexto = null,
+  pools = [], linhasPools = [], maximosPools = {},
+}) {
   const max = Number(valoresFinais?.vida_max ?? ficha?.hp_maximo ?? 0) || 0
   const hpDe = Number(ficha?.hp_atual ?? 0) || 0
   const vr = aplicarModoVida(hpDe, max, tipoDescanso?.vida, contexto)
@@ -93,12 +100,24 @@ export function calcularDescanso({ tipoDescanso, ficha, valoresFinais, habilidad
     }
   }
 
+  // Pools (Fase 20.1) — regra própria de cada pool, indexada pelo id do descanso
+  const poolsRecuperados = []
+  for (const p of pools) {
+    const max = Number(maximosPools[p.id] ?? 0) || 0
+    const de = atualDePool(linhasPools.find(l => l.pool_id === p.id), max)
+    const para = recuperarPool(p, de, max, tipoDescanso?.id, contexto)
+    if (para !== de) {
+      poolsRecuperados.push({ poolId: p.id, nome: p.nome, de, para })
+    }
+  }
+
   // Resumo legível
   const partes = []
   if (vida.recuperado > 0) partes.push(`+${vida.recuperado} de vida`)
   if (vida_temp.para === 0 && vida_temp.de > 0) partes.push('vida temporária zerada')
   for (const r of recursos) partes.push(`${r.nome} ${r.de}→${r.para}`)
+  for (const p of poolsRecuperados) partes.push(`${p.nome} ${p.de}→${p.para}`)
   const resumo = partes.length ? `Recuperou ${partes.join(', ')}.` : 'Nada a recuperar.'
 
-  return { vida, vida_temp, recursos, resumo }
+  return { vida, vida_temp, recursos, pools: poolsRecuperados, resumo }
 }

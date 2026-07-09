@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { coletarModificadores, calcularValoresFinais, agregarDefesas, resolverValoresFormula } from '../lib/modifierEngine'
 import { resolverFaixas } from '../lib/faixas'
+import { calcularMaximos, mapaPools, atualDePool } from '../lib/poolEngine'
 
 function groupBy(rows, key) {
   const out = {}
@@ -16,7 +17,7 @@ function groupBy(rows, key) {
  * Constrói o "card" computado de uma ficha para o painel da sessão, passando os
  * valores pelo motor de modificadores (Fases 9-12). Puro — sem acesso a banco.
  */
-function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRows) {
+function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRows, poolsRows) {
   const raca = (sis.racas || []).find(r => r.id === fichaRow.raca_id) || null
   const classe = (sis.classes || []).find(c => c.id === fichaRow.classe_id) || null
 
@@ -74,10 +75,36 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
       if (h.id) recursosCtx[h.id] = v
     }
   }
+  // 20.1 — pools: máximo derivado da fórmula (atributos BASE, evita ciclo)
+  const poolsSistema = sis.pools || []
+  const ctxPools = {
+    nivel: nivelTotal,
+    niveisClasse,
+    formula_proficiencia: sis.formula_proficiencia || '',
+    formulaModificador: sis.formula_modificador || '',
+    atributos: {},
+    vida_atual: fichaRow.hp_atual ?? 0,
+    vida_max: fichaRow.hp_maximo ?? 0,
+    recursos: recursosCtx,
+    pericias: {},
+  }
+  const { maximos: maximosPools } = calcularMaximos(poolsSistema, ctxPools)
+  const poolsMap = mapaPools(poolsSistema, poolsRows || [], maximosPools)
+  const poolsCard = poolsSistema
+    .filter(p => p.visivel_ficha !== false)
+    .map(p => ({
+      id: p.id,
+      nome: p.nome,
+      tipo: p.tipo,
+      atual: atualDePool((poolsRows || []).find(l => l.pool_id === p.id), maximosPools[p.id] ?? 0),
+      maximo: maximosPools[p.id] ?? 0,
+    }))
+
   const ctxMod = {
     nivel: nivelTotal,
     niveisClasse,
     formula_proficiencia: sis.formula_proficiencia || '',
+    pools: poolsMap,
     vida_atual: fichaRow.hp_atual ?? 0,
     vida_max: fichaRow.hp_maximo ?? 0,
     recursos: recursosCtx,
@@ -149,6 +176,7 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
     nome: fichaRow.nome_personagem,
     imagem: fichaRow.imagem_url,
     nivel: nivelTotal,
+    pools: poolsCard, // 20.1 — recursos visíveis ao mestre na sessão
     racaNome: raca?.nome || fichaRow.raca || null,
     // Multiclasse: "Bárbaro 9 / Paladino 4"; uma classe: só o nome (como antes)
     classeNome: linhasClasse.length > 1
@@ -196,15 +224,16 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
   // Recarrega os dados de UMA ficha e devolve o card computado
   const carregarCard = useCallback(async (fichaId) => {
     const sis = sisRef.current || {}
-    const [fichaResp, habsResp, condResp, combResp, clsResp] = await Promise.all([
+    const [fichaResp, habsResp, condResp, combResp, clsResp, poolsResp] = await Promise.all([
       supabase.from('fichas').select('*').eq('id', fichaId).single(),
       supabase.from('habilidades_ficha').select('*').eq('ficha_id', fichaId),
       supabase.from('condicoes_manuais_ficha').select('ficha_id, modificador_id, ativa').eq('ficha_id', fichaId),
       supabase.from('valores_combate').select('ficha_id, campo_id, valor').eq('ficha_id', fichaId),
       supabase.from('classes_ficha').select('ficha_id, classe_id, nivel, ordem').eq('ficha_id', fichaId),
+      supabase.from('pools_ficha').select('ficha_id, pool_id, atual').eq('ficha_id', fichaId),
     ])
     if (fichaResp.error || !fichaResp.data) return null
-    return construirCard(fichaResp.data, habsResp.data, condResp.data, combResp.data, sis, clsResp.data)
+    return construirCard(fichaResp.data, habsResp.data, condResp.data, combResp.data, sis, clsResp.data, poolsResp.data)
   }, [])
 
   const recarregarFicha = useCallback(async (fichaId) => {
@@ -237,18 +266,20 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       idsRef.current = new Set(ids)
       if (ids.length === 0) { setCards([]); return }
 
-      const [habsResp, condResp, combResp, clsResp] = await Promise.all([
+      const [habsResp, condResp, combResp, clsResp, poolsResp] = await Promise.all([
         supabase.from('habilidades_ficha').select('*').in('ficha_id', ids),
         supabase.from('condicoes_manuais_ficha').select('ficha_id, modificador_id, ativa').in('ficha_id', ids),
         supabase.from('valores_combate').select('ficha_id, campo_id, valor').in('ficha_id', ids),
         supabase.from('classes_ficha').select('ficha_id, classe_id, nivel, ordem').in('ficha_id', ids),
+        supabase.from('pools_ficha').select('ficha_id, pool_id, atual').in('ficha_id', ids),
       ])
       const habsBy = groupBy(habsResp.data, 'ficha_id')
       const condBy = groupBy(condResp.data, 'ficha_id')
       const combBy = groupBy(combResp.data, 'ficha_id')
       const clsBy = groupBy(clsResp.data, 'ficha_id')
+      const poolsBy = groupBy(poolsResp.data, 'ficha_id')
       const sis = sisRef.current || {}
-      setCards(fichas.map(f => construirCard(f, habsBy[f.id], condBy[f.id], combBy[f.id], sis, clsBy[f.id])))
+      setCards(fichas.map(f => construirCard(f, habsBy[f.id], condBy[f.id], combBy[f.id], sis, clsBy[f.id], poolsBy[f.id])))
     } catch (err) {
       setError(err.message || 'Erro ao carregar fichas da sessão.')
     } finally {
@@ -285,6 +316,8 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'valores_combate' }, afetaFicha)
       // 19.1/19.4 — subir de nível ou trocar de classe move faixas e modificadores
       .on('postgres_changes', { event: '*', schema: 'public', table: 'classes_ficha' }, afetaFicha)
+      // 20.1 — gasto de pool aparece ao vivo no painel do mestre
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pools_ficha' }, afetaFicha)
       .subscribe(status => {
         if (status === 'SUBSCRIBED') {
           // Reconexão: re-sincroniza o estado (pode ter perdido eventos offline)

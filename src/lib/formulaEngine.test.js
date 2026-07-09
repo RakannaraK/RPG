@@ -118,12 +118,28 @@ describe('casos reais (as 6 fórmulas da gramática)', () => {
   })
 })
 
-describe('variáveis reservadas — pool/maestria ainda em fases futuras', () => {
-  it('pool() → Fase 20', () => {
-    expect(() => av('pool(thariuns)', IC)).toThrow(/Fase 20/)
-  })
+describe('variáveis reservadas — maestria ainda em fase futura', () => {
   it('maestria() → Fase 21', () => {
     expect(() => av('maestria(espada)', IC)).toThrow(/Fase 21/)
+  })
+})
+
+describe('20.1 — pool(nome): valor ATUAL (igual recurso())', () => {
+  const ctx = { ...IC, pools: { 'p-thariuns': 23, Thariuns: 23, 'Pontos de Foco': 5 } }
+  it('resolve por nome (case/acento-insensível) e por id', () => {
+    expect(av('pool(thariuns)', ctx)).toBe(23)
+    expect(av('pool(THARIUNS)', ctx)).toBe(23)
+    expect(av('pool(p-thariuns)', ctx)).toBe(23)
+    expect(av('pool(pontos de foco)', ctx)).toBe(5)
+  })
+  it('entra em fórmulas maiores', () => {
+    expect(av('piso(pool(thariuns) / 2)', ctx)).toBe(11)
+  })
+  it('pool inexistente → erro claro com o nome', () => {
+    expect(() => av('pool(inexistente)', ctx)).toThrow(/inexistente/i)
+  })
+  it('sistema sem pools → erro claro', () => {
+    expect(() => av('pool(thariuns)', IC)).toThrow(/pool/i)
   })
 })
 

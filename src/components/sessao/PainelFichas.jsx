@@ -87,6 +87,30 @@ const FichaCard = memo(function FichaCard({ card, camposCombate }) {
         </div>
       )}
 
+      {/* Pools (20.1) — recursos visíveis ao mestre, ao vivo */}
+      {(card.pools || []).length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {card.pools.map(p => {
+            const vazio = p.atual === 0
+            return (
+              <div
+                key={p.id}
+                className={`flex items-center gap-1.5 rounded-lg px-2 py-1 border ${
+                  vazio ? 'bg-red-950/40 border-red-900/60' : 'bg-slate-900/60 border-sky-900/50'
+                }`}
+                title={p.tipo === 'dados' ? 'Reserva de dados' : 'Pontos'}
+              >
+                <span className="text-sky-400 text-[10px] uppercase tracking-wide">{p.nome}</span>
+                <span className={`text-sm font-bold leading-none ${vazio ? 'text-red-400' : 'text-white'}`}>
+                  {p.atual}
+                  <span className="text-purple-600 font-normal">/{p.maximo}</span>
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       {/* Chips de estado */}
       {card.chips.length > 0 ? (
         <div className="flex flex-wrap gap-1.5 pt-1 border-t border-purple-900/40">

@@ -46,3 +46,43 @@ describe('17.5 — descanso com fórmula/notação variável', () => {
     expect(r.vida.para).toBe(15)
   })
 })
+
+describe('20.1 — descanso recupera pools', () => {
+  const THARIUNS = {
+    id: 'p1', nome: 'Thariuns', tipo: 'pontos', maximo_formula: '2 * nivel',
+    recuperacao: { longo: { modo: 'total' }, curto: { modo: 'nada' } },
+  }
+  const ficha = { hp_atual: 20, hp_maximo: 20, vida_temp_atual: 0 }
+  const valoresFinais = { vida_max: 20 }
+  const base = {
+    ficha, valoresFinais,
+    pools: [THARIUNS],
+    linhasPools: [{ pool_id: 'p1', atual: 23 }],
+    maximosPools: { p1: 26 },
+  }
+
+  it('descanso longo enche os Thariuns (23 → 26) e entra no resumo', () => {
+    const r = calcularDescanso({ ...base, tipoDescanso: { id: 'longo', nome: 'Longo', vida: { modo: 'nada' } } })
+    expect(r.pools).toEqual([{ poolId: 'p1', nome: 'Thariuns', de: 23, para: 26 }])
+    expect(r.resumo).toMatch(/Thariuns 23→26/)
+  })
+
+  it('descanso curto não mexe nos Thariuns', () => {
+    const r = calcularDescanso({ ...base, tipoDescanso: { id: 'curto', nome: 'Curto', vida: { modo: 'nada' } } })
+    expect(r.pools).toEqual([])
+  })
+
+  it('pool sem linha na ficha já está cheio: nada a recuperar', () => {
+    const r = calcularDescanso({
+      ...base, linhasPools: [],
+      tipoDescanso: { id: 'longo', nome: 'Longo', vida: { modo: 'nada' } },
+    })
+    expect(r.pools).toEqual([])
+  })
+
+  it('sistema sem pools: comportamento idêntico ao de antes (retrocompat)', () => {
+    const r = calcularDescanso({ ficha, valoresFinais, tipoDescanso: { id: 'longo', vida: { modo: 'total' } } })
+    expect(r.pools).toEqual([])
+    expect(r.vida.para).toBe(20)
+  })
+})
