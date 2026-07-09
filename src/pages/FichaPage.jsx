@@ -11,6 +11,8 @@ import { validarNotacao, rolarNotacao } from '../lib/diceNotation'
 import { useHabilidadesFicha } from '../hooks/useHabilidadesFicha'
 import { useClassesFicha } from '../hooks/useClassesFicha'
 import { nivelTotalDe } from '../components/ficha/layout/ClassesFicha'
+import { modoProgressao } from '../lib/progressaoEngine'
+import BarraXp from '../components/ficha/BarraXp'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
 import DescansoBar from '../components/ficha/DescansoBar'
 import CabecalhoPersonagem from '../components/ficha/layout/CabecalhoPersonagem'
@@ -76,6 +78,28 @@ export default function FichaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [somaNiveis, classePrimaria, ficha?.id, classesFicha.length])
 
+  // 19.3 — gestor da mesa (criador ou co-mestre) também pode dar XP
+  const [souGestor, setSouGestor] = useState(false)
+  useEffect(() => {
+    if (!mesaId || !session?.user?.id) return
+    let cancelado = false
+    ;(async () => {
+      try {
+        const { data: mesaData } = await supabase
+          .from('mesas').select('criador_id').eq('id', mesaId).maybeSingle()
+        let gestor = mesaData?.criador_id === session.user.id
+        if (!gestor) {
+          const { data: membro } = await supabase
+            .from('membros_mesa').select('role')
+            .eq('mesa_id', mesaId).eq('usuario_id', session.user.id).maybeSingle()
+          gestor = membro?.role === 'co-mestre'
+        }
+        if (!cancelado) setSouGestor(gestor)
+      } catch { /* sem permissão de gestor — segue como jogador */ }
+    })()
+    return () => { cancelado = true }
+  }, [mesaId, session?.user?.id])
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
@@ -125,6 +149,35 @@ export default function FichaPage() {
 
   async function handleSetNivel(rowId, nivel) {
     await definirNivel(rowId, nivel)
+  }
+
+  // 19.3 — XP passa por RPC SECURITY DEFINER (dono ou gestor); erro sobe p/ a UI.
+  async function handleAddXp(delta) {
+    const { error: err } = await supabase.rpc('adicionar_xp', {
+      p_ficha_id: fichaId,
+      p_delta: delta,
+    })
+    if (err) throw new Error(err.message)
+    refetch()
+  }
+
+  // 19.3 — subir de nível: manual, confirmado, e o jogador escolhe a classe.
+  // O cache fichas.nivel é atualizado pelo efeito; as fórmulas recalculam sozinhas.
+  // (as recompensas pendentes daquele nível entram na 19.6, quando as tabelas existirem)
+  async function handleSubirNivel(rowId) {
+    if (rowId) {
+      const cf = classesFicha.find(c => c.id === rowId)
+      await definirNivel(rowId, (Number(cf?.nivel) || 1) + 1)
+    } else {
+      // Sistema sem classes estruturadas: o nível vive só em fichas.nivel
+      await updateFicha(fichaId, { nivel: nivelTotalAtual() + 1 })
+      refetch()
+    }
+  }
+
+  // nível total sem depender do render (usado antes das consts do corpo)
+  function nivelTotalAtual() {
+    return classesFicha.length ? nivelTotalDe(classesFicha) : (ficha?.nivel ?? 1)
   }
 
   if (loading) {
@@ -402,6 +455,20 @@ export default function FichaPage() {
           vidaTemp={valoresFinais.vida_temp}
           vidaTempPontual={ficha.vida_temp_atual ?? 0}
         />
+
+        {/* XP e nível (Fase 19.3). Sistema sem XP: só o dono vê (botão de subir). */}
+        {(modoProgressao(config.progressao_xp) !== 'nenhum' || isDono) && (
+          <BarraXp
+            xp={ficha.xp ?? 0}
+            nivelTotal={nivelTotal}
+            progressao={config.progressao_xp}
+            classesFicha={classesFicha}
+            podeDarXp={isDono || souGestor}
+            isDono={isDono}
+            onAddXp={handleAddXp}
+            onSubirNivel={handleSubirNivel}
+          />
+        )}
 
         {/* Descanso (Fase 15) — só dono, só se o sistema configurou descansos */}
         {isDono && (config.descansos?.length > 0) && (

@@ -1,5 +1,6 @@
 // Editor de layout/seções do sistema — usado pelo mestre no SistemaEditor
 import FormulaInput from './FormulaInput'
+import ProgressaoEditor from './ProgressaoEditor'
 import { avaliarFormula } from '../../lib/formulaEngine'
 
 const SECOES = [
@@ -187,6 +188,12 @@ export default function LayoutEditor({
           variaveis={['nivel']}
         />
       </div>
+
+      {/* Progressão por XP (19.3) */}
+      <ProgressaoEditor
+        progressao={config.progressao_xp}
+        onChange={p => onConfigChange({ ...config, progressao_xp: p })}
+      />
 
       {/* Rótulo de vida */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">

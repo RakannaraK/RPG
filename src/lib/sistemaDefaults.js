@@ -17,6 +17,8 @@ export const CONFIG_LAYOUT_DEFAULT = {
   descansos: [], // Fase 15 — tipos de descanso configurados pelo mestre
   formula_modificador: '', // Fase 17.3 — fórmula do modificador de atributo ('' = valor puro)
   formula_proficiencia: '', // Fase 19.2 — fórmula da proficiência ('' = sistema sem proficiência)
+  // Fase 19.3 — curva de progressão. 'nenhum' = sistema sem XP (subida manual).
+  progressao_xp: { modo: 'nenhum', tabela: [], formula: '' },
 }
 
 // Mescla config parcial do banco com os defaults, garantindo que nenhuma chave falte
@@ -34,5 +36,9 @@ export function mergeConfigLayout(raw) {
     descansos: (raw || {}).descansos || [],
     formula_modificador: (raw || {}).formula_modificador || '',
     formula_proficiencia: (raw || {}).formula_proficiencia || '',
+    progressao_xp: {
+      ...CONFIG_LAYOUT_DEFAULT.progressao_xp,
+      ...((raw || {}).progressao_xp || {}),
+    },
   }
 }
