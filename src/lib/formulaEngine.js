@@ -151,18 +151,26 @@ function parseExpr(p) {
   }
 }
 
+// 17.6 — cache de AST por texto (memoiza o parse das fórmulas do sistema).
+// ASTs são imutáveis (a avaliação não muta), então compartilhar é seguro.
+const _astCache = new Map()
+
 /**
- * Tokeniza e parseia a fórmula numa AST. @throws {FormulaError}
+ * Tokeniza e parseia a fórmula numa AST (memoizado). @throws {FormulaError}
  */
 export function parseFormula(texto) {
   if (typeof texto !== 'string') throw new FormulaError('A fórmula precisa ser um texto')
   if (texto.length > MAX_LEN) throw new FormulaError('Fórmula longa demais')
+  const cached = _astCache.get(texto)
+  if (cached) return cached
   const src = normalizar(texto)
   if (src === '') throw new FormulaError('Fórmula vazia')
   const p = { src, i: 0 }
   const ast = parseExpr(p)
   skipWs(p)
   if (p.i < src.length) throw new FormulaError(`Token inesperado '${src[p.i]}'`, p.i)
+  if (_astCache.size > 1000) _astCache.clear()
+  _astCache.set(texto, ast)
   return ast
 }
 

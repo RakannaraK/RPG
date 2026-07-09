@@ -181,6 +181,14 @@ describe('17.5 — usaAtributoOuMod (anti-auto-referência em modificadores)', (
   })
 })
 
+describe('17.6 — parse memoizado (AST em cache)', () => {
+  it('mesma string devolve a mesma AST (cache)', () => {
+    const a = parseFormula('10 + mod(destreza)')
+    const b = parseFormula('10 + mod(destreza)')
+    expect(a).toBe(b) // mesma referência
+  })
+})
+
 describe('retrocompatibilidade: números puros', () => {
   it('valor fixo sem variáveis', () => {
     expect(av('10')).toBe(10)

@@ -1,8 +1,23 @@
+import { useState } from 'react'
 import { validarFormula } from '../../lib/formulaEngine'
+
+// 17.6 — referência rápida da gramática (aberta pelo "?")
+function AjudaGramatica() {
+  return (
+    <div className="mt-1.5 bg-slate-900 border border-purple-800 rounded-lg p-3 text-[11px] space-y-1.5">
+      <p className="text-purple-300"><span className="font-semibold">Operadores:</span> <span className="font-mono">+ − * / ( )</span></p>
+      <p className="text-purple-300"><span className="font-semibold">Funções:</span> <span className="font-mono">piso(x) teto(x) arredondar(x) abs(x) min(a,b) max(a,b)</span></p>
+      <p className="text-purple-300"><span className="font-semibold">Variáveis:</span> <span className="font-mono">atributo(nome) mod(nome) nivel pericia(nome) recurso(nome) vida_atual vida_max</span></p>
+      <p className="text-purple-500"><span className="font-semibold">Ex:</span> <span className="font-mono">10 + mod(destreza) + mod(constituicao)</span> · <span className="font-mono">piso((x-10)/2)</span> · <span className="font-mono">5 * nivel</span></p>
+      <p className="text-purple-600">Na fórmula do modificador de atributo, <span className="font-mono">x</span> é o valor do atributo.</p>
+    </div>
+  )
+}
 
 /**
  * Fase 17 — editor de fórmula reutilizável (campos calculados, modificador de
- * atributo, modificadores, descansos). Validação de sintaxe ao vivo + presets.
+ * atributo, modificadores, descansos). Validação de sintaxe ao vivo + presets +
+ * variáveis clicáveis + ajuda da gramática.
  */
 export default function FormulaInput({
   value,
@@ -12,22 +27,37 @@ export default function FormulaInput({
   variaveis = [],
   className = '',
 }) {
+  const [ajuda, setAjuda] = useState(false)
   const v = (value ?? '').trim()
   const status = v === '' ? null : validarFormula(v)
   const invalida = status && !status.valida
 
   return (
     <div className={className}>
-      <input
-        type="text"
-        value={value ?? ''}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        spellCheck={false}
-        className={`w-full px-3 py-2 rounded-lg bg-purple-950 border text-white text-sm font-mono placeholder-purple-600 focus:outline-none focus:ring-2 ${
-          invalida ? 'border-red-600 focus:ring-red-500' : 'border-purple-700 focus:ring-purple-500'
-        }`}
-      />
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          value={value ?? ''}
+          onChange={e => onChange(e.target.value)}
+          placeholder={placeholder}
+          spellCheck={false}
+          className={`flex-1 px-3 py-2 rounded-lg bg-purple-950 border text-white text-sm font-mono placeholder-purple-600 focus:outline-none focus:ring-2 ${
+            invalida ? 'border-red-600 focus:ring-red-500' : 'border-purple-700 focus:ring-purple-500'
+          }`}
+        />
+        <button
+          type="button"
+          onClick={() => setAjuda(a => !a)}
+          title="Referência da gramática"
+          className={`w-7 h-7 shrink-0 rounded-lg border text-sm transition-colors ${
+            ajuda ? 'bg-purple-700 border-purple-500 text-white' : 'border-purple-700 text-purple-400 hover:text-white'
+          }`}
+        >
+          ?
+        </button>
+      </div>
+
+      {ajuda && <AjudaGramatica />}
 
       {presets.length > 0 && (
         <div className="flex gap-1.5 flex-wrap mt-1.5">
