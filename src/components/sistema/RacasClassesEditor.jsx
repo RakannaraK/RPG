@@ -6,7 +6,9 @@ import {
   ehAcertoDano, ehVantagem, ehAcao, montarEfeitoPayload,
 } from '../../lib/efeitoForm'
 import { validarFormula, usaAtributoOuMod } from '../../lib/formulaEngine'
+import { validarFaixas } from '../../lib/faixas'
 import FormulaInput from './FormulaInput'
+import FaixasEditor from './FaixasEditor'
 
 // Fase 12.5 — vocabulário ampliado de efeitos. `grupo` só organiza o dropdown.
 const TIPOS_MOD = [
@@ -91,16 +93,24 @@ function labelModificador(mod, atributos, camposCombate, pericias = []) {
       base = `Vida temp. ${mod.valor || '?'} (ação)`; break
     default: base = mod.tipo
   }
+  // 19.4 — sinaliza escalonamento: "↗ 1d10 → 4d10 por faixa"
+  if (mod.faixas?.faixas?.length) {
+    const fs = mod.faixas.faixas
+    const extremos = fs.length > 1 ? `${fs[0].valor} → ${fs[fs.length - 1].valor}` : `${fs[0].valor}`
+    base = `${base} ↗ ${extremos} por faixa`
+  }
   const cond = descCondicao(mod, atributos)
   return cond ? `${base} [${cond}]` : base
 }
 
-function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
+function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], classes = [] }) {
   const [tipo, setTipo] = useState('atributo')
   const [alvo, setAlvo] = useState('')
   const [operacao, setOperacao] = useState('somar')
   const [valor, setValor] = useState('')
   const [valorEhFormula, setValorEhFormula] = useState(false) // 17.5
+  const [escalaFaixa, setEscalaFaixa] = useState(false) // 19.4
+  const [faixaSpec, setFaixaSpec] = useState({ variavel: 'nivel', campo: 'valor', faixas: [] })
   const [dadosExtras, setDadosExtras] = useState('')
   const [percRolagem, setPercRolagem] = useState('') // 18.3
   const [escopoCategoria, setEscopoCategoria] = useState('')
@@ -119,10 +129,16 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
   function handleTipoChange(novo) {
     setTipo(novo); setAlvo(''); setValor(''); setValorEhFormula(false); setDadosExtras(''); setPercRolagem(''); setEscopoCategoria('')
     setVantTipoAlvo('atributo'); setCuraModo('pontual'); setErro('')
+    setEscalaFaixa(false); setFaixaSpec({ variavel: 'nivel', campo: 'valor', faixas: [] })
   }
 
   // 17.5 — tipos cujo valor pode ser fórmula (número → fórmula com nivel/recurso/perícia)
   const valorPodeFormula = usaValorNum(tipo) || ehAcertoDano(tipo)
+  // 19.4 — os mesmos tipos podem escalar por faixa (valor por faixa de nível)
+  const podeEscalar = valorPodeFormula
+  const camposFaixa = ehAcertoDano(tipo)
+    ? [{ id: 'valor', label: 'bônus fixo' }, { id: 'dados_extras', label: 'dados extras' }]
+    : []
 
   async function handleAdd() {
     setErro('')
@@ -130,7 +146,11 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
     if (usaAtributoAlvo(tipo) && !alvo)  { setErro('Selecione um atributo.'); return }
     if (usaCombateAlvo(tipo) && !alvo)   { setErro('Selecione um campo de combate.'); return }
     if (usaTextoAlvo(tipo) && !alvo.trim()) { setErro('Informe o tipo de dano (ex: fogo).'); return }
-    if (valorEhFormula && valorPodeFormula) {
+    if (escalaFaixa && podeEscalar) {
+      // 19.4 — o valor vem da faixa ativa; exige faixas contíguas e sem sobreposição
+      const vfx = validarFaixas(faixaSpec)
+      if (!vfx.valida) { setErro(`Faixas: ${vfx.erro}`); return }
+    } else if (valorEhFormula && valorPodeFormula) {
       if (!String(valor).trim()) { setErro('Informe a fórmula.'); return }
       const vf = validarFormula(valor)
       if (!vf.valida) { setErro(`Fórmula inválida: ${vf.erro}`); return }
@@ -150,10 +170,12 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
     if (condTipo === 'manual' && !condRotulo.trim()) { setErro('Informe o rótulo da condição manual.'); return }
 
     // Monta o payload (lógica pura — ver lib/efeitoForm.js)
+    const escalando = escalaFaixa && podeEscalar
     const payload = montarEfeitoPayload({
-      tipo, alvo, operacao, valor, valorEhFormula: valorEhFormula && valorPodeFormula,
+      tipo, alvo, operacao, valor, valorEhFormula: !escalando && valorEhFormula && valorPodeFormula,
       dadosExtras, percentualRolagem: percRolagem, escopoCategoria, vantTipoAlvo, curaModo,
       condTipo, condMetrica, condOperador, condValor, condRotulo,
+      faixas: escalando ? faixaSpec : null,
     })
 
     setSalvando(true)
@@ -162,6 +184,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
       // limpa campos de valor mas mantém o tipo selecionado
       setAlvo(''); setValor(''); setValorEhFormula(false); setDadosExtras(''); setPercRolagem(''); setEscopoCategoria('')
       setCondTipo('nenhuma'); setCondValor(''); setCondRotulo('')
+      setEscalaFaixa(false); setFaixaSpec({ variavel: 'nivel', campo: 'valor', faixas: [] })
     } catch (err) {
       setErro(err.message || 'Erro ao adicionar efeito.')
     } finally {
@@ -200,29 +223,40 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
             {OPERACOES.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         )}
-        {usaValorNum(tipo) && !valorEhFormula && (
+        {usaValorNum(tipo) && !valorEhFormula && !escalaFaixa && (
           <span className="flex items-center gap-1">
             <input type="number" value={valor} onChange={e => setValor(e.target.value)}
               placeholder={operacao === 'percentual' ? 'ex: 13' : 'Valor'} className={`${ic} w-16 text-center`} />
             {operacao === 'percentual' && <span className="text-purple-400 text-xs">%</span>}
           </span>
         )}
-        {valorPodeFormula && (
+        {valorPodeFormula && !escalaFaixa && (
           <label className="text-purple-400 text-[11px] flex items-center gap-1 cursor-pointer" title="Usar fórmula (ex: piso(nivel/2))">
             <input type="checkbox" checked={valorEhFormula} onChange={e => setValorEhFormula(e.target.checked)} className="accent-purple-500" />
             ƒ fórmula
+          </label>
+        )}
+        {podeEscalar && (
+          <label className="text-purple-400 text-[11px] flex items-center gap-1 cursor-pointer" title="Valor diferente por faixa de nível (ex: nv 1-4: 1d10; 5-10: 2d10)">
+            <input type="checkbox" checked={escalaFaixa}
+              onChange={e => { setEscalaFaixa(e.target.checked); if (e.target.checked) setValorEhFormula(false) }}
+              className="accent-purple-500" />
+            ↗ por faixa
           </label>
         )}
 
         {/* Acerto / Dano */}
         {ehAcertoDano(tipo) && (
           <>
-            {!valorEhFormula && (
+            {/* o campo escalado por faixa some — quem o preenche é a faixa ativa */}
+            {!valorEhFormula && !(escalaFaixa && faixaSpec.campo === 'valor') && (
               <input type="number" value={valor} onChange={e => setValor(e.target.value)}
                 placeholder="Fixo" className={`${ic} w-16 text-center`} title="Bônus fixo (opcional)" />
             )}
-            <input type="text" value={dadosExtras} onChange={e => setDadosExtras(e.target.value)}
-              placeholder="Dados extras (ex: 1d6)" className={`${ic} w-32`} />
+            {!(escalaFaixa && faixaSpec.campo === 'dados_extras') && (
+              <input type="text" value={dadosExtras} onChange={e => setDadosExtras(e.target.value)}
+                placeholder="Dados extras (ex: 1d6)" className={`${ic} w-32`} />
+            )}
             <span className="flex items-center gap-1">
               <input type="number" value={percRolagem} onChange={e => setPercRolagem(e.target.value)}
                 placeholder="%" className={`${ic} w-14 text-center`} title="Percentual sobre o total da rolagem (ex: 20)" />
@@ -285,6 +319,21 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
         </div>
       )}
 
+      {/* Escalonamento por faixa (19.4) */}
+      {escalaFaixa && podeEscalar && (
+        <div className="border-t border-purple-900/50 pt-2">
+          <FaixasEditor
+            spec={faixaSpec}
+            onChange={setFaixaSpec}
+            classes={classes}
+            campos={camposFaixa}
+            valorPlaceholder={
+              ehAcertoDano(tipo) && faixaSpec.campo === 'dados_extras' ? 'ex: 2d10' : 'ex: 3'
+            }
+          />
+        </div>
+      )}
+
       {/* Condição */}
       <div className="flex flex-wrap gap-2 items-center border-t border-purple-900/50 pt-2">
         <span className="text-purple-500 text-[11px]">Condição:</span>
@@ -322,7 +371,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
   )
 }
 
-function ModificadoresExpandido({ modificadores, onAddMod, onRemoveMod, atributos, camposCombate, pericias = [] }) {
+function ModificadoresExpandido({ modificadores, onAddMod, onRemoveMod, atributos, camposCombate, pericias = [], classes = [] }) {
   return (
     <div className="border-t border-purple-900 p-4 space-y-3">
       <p className="text-purple-500 text-xs font-medium uppercase tracking-wider">Efeitos</p>
@@ -343,7 +392,7 @@ function ModificadoresExpandido({ modificadores, onAddMod, onRemoveMod, atributo
           ))}
         </div>
       )}
-      <ModificadorForm onAdd={onAddMod} atributos={atributos} camposCombate={camposCombate} pericias={pericias} />
+      <ModificadorForm onAdd={onAddMod} atributos={atributos} camposCombate={camposCombate} pericias={pericias} classes={classes} />
     </div>
   )
 }
@@ -357,7 +406,7 @@ const INP = 'w-full px-3 py-1.5 rounded-lg bg-purple-950 border border-purple-70
 
 // Card compartilhado: usado tanto dentro da seção da raça/classe quanto na seção de avulsas.
 // Não expõe seletor de raça/classe no formulário de edição — vínculo é gerenciado pelo contexto.
-function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericias = [], onUpdate, onDelete, onAddMod, onRemoveMod }) {
+function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericias = [], classes = [], onUpdate, onDelete, onAddMod, onRemoveMod }) {
   const [expandido, setExpandido] = useState(false)
   const [editando, setEditando] = useState(false)
   const [editNome, setEditNome] = useState('')
@@ -496,7 +545,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
           onRemoveMod={onRemoveMod}
           atributos={atributos}
           camposCombate={camposCombate}
-          pericias={pericias}
+          pericias={pericias} classes={classes}
         />
       )}
     </div>
@@ -506,7 +555,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
 // Seção de habilidades vinculadas que aparece dentro do card expandido de uma raça ou classe.
 function HabilidadesVinculadas({
   parentId, parentTipo,
-  habilidades, atributos, camposCombate, pericias = [],
+  habilidades, atributos, camposCombate, pericias = [], classes = [],
   onCreate, onUpdate, onDelete, onAddMod, onRemoveMod,
 }) {
   const [addingNew, setAddingNew] = useState(false)
@@ -619,7 +668,7 @@ function HabilidadesVinculadas({
           habilidade={h}
           atributos={atributos}
           camposCombate={camposCombate}
-          pericias={pericias}
+          pericias={pericias} classes={classes}
           onUpdate={onUpdate}
           onDelete={onDelete}
           onAddMod={mod => onAddMod({ habilidade_id: h.id, ...mod })}
@@ -637,7 +686,7 @@ function HabilidadesVinculadas({
 function ItemCard({
   item, parentTipo,
   onUpdate, onDelete, onAddMod, onRemoveMod,
-  atributos, camposCombate, pericias = [],
+  atributos, camposCombate, pericias = [], classes = [],
   habilidades, onCreateHabilidade, onUpdateHabilidade, onDeleteHabilidade,
   onAddHabilidadeMod, onRemoveHabilidadeMod,
 }) {
@@ -728,7 +777,7 @@ function ItemCard({
             onRemoveMod={onRemoveMod}
             atributos={atributos}
             camposCombate={camposCombate}
-            pericias={pericias}
+            pericias={pericias} classes={classes}
           />
           <HabilidadesVinculadas
             parentId={item.id}
@@ -736,7 +785,7 @@ function ItemCard({
             habilidades={habilidades}
             atributos={atributos}
             camposCombate={camposCombate}
-            pericias={pericias}
+            pericias={pericias} classes={classes}
             onCreate={onCreateHabilidade}
             onUpdate={onUpdateHabilidade}
             onDelete={onDeleteHabilidade}
@@ -752,7 +801,7 @@ function ItemCard({
 function SecaoRacaClasse({
   titulo, descTipo, itens, parentTipo,
   onCreate, onUpdate, onDelete, onAddMod, onRemoveMod,
-  atributos, camposCombate, pericias = [],
+  atributos, camposCombate, pericias = [], classes = [],
   habilidades, onCreateHabilidade, onUpdateHabilidade, onDeleteHabilidade,
   onAddHabilidadeMod, onRemoveHabilidadeMod,
 }) {
@@ -835,7 +884,7 @@ function SecaoRacaClasse({
               onRemoveMod={onRemoveMod}
               atributos={atributos}
               camposCombate={camposCombate}
-              pericias={pericias}
+              pericias={pericias} classes={classes}
               habilidades={habilidades}
               onCreateHabilidade={onCreateHabilidade}
               onUpdateHabilidade={onUpdateHabilidade}
@@ -854,7 +903,7 @@ function SecaoRacaClasse({
 // Habilidades avulsas (sem raça nem classe)
 // ──────────────────────────────────────────────────────────
 
-function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = [], onCreate, onUpdate, onDelete, onAddMod, onRemoveMod }) {
+function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = [], classes = [], onCreate, onUpdate, onDelete, onAddMod, onRemoveMod }) {
   const avulsas = habilidades.filter(h => !h.raca_id && !h.classe_id)
 
   const [addingNew, setAddingNew] = useState(false)
@@ -972,7 +1021,7 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
               habilidade={h}
               atributos={atributos}
               camposCombate={camposCombate}
-              pericias={pericias}
+              pericias={pericias} classes={classes}
               onUpdate={onUpdate}
               onDelete={onDelete}
               onAddMod={mod => onAddMod({ habilidade_id: h.id, ...mod })}

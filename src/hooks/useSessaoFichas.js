@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { coletarModificadores, calcularValoresFinais, agregarDefesas, resolverValoresFormula } from '../lib/modifierEngine'
+import { resolverFaixas } from '../lib/faixas'
 
 function groupBy(rows, key) {
   const out = {}
@@ -15,9 +16,34 @@ function groupBy(rows, key) {
  * Constrói o "card" computado de uma ficha para o painel da sessão, passando os
  * valores pelo motor de modificadores (Fases 9-12). Puro — sem acesso a banco.
  */
-function construirCard(fichaRow, habsRows, condRows, combateRows, sis) {
+function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRows) {
   const raca = (sis.racas || []).find(r => r.id === fichaRow.raca_id) || null
   const classe = (sis.classes || []).find(c => c.id === fichaRow.classe_id) || null
+
+  // Fase 19 — multiclasse. Sem linhas em classes_ficha (ficha não migrada ou
+  // sistema sem classes), cai no fallback legado: uma classe, nivel da ficha.
+  const linhasClasse = [...(classesRows || [])].sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
+  const classesDaFicha = linhasClasse
+    .map(r => (sis.classes || []).find(c => c.id === r.classe_id))
+    .filter(Boolean)
+  const classesParaMotor = classesDaFicha.length ? classesDaFicha : (classe ? [classe] : [])
+  const nivelTotal = linhasClasse.length
+    ? linhasClasse.reduce((s, r) => s + (Number(r.nivel) || 0), 0)
+    : (fichaRow.nivel ?? 1)
+
+  // 19.4 — mapa p/ faixas com variável "nivel:<classe>"
+  const niveisClasse = {}
+  if (linhasClasse.length) {
+    for (const r of linhasClasse) {
+      const n = Number(r.nivel) || 0
+      niveisClasse[r.classe_id] = n
+      const c = (sis.classes || []).find(x => x.id === r.classe_id)
+      if (c?.nome) niveisClasse[c.nome] = n
+    }
+  } else if (classe) {
+    niveisClasse[classe.id] = nivelTotal
+    if (classe.nome) niveisClasse[classe.nome] = nivelTotal
+  }
 
   const habilidadesFicha = (habsRows || []).map(row => ({
     ...row,
@@ -34,7 +60,7 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis) {
   const estadoFicha = {
     vida_atual: fichaRow.hp_atual ?? 0,
     vida_max: fichaRow.hp_maximo ?? 0, // BASE — evita circularidade (igual FichaPage)
-    nivel: fichaRow.nivel ?? 1,
+    nivel: nivelTotal,
     habilidadesAtivas,
   }
   // 17.5 — contexto de fórmula de modificador (sem atributos, anti-auto-ref)
@@ -47,16 +73,23 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis) {
       if (h.id) recursosCtx[h.id] = v
     }
   }
+  const ctxMod = {
+    nivel: nivelTotal,
+    niveisClasse,
+    formula_proficiencia: sis.formula_proficiencia || '',
+    vida_atual: fichaRow.hp_atual ?? 0,
+    vida_max: fichaRow.hp_maximo ?? 0,
+    recursos: recursosCtx,
+    pericias: {},
+    formulaModificador: (sis.formula_modificador || ''),
+  }
+  // 19.4 — faixa ativa antes das fórmulas (mesma ordem do FichaPage)
   const modificadoresAtivos = resolverValoresFormula(
-    coletarModificadores({ raca, classe, habilidadesFicha, estadoFicha, condicoesManuais }),
-    {
-      nivel: fichaRow.nivel ?? 1,
-      vida_atual: fichaRow.hp_atual ?? 0,
-      vida_max: fichaRow.hp_maximo ?? 0,
-      recursos: recursosCtx,
-      pericias: {},
-      formulaModificador: (sis.formula_modificador || ''),
-    }
+    resolverFaixas(
+      coletarModificadores({ raca, classes: classesParaMotor, habilidadesFicha, estadoFicha, condicoesManuais }),
+      ctxMod
+    ),
+    ctxMod
   )
 
   const baseCombate = {}
@@ -114,9 +147,18 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis) {
     ficha: fichaRow,
     nome: fichaRow.nome_personagem,
     imagem: fichaRow.imagem_url,
-    nivel: fichaRow.nivel,
+    nivel: nivelTotal,
     racaNome: raca?.nome || fichaRow.raca || null,
-    classeNome: classe?.nome || fichaRow.classe || null,
+    // Multiclasse: "Bárbaro 9 / Paladino 4"; uma classe: só o nome (como antes)
+    classeNome: linhasClasse.length > 1
+      ? linhasClasse
+          .map(r => {
+            const c = (sis.classes || []).find(x => x.id === r.classe_id)
+            return c ? `${c.nome} ${r.nivel}` : null
+          })
+          .filter(Boolean)
+          .join(' / ')
+      : (classesDaFicha[0]?.nome || classe?.nome || fichaRow.classe || null),
     hpAtual: fichaRow.hp_atual ?? 0,
     hpMax: valoresFinais.vida_max,
     hpMaxBase: fichaRow.hp_maximo ?? 0,
@@ -153,14 +195,15 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
   // Recarrega os dados de UMA ficha e devolve o card computado
   const carregarCard = useCallback(async (fichaId) => {
     const sis = sisRef.current || {}
-    const [fichaResp, habsResp, condResp, combResp] = await Promise.all([
+    const [fichaResp, habsResp, condResp, combResp, clsResp] = await Promise.all([
       supabase.from('fichas').select('*').eq('id', fichaId).single(),
       supabase.from('habilidades_ficha').select('*').eq('ficha_id', fichaId),
       supabase.from('condicoes_manuais_ficha').select('ficha_id, modificador_id, ativa').eq('ficha_id', fichaId),
       supabase.from('valores_combate').select('ficha_id, campo_id, valor').eq('ficha_id', fichaId),
+      supabase.from('classes_ficha').select('ficha_id, classe_id, nivel, ordem').eq('ficha_id', fichaId),
     ])
     if (fichaResp.error || !fichaResp.data) return null
-    return construirCard(fichaResp.data, habsResp.data, condResp.data, combResp.data, sis)
+    return construirCard(fichaResp.data, habsResp.data, condResp.data, combResp.data, sis, clsResp.data)
   }, [])
 
   const recarregarFicha = useCallback(async (fichaId) => {
@@ -193,16 +236,18 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       idsRef.current = new Set(ids)
       if (ids.length === 0) { setCards([]); return }
 
-      const [habsResp, condResp, combResp] = await Promise.all([
+      const [habsResp, condResp, combResp, clsResp] = await Promise.all([
         supabase.from('habilidades_ficha').select('*').in('ficha_id', ids),
         supabase.from('condicoes_manuais_ficha').select('ficha_id, modificador_id, ativa').in('ficha_id', ids),
         supabase.from('valores_combate').select('ficha_id, campo_id, valor').in('ficha_id', ids),
+        supabase.from('classes_ficha').select('ficha_id, classe_id, nivel, ordem').in('ficha_id', ids),
       ])
       const habsBy = groupBy(habsResp.data, 'ficha_id')
       const condBy = groupBy(condResp.data, 'ficha_id')
       const combBy = groupBy(combResp.data, 'ficha_id')
+      const clsBy = groupBy(clsResp.data, 'ficha_id')
       const sis = sisRef.current || {}
-      setCards(fichas.map(f => construirCard(f, habsBy[f.id], condBy[f.id], combBy[f.id], sis)))
+      setCards(fichas.map(f => construirCard(f, habsBy[f.id], condBy[f.id], combBy[f.id], sis, clsBy[f.id])))
     } catch (err) {
       setError(err.message || 'Erro ao carregar fichas da sessão.')
     } finally {
@@ -237,6 +282,8 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'habilidades_ficha' }, afetaFicha)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'condicoes_manuais_ficha' }, afetaFicha)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'valores_combate' }, afetaFicha)
+      // 19.1/19.4 — subir de nível ou trocar de classe move faixas e modificadores
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'classes_ficha' }, afetaFicha)
       .subscribe(status => {
         if (status === 'SUBSCRIBED') {
           // Reconexão: re-sincroniza o estado (pode ter perdido eventos offline)

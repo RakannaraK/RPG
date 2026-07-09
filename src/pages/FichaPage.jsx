@@ -12,6 +12,7 @@ import { useHabilidadesFicha } from '../hooks/useHabilidadesFicha'
 import { useClassesFicha } from '../hooks/useClassesFicha'
 import { nivelTotalDe } from '../components/ficha/layout/ClassesFicha'
 import { modoProgressao } from '../lib/progressaoEngine'
+import { resolverFaixas } from '../lib/faixas'
 import BarraXp from '../components/ficha/BarraXp'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
 import DescansoBar from '../components/ficha/DescansoBar'
@@ -272,14 +273,19 @@ export default function FichaPage() {
     pericias: {},
     formulaModificador: config.formula_modificador || '',
   }
+  // 19.4 — a faixa ativa é escolhida ANTES de resolver fórmulas: o valor da
+  // faixa ainda pode ser fórmula (ou notação de dado, que passa direto).
   const modificadoresAtivos = resolverValoresFormula(
-    coletarModificadores({
-      raca: racaAtiva,
-      classes: classesAtivas,
-      habilidadesFicha,
-      estadoFicha,
-      condicoesManuais,
-    }),
+    resolverFaixas(
+      coletarModificadores({
+        raca: racaAtiva,
+        classes: classesAtivas,
+        habilidadesFicha,
+        estadoFicha,
+        condicoesManuais,
+      }),
+      ctxModificador
+    ),
     ctxModificador
   )
   // 12.6 — interruptores situacionais: todos os mods de condição manual em jogo
@@ -303,6 +309,8 @@ export default function FichaPage() {
   valoresAtributos.forEach(va => { if (va.atributo?.id) nomesAlvos[va.atributo.id] = va.atributo.nome })
   ;(periciasDoSistema || []).forEach(p => { if (p?.id) nomesAlvos[p.id] = p.nome })
   ;(camposCombate || []).forEach(c => { if (c?.id) nomesAlvos[c.id] = c.nome })
+  // 19.4 — classes entram no mapa p/ o rótulo "faixa 9–15, nível de Bárbaro 9"
+  ;(classes || []).forEach(c => { if (c?.id) nomesAlvos[c.id] = c.nome })
 
   // 17.3 — contexto de fórmula (atributos FINAIS por id e por nome) + fórmula do modificador
   const formulaModificador = config.formula_modificador || ''

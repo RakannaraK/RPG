@@ -1,0 +1,32 @@
+-- ============================================================================
+-- Fase 19.4 — Escalonamento por faixa
+-- ----------------------------------------------------------------------------
+-- REVISAR ANTES DE RODAR. SQL Editor do Supabase, uma vez. Idempotente.
+-- Retrocompatível: `faixas` fica NULL nos modificadores existentes, e o motor
+-- deixa passar intacto todo modificador sem faixas.
+-- ============================================================================
+
+-- ─── 1) Coluna de faixas no modificador ─────────────────────────────────────
+-- Formato:
+--   {
+--     "variavel": "nivel",              -- ou "nivel:<classe_id ou nome>"
+--     "faixas": [
+--       { "de": 1,  "ate": 4,    "valor": "1d10" },
+--       { "de": 5,  "ate": 10,   "valor": "2d10" },
+--       { "de": 11, "ate": 16,   "valor": "3d10" },
+--       { "de": 17, "ate": null, "valor": "4d10" }   -- a última pode ser aberta
+--     ]
+--   }
+-- `valor` aceita número, fórmula ou notação de dado, conforme o campo.
+ALTER TABLE modificadores ADD COLUMN IF NOT EXISTS faixas JSONB;
+
+-- ─── 2) Conferência (não altera nada) ───────────────────────────────────────
+-- (a) a coluna existe e está NULL em tudo que já existia:
+--     SELECT COUNT(*) AS total,
+--            COUNT(faixas) AS com_faixas
+--     FROM modificadores;
+--
+-- (b) inspecionar os que vierem a usar faixas:
+--     SELECT id, tipo, alvo, faixas
+--     FROM modificadores
+--     WHERE faixas IS NOT NULL;

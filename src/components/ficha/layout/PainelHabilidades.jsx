@@ -82,9 +82,23 @@ function AcoesPontuais({ hf, onUsarAcao, isDono }) {
   )
 }
 
+// 19.4 — rastreabilidade: qual faixa está valendo agora. Ex: "(faixa 11–16, nível 13)"
+function rotuloFaixa(m, nomes = {}) {
+  if (m._faixaErro) return ' (fora das faixas)'
+  const fa = m._faixaAtiva
+  if (!fa) return ''
+  const intervalo = fa.ate == null ? `${fa.de}+` : `${fa.de}–${fa.ate}`
+  const v = String(fa.variavel || 'nivel')
+  const escala = v.startsWith('nivel:')
+    ? `nível de ${nomes[v.slice('nivel:'.length)] || v.slice('nivel:'.length)}`
+    : 'nível'
+  return ` (faixa ${intervalo}, ${escala} ${fa.valorVariavel})`
+}
+
 // Descrição curta e legível do efeito de um modificador (Fase 12.7). Resolve o
 // alvo (id de atributo/perícia/combate) para nome via `nomes` quando possível.
 function descreverEfeito(m, nomes = {}) {
+  const faixaTxt = rotuloFaixa(m, nomes)
   const perc = m.operacao === 'percentual'
   const sinal = perc ? '' : m.operacao === 'multiplicar' ? '×' : m.operacao === 'definir' ? '=' : '+'
   const v = (m.valor ?? '').toString().trim()
@@ -96,22 +110,25 @@ function descreverEfeito(m, nomes = {}) {
   // acerto/dano: valor é bônus fixo, dados_extras são dados adicionais — ambos somam
   const comSinal = n => (n.startsWith('-') || n.startsWith('+') ? n : `+${n}`)
   const acDano = [v && comSinal(v), extra && comSinal(extra), m.percentual_rolagem && `+${m.percentual_rolagem}%`].filter(Boolean).join(' ')
-  switch (m.tipo) {
-    case 'acerto':          return `Acerto ${acDano}`.trim()
-    case 'dano':            return `Dano ${acDano}`.trim()
-    case 'resistencia':     return `Resistência: ${alvoTxt || v}`
-    case 'imunidade':       return `Imunidade: ${alvoTxt || v}`
-    case 'vulnerabilidade': return `Vulnerabilidade: ${alvoTxt || v}`
-    case 'vantagem':        return `Vantagem${nomeAlvo ? ` em ${nomeAlvo}` : ''}`
-    case 'desvantagem':     return `Desvantagem${nomeAlvo ? ` em ${nomeAlvo}` : ''}`
-    case 'vida_max':        return `Vida máx ${sinalPre}${v}${suf}`
-    case 'vida_temp':       return `Vida temp +${v}`
-    case 'cura':            return `Cura ${v}`
-    case 'vida_temp_acao':  return `Vida temp ${v}`
-    case 'atributo':        return `${nomeAlvo || 'Atributo'} ${sinalPre}${v}${suf}`
-    case 'combate':         return `${nomeAlvo || 'Combate'} ${sinalPre}${v}${suf}`
-    default:                return m.tipo
-  }
+  const base = (() => {
+    switch (m.tipo) {
+      case 'acerto':          return `Acerto ${acDano}`.trim()
+      case 'dano':            return `Dano ${acDano}`.trim()
+      case 'resistencia':     return `Resistência: ${alvoTxt || v}`
+      case 'imunidade':       return `Imunidade: ${alvoTxt || v}`
+      case 'vulnerabilidade': return `Vulnerabilidade: ${alvoTxt || v}`
+      case 'vantagem':        return `Vantagem${nomeAlvo ? ` em ${nomeAlvo}` : ''}`
+      case 'desvantagem':     return `Desvantagem${nomeAlvo ? ` em ${nomeAlvo}` : ''}`
+      case 'vida_max':        return `Vida máx ${sinalPre}${v}${suf}`
+      case 'vida_temp':       return `Vida temp +${v}`
+      case 'cura':            return `Cura ${v}`
+      case 'vida_temp_acao':  return `Vida temp ${v}`
+      case 'atributo':        return `${nomeAlvo || 'Atributo'} ${sinalPre}${v}${suf}`
+      case 'combate':         return `${nomeAlvo || 'Combate'} ${sinalPre}${v}${suf}`
+      default:                return m.tipo
+    }
+  })()
+  return base + faixaTxt
 }
 
 // Texto curto da condição de um modificador (auto/manual), ou null se incondicional.
