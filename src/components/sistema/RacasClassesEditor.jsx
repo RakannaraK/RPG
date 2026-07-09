@@ -9,6 +9,7 @@ import { validarFormula, usaAtributoOuMod } from '../../lib/formulaEngine'
 import { validarFaixas } from '../../lib/faixas'
 import FormulaInput from './FormulaInput'
 import FaixasEditor from './FaixasEditor'
+import RecompensasEditor from './RecompensasEditor'
 
 // Fase 12.5 — vocabulário ampliado de efeitos. `grupo` só organiza o dropdown.
 const TIPOS_MOD = [
@@ -1143,6 +1144,7 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
         atributos={atributosSalvos}
         camposCombate={camposCombate}
         pericias={periciasSalvas}
+        classes={classes}
         habilidades={habilidades}
         onCreateHabilidade={createHabilidade}
         onUpdateHabilidade={updateHabilidade}
@@ -1166,6 +1168,7 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
         atributos={atributosSalvos}
         camposCombate={camposCombate}
         pericias={periciasSalvas}
+        classes={classes}
         habilidades={habilidades}
         onCreateHabilidade={createHabilidade}
         onUpdateHabilidade={updateHabilidade}
@@ -1181,12 +1184,18 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
         atributos={atributosSalvos}
         camposCombate={camposCombate}
         pericias={periciasSalvas}
+        classes={classes}
         onCreate={createHabilidade}
         onUpdate={updateHabilidade}
         onDelete={deleteHabilidade}
         onAddMod={addHabMod}
         onRemoveMod={removeHabMod}
       />
+
+      <div className="border-t border-purple-900" />
+
+      {/* Fase 19.6 — recompensas por nível (checklist-guia) */}
+      <RecompensasEditor sistemaId={sistemaId} classes={classes} />
     </div>
   )
 }

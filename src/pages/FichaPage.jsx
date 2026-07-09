@@ -14,6 +14,9 @@ import { nivelTotalDe } from '../components/ficha/layout/ClassesFicha'
 import { modoProgressao } from '../lib/progressaoEngine'
 import { resolverFaixas } from '../lib/faixas'
 import { bloqueadosPorNivel } from '../lib/requisitos'
+import { recompensasAoSubir } from '../lib/recompensas'
+import { useRecompensas, useRecompensasFicha } from '../hooks/useRecompensas'
+import PainelRecompensas from '../components/ficha/PainelRecompensas'
 import BarraXp from '../components/ficha/BarraXp'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
 import DescansoBar from '../components/ficha/DescansoBar'
@@ -53,6 +56,9 @@ export default function FichaPage() {
     definirNivel,
   } = useClassesFicha(fichaId, classes)
   const { condicoesManuais, toggleCondicao } = useCondicoesManuais(fichaId)
+  // 19.6 — catálogo do sistema + checklist da ficha
+  const { recompensas } = useRecompensas(sistema?.id)
+  const { recompensasFicha, gerarPendencias, marcarConcluida } = useRecompensasFicha(fichaId)
 
   // Estado local de raça/classe para recálculo imediato sem esperar refetch
   const [racaId, setRacaId] = useState(null)
@@ -151,6 +157,8 @@ export default function FichaPage() {
       await adicionarClasse(classeId)
       const novas = [...classesFicha, { classe_id: classeId, nivel: 1, classe: classes.find(c => c.id === classeId) }]
       await sincronizarClasses(novas.map(cf => cf.classe_id), ctxNivel(novas))
+      // 19.6 — entrar numa classe já concede as recompensas de nível 1 dela
+      await gerarRecompensas(classeId, 1, ctxNivel(novas).nivel)
     } catch {}
   }
 
@@ -190,11 +198,23 @@ export default function FichaPage() {
       // 19.5 — habilidades destravadas pelo novo nível entram automaticamente
       const novas = classesFicha.map(c => (c.id === rowId ? { ...c, nivel: novo } : c))
       await sincronizarClasses(novas.map(c => c.classe_id), ctxNivel(novas))
+      // 19.6 — recompensas daquele nível (da classe escolhida + do nível total)
+      await gerarRecompensas(cf?.classe_id ?? null, novo, ctxNivel(novas).nivel)
     } else {
       // Sistema sem classes estruturadas: o nível vive só em fichas.nivel
-      await updateFicha(fichaId, { nivel: nivelTotalAtual() + 1 })
+      const total = nivelTotalAtual() + 1
+      await updateFicha(fichaId, { nivel: total })
+      await gerarRecompensas(null, 0, total)
       refetch()
     }
+  }
+
+  // 19.6 — as recompensas são checklist-guia: só viram pendência, nada é aplicado.
+  async function gerarRecompensas(classeId, nivelClasse, nivelTotal) {
+    try {
+      const novas = recompensasAoSubir(recompensas, { classeId, nivelClasse, nivelTotal })
+      await gerarPendencias(novas)
+    } catch { /* não impede o level-up */ }
   }
 
   // nível total sem depender do render (usado antes das consts do corpo)
@@ -510,6 +530,15 @@ export default function FichaPage() {
             onSubirNivel={handleSubirNivel}
           />
         )}
+
+        {/* Recompensas de nível (19.6) — checklist-guia, some se não houver nenhuma */}
+        <PainelRecompensas
+          recompensasFicha={recompensasFicha}
+          recompensas={recompensas}
+          classes={classes}
+          isDono={isDono}
+          onMarcar={marcarConcluida}
+        />
 
         {/* Descanso (Fase 15) — só dono, só se o sistema configurou descansos */}
         {isDono && (config.descansos?.length > 0) && (
