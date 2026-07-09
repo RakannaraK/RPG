@@ -27,9 +27,20 @@ const TIPOS_MOD = [
 
 const OPERACOES = [
   { value: 'somar',       label: '+ Somar'       },
+  { value: 'percentual',  label: '% Percentual'  },
   { value: 'definir',     label: '= Definir'     },
   { value: 'multiplicar', label: '× Multiplicar' },
 ]
+
+// Fase 18 — formata operação + valor (percentual leva sufixo %)
+function fmtOpValor(mod) {
+  const v = mod.valor
+  const n = Number(v)
+  if (mod.operacao === 'percentual')  return `${n >= 0 ? '+' : ''}${v}%`
+  if (mod.operacao === 'definir')     return `=${v}`
+  if (mod.operacao === 'multiplicar') return `×${v}`
+  return `${n >= 0 || isNaN(n) ? '+' : ''}${v}` // somar
+}
 
 function descCondicao(mod, atributos) {
   if (mod.condicao_tipo === 'manual') return mod.condicao_config?.rotulo || 'manual'
@@ -43,21 +54,21 @@ function descCondicao(mod, atributos) {
 }
 
 function labelModificador(mod, atributos, camposCombate, pericias = []) {
-  const op = mod.operacao === 'somar' ? '+' : mod.operacao === 'definir' ? '=' : '×'
+  const opv = fmtOpValor(mod)
   let base
   switch (mod.tipo) {
     case 'atributo': {
       const attr = atributos.find(a => a.id === mod.alvo)
-      base = `${op}${mod.valor} em ${attr?.nome || '?'}`; break
+      base = `${opv} em ${attr?.nome || '?'}`; break
     }
-    case 'vida_max':        base = `${op}${mod.valor} Vida máx.`; break
+    case 'vida_max':        base = `${opv} Vida máx.`; break
     case 'vida_temp':       base = `+${mod.valor} Vida temp.`; break
     case 'resistencia':     base = `Resistência: ${mod.alvo || '?'}`; break
     case 'imunidade':       base = `Imunidade: ${mod.alvo || '?'}`; break
     case 'vulnerabilidade': base = `Vulnerabilidade: ${mod.alvo || '?'}`; break
     case 'combate': {
       const campo = camposCombate.find(c => c.id === mod.alvo)
-      base = `${op}${mod.valor} ${campo?.nome || '?'}`; break
+      base = `${opv} ${campo?.nome || '?'}`; break
     }
     case 'acerto':
     case 'dano': {
@@ -188,8 +199,11 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [] }) {
           </select>
         )}
         {usaValorNum(tipo) && !valorEhFormula && (
-          <input type="number" value={valor} onChange={e => setValor(e.target.value)}
-            placeholder="Valor" className={`${ic} w-16 text-center`} />
+          <span className="flex items-center gap-1">
+            <input type="number" value={valor} onChange={e => setValor(e.target.value)}
+              placeholder={operacao === 'percentual' ? 'ex: 13' : 'Valor'} className={`${ic} w-16 text-center`} />
+            {operacao === 'percentual' && <span className="text-purple-400 text-xs">%</span>}
+          </span>
         )}
         {valorPodeFormula && (
           <label className="text-purple-400 text-[11px] flex items-center gap-1 cursor-pointer" title="Usar fórmula (ex: piso(nivel/2))">

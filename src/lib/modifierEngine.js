@@ -212,31 +212,61 @@ export function calcularValoresFinais(base, modificadores) {
     }
   }
 
+  // Fase 18 — ORDEM DE OPERAÇÕES OFICIAL (contrato matemático):
+  //   1. base
+  //   2. somas   → subtotal1 = base + Σ somar
+  //   3. percent → subtotal2 = piso(subtotal1 × (1 + Σ percentual/100))  [aditivos entre si]
+  //   4. mult    → resultado = subtotal2 × Π multiplicar (em sequência)
+  //   5. definir → último 'definir' sobrescreve tudo
+  // Piso (floor) só após o passo de percentuais. Valor não fica negativo (piso em 0),
+  // exceto quando 'definir' fixa explicitamente.
   function aplicar(valorBase, mods) {
+    const base = Number(valorBase) || 0
     const fontes = []
-    let result = Number(valorBase) || 0
 
+    // 2 — somas
+    let somaTotal = 0
     for (const mod of mods.filter(m => m.operacao === 'somar')) {
       const v = Number(mod.valor) || 0
-      result += v
+      somaTotal += v
       fontes.push({ fonte: mod._fonte || '?', operacao: 'somar', valor: v })
     }
+    const subtotal1 = base + somaTotal
 
+    // 3 — percentuais (ADITIVOS entre si, sobre subtotal1; piso ao fim do passo)
+    let percTotal = 0
+    for (const mod of mods.filter(m => m.operacao === 'percentual')) {
+      const v = Number(mod.valor) || 0
+      percTotal += v
+      fontes.push({ fonte: mod._fonte || '?', operacao: 'percentual', valor: v })
+    }
+    const subtotal2 = percTotal !== 0 ? Math.floor(subtotal1 * (1 + percTotal / 100)) : subtotal1
+
+    // 4 — multiplicadores duros (em sequência)
+    let resultado = subtotal2
     for (const mod of mods.filter(m => m.operacao === 'multiplicar')) {
       const v = Number(mod.valor) || 1
-      result = result * v
+      resultado = resultado * v
       fontes.push({ fonte: mod._fonte || '?', operacao: 'multiplicar', valor: v })
     }
 
+    // piso em 0 (nada de valor negativo por soma/percentual/multiplicar)
+    if (resultado < 0) resultado = 0
+
+    // 5 — definir (último vence, valor exato)
     const definires = mods.filter(m => m.operacao === 'definir')
+    let final = resultado
     if (definires.length > 0) {
       const ultimo = definires[definires.length - 1]
-      const v = Number(ultimo.valor)
-      result = v
-      fontes.push({ fonte: ultimo._fonte || '?', operacao: 'definir', valor: v })
+      final = Number(ultimo.valor)
+      fontes.push({ fonte: ultimo._fonte || '?', operacao: 'definir', valor: final })
     }
 
-    return { final: result, fontes }
+    const passos = {
+      base, somaTotal, subtotal1, percTotal, subtotal2, resultado,
+      definido: definires.length > 0 ? final : null,
+    }
+    return { final, fontes, passos }
   }
 
   // Atributos
@@ -244,25 +274,25 @@ export function calcularValoresFinais(base, modificadores) {
   const detAtributos = {}
   for (const [id, valorBase] of Object.entries(base.atributos || {})) {
     const mods = porAtributo[id] || []
-    const { final, fontes } = aplicar(valorBase, mods)
+    const { final, fontes, passos } = aplicar(valorBase, mods)
     atributosFinal[id] = final
-    detAtributos[id] = { base: Number(valorBase) || 0, final, fontes }
+    detAtributos[id] = { base: Number(valorBase) || 0, final, fontes, passos }
   }
 
   // Vida máxima
-  const { final: vidaMaxFinal, fontes: vidaMaxFontes } = aplicar(base.vida_max ?? 0, porVidaMax)
+  const { final: vidaMaxFinal, fontes: vidaMaxFontes, passos: vidaMaxPassos } = aplicar(base.vida_max ?? 0, porVidaMax)
 
   // Vida temporária (base sempre 0 — é concedida pelos modificadores)
-  const { final: vidaTempFinal, fontes: vidaTempFontes } = aplicar(0, porVidaTemp)
+  const { final: vidaTempFinal, fontes: vidaTempFontes, passos: vidaTempPassos } = aplicar(0, porVidaTemp)
 
   // Combate
   const combateFinal = {}
   const detCombate = {}
   for (const [id, valorBase] of Object.entries(base.combate || {})) {
     const mods = porCombate[id] || []
-    const { final, fontes } = aplicar(valorBase, mods)
+    const { final, fontes, passos } = aplicar(valorBase, mods)
     combateFinal[id] = final
-    detCombate[id] = { base: Number(valorBase) || 0, final, fontes }
+    detCombate[id] = { base: Number(valorBase) || 0, final, fontes, passos }
   }
 
   return {
@@ -272,8 +302,8 @@ export function calcularValoresFinais(base, modificadores) {
     combate: combateFinal,
     detalhamento: {
       atributos: detAtributos,
-      vida_max: { base: Number(base.vida_max) || 0, final: vidaMaxFinal, fontes: vidaMaxFontes },
-      vida_temp: { base: 0, final: vidaTempFinal, fontes: vidaTempFontes },
+      vida_max: { base: Number(base.vida_max) || 0, final: vidaMaxFinal, fontes: vidaMaxFontes, passos: vidaMaxPassos },
+      vida_temp: { base: 0, final: vidaTempFinal, fontes: vidaTempFontes, passos: vidaTempPassos },
       combate: detCombate,
     },
   }
