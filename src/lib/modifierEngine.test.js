@@ -78,6 +78,10 @@ describe('18.1 — regressão F9 (sem percentual, comportamento antigo intacto)'
   it('definir sobrescreve', () => {
     expect(calc(10, [{ operacao: 'somar', valor: 5 }, { operacao: 'definir', valor: 8 }])).toBe(8)
   })
+  it('soma negativa sem percentual não é zerada (piso em 0 é só do passo de %)', () => {
+    // engine pré-Fase-18 retornava -10; sem percentual, nada muda
+    expect(calc(10, [{ operacao: 'somar', valor: -20 }])).toBe(-10)
+  })
 })
 
 describe('18.1 — detalhamento por passos', () => {

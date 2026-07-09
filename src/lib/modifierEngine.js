@@ -240,7 +240,13 @@ export function calcularValoresFinais(base, modificadores) {
       percTotal += v
       fontes.push({ fonte: mod._fonte || '?', operacao: 'percentual', valor: v })
     }
-    const subtotal2 = percTotal !== 0 ? Math.floor(subtotal1 * (1 + percTotal / 100)) : subtotal1
+    // piso em 0 aplica-se AO PASSO DE PERCENTUAIS (spec: "percentuais que
+    // resultariam em negativo → piso em 0"). Sem percentual, o subtotal passa
+    // intacto — fichas sem percentual não mudam NADA (regressão F9), inclusive
+    // podendo ficar negativas por somas, como no engine pré-Fase-18.
+    const subtotal2 = percTotal !== 0
+      ? Math.max(0, Math.floor(subtotal1 * (1 + percTotal / 100)))
+      : subtotal1
 
     // 4 — multiplicadores duros (em sequência)
     let resultado = subtotal2
@@ -249,9 +255,6 @@ export function calcularValoresFinais(base, modificadores) {
       resultado = resultado * v
       fontes.push({ fonte: mod._fonte || '?', operacao: 'multiplicar', valor: v })
     }
-
-    // piso em 0 (nada de valor negativo por soma/percentual/multiplicar)
-    if (resultado < 0) resultado = 0
 
     // 5 — definir (último vence, valor exato)
     const definires = mods.filter(m => m.operacao === 'definir')
