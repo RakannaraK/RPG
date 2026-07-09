@@ -171,6 +171,20 @@ export default function FichaPage() {
     : (classeAtiva ? [classeAtiva] : [])
   // Nível total = soma das classes (fonte de verdade); fallback = ficha.nivel legado.
   const nivelTotal = classesFicha.length ? nivelTotalDe(classesFicha) : (ficha.nivel ?? 1)
+  // 19.2 — mapa p/ nivel(classe): por id E por nome (fallback legado quando não migrada)
+  const niveisClasse = {}
+  if (classesFicha.length) {
+    classesFicha.forEach(cf => {
+      const n = Number(cf.nivel) || 0
+      if (cf.classe_id) niveisClasse[cf.classe_id] = n
+      if (cf.classe?.nome) niveisClasse[cf.classe.nome] = n
+    })
+  } else if (classeAtiva) {
+    const n = ficha.nivel ?? 1
+    niveisClasse[classeAtiva.id] = n
+    if (classeAtiva.nome) niveisClasse[classeAtiva.nome] = n
+  }
+  const formulaProficiencia = config.formula_proficiencia || ''
 
   // Estado da ficha para condições automáticas (Fase 12). Usa vida_max BASE
   // (hp_maximo) no cálculo de % para evitar dependência circular com o motor.
@@ -197,6 +211,8 @@ export default function FichaPage() {
   })
   const ctxModificador = {
     nivel: nivelTotal,
+    niveisClasse,
+    formula_proficiencia: formulaProficiencia,
     vida_atual: ficha.hp_atual ?? 0,
     vida_max: ficha.hp_maximo ?? 0,
     recursos: recursosCtx,
@@ -249,6 +265,8 @@ export default function FichaPage() {
     atributos: atributosCtx,
     formulaModificador,
     nivel: nivelTotal,
+    niveisClasse,
+    formula_proficiencia: formulaProficiencia,
     vida_atual: ficha.hp_atual ?? 0,
     vida_max: valoresFinais.vida_max ?? ficha.hp_maximo ?? 0,
     pericias: {},

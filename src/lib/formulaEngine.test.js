@@ -5,6 +5,9 @@ import { avaliarFormula, parseFormula, validarFormula, usaAtributoOuMod, Formula
 const KRAD = {
   formulaModificador: 'piso((x-10)/2)', // D&D-like
   nivel: 13,
+  // Fase 19 — Bárbaro 9 / Paladino 4 (nível total 13) + proficiência D&D
+  niveisClasse: { barbaro: 9, paladino: 4 },
+  formula_proficiencia: '2 + teto(nivel / 4) - 1',
   atributos: { forca: 19, destreza: 14, constituicao: 18, carisma: 16, sabedoria: 12 },
   pericias: { atletismo: 7 },
   recursos: { furia: 4 },
@@ -109,22 +112,55 @@ describe('casos reais (as 6 fórmulas da gramática)', () => {
   it('max(1, piso(nivel / 4))', () => {
     expect(av('max(1, piso(nivel / 4))', KRAD)).toBe(3) // piso(13/4)=3
   })
-  it("8 + proficiencia + mod(carisma) parseia mas falha na avaliação (F19)", () => {
+  it("8 + proficiencia + mod(carisma) — proficiência ativa na F19 (=16)", () => {
     expect(validarFormula('8 + proficiencia + mod(carisma)').valida).toBe(true)
-    expect(() => av('8 + proficiencia + mod(carisma)', KRAD)).toThrow(/Fase 19/)
+    expect(av('8 + proficiencia + mod(carisma)', KRAD)).toBe(16) // 8 + 5 + 3
   })
 })
 
-describe('variáveis reservadas (parseiam, avaliação avisa a fase)', () => {
-  it('nivel(classe) → Fase 19', () => {
-    expect(validarFormula('nivel(paladino)').valida).toBe(true)
-    expect(() => av('nivel(paladino)', KRAD)).toThrow(/Fase 19/)
-  })
+describe('variáveis reservadas — pool/maestria ainda em fases futuras', () => {
   it('pool() → Fase 20', () => {
     expect(() => av('pool(thariuns)', IC)).toThrow(/Fase 20/)
   })
   it('maestria() → Fase 21', () => {
     expect(() => av('maestria(espada)', IC)).toThrow(/Fase 21/)
+  })
+})
+
+describe('19.2 — nivel(classe): nível da ficha naquela classe', () => {
+  it('5 * nivel(paladino) com Paladino 4 → 20 (a reserva do Krad)', () => {
+    expect(av('5 * nivel(paladino)', KRAD)).toBe(20)
+  })
+  it('nivel(barbaro) → 9; por nome com acento/caixa', () => {
+    expect(av('nivel(barbaro)', KRAD)).toBe(9)
+    expect(av('nivel(BÁRBARO)', KRAD)).toBe(9)
+  })
+  it('classe que a ficha não tem → 0 (não erro)', () => {
+    expect(av('nivel(mago)', KRAD)).toBe(0)
+    expect(av('5 * nivel(inexistente)', KRAD)).toBe(0)
+  })
+  it('resolve por id da classe', () => {
+    const ctx = { niveisClasse: { 'a1b2-uuid': 7 } }
+    expect(av('nivel(a1b2-uuid)', ctx)).toBe(7)
+  })
+  it('sem mapa de classes → 0', () => {
+    expect(av('nivel(paladino)', {})).toBe(0)
+  })
+})
+
+describe('19.2 — proficiencia: avalia config_layout.formula_proficiencia', () => {
+  it('fórmula D&D no nível 13 → 5', () => {
+    expect(av('proficiencia', KRAD)).toBe(5) // 2 + teto(13/4) - 1 = 2+4-1
+  })
+  it('entra em fórmulas maiores', () => {
+    expect(av('proficiencia + mod(forca)', KRAD)).toBe(9) // 5 + 4
+  })
+  it('sistema sem fórmula de proficiência → erro claro (e não "Fase 19")', () => {
+    expect(() => av('proficiencia', IC)).toThrow(/proficiência|proficiencia/i)
+    expect(() => av('proficiencia', IC)).not.toThrow(/Fase 19/)
+  })
+  it('proficiência não pode referenciar a si mesma', () => {
+    expect(() => av('proficiencia', { nivel: 5, formula_proficiencia: '1 + proficiencia' })).toThrow()
   })
 })
 

@@ -8,7 +8,7 @@
  * Gramática (contrato — não mudar sem registrar na spec):
  *   números (int/decimal), + - * / ( ) com precedência padrão
  *   variáveis-função (arg = nome/id bruto): atributo(x) mod(x) pericia(x) recurso(x)
- *     reservadas (parseiam, avaliação falha): nivel(classe)[F19] pool(x)[F20] maestria(x)[F21]
+ *     nivel(classe)[F19: nível na classe, 0 se ausente] · reservadas: pool(x)[F20] maestria(x)[F21]
  *   variáveis simples: nivel, proficiencia[F19], vida_atual, vida_max, x (só na fórmula de modificador)
  *   funções matemáticas: piso teto arredondar abs (1 arg) · min max (2 args)
  *   case-insensitive; nomes resolvidos por id OU nome normalizado (sem acento, minúsculo)
@@ -191,6 +191,18 @@ function resolverNome(map, nome, categoria) {
   throw new FormulaError(`${categoria} '${nome}' não existe neste sistema`)
 }
 
+// Fase 19 — nível da ficha numa classe (por id ou nome normalizado).
+// Ausente = 0 (a ficha simplesmente não tem essa classe), nunca erro.
+function resolverNivelClasse(map, nome) {
+  if (map && typeof map === 'object') {
+    if (nome in map) return Number(map[nome]) || 0
+    const alvo = normalizar(nome)
+    if (alvo in map) return Number(map[alvo]) || 0
+    for (const k of Object.keys(map)) if (normalizar(k) === alvo) return Number(map[k]) || 0
+  }
+  return 0
+}
+
 function evalVar(name, ctx) {
   switch (name) {
     case 'nivel':      return comoNumero(ctx.nivel ?? 0, 'nível', 'nivel')
@@ -199,7 +211,15 @@ function evalVar(name, ctx) {
     case 'x':
       if (ctx._x === undefined) throw new FormulaError("'x' só existe na fórmula do modificador de atributo")
       return ctx._x
-    case 'proficiencia': throw new FormulaError("'proficiencia' estará disponível na Fase 19")
+    case 'proficiencia': {
+      // Fase 19 — avalia a fórmula de proficiência do sistema (config_layout).
+      if (ctx._emProficiencia) throw new FormulaError("'proficiencia' não pode referenciar a si mesma")
+      const f = ctx.formula_proficiencia
+      if (f == null || String(f).trim() === '') {
+        throw new FormulaError('Este sistema não define proficiência')
+      }
+      return avaliarFormula(f, { ...ctx, _emProficiencia: true })
+    }
   }
   // Atalho opt-in (só na camada de notação de dado, Fase 17.2): nome solto que
   // não é variável embutida é resolvido como o atributo com aquele nome.
@@ -218,7 +238,7 @@ function evalCall(fn, arg, ctx) {
       if (f == null || f === '') return attr // sem fórmula: mod(a) === atributo(a)
       return avaliarFormula(f, { ...ctx, _x: attr })
     }
-    case 'nivel':    throw new FormulaError("'nivel(classe)' estará disponível na Fase 19")
+    case 'nivel':    return resolverNivelClasse(ctx.niveisClasse, arg) // Fase 19
     case 'pool':     throw new FormulaError("'pool()' estará disponível na Fase 20")
     case 'maestria': throw new FormulaError("'maestria()' estará disponível na Fase 21")
     default: throw new FormulaError(`Função '${fn}' desconhecida`)

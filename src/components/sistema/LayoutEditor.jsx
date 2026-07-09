@@ -168,6 +168,26 @@ export default function LayoutEditor({
         />
       </div>
 
+      {/* Fórmula de proficiência (19.2) */}
+      <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
+        <p className="text-purple-200 text-sm font-semibold">Proficiência</p>
+        <p className="text-purple-500 text-xs">
+          Fórmula da variável <span className="font-mono text-purple-300">proficiencia</span> (use{' '}
+          <span className="font-mono text-purple-300">nivel</span>). Vazio = sistema sem proficiência
+          (a variável nem aparece). Ex: D&D no nível 13 → 5.
+        </p>
+        <FormulaInput
+          value={config.formula_proficiencia || ''}
+          onChange={f => onConfigChange({ ...config, formula_proficiencia: f })}
+          placeholder="ex: 2 + teto(nivel / 4) - 1"
+          presets={[
+            { label: 'Sem proficiência', valor: '' },
+            { label: '2 + teto(nivel/4) − 1  (D&D)', valor: '2 + teto(nivel / 4) - 1' },
+          ]}
+          variaveis={['nivel']}
+        />
+      </div>
+
       {/* Rótulo de vida */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
         <p className="text-purple-200 text-sm font-semibold">Rótulo de vida</p>

@@ -16,6 +16,7 @@ export const CONFIG_LAYOUT_DEFAULT = {
   dado_padrao: 20,
   descansos: [], // Fase 15 — tipos de descanso configurados pelo mestre
   formula_modificador: '', // Fase 17.3 — fórmula do modificador de atributo ('' = valor puro)
+  formula_proficiencia: '', // Fase 19.2 — fórmula da proficiência ('' = sistema sem proficiência)
 }
 
 // Mescla config parcial do banco com os defaults, garantindo que nenhuma chave falte
@@ -32,5 +33,6 @@ export function mergeConfigLayout(raw) {
     dado_padrao: (raw || {}).dado_padrao || 20,
     descansos: (raw || {}).descansos || [],
     formula_modificador: (raw || {}).formula_modificador || '',
+    formula_proficiencia: (raw || {}).formula_proficiencia || '',
   }
 }

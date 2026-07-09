@@ -7,8 +7,8 @@ function AjudaGramatica() {
     <div className="mt-1.5 bg-slate-900 border border-purple-800 rounded-lg p-3 text-[11px] space-y-1.5">
       <p className="text-purple-300"><span className="font-semibold">Operadores:</span> <span className="font-mono">+ − * / ( )</span></p>
       <p className="text-purple-300"><span className="font-semibold">Funções:</span> <span className="font-mono">piso(x) teto(x) arredondar(x) abs(x) min(a,b) max(a,b)</span></p>
-      <p className="text-purple-300"><span className="font-semibold">Variáveis:</span> <span className="font-mono">atributo(nome) mod(nome) nivel pericia(nome) recurso(nome) vida_atual vida_max</span></p>
-      <p className="text-purple-500"><span className="font-semibold">Ex:</span> <span className="font-mono">10 + mod(destreza) + mod(constituicao)</span> · <span className="font-mono">piso((x-10)/2)</span> · <span className="font-mono">5 * nivel</span></p>
+      <p className="text-purple-300"><span className="font-semibold">Variáveis:</span> <span className="font-mono">atributo(nome) mod(nome) nivel nivel(classe) proficiencia pericia(nome) recurso(nome) vida_atual vida_max</span></p>
+      <p className="text-purple-500"><span className="font-semibold">Ex:</span> <span className="font-mono">10 + mod(destreza) + mod(constituicao)</span> · <span className="font-mono">5 * nivel(paladino)</span> · <span className="font-mono">proficiencia + mod(carisma)</span></p>
       <p className="text-purple-600">Na fórmula do modificador de atributo, <span className="font-mono">x</span> é o valor do atributo.</p>
       <div className="border-t border-purple-900 pt-1.5 mt-1.5">
         <p className="text-purple-300 font-semibold mb-0.5">Como os bônus se combinam (ordem)</p>
