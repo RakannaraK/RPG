@@ -6,6 +6,7 @@ import LayoutEditor from './LayoutEditor'
 import RacasClassesEditor from './RacasClassesEditor'
 import PoolsEditor from './PoolsEditor'
 import PoderesEditor from './PoderesEditor'
+import SlotsEditor from './SlotsEditor'
 import DescansosEditor from './DescansosEditor'
 
 const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes', 'Descansos', 'Recursos', 'Poderes']
@@ -307,10 +308,18 @@ export default function SistemaEditor({ mesaId, isMestre }) {
           />
         )}
 
-        {/* Fase 20.1 — pools/recursos gastáveis */}
+        {/* Fase 20.1 — pools/recursos gastáveis · Fase 20.3 — slots (modo opcional) */}
         {activeTab === 'Recursos' && (
           sistemaDB?.id ? (
-            <PoolsEditor sistemaId={sistemaDB.id} descansos={configLayout.descansos || []} />
+            <div className="space-y-4">
+              <PoolsEditor sistemaId={sistemaDB.id} descansos={configLayout.descansos || []} />
+              <SlotsEditor
+                sistemaId={sistemaDB.id}
+                config={configLayout}
+                onChange={setConfigLayout}
+                descansos={configLayout.descansos || []}
+              />
+            </div>
           ) : (
             <p className="text-purple-500 text-sm">Salve o sistema antes de criar recursos.</p>
           )

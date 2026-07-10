@@ -20,6 +20,9 @@ import PainelRecompensas from '../components/ficha/PainelRecompensas'
 import { calcularMaximos, mapaPools, atualDePool } from '../lib/poolEngine'
 import { usePools, usePoolsFicha } from '../hooks/usePools'
 import PainelPools from '../components/ficha/PainelPools'
+import { slotsTotais, usadosPorCirculo, slotsAtivos } from '../lib/slotsEngine'
+import { useSlotsFicha } from '../hooks/useSlotsFicha'
+import PainelSlots from '../components/ficha/PainelSlots'
 import BarraXp from '../components/ficha/BarraXp'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
 import DescansoBar from '../components/ficha/DescansoBar'
@@ -65,6 +68,8 @@ export default function FichaPage() {
   // 20.1 — pools do sistema + estado na ficha
   const { pools } = usePools(sistema?.id)
   const { linhasPools, definirAtual } = usePoolsFicha(fichaId)
+  // 20.3 — slots (modo opcional): só `usados` é armazenado
+  const { linhasSlots, definirUsados } = useSlotsFicha(fichaId)
 
   // Estado local de raça/classe para recálculo imediato sem esperar refetch
   const [racaId, setRacaId] = useState(null)
@@ -356,6 +361,13 @@ export default function FichaPage() {
   const atualDoPool = poolId =>
     atualDePool(linhasPools.find(l => l.pool_id === poolId), maximosPools[poolId] ?? 0)
 
+  // 20.3 — totais de slot DERIVADOS da grade × classes da ficha (nunca armazenados)
+  const fonteClasses = classesFicha.length
+    ? classesFicha
+    : (classeAtiva ? [{ classe_id: classeAtiva.id, nivel: nivelTotal }] : [])
+  const totaisSlots = slotsTotais(config, fonteClasses)
+  const usadosSlots = usadosPorCirculo(linhasSlots)
+
   const ctxModificador = {
     nivel: nivelTotal,
     niveisClasse,
@@ -493,6 +505,10 @@ export default function FichaPage() {
       for (const p of resultado.pools || []) {
         await definirAtual(p.poolId, p.para)
       }
+      // 20.3 — slots devolvidos pelo descanso
+      for (const s of resultado.slots || []) {
+        await definirUsados(s.circulo, s.para)
+      }
       try {
         await supabase.from('descansos_log').insert({
           ficha_id: fichaId,
@@ -626,6 +642,17 @@ export default function FichaPage() {
           onCurar={handleCurarComPool}
         />
 
+        {/* Slots (20.3) — modo opcional; some se desativado ou sem slots */}
+        {slotsAtivos(config) && (
+          <PainelSlots
+            rotulo={config.slots?.rotulo || 'Espaços'}
+            totais={totaisSlots}
+            usados={usadosSlots}
+            isDono={isDono}
+            onDefinirUsados={definirUsados}
+          />
+        )}
+
         {/* Recompensas de nível (19.6) — checklist-guia, some se não houver nenhuma */}
         <PainelRecompensas
           recompensasFicha={recompensasFicha}
@@ -646,6 +673,8 @@ export default function FichaPage() {
             pools={pools}
             linhasPools={linhasPools}
             maximosPools={maximosPools}
+            configSlots={slotsAtivos(config) ? config : null}
+            usadosSlots={usadosSlots}
             onAplicar={handleAplicarDescanso}
           />
         )}

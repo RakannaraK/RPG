@@ -9,6 +9,7 @@ import { calcularDescanso } from '../../lib/restEngine'
 export default function DescansoBar({
   descansos = [], ficha, valoresFinais, habilidadesFicha = [], contextoFormula = null, onAplicar,
   pools = [], linhasPools = [], maximosPools = {}, // 20.1
+  configSlots = null, usadosSlots = {},            // 20.3
 }) {
   const [preview, setPreview] = useState(null) // { tipo, resultado }
   const [aplicando, setAplicando] = useState(false)
@@ -20,6 +21,7 @@ export default function DescansoBar({
     const resultado = calcularDescanso({
       tipoDescanso: tipo, ficha, valoresFinais, habilidadesFicha, contexto: contextoFormula,
       pools, linhasPools, maximosPools,
+      configSlots, usadosSlots,
     })
     setPreview({ tipo, resultado })
   }
@@ -89,10 +91,18 @@ export default function DescansoBar({
                   <span className="text-white font-medium">{p.de} → {p.para}</span>
                 </div>
               ))}
+              {/* 20.3 — slots devolvidos */}
+              {(preview.resultado.slots || []).map(s => (
+                <div key={s.circulo} className="flex justify-between">
+                  <span className="text-amber-400">Slots {s.circulo}º círculo</span>
+                  <span className="text-white font-medium">{s.de} → {s.para} usados</span>
+                </div>
+              ))}
               {preview.resultado.vida.recuperado === 0
                 && preview.resultado.vida_temp.para === preview.resultado.vida_temp.de
                 && preview.resultado.recursos.length === 0
-                && (preview.resultado.pools || []).length === 0 && (
+                && (preview.resultado.pools || []).length === 0
+                && (preview.resultado.slots || []).length === 0 && (
                 <p className="text-purple-500">Nada seria recuperado.</p>
               )}
             </div>

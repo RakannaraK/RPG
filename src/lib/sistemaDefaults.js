@@ -19,6 +19,16 @@ export const CONFIG_LAYOUT_DEFAULT = {
   formula_proficiencia: '', // Fase 19.2 — fórmula da proficiência ('' = sistema sem proficiência)
   // Fase 19.3 — curva de progressão. 'nenhum' = sistema sem XP (subida manual).
   progressao_xp: { modo: 'nenhum', tabela: [], formula: '' },
+  // Fase 20.3 — slots são MODO OPCIONAL. Desativado = painel nem aparece.
+  slots: {
+    ativo: false,
+    rotulo: 'Espaços',
+    circulo_max: 9,
+    preparacao: false,
+    cd_formula: '',
+    grades: {},      // { "<classe_id>": { "1": [2], "3": [3,2] } }
+    recuperacao: {}, // { "<id_descanso>": { modo: "total" | "nada" } }
+  },
 }
 
 // Mescla config parcial do banco com os defaults, garantindo que nenhuma chave falte
@@ -39,6 +49,10 @@ export function mergeConfigLayout(raw) {
     progressao_xp: {
       ...CONFIG_LAYOUT_DEFAULT.progressao_xp,
       ...((raw || {}).progressao_xp || {}),
+    },
+    slots: {
+      ...CONFIG_LAYOUT_DEFAULT.slots,
+      ...((raw || {}).slots || {}),
     },
   }
 }

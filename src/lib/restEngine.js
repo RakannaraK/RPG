@@ -1,6 +1,7 @@
 import { rolarNotacao, validarNotacao, resolverNotacaoFormula } from './diceNotation.js'
 import { avaliarFormula } from './formulaEngine.js'
 import { atualDePool, recuperarPool } from './poolEngine.js'
+import { diffRecuperacaoSlots } from './slotsEngine.js'
 
 // 17.5 — avalia uma fórmula com segurança (falha → 0)
 function safeFormula(f, contexto) {
@@ -54,11 +55,14 @@ function aplicarModoVida(de, max, regra, contexto) {
  * @param {Array}  [params.pools]         - Fase 20.1: pools do sistema
  * @param {Array}  [params.linhasPools]   - Fase 20.1: pools_ficha (linha ausente = cheio)
  * @param {object} [params.maximosPools]  - Fase 20.1: { [poolId]: maximo } já derivado
- * @returns {{ vida, vida_temp, recursos, pools, resumo }}
+ * @param {object} [params.configSlots]   - Fase 20.3: config_layout inteiro (lê .slots)
+ * @param {object} [params.usadosSlots]   - Fase 20.3: { [circulo]: usados }
+ * @returns {{ vida, vida_temp, recursos, pools, slots, resumo }}
  */
 export function calcularDescanso({
   tipoDescanso, ficha, valoresFinais, habilidadesFicha = [], contexto = null,
   pools = [], linhasPools = [], maximosPools = {},
+  configSlots = null, usadosSlots = {},
 }) {
   const max = Number(valoresFinais?.vida_max ?? ficha?.hp_maximo ?? 0) || 0
   const hpDe = Number(ficha?.hp_atual ?? 0) || 0
@@ -111,13 +115,17 @@ export function calcularDescanso({
     }
   }
 
+  // Slots (Fase 20.3) — só mexe em `usados`; o total é derivado da grade
+  const slots = configSlots ? diffRecuperacaoSlots(configSlots, tipoDescanso?.id, usadosSlots) : []
+
   // Resumo legível
   const partes = []
   if (vida.recuperado > 0) partes.push(`+${vida.recuperado} de vida`)
   if (vida_temp.para === 0 && vida_temp.de > 0) partes.push('vida temporária zerada')
   for (const r of recursos) partes.push(`${r.nome} ${r.de}→${r.para}`)
   for (const p of poolsRecuperados) partes.push(`${p.nome} ${p.de}→${p.para}`)
+  if (slots.length) partes.push(`slots devolvidos (${slots.map(s => `${s.circulo}º`).join(', ')})`)
   const resumo = partes.length ? `Recuperou ${partes.join(', ')}.` : 'Nada a recuperar.'
 
-  return { vida, vida_temp, recursos, pools: poolsRecuperados, resumo }
+  return { vida, vida_temp, recursos, pools: poolsRecuperados, slots, resumo }
 }
