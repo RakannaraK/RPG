@@ -44,13 +44,15 @@ export default function SessaoPage() {
   // as fórmulas do painel de sessão rodariam sem a regra do sistema.
   const formulaModificador = sistema?.config_layout?.formula_modificador || ''
   const formulaProficiencia = sistema?.config_layout?.formula_proficiencia || ''
+  const configSlots = sistema?.config_layout?.slots || null
   const sistemaBundle = useMemo(
     () => ({
       racas, classes, habilidades, atributos, pericias, pools,
       formula_modificador: formulaModificador,
       formula_proficiencia: formulaProficiencia,
+      slots: configSlots,
     }),
-    [racas, classes, habilidades, atributos, pericias, pools, formulaModificador, formulaProficiencia]
+    [racas, classes, habilidades, atributos, pericias, pools, formulaModificador, formulaProficiencia, configSlots]
   )
   const camposCombate = sistema?.config_layout?.campos_combate || []
   const descansos = sistema?.config_layout?.descansos || []

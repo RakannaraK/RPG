@@ -328,7 +328,20 @@ export default function SistemaEditor({ mesaId, isMestre }) {
         {/* Fase 20.2 — catálogo de poderes */}
         {activeTab === 'Poderes' && (
           sistemaDB?.id ? (
-            <PoderesEditor sistemaId={sistemaDB.id} />
+            <div className="space-y-3">
+              {/* 20.6 — rótulo do painel na ficha (o mestre nomeia) */}
+              <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 flex items-center gap-3 flex-wrap">
+                <label className="text-purple-300 text-sm shrink-0">Nome do painel na ficha</label>
+                <input
+                  type="text"
+                  value={configLayout.poderes_rotulo || ''}
+                  onChange={e => setConfigLayout(prev => ({ ...prev, poderes_rotulo: e.target.value }))}
+                  placeholder="Poderes, Magias, Técnicas..."
+                  className="flex-1 min-w-[10rem] px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <PoderesEditor sistemaId={sistemaDB.id} />
+            </div>
           ) : (
             <p className="text-purple-500 text-sm">Salve o sistema antes de criar poderes.</p>
           )

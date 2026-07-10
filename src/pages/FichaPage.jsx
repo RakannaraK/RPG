@@ -752,7 +752,7 @@ export default function FichaPage() {
 
         {/* Poderes (20.4) — adaptativo: some se o sistema não tem catálogo */}
         <PainelPoderes
-          rotulo="Poderes"
+          rotulo={config.poderes_rotulo || 'Poderes'}
           catalogo={catalogoPoderes}
           poderesFicha={poderesFicha}
           estado={estadoPoderes}

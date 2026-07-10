@@ -19,6 +19,8 @@ export const CONFIG_LAYOUT_DEFAULT = {
   formula_proficiencia: '', // Fase 19.2 — fórmula da proficiência ('' = sistema sem proficiência)
   // Fase 19.3 — curva de progressão. 'nenhum' = sistema sem XP (subida manual).
   progressao_xp: { modo: 'nenhum', tabela: [], formula: '' },
+  // Fase 20.6 — rótulo do painel de poderes na ficha (o mestre nomeia)
+  poderes_rotulo: 'Poderes',
   // Fase 20.3 — slots são MODO OPCIONAL. Desativado = painel nem aparece.
   slots: {
     ativo: false,
@@ -54,5 +56,6 @@ export function mergeConfigLayout(raw) {
       ...CONFIG_LAYOUT_DEFAULT.slots,
       ...((raw || {}).slots || {}),
     },
+    poderes_rotulo: (raw || {}).poderes_rotulo || 'Poderes',
   }
 }

@@ -111,6 +111,27 @@ const FichaCard = memo(function FichaCard({ card, camposCombate }) {
         </div>
       )}
 
+      {/* Slots por círculo (20.6) — ao vivo */}
+      {(card.slots || []).length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {card.slots.map(s => {
+            const esgotado = s.disponivel === 0
+            return (
+              <div key={s.circulo}
+                className={`flex items-center gap-1 rounded-lg px-2 py-1 border ${
+                  esgotado ? 'bg-red-950/40 border-red-900/60' : 'bg-slate-900/60 border-amber-900/50'
+                }`}
+                title={`Slots de ${s.circulo}º círculo`}>
+                <span className="text-amber-400 text-[10px] font-mono">{s.circulo}º</span>
+                <span className={`text-sm font-bold leading-none ${esgotado ? 'text-red-400' : 'text-white'}`}>
+                  {s.disponivel}<span className="text-purple-600 font-normal">/{s.total}</span>
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       {/* Chips de estado */}
       {card.chips.length > 0 ? (
         <div className="flex flex-wrap gap-1.5 pt-1 border-t border-purple-900/40">
