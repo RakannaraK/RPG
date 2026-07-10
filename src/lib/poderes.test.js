@@ -181,3 +181,117 @@ describe('20.2 — busca e filtros do catálogo', () => {
     expect(ids(ordenarPoderes(CATALOGO))).toEqual(['4', '1', '2', '3'])
   })
 })
+
+// ═══════════════════════════════════ Fase 20.4 — usar um poder
+import {
+  circuloBaseDoPoder, extraDaEscala, montarNotacaoUso,
+  custoResolvido, podeUsarPoder, cdDoPoder,
+} from './poderes'
+
+describe('20.4 — círculo base e escala acumulada', () => {
+  it('círculo base vem do custo de slot; senão do círculo do poder', () => {
+    expect(circuloBaseDoPoder(CURAR)).toBe(1)
+    expect(circuloBaseDoPoder({ circulo: 3, custo: [] })).toBe(3)
+    expect(circuloBaseDoPoder(PODER_IC)).toBe(0)
+  })
+
+  it('no círculo mínimo não há extra', () => {
+    expect(extraDaEscala(CURAR, 1)).toBeNull()
+  })
+
+  it('1 círculo acima → 1× a taxa; 2 acima → 2× (acumula)', () => {
+    expect(extraDaEscala(CURAR, 2)).toEqual({ taxa: '1d8', vezes: 1, termos: ['1d8'] })
+    expect(extraDaEscala(CURAR, 3)).toEqual({ taxa: '1d8', vezes: 2, termos: ['1d8', '1d8'] })
+  })
+
+  it('poder sem escala nunca ganha extra', () => {
+    expect(extraDaEscala(PODER_IC, 5)).toBeNull()
+  })
+})
+
+describe('20.4 — notação final do efeito', () => {
+  it('Curar Feridas no 1º círculo', () => {
+    expect(montarNotacaoUso(CURAR, 1)).toBe('1d8 + mod(carisma)')
+  })
+  it('Curar Feridas no 2º círculo escala +1d8', () => {
+    expect(montarNotacaoUso(CURAR, 2)).toBe('1d8 + mod(carisma) + 1d8')
+  })
+  it('Curar Feridas no 3º círculo escala +2d8', () => {
+    expect(montarNotacaoUso(CURAR, 3)).toBe('1d8 + mod(carisma) + 1d8 + 1d8')
+  })
+  it('Golpe Estrondoso no 3º círculo escala +2d6', () => {
+    expect(montarNotacaoUso(GOLPE, 3)).toBe('2d6 + 1d6 + 1d6')
+  })
+  it('poder sem efeito continua sem notação', () => {
+    expect(montarNotacaoUso({ nome: 'Ritual' }, 1)).toBe('')
+  })
+})
+
+describe('20.4 — custo resolvido (quantidade pode ser fórmula)', () => {
+  it('número puro', () => {
+    expect(custoResolvido(PODER_IC.custo, {})).toEqual([{ pool_id: 'p-thar', quantidade: 3 }])
+  })
+  it('fórmula é avaliada com o contexto', () => {
+    const custo = [{ tipo: 'pool', pool_id: 'p-thar', quantidade: 'piso(nivel / 2)' }]
+    expect(custoResolvido(custo, { nivel: 13 })).toEqual([{ pool_id: 'p-thar', quantidade: 6 }])
+  })
+  it('custo de slot não entra na lista de pools', () => {
+    expect(custoResolvido(GOLPE.custo, {})).toEqual([])
+  })
+})
+
+describe('20.4 — podeUsarPoder: falha antes do efeito, com motivo', () => {
+  const poolsPorId = { 'p-thar': { id: 'p-thar', nome: 'Thariuns' } }
+
+  it('poder de slot: lista os círculos gastáveis a partir do mínimo', () => {
+    const r = podeUsarPoder(CURAR, { totaisSlots: { 1: 3, 2: 2 }, usadosSlots: {} })
+    expect(r.ok).toBe(true)
+    expect(r.circulos).toEqual([1, 2])
+  })
+
+  it('slot esgotado bloqueia com aviso claro', () => {
+    const r = podeUsarPoder(CURAR, { totaisSlots: { 1: 3 }, usadosSlots: { 1: 3 } })
+    expect(r.ok).toBe(false)
+    expect(r.motivo).toMatch(/sem slots/i)
+  })
+
+  it('pool insuficiente bloqueia dizendo quanto falta', () => {
+    const r = podeUsarPoder(PODER_IC, { atualDoPool: () => 2, poolsPorId })
+    expect(r.ok).toBe(false)
+    expect(r.motivo).toBe('Thariuns insuficiente: tem 2, precisa de 3.')
+  })
+
+  it('pool suficiente libera', () => {
+    const r = podeUsarPoder(PODER_IC, { atualDoPool: () => 5, poolsPorId })
+    expect(r.ok).toBe(true)
+    expect(r.custos).toEqual([{ pool_id: 'p-thar', quantidade: 3 }])
+  })
+
+  it('poder sem custo sempre pode', () => {
+    expect(podeUsarPoder({ nome: 'Truque' }, {}).ok).toBe(true)
+  })
+
+  it('quantidade com fórmula quebrada vira motivo, não exceção', () => {
+    const ruim = { custo: [{ tipo: 'pool', pool_id: 'p-thar', quantidade: 'nivel +' }] }
+    const r = podeUsarPoder(ruim, { atualDoPool: () => 99, poolsPorId })
+    expect(r.ok).toBe(false)
+    expect(r.motivo).toMatch(/custo inválido/i)
+  })
+})
+
+describe('20.4 — CD do poder', () => {
+  const ctx = { nivel: 13, formula_proficiencia: '2 + teto(nivel / 4) - 1', formulaModificador: 'piso((x-10)/2)', atributos: { carisma: 16 } }
+  it('usa a fórmula do poder, não a do sistema', () => {
+    // 8 + proficiencia(5) + mod(carisma 16 → 3) = 16
+    expect(cdDoPoder(CURAR, '999', ctx)).toBe(16)
+  })
+  it('herda a do sistema quando o poder não tem', () => {
+    expect(cdDoPoder({ nome: 'X' }, '8 + proficiencia', ctx)).toBe(13)
+  })
+  it('sem fórmula nenhuma → null', () => {
+    expect(cdDoPoder({ nome: 'X' }, null, ctx)).toBeNull()
+  })
+  it('fórmula quebrada → null (não derruba a ficha)', () => {
+    expect(cdDoPoder({ nome: 'X', cd_formula: 'nivel +' }, null, ctx)).toBeNull()
+  })
+})

@@ -13,9 +13,10 @@
  * e seu valor é a TAXA por círculo ACIMA do mínimo — 3º círculo num poder de 1º
  * são 2 círculos acima, logo 2× a taxa.
  */
-import { validarFormula, normalizar } from './formulaEngine.js'
+import { validarFormula, normalizar, avaliarFormula } from './formulaEngine.js'
 import { validarNotacao } from './diceNotation.js'
-import { validarFaixas } from './faixas.js'
+import { validarFaixas, faixaAtiva } from './faixas.js'
+import { circulosGastaveis } from './slotsEngine.js'
 
 // ────────────────────────────────────────────────────────────── custo
 
@@ -210,4 +211,127 @@ export function ordenarPoderes(poderes) {
     if (ca !== cb) return ca - cb
     return (a.nome || '').localeCompare(b.nome || '')
   })
+}
+
+// ═══════════════════════════════════════════════════ Fase 20.4 — usar um poder
+
+/** Círculo mínimo em que o poder pode ser usado (do custo de slot, ou o do poder). */
+export function circuloBaseDoPoder(poder) {
+  const slot = custoDeSlot(poder?.custo)
+  if (slot && Number.isFinite(Number(slot.circulo_minimo))) return Number(slot.circulo_minimo)
+  return Number(poder?.circulo) || 0
+}
+
+/**
+ * Extra da escala ao usar num círculo acima do mínimo.
+ * A faixa é escolhida pelo círculo USADO — reusando o seletor de faixas da F19 —
+ * e seu valor é a TAXA por círculo acima, que ACUMULA.
+ * @returns {{ taxa: string, vezes: number, termos: string[] }|null}
+ */
+export function extraDaEscala(poder, circuloUsado) {
+  const faixas = poder?.escala_circulo?.faixas
+  if (!Array.isArray(faixas) || faixas.length === 0) return null
+
+  const vezes = circulosAcima(circuloUsado, circuloBaseDoPoder(poder))
+  if (vezes <= 0) return null
+
+  // Reusa faixaAtiva (F19) tratando o círculo usado como a variável observada.
+  const ativa = faixaAtiva({ variavel: 'nivel', faixas }, { nivel: Number(circuloUsado) || 0 })
+  const taxa = String(ativa?.faixa?.valor_extra_por_circulo ?? '').trim()
+  if (!taxa) return null
+
+  return { taxa, vezes, termos: Array(vezes).fill(taxa) }
+}
+
+/**
+ * Notação final do efeito, já com a escala do círculo usado.
+ * "1d8 + mod(carisma)" no 3º círculo de um poder de 1º → "1d8 + mod(carisma) + 1d8 + 1d8"
+ * (a resolução das fórmulas acontece depois, via resolverNotacaoFormula da F17.2)
+ */
+export function montarNotacaoUso(poder, circuloUsado) {
+  const base = String(poder?.efeito_notacao ?? '').trim()
+  const extra = extraDaEscala(poder, circuloUsado)
+  if (!extra) return base
+  const termos = extra.termos.join(' + ')
+  return base ? `${base} + ${termos}` : termos
+}
+
+/**
+ * Resolve as quantidades dos custos de pool (que podem ser fórmula).
+ * @returns {Array<{ pool_id: string, quantidade: number }>}
+ * @throws {FormulaError} se alguma fórmula for inválida
+ */
+export function custoResolvido(custo, contexto = {}) {
+  return custosDePool(custo).map(c => ({
+    pool_id: c.pool_id,
+    quantidade: Math.max(0, Math.floor(avaliarFormula(String(c.quantidade), contexto))),
+  }))
+}
+
+/**
+ * O poder pode ser usado agora? Custos falham ANTES do efeito, com motivo claro.
+ *
+ * @param {object} poder
+ * @param {object} estado
+ *   { totaisSlots, usadosSlots, atualDoPool: (id)=>number, poolsPorId, contexto }
+ * @returns {{ ok: boolean, motivo?: string, circulos: number[], custos: Array }}
+ *   `circulos` = círculos gastáveis (vazio se o poder não custa slot)
+ */
+export function podeUsarPoder(poder, estado = {}) {
+  const { totaisSlots = {}, usadosSlots = {}, atualDoPool = () => 0, poolsPorId = {}, contexto = {} } = estado
+
+  // 1) custos de pool
+  let custos
+  try {
+    custos = custoResolvido(poder?.custo, contexto)
+  } catch (e) {
+    return { ok: false, motivo: `Custo inválido: ${e.message}`, circulos: [], custos: [] }
+  }
+  for (const c of custos) {
+    const disponivel = atualDoPool(c.pool_id)
+    if (disponivel < c.quantidade) {
+      const nome = poolsPorId[c.pool_id]?.nome || 'recurso'
+      return {
+        ok: false,
+        motivo: `${nome} insuficiente: tem ${disponivel}, precisa de ${c.quantidade}.`,
+        circulos: [],
+        custos,
+      }
+    }
+  }
+
+  // 2) custo de slot
+  const slot = custoDeSlot(poder?.custo)
+  if (!slot) return { ok: true, circulos: [], custos }
+
+  const minimo = Number(slot.circulo_minimo) || 0
+  const circulos = circulosGastaveis(totaisSlots, usadosSlots, minimo)
+  if (circulos.length === 0) {
+    return { ok: false, motivo: `Sem slots disponíveis de ${minimo}º círculo ou acima.`, circulos: [], custos }
+  }
+  return { ok: true, circulos, custos }
+}
+
+/**
+ * CD do poder: a fórmula dele, ou a do sistema. Sem fórmula → null.
+ * Falha de avaliação → null (não derruba a ficha).
+ */
+export function cdDoPoder(poder, cdSistema, contexto = {}) {
+  const f = String(poder?.cd_formula || cdSistema || '').trim()
+  if (!f) return null
+  try {
+    return Math.floor(avaliarFormula(f, contexto))
+  } catch {
+    return null
+  }
+}
+
+/** Frase do feed: "conjurou Curar Feridas no 2º círculo". */
+export function frasesDeUso(poder, circuloUsado, rotuloCategoria = 'usou') {
+  const nome = poder?.nome || 'poder'
+  const base = circuloBaseDoPoder(poder)
+  const noCirculo = custoDeSlot(poder?.custo) && circuloUsado > 0
+    ? ` no ${circuloUsado}º círculo${circuloUsado > base ? ' (elevado)' : ''}`
+    : ''
+  return `${rotuloCategoria} ${nome}${noCirculo}`
 }

@@ -7,7 +7,7 @@ import { useRolagem } from '../hooks/useRolagem'
 import { supabase } from '../lib/supabase'
 import { mergeConfigLayout } from '../lib/sistemaDefaults'
 import { coletarModificadores, calcularValoresFinais, agregarDefesas, listarCondicoesManuais, resolverValoresFormula } from '../lib/modifierEngine'
-import { validarNotacao, rolarNotacao } from '../lib/diceNotation'
+import { validarNotacao, rolarNotacao, resolverNotacaoFormula } from '../lib/diceNotation'
 import { useHabilidadesFicha } from '../hooks/useHabilidadesFicha'
 import { useClassesFicha } from '../hooks/useClassesFicha'
 import { nivelTotalDe } from '../components/ficha/layout/ClassesFicha'
@@ -20,9 +20,13 @@ import PainelRecompensas from '../components/ficha/PainelRecompensas'
 import { calcularMaximos, mapaPools, atualDePool } from '../lib/poolEngine'
 import { usePools, usePoolsFicha } from '../hooks/usePools'
 import PainelPools from '../components/ficha/PainelPools'
-import { slotsTotais, usadosPorCirculo, slotsAtivos } from '../lib/slotsEngine'
+import { slotsTotais, usadosPorCirculo, slotsAtivos, gastarSlot } from '../lib/slotsEngine'
 import { useSlotsFicha } from '../hooks/useSlotsFicha'
 import PainelSlots from '../components/ficha/PainelSlots'
+import { podeUsarPoder, montarNotacaoUso, custoDeSlot, frasesDeUso } from '../lib/poderes'
+import { usePoderes } from '../hooks/usePoderes'
+import { usePoderesFicha } from '../hooks/usePoderesFicha'
+import PainelPoderes from '../components/ficha/PainelPoderes'
 import BarraXp from '../components/ficha/BarraXp'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
 import DescansoBar from '../components/ficha/DescansoBar'
@@ -70,6 +74,11 @@ export default function FichaPage() {
   const { linhasPools, definirAtual } = usePoolsFicha(fichaId)
   // 20.3 — slots (modo opcional): só `usados` é armazenado
   const { linhasSlots, definirUsados } = useSlotsFicha(fichaId)
+  // 20.4 — catálogo de poderes + poderes da ficha
+  const { poderes: catalogoPoderes } = usePoderes(sistema?.id)
+  const {
+    poderesFicha, aprenderPoder, esquecerPoder, definirPreparado, sincronizarPoderesClasses,
+  } = usePoderesFicha(fichaId, catalogoPoderes)
 
   // Estado local de raça/classe para recálculo imediato sem esperar refetch
   const [racaId, setRacaId] = useState(null)
@@ -168,6 +177,7 @@ export default function FichaPage() {
       await adicionarClasse(classeId)
       const novas = [...classesFicha, { classe_id: classeId, nivel: 1, classe: classes.find(c => c.id === classeId) }]
       await sincronizarClasses(novas.map(cf => cf.classe_id), ctxNivel(novas))
+      await sincronizarPoderesClasses(novas.map(cf => cf.classe_id), ctxNivel(novas))
       // 19.6 — entrar numa classe já concede as recompensas de nível 1 dela
       await gerarRecompensas(classeId, 1, ctxNivel(novas).nivel)
     } catch {}
@@ -178,6 +188,7 @@ export default function FichaPage() {
       await removerClasse(rowId)
       const novas = classesFicha.filter(cf => cf.classe_id !== classeId)
       await sincronizarClasses(novas.map(cf => cf.classe_id), ctxNivel(novas))
+      await sincronizarPoderesClasses(novas.map(cf => cf.classe_id), ctxNivel(novas))
     } catch {}
   }
 
@@ -186,6 +197,7 @@ export default function FichaPage() {
     const n = Math.max(1, Math.floor(Number(nivel) || 1))
     const novas = classesFicha.map(cf => (cf.id === rowId ? { ...cf, nivel: n } : cf))
     await sincronizarClasses(novas.map(cf => cf.classe_id), ctxNivel(novas))
+    await sincronizarPoderesClasses(novas.map(cf => cf.classe_id), ctxNivel(novas))
   }
 
   // 19.3 — XP passa por RPC SECURITY DEFINER (dono ou gestor); erro sobe p/ a UI.
@@ -210,6 +222,8 @@ export default function FichaPage() {
       const novas = classesFicha.map(c => (c.id === rowId ? { ...c, nivel: novo } : c))
       const total = ctxNivel(novas).nivel
       await sincronizarClasses(novas.map(c => c.classe_id), ctxNivel(novas))
+      // 20.4 — poderes de classe destravados pelo novo nível entram sozinhos
+      await sincronizarPoderesClasses(novas.map(c => c.classe_id), ctxNivel(novas))
       // 19.6 — recompensas daquele nível (da classe escolhida + do nível total)
       await gerarRecompensas(cf?.classe_id ?? null, novo, total)
       await anunciarNivel(total, cf?.classe?.nome ? `${cf.classe.nome} ${novo}` : null)
@@ -452,6 +466,17 @@ export default function FichaPage() {
     recursos: {},
   }
 
+  // 20.4 — tudo que o motor precisa para decidir se um poder pode ser usado
+  const poolsPorId = Object.fromEntries(pools.map(p => [p.id, p]))
+  const estadoPoderes = {
+    totaisSlots,
+    usadosSlots,
+    atualDoPool,
+    poolsPorId,
+    contexto: contextoFormula,
+  }
+  const classesIds = new Set(fonteClasses.map(c => c.classe_id).filter(Boolean))
+
   // 12.4 — usa um efeito pontual (cura ou vida_temp_acao) de uma habilidade:
   // rola se for notação, aplica à vida e registra no feed.
   async function handleUsarAcao(mod, nomeHab) {
@@ -541,6 +566,49 @@ export default function FichaPage() {
         dados,
       })
     } catch { /* o gasto já aconteceu; o feed é best-effort */ }
+  }
+
+  // 20.4 — usar um poder: custo DEBITA ANTES do efeito; falha bloqueia sem debitar.
+  // Não existe reembolso — se der errado depois, o mestre ajusta na mão.
+  async function handleUsarPoder(poder, circuloUsado) {
+    const check = podeUsarPoder(poder, estadoPoderes)
+    if (!check.ok) throw new Error(check.motivo)
+
+    // 1) débitos
+    for (const c of check.custos) {
+      const atual = atualDoPool(c.pool_id)
+      await definirAtual(c.pool_id, atual - c.quantidade)
+    }
+    if (custoDeSlot(poder.custo)) {
+      const r = gastarSlot(circuloUsado, totaisSlots, usadosSlots)
+      if (!r.ok) throw new Error(r.motivo)
+      await definirUsados(circuloUsado, r.usados)
+    }
+
+    // 2) efeito (notação com a escala do círculo usado, fórmulas resolvidas na F17.2)
+    const notacaoBruta = montarNotacaoUso(poder, circuloUsado)
+    let resultado = null
+    if (notacaoBruta) {
+      let notacao = notacaoBruta
+      try { notacao = resolverNotacaoFormula(notacaoBruta, contextoFormula).notacao } catch { /* usa a bruta */ }
+      if (validarNotacao(notacao)) {
+        const r = rolarNotacao(notacao)
+        resultado = { notacao, total: r.total, dados: r.dados, tipo: poder.efeito_tipo }
+      }
+    }
+
+    // 3) feed
+    const rotulo = `${ficha.nome_personagem} ${frasesDeUso(poder, circuloUsado, 'usou')}`
+    try {
+      await registrarEvento({
+        mesaId, fichaId, rotulo,
+        notacao: resultado?.notacao || '',
+        total: resultado?.total ?? 0,
+        dados: resultado?.dados || [],
+      })
+    } catch { /* o custo já foi pago; o feed é best-effort */ }
+
+    return resultado
   }
 
   // 20.1 — aplicar o resultado do pool de dados à vida (uso típico: curar)
@@ -652,6 +720,23 @@ export default function FichaPage() {
             onDefinirUsados={definirUsados}
           />
         )}
+
+        {/* Poderes (20.4) — adaptativo: some se o sistema não tem catálogo */}
+        <PainelPoderes
+          rotulo="Poderes"
+          catalogo={catalogoPoderes}
+          poderesFicha={poderesFicha}
+          estado={estadoPoderes}
+          cdSistema={config.slots?.cd_formula || ''}
+          usaPreparacao={slotsAtivos(config) && !!config.slots?.preparacao}
+          classesIds={classesIds}
+          isDono={isDono}
+          onUsar={handleUsarPoder}
+          onAprender={aprenderPoder}
+          onEsquecer={esquecerPoder}
+          onPreparar={definirPreparado}
+          onCurar={handleCurarComPool}
+        />
 
         {/* Recompensas de nível (19.6) — checklist-guia, some se não houver nenhuma */}
         <PainelRecompensas
