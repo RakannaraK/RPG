@@ -74,6 +74,9 @@ export function useHabilidades(sistemaId) {
     if (updates.classe_id !== undefined)  payload.classe_id = updates.classe_id || null
     if (updates.nivel_minimo !== undefined) payload.nivel_minimo =
       updates.nivel_minimo !== '' && updates.nivel_minimo !== null ? Number(updates.nivel_minimo) : null
+    // 20.5 — custo de pool (null = sem custo)
+    if (updates.custo_pool !== undefined) payload.custo_pool =
+      updates.custo_pool?.length ? updates.custo_pool : null
 
     const { error } = await supabase.from('habilidades').update(payload).eq('id', id)
     if (error) throw error

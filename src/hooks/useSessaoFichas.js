@@ -177,6 +177,16 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
     imagem: fichaRow.imagem_url,
     nivel: nivelTotal,
     pools: poolsCard, // 20.1 — recursos visíveis ao mestre na sessão
+    // 20.5 — tudo que o mestre precisa para cobrar o custo por turno desta ficha
+    custosTurno: {
+      habilidadesAtivas: habilidadesFicha.filter(hf => hf.ativa === true && hf.habilidade),
+      atualPorPool: Object.fromEntries(poolsSistema.map(p => [
+        p.id,
+        atualDePool((poolsRows || []).find(l => l.pool_id === p.id), maximosPools[p.id] ?? 0),
+      ])),
+      poolsPorId: Object.fromEntries(poolsSistema.map(p => [p.id, p])),
+      contexto: ctxMod,
+    },
     racaNome: raca?.nome || fichaRow.raca || null,
     // Multiclasse: "Bárbaro 9 / Paladino 4"; uma classe: só o nome (como antes)
     classeNome: linhasClasse.length > 1

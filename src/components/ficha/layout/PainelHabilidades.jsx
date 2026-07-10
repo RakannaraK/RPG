@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { custosDeTurno, descreverCustoTurno } from '../../../lib/custoHabilidade'
 
 function Toggle({ ativa, onChange }) {
   return (
@@ -236,7 +237,9 @@ export default function PainelHabilidades({
   modificadoresAtivos = [],
   nomesAlvos = {},
   habilidadesBloqueadas = [], // 19.5 — visíveis, mas inativas até o nível
+  poolsPorId = {}, onPagarTurno, // 20.5
 }) {
+  const [pagando, setPagando] = useState(false)
   const [selecionada, setSelecionada] = useState('')
   const [adicionando, setAdicionando] = useState(false)
   const [addErro, setAddErro] = useState('')
@@ -253,7 +256,11 @@ export default function PainelHabilidades({
       return n
     })
     if (semRecurso) setTimeout(() => setAvisos(prev => { const n = { ...prev }; delete n[hf.id]; return n }), 4000)
-    onToggle(hf.id, novoEstado)
+    // 20.5 — ativar pode falhar por falta de recurso (pool): o motivo vira aviso
+    Promise.resolve(onToggle(hf.id, novoEstado)).catch(e => {
+      setAvisos(prev => ({ ...prev, [hf.id]: e.message || 'Não foi possível ativar.' }))
+      setTimeout(() => setAvisos(prev => { const n = { ...prev }; delete n[hf.id]; return n }), 5000)
+    })
   }
 
   // 12.7 — ids dos modificadores atualmente em vigor (pós-filtro de condição),
@@ -263,6 +270,17 @@ export default function PainelHabilidades({
   const passivas   = habilidadesFicha.filter(hf => hf.habilidade?.tipo === 'passiva')
   const ativaveis  = habilidadesFicha.filter(hf => hf.habilidade?.tipo === 'ativavel')
   const temRecurso = ativaveis.some(hf => hf.habilidade?.recurso_nome)
+
+  // 20.5 — habilidades ativas com custo recorrente (transformações)
+  const comCustoTurno = habilidadesFicha.filter(
+    hf => hf.ativa === true && custosDeTurno(hf.habilidade).length > 0
+  )
+
+  async function handlePagarTurno() {
+    setPagando(true)
+    try { await onPagarTurno?.() } catch { /* o plano já avisa no feed */ }
+    finally { setPagando(false) }
+  }
 
   const fichaIds    = new Set(habilidadesFicha.map(hf => hf.habilidade_id))
   const disponíveis = habilidades.filter(h => !fichaIds.has(h.id))
@@ -460,6 +478,33 @@ export default function PainelHabilidades({
             </button>
           </div>
           {addErro && <p className="text-red-400 text-xs">{addErro}</p>}
+        </div>
+      )}
+
+      {/* 20.5 — custo recorrente das habilidades ativas; em combate a sessão cobra sozinha */}
+      {comCustoTurno.length > 0 && (
+        <div className="border-t border-purple-900 pt-3 mt-3 space-y-1.5">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <p className="text-amber-400 text-xs font-medium">Custo por turno</p>
+            {isDono && onPagarTurno && (
+              <button
+                onClick={handlePagarTurno}
+                disabled={pagando}
+                className="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-amber-700 hover:bg-amber-600 text-white transition-colors disabled:opacity-50"
+                title="Fora de combate. Dentro do combate, a sessão cobra ao avançar o turno."
+              >
+                {pagando ? '...' : 'Pagar turno'}
+              </button>
+            )}
+          </div>
+          {comCustoTurno.map(hf => (
+            <div key={hf.id} className="flex justify-between gap-2 text-[11px]">
+              <span className="text-purple-300 truncate">{hf.habilidade.nome}</span>
+              <span className="text-amber-500/90 font-mono shrink-0">
+                {descreverCustoTurno(hf.habilidade, poolsPorId)}
+              </span>
+            </div>
+          ))}
         </div>
       )}
 

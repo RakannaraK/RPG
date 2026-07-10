@@ -7,6 +7,7 @@ import { useUpdateFicha } from '../hooks/useFicha'
 import { usePresencaSessao } from '../hooks/usePresencaSessao'
 import { useSessaoFichas } from '../hooks/useSessaoFichas'
 import { usePools } from '../hooks/usePools'
+import { planejarTurno } from '../lib/custoHabilidade'
 import { useEncontro } from '../hooks/useEncontro'
 import { useRolagem } from '../hooks/useRolagem'
 import { calcularDescanso } from '../lib/restEngine'
@@ -32,6 +33,7 @@ export default function SessaoPage() {
   const [isMestre, setIsMestre] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [avisoTurno, setAvisoTurno] = useState('') // 20.5 — cobrança de custo por turno
 
   const { conectados } = usePresencaSessao(sessaoId, mesaId)
 
@@ -189,6 +191,50 @@ export default function SessaoPage() {
         notacao: '', total: 0, dados: [],
       })
     }
+    await cobrarCustoDoTurno(res?.turno)
+  }
+
+  /**
+   * Fase 20.5 — ao entrar o turno de um personagem, cobra os custos recorrentes
+   * das habilidades ativas dele (transformações). Quem não paga, desativa.
+   *
+   * O mestre não pode escrever no pools_ficha de outro jogador (RLS), então o
+   * plano é calculado aqui pelo motor puro e persistido pela RPC SECURITY DEFINER.
+   */
+  async function cobrarCustoDoTurno(indiceTurno) {
+    if (indiceTurno == null) return
+    const combatente = ordemIniciativa()[indiceTurno]
+    const fichaId = combatente?.ficha_id
+    if (!fichaId) return
+
+    const card = cards.find(c => c.id === fichaId)
+    const ct = card?.custosTurno
+    if (!ct?.habilidadesAtivas?.length) return
+
+    const plano = planejarTurno(ct.habilidadesAtivas, {
+      atualDoPool: id => ct.atualPorPool[id] ?? 0,
+      poolsPorId: ct.poolsPorId,
+      contexto: ct.contexto,
+    })
+    if (plano.debitos.length === 0 && plano.desativar.length === 0) return
+
+    try {
+      const { error: err } = await supabase.rpc('pagar_custo_turno', {
+        p_ficha_id: fichaId,
+        p_debitos: plano.debitos,
+        p_desativar: plano.desativar,
+      })
+      if (err) throw err
+    } catch (err) {
+      // Não quebra o combate, mas avisa o mestre que o custo por turno não foi cobrado.
+      const nome = card?.nome || 'o personagem'
+      setAvisoTurno(`Custo por turno de ${nome} não foi cobrado: ${err.message || 'erro na cobrança'}. Ajuste os recursos na mão.`)
+      return
+    }
+
+    for (const aviso of plano.avisos) {
+      await registrarEvento({ mesaId, sessaoId, rotulo: aviso, notacao: '', total: 0, dados: [] })
+    }
   }
 
   // Aba ativa no mobile (no desktop painel e feed aparecem lado a lado)
@@ -302,6 +348,21 @@ export default function SessaoPage() {
 
       {/* Corpo: painel de fichas + feed */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        {/* 20.5 — aviso ao mestre quando a cobrança de custo por turno falha */}
+        {avisoTurno && (
+          <div className="mb-4 rounded-xl border border-amber-700/70 bg-amber-950/40 px-4 py-3 flex items-start gap-3">
+            <span className="text-amber-400 shrink-0">⚠</span>
+            <p className="text-amber-200 text-sm flex-1">{avisoTurno}</p>
+            <button
+              onClick={() => setAvisoTurno('')}
+              className="text-amber-500 hover:text-amber-200 transition-colors text-sm shrink-0"
+              title="Dispensar"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {!sessao.ativa && (
           <div className="mb-4 rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-3 text-purple-300 text-sm">
             Esta sessão foi encerrada. Você está vendo o registro dela.

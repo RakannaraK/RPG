@@ -27,6 +27,7 @@ import { podeUsarPoder, montarNotacaoUso, custoDeSlot, frasesDeUso } from '../li
 import { usePoderes } from '../hooks/usePoderes'
 import { usePoderesFicha } from '../hooks/usePoderesFicha'
 import PainelPoderes from '../components/ficha/PainelPoderes'
+import { podeAtivarHabilidade, planejarTurno } from '../lib/custoHabilidade'
 import BarraXp from '../components/ficha/BarraXp'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
 import DescansoBar from '../components/ficha/DescansoBar'
@@ -611,6 +612,34 @@ export default function FichaPage() {
     return resultado
   }
 
+  // 20.5 — ativar uma habilidade debita o custo de pool. Sem recurso, não ativa.
+  async function handleToggleHabilidade(habilidadeFichaId, novoEstado) {
+    if (novoEstado) {
+      const hf = habilidadesFicha.find(h => h.id === habilidadeFichaId)
+      const check = podeAtivarHabilidade(hf?.habilidade, estadoPoderes)
+      if (!check.ok) throw new Error(check.motivo)
+      for (const c of check.custos) {
+        await definirAtual(c.pool_id, atualDoPool(c.pool_id) - c.quantidade)
+      }
+    }
+    await toggleHabilidade(habilidadeFichaId, novoEstado)
+  }
+
+  // 20.5 — fora de combate o jogador cobra o próprio turno na mão.
+  // Dentro do combate, a SessaoPage cobra sozinha ao avançar o turno (via RPC).
+  async function handlePagarTurno() {
+    const ativas = habilidadesFicha.filter(hf => hf.ativa === true && hf.habilidade)
+    const plano = planejarTurno(ativas, estadoPoderes)
+    for (const d of plano.debitos) await definirAtual(d.pool_id, d.atual)
+    for (const id of plano.desativar) await toggleHabilidade(id, false)
+    for (const aviso of plano.avisos) {
+      try {
+        await registrarEvento({ mesaId, fichaId, rotulo: aviso, notacao: '', total: 0, dados: [] })
+      } catch { /* feed é best-effort */ }
+    }
+    return plano
+  }
+
   // 20.1 — aplicar o resultado do pool de dados à vida (uso típico: curar)
   async function handleCurarComPool(total) {
     const max = valoresFinais.vida_max || ficha.hp_maximo || 0
@@ -819,7 +848,9 @@ export default function FichaPage() {
               onRefetch={refetch}
               habilidades={habilidades}
               habilidadesFicha={habilidadesFicha}
-              onToggleHabilidade={toggleHabilidade}
+              onToggleHabilidade={handleToggleHabilidade}
+              poolsPorId={poolsPorId}
+              onPagarTurno={handlePagarTurno}
               onAdicionarHabilidade={adicionarHabilidade}
               onRemoverHabilidade={removerHabilidade}
               onAjustarRecurso={ajustarRecurso}

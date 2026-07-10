@@ -67,6 +67,7 @@ export default function AbasCentrais({
   valoresFinais = {}, modificadoresAtivos = [], onUsarAcaoHabilidade,
   condicoesManuais = {}, condicoesManuaisDisponiveis = [], onToggleCondicao, nomesAlvos = {},
   habilidadesBloqueadas = [], // 19.5
+  poolsPorId = {}, onPagarTurno,  // 20.5
 }) {
   const temHabilidades = habilidades.length > 0 || habilidadesFicha.length > 0 || condicoesManuaisDisponiveis.length > 0
     || habilidadesBloqueadas.length > 0
@@ -159,6 +160,8 @@ export default function AbasCentrais({
             modificadoresAtivos={modificadoresAtivos}
             nomesAlvos={nomesAlvos}
             habilidadesBloqueadas={habilidadesBloqueadas}
+            poolsPorId={poolsPorId}
+            onPagarTurno={onPagarTurno}
           />
         )}
       </div>

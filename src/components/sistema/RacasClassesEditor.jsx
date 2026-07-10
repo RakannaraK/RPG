@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRacasClasses } from '../../hooks/useRacasClasses'
 import { useHabilidades } from '../../hooks/useHabilidades'
+import { usePools } from '../../hooks/usePools'
 import {
   usaAtributoAlvo, usaCombateAlvo, usaTextoAlvo, usaValorNum, usaOperacao,
   ehAcertoDano, ehVantagem, ehAcao, montarEfeitoPayload,
@@ -106,7 +107,54 @@ function labelModificador(mod, atributos, camposCombate, pericias = []) {
   return cond ? `${base} [${cond}]` : base
 }
 
-function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], classes = [] }) {
+/**
+ * Fase 20.5 — custo de pool de uma habilidade ativável.
+ * `por_turno` = custo recorrente enquanto ativa (transformações).
+ */
+function CustoPoolEditor({ custo = [], pools = [], onChange }) {
+  const cls = 'px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+  const set = (i, patch) => onChange(custo.map((c, j) => (j === i ? { ...c, ...patch } : c)))
+
+  if (pools.length === 0) {
+    return <p className="text-purple-600 text-[11px]">Crie recursos na aba "Recursos" para cobrar custo.</p>
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {custo.map((c, i) => {
+        const invalida = String(c.quantidade ?? '').trim() && !validarFormula(c.quantidade).valida
+        return (
+          <div key={i} className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-purple-500 text-[11px]">gasta</span>
+            <input type="text" value={c.quantidade ?? ''} onChange={e => set(i, { quantidade: e.target.value })}
+              placeholder="2 ou piso(nivel/4)" spellCheck={false}
+              className={`${cls} w-28 font-mono ${invalida ? 'border-red-600' : ''}`} />
+            <select value={c.pool_id || ''} onChange={e => set(i, { pool_id: e.target.value })} className={cls}>
+              <option value="">Recurso...</option>
+              {pools.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+            </select>
+            <label className="text-purple-400 text-[11px] flex items-center gap-1 cursor-pointer"
+              title="Custo recorrente a cada turno enquanto ativa">
+              <input type="checkbox" checked={!!c.por_turno}
+                onChange={e => set(i, { por_turno: e.target.checked })} className="accent-purple-500" />
+              por turno
+            </label>
+            <button type="button" onClick={() => onChange(custo.filter((_, j) => j !== i))}
+              className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors">×</button>
+          </div>
+        )
+      })}
+      <button type="button"
+        onClick={() => onChange([...custo, { pool_id: pools[0].id, quantidade: '1', por_turno: false }])}
+        className="text-[11px] px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
+        + custo
+      </button>
+      {custo.length === 0 && <p className="text-purple-600 text-[11px]">Sem custo de recurso.</p>}
+    </div>
+  )
+}
+
+function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], classes = [], pools = [] }) {
   const [tipo, setTipo] = useState('atributo')
   const [alvo, setAlvo] = useState('')
   const [operacao, setOperacao] = useState('somar')
@@ -332,7 +380,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], class
           <FaixasEditor
             spec={faixaSpec}
             onChange={setFaixaSpec}
-            classes={classes}
+            classes={classes} pools={pools}
             campos={camposFaixa}
             valorPlaceholder={
               ehAcertoDano(tipo) && faixaSpec.campo === 'dados_extras' ? 'ex: 2d10' : 'ex: 3'
@@ -387,7 +435,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], class
   )
 }
 
-function ModificadoresExpandido({ modificadores, onAddMod, onRemoveMod, atributos, camposCombate, pericias = [], classes = [] }) {
+function ModificadoresExpandido({ modificadores, onAddMod, onRemoveMod, atributos, camposCombate, pericias = [], classes = [], pools = [] }) {
   return (
     <div className="border-t border-purple-900 p-4 space-y-3">
       <p className="text-purple-500 text-xs font-medium uppercase tracking-wider">Efeitos</p>
@@ -408,7 +456,7 @@ function ModificadoresExpandido({ modificadores, onAddMod, onRemoveMod, atributo
           ))}
         </div>
       )}
-      <ModificadorForm onAdd={onAddMod} atributos={atributos} camposCombate={camposCombate} pericias={pericias} classes={classes} />
+      <ModificadorForm onAdd={onAddMod} atributos={atributos} camposCombate={camposCombate} pericias={pericias} classes={classes} pools={pools} />
     </div>
   )
 }
@@ -422,7 +470,7 @@ const INP = 'w-full px-3 py-1.5 rounded-lg bg-purple-950 border border-purple-70
 
 // Card compartilhado: usado tanto dentro da seção da raça/classe quanto na seção de avulsas.
 // Não expõe seletor de raça/classe no formulário de edição — vínculo é gerenciado pelo contexto.
-function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericias = [], classes = [], onUpdate, onDelete, onAddMod, onRemoveMod }) {
+function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericias = [], classes = [], pools = [], onUpdate, onDelete, onAddMod, onRemoveMod }) {
   const [expandido, setExpandido] = useState(false)
   const [editando, setEditando] = useState(false)
   const [editNome, setEditNome] = useState('')
@@ -431,6 +479,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
   const [editRecNome, setEditRecNome] = useState('')
   const [editRecMax, setEditRecMax] = useState('')
   const [editNivelMin, setEditNivelMin] = useState('') // 19.5
+  const [editCustoPool, setEditCustoPool] = useState([]) // 20.5
   const [salvando, setSalvando] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [erro, setErro] = useState('')
@@ -448,6 +497,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
         recurso_nome: editTipo === 'ativavel' ? editRecNome : '',
         recurso_max: editTipo === 'ativavel' && editRecNome.trim() ? editRecMax : null,
         nivel_minimo: editNivelMin,
+        custo_pool: editTipo === 'ativavel' ? editCustoPool.filter(c => c.pool_id) : [],
       })
       setEditando(false)
     } catch (err) {
@@ -470,6 +520,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
     setEditRecNome(habilidade.recurso_nome || '')
     setEditRecMax(habilidade.recurso_max != null ? String(habilidade.recurso_max) : '')
     setEditNivelMin(habilidade.nivel_minimo != null ? String(habilidade.nivel_minimo) : '')
+    setEditCustoPool(Array.isArray(habilidade.custo_pool) ? habilidade.custo_pool : [])
     setErro(''); setEditando(true)
   }
 
@@ -518,6 +569,17 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
                   title="Só é concedida a partir deste nível (da classe de origem; raça/avulsa usam o nível total)." />
               </div>
             </div>
+
+            {/* 20.5 — custo de pool (só ativáveis) */}
+            {editTipo === 'ativavel' && (
+              <div className="border-t border-purple-900/50 pt-2">
+                <p className="text-purple-400 text-xs mb-1.5">
+                  Custo de recurso — <span className="text-purple-300">por turno</span> cobra de novo a cada
+                  turno enquanto ativa; sem recurso, a habilidade desativa sozinha.
+                </p>
+                <CustoPoolEditor custo={editCustoPool} pools={pools} onChange={setEditCustoPool} />
+              </div>
+            )}
             {erro && <p className="text-red-400 text-xs">{erro}</p>}
             <div className="flex gap-2">
               <button onClick={handleUpdate} disabled={salvando}
@@ -571,7 +633,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
           onRemoveMod={onRemoveMod}
           atributos={atributos}
           camposCombate={camposCombate}
-          pericias={pericias} classes={classes}
+          pericias={pericias} classes={classes} pools={pools}
         />
       )}
     </div>
@@ -581,7 +643,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
 // Seção de habilidades vinculadas que aparece dentro do card expandido de uma raça ou classe.
 function HabilidadesVinculadas({
   parentId, parentTipo,
-  habilidades, atributos, camposCombate, pericias = [], classes = [],
+  habilidades, atributos, camposCombate, pericias = [], classes = [], pools = [],
   onCreate, onUpdate, onDelete, onAddMod, onRemoveMod,
 }) {
   const [addingNew, setAddingNew] = useState(false)
@@ -703,7 +765,7 @@ function HabilidadesVinculadas({
           habilidade={h}
           atributos={atributos}
           camposCombate={camposCombate}
-          pericias={pericias} classes={classes}
+          pericias={pericias} classes={classes} pools={pools}
           onUpdate={onUpdate}
           onDelete={onDelete}
           onAddMod={mod => onAddMod({ habilidade_id: h.id, ...mod })}
@@ -721,7 +783,7 @@ function HabilidadesVinculadas({
 function ItemCard({
   item, parentTipo,
   onUpdate, onDelete, onAddMod, onRemoveMod,
-  atributos, camposCombate, pericias = [], classes = [],
+  atributos, camposCombate, pericias = [], classes = [], pools = [],
   habilidades, onCreateHabilidade, onUpdateHabilidade, onDeleteHabilidade,
   onAddHabilidadeMod, onRemoveHabilidadeMod,
 }) {
@@ -812,7 +874,7 @@ function ItemCard({
             onRemoveMod={onRemoveMod}
             atributos={atributos}
             camposCombate={camposCombate}
-            pericias={pericias} classes={classes}
+            pericias={pericias} classes={classes} pools={pools}
           />
           <HabilidadesVinculadas
             parentId={item.id}
@@ -820,7 +882,7 @@ function ItemCard({
             habilidades={habilidades}
             atributos={atributos}
             camposCombate={camposCombate}
-            pericias={pericias} classes={classes}
+            pericias={pericias} classes={classes} pools={pools}
             onCreate={onCreateHabilidade}
             onUpdate={onUpdateHabilidade}
             onDelete={onDeleteHabilidade}
@@ -836,7 +898,7 @@ function ItemCard({
 function SecaoRacaClasse({
   titulo, descTipo, itens, parentTipo,
   onCreate, onUpdate, onDelete, onAddMod, onRemoveMod,
-  atributos, camposCombate, pericias = [], classes = [],
+  atributos, camposCombate, pericias = [], classes = [], pools = [],
   habilidades, onCreateHabilidade, onUpdateHabilidade, onDeleteHabilidade,
   onAddHabilidadeMod, onRemoveHabilidadeMod,
 }) {
@@ -919,7 +981,7 @@ function SecaoRacaClasse({
               onRemoveMod={onRemoveMod}
               atributos={atributos}
               camposCombate={camposCombate}
-              pericias={pericias} classes={classes}
+              pericias={pericias} classes={classes} pools={pools}
               habilidades={habilidades}
               onCreateHabilidade={onCreateHabilidade}
               onUpdateHabilidade={onUpdateHabilidade}
@@ -938,7 +1000,7 @@ function SecaoRacaClasse({
 // Habilidades avulsas (sem raça nem classe)
 // ──────────────────────────────────────────────────────────
 
-function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = [], classes = [], onCreate, onUpdate, onDelete, onAddMod, onRemoveMod }) {
+function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = [], classes = [], pools = [], onCreate, onUpdate, onDelete, onAddMod, onRemoveMod }) {
   const avulsas = habilidades.filter(h => !h.raca_id && !h.classe_id)
 
   const [addingNew, setAddingNew] = useState(false)
@@ -1065,7 +1127,7 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
               habilidade={h}
               atributos={atributos}
               camposCombate={camposCombate}
-              pericias={pericias} classes={classes}
+              pericias={pericias} classes={classes} pools={pools}
               onUpdate={onUpdate}
               onDelete={onDelete}
               onAddMod={mod => onAddMod({ habilidade_id: h.id, ...mod })}
@@ -1081,6 +1143,7 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
 // ──────────────────────────────────────────────────────────
 
 export default function RacasClassesEditor({ sistemaId, atributos, camposCombate, pericias = [] }) {
+  const { pools } = usePools(sistemaId) // 20.5 — custo de pool em habilidades
   const {
     racas, classes, loading, error,
     createRaca, updateRaca, deleteRaca,
@@ -1144,7 +1207,7 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
         atributos={atributosSalvos}
         camposCombate={camposCombate}
         pericias={periciasSalvas}
-        classes={classes}
+        classes={classes} pools={pools}
         habilidades={habilidades}
         onCreateHabilidade={createHabilidade}
         onUpdateHabilidade={updateHabilidade}
@@ -1168,7 +1231,7 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
         atributos={atributosSalvos}
         camposCombate={camposCombate}
         pericias={periciasSalvas}
-        classes={classes}
+        classes={classes} pools={pools}
         habilidades={habilidades}
         onCreateHabilidade={createHabilidade}
         onUpdateHabilidade={updateHabilidade}
@@ -1184,7 +1247,7 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
         atributos={atributosSalvos}
         camposCombate={camposCombate}
         pericias={periciasSalvas}
-        classes={classes}
+        classes={classes} pools={pools}
         onCreate={createHabilidade}
         onUpdate={updateHabilidade}
         onDelete={deleteHabilidade}
@@ -1195,7 +1258,7 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
       <div className="border-t border-purple-900" />
 
       {/* Fase 19.6 — recompensas por nível (checklist-guia) */}
-      <RecompensasEditor sistemaId={sistemaId} classes={classes} />
+      <RecompensasEditor sistemaId={sistemaId} classes={classes} pools={pools} />
     </div>
   )
 }
