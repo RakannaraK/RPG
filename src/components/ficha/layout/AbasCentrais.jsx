@@ -68,6 +68,7 @@ export default function AbasCentrais({
   condicoesManuais = {}, condicoesManuaisDisponiveis = [], onToggleCondicao, nomesAlvos = {},
   habilidadesBloqueadas = [], // 19.5
   poolsPorId = {}, onPagarTurno,  // 20.5
+  categorias = [], // 21.1
 }) {
   const temHabilidades = habilidades.length > 0 || habilidadesFicha.length > 0 || condicoesManuaisDisponiveis.length > 0
     || habilidadesBloqueadas.length > 0
@@ -121,6 +122,7 @@ export default function AbasCentrais({
             mesaId={mesaId}
             valoresFinais={valoresFinais}
             modificadoresAtivos={modificadoresAtivos}
+            categorias={categorias}
           />
         )}
         {currentTab === 'tracos' && (

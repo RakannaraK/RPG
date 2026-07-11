@@ -21,6 +21,14 @@ export const CONFIG_LAYOUT_DEFAULT = {
   progressao_xp: { modo: 'nenhum', tabela: [], formula: '' },
   // Fase 20.6 — rótulo do painel de poderes na ficha (o mestre nomeia)
   poderes_rotulo: 'Poderes',
+  // Fase 21.1 — maestria por uso. Desativada = nada aparece na ficha.
+  maestria: {
+    ativo: false,
+    escopo: 'categoria',                 // 'categoria' | 'item' (escolha única do sistema)
+    curva: { modo: 'formula', formula: '100 * proximo_nivel', tabela: [] },
+    bonus_por_nivel: { acerto_percentual: 0, efeito_percentual: 0 }, // aplicados via F18
+    ganhos_padrao: [],                   // [{ rotulo, xp }] — botões de um clique
+  },
   // Fase 20.3 — slots são MODO OPCIONAL. Desativado = painel nem aparece.
   slots: {
     ativo: false,
@@ -57,5 +65,11 @@ export function mergeConfigLayout(raw) {
       ...((raw || {}).slots || {}),
     },
     poderes_rotulo: (raw || {}).poderes_rotulo || 'Poderes',
+    maestria: {
+      ...CONFIG_LAYOUT_DEFAULT.maestria,
+      ...((raw || {}).maestria || {}),
+      curva: { ...CONFIG_LAYOUT_DEFAULT.maestria.curva, ...((raw || {}).maestria?.curva || {}) },
+      bonus_por_nivel: { ...CONFIG_LAYOUT_DEFAULT.maestria.bonus_por_nivel, ...((raw || {}).maestria?.bonus_por_nivel || {}) },
+    },
   }
 }

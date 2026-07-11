@@ -28,6 +28,7 @@ import { usePoderes } from '../hooks/usePoderes'
 import { usePoderesFicha } from '../hooks/usePoderesFicha'
 import PainelPoderes from '../components/ficha/PainelPoderes'
 import { podeAtivarHabilidade, planejarTurno } from '../lib/custoHabilidade'
+import { useCategorias } from '../hooks/useCategorias'
 import BarraXp from '../components/ficha/BarraXp'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
 import DescansoBar from '../components/ficha/DescansoBar'
@@ -75,6 +76,8 @@ export default function FichaPage() {
   const { linhasPools, definirAtual } = usePoolsFicha(fichaId)
   // 20.3 — slots (modo opcional): só `usados` é armazenado
   const { linhasSlots, definirUsados } = useSlotsFicha(fichaId)
+  // 21.1 — categorias de item (dropdown no inventário)
+  const { categorias } = useCategorias(sistema?.id)
   // 20.4 — catálogo de poderes + poderes da ficha
   const { poderes: catalogoPoderes } = usePoderes(sistema?.id)
   const {
@@ -866,6 +869,7 @@ export default function FichaPage() {
               onToggleCondicao={toggleCondicao}
               nomesAlvos={nomesAlvos}
               habilidadesBloqueadas={habilidadesBloqueadas}
+              categorias={categorias}
             />
           </div>
 

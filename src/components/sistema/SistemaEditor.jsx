@@ -7,9 +7,10 @@ import RacasClassesEditor from './RacasClassesEditor'
 import PoolsEditor from './PoolsEditor'
 import PoderesEditor from './PoderesEditor'
 import SlotsEditor from './SlotsEditor'
+import MaestriaItensEditor from './MaestriaItensEditor'
 import DescansosEditor from './DescansosEditor'
 
-const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes', 'Descansos', 'Recursos', 'Poderes']
+const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes', 'Descansos', 'Recursos', 'Poderes', 'Maestria & Itens']
 
 const REGRA_PADRAO = {
   tipo: 'dados',
@@ -344,6 +345,19 @@ export default function SistemaEditor({ mesaId, isMestre }) {
             </div>
           ) : (
             <p className="text-purple-500 text-sm">Salve o sistema antes de criar poderes.</p>
+          )
+        )}
+
+        {/* Fase 21.1 — maestria por uso + categorias de item */}
+        {activeTab === 'Maestria & Itens' && (
+          sistemaDB?.id ? (
+            <MaestriaItensEditor
+              sistemaId={sistemaDB.id}
+              config={configLayout}
+              onChange={setConfigLayout}
+            />
+          ) : (
+            <p className="text-purple-500 text-sm">Salve o sistema antes de configurar maestria e categorias.</p>
           )
         )}
       </div>

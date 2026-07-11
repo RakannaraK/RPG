@@ -101,9 +101,10 @@ function RollResultCompact({ resultado, rotulo, rolando, onClose, skin, detalham
   )
 }
 
-function ItemForm({ item, fichaId, donoId, onSalvar, onFechar }) {
+function ItemForm({ item, fichaId, donoId, categorias = [], onSalvar, onFechar }) {
   const [nome, setNome] = useState(item?.nome || '')
   const [tipo, setTipo] = useState(item?.tipo || 'item')
+  const [categoriaId, setCategoriaId] = useState(item?.categoria_id || '') // 21.1
   const [descricao, setDescricao] = useState(item?.descricao || '')
   const [pairs, setPairs] = useState(objectToPairs(item?.atributos_extras))
   const [selectedFile, setSelectedFile] = useState(null)
@@ -147,6 +148,7 @@ function ItemForm({ item, fichaId, donoId, onSalvar, onFechar }) {
       await onSalvar({
         nome: nome.trim(),
         tipo,
+        categoria_id: categoriaId || null, // 21.1
         descricao: descricao.trim() || null,
         atributos_extras: Object.keys(atributosObj).length > 0 ? atributosObj : null,
         imagem_url,
@@ -199,6 +201,21 @@ function ItemForm({ item, fichaId, donoId, onSalvar, onFechar }) {
               </select>
             </div>
           </div>
+
+          {/* 21.1 — categoria do item (para maestria por categoria) */}
+          {categorias.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-purple-200 mb-1">Categoria</label>
+              <select
+                value={categoriaId}
+                onChange={e => setCategoriaId(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="">Sem categoria</option>
+                {categorias.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-purple-200 mb-1">Descrição</label>
@@ -289,7 +306,7 @@ function ItemForm({ item, fichaId, donoId, onSalvar, onFechar }) {
   )
 }
 
-export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [] }) {
+export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [], categorias = [] }) {
   const { itens, loading, error, createItem, updateItem, deleteItem } = useItens(fichaId)
   const { registrarRolagem } = useRolagem()
   const { preferencias } = usePreferencias()
@@ -546,6 +563,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
           item={editingItem}
           fichaId={fichaId}
           donoId={donoId}
+          categorias={categorias}
           onSalvar={handleSalvar}
           onFechar={() => { setShowForm(false); setEditingItem(null) }}
         />
