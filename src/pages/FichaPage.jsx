@@ -1020,6 +1020,7 @@ export default function FichaPage() {
               pericias={periciasDoSistema}
               classes={classes}
               pools={pools}
+              critico={config.critico}
             />
           </div>
 

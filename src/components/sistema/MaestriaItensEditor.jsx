@@ -50,8 +50,23 @@ function CategoriasEditor({ categorias, criarCategoria, atualizarCategoria, remo
                 defaultValue={c.descricao || ''}
                 onBlur={e => { if ((e.target.value || '') !== (c.descricao || '')) atualizarCategoria(c.id, { descricao: e.target.value }).catch(er => setErro(er.message)) }}
                 placeholder="Descrição (opcional)"
-                className={`${INP} flex-1 min-w-[8rem]`}
+                className={`${INP} flex-1 min-w-[6rem]`}
               />
+              {/* 22.3 — multiplicador de crítico da categoria (sobrescreve o padrão) */}
+              <span className="flex items-center gap-1 shrink-0" title="Multiplicador de crítico (vazio = padrão do sistema)">
+                <span className="text-purple-500 text-[11px]">crít ×</span>
+                <input
+                  type="number" min={1} step="0.5"
+                  defaultValue={c.critico_config?.multiplicador ?? ''}
+                  onBlur={e => {
+                    const v = e.target.value === '' ? null : Number(e.target.value)
+                    const atual = c.critico_config?.multiplicador ?? null
+                    if (v !== atual) atualizarCategoria(c.id, { critico_config: v != null ? { ...(c.critico_config || {}), multiplicador: v } : null }).catch(er => setErro(er.message))
+                  }}
+                  placeholder="—"
+                  className={`${INP} w-12 text-center`}
+                />
+              </span>
               <button
                 onClick={() => removerCategoria(c.id).catch(e => setErro(e.message))}
                 className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors shrink-0"

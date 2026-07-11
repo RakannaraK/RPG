@@ -72,6 +72,67 @@ function PontosStatusEditor({ cfg = {}, onChange }) {
   )
 }
 
+/**
+ * Fase 22.3 — config de crítico. Limiar por fórmula com a variável `maestria`
+ * (nível de maestria do item usado). Multiplicador em modo total ou dados.
+ */
+function CriticoEditor({ cfg = {}, onChange }) {
+  const set = patch => onChange({ ...cfg, ...patch })
+  return (
+    <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-purple-200 text-sm font-semibold">Crítico</p>
+        <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer">
+          <input type="checkbox" checked={!!cfg.ativo} onChange={e => set({ ativo: e.target.checked })} className="accent-purple-500" />
+          ativar
+        </label>
+      </div>
+      <p className="text-purple-500 text-xs">
+        Avaliado no <span className="text-purple-300">dado puro do acerto</span> (antes de bônus). O limiar
+        é uma fórmula que pode usar <span className="font-mono text-purple-300">maestria</span> (nível do item).
+        Ex.: d20 clássico → <span className="font-mono">20</span>; IC → <span className="font-mono">max(25, 85 - 15 * piso(maestria / 2))</span>.
+      </p>
+      {cfg.ativo && (
+        <>
+          <div>
+            <label className="text-purple-400 text-xs block mb-1">Limiar (crítico se o dado ≥ isto)</label>
+            <FormulaInput
+              value={cfg.limiar_formula || ''}
+              onChange={f => set({ limiar_formula: f })}
+              placeholder="20  ou  max(25, 85 - 15 * piso(maestria / 2))"
+              presets={[
+                { label: '20 (d20 clássico)', valor: '20' },
+                { label: 'IC (d100 dinâmico)', valor: 'max(25, 85 - 15 * piso(maestria / 2))' },
+              ]}
+              variaveis={['maestria', 'piso(']}
+            />
+          </div>
+          <div className="flex flex-wrap gap-3 items-center">
+            <span className="flex items-center gap-1.5">
+              <span className="text-purple-400 text-xs">multiplicador padrão</span>
+              <input type="number" min={1} step="0.5" value={cfg.multiplicador_padrao ?? 2}
+                onChange={e => set({ multiplicador_padrao: Number(e.target.value) })}
+                className="w-16 px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-purple-500" />
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-purple-400 text-xs">modo</span>
+              <select value={cfg.modo_multiplicador || 'total'} onChange={e => set({ modo_multiplicador: e.target.value })}
+                className="px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <option value="total">total (dobra tudo)</option>
+                <option value="dados">dados (só os dados)</option>
+              </select>
+            </span>
+          </div>
+          <p className="text-purple-600 text-[11px]">
+            Ordem: dados+fixos → multiplicador crítico → percentuais → piso. O multiplicador de uma
+            categoria (aba Maestria & Itens) sobrescreve o padrão.
+          </p>
+        </>
+      )}
+    </div>
+  )
+}
+
 const SECOES = [
   { id: 'acoes',         label: 'Ações / Ataques',      desc: 'Lista de ataques e habilidades ativas' },
   { id: 'inventario',    label: 'Inventário',            desc: 'Equipamentos e itens carregados' },
@@ -268,6 +329,12 @@ export default function LayoutEditor({
       <PontosStatusEditor
         cfg={config.pontos_status}
         onChange={ps => onConfigChange({ ...config, pontos_status: ps })}
+      />
+
+      {/* Crítico (22.3) */}
+      <CriticoEditor
+        cfg={config.critico}
+        onChange={c => onConfigChange({ ...config, critico: c })}
       />
 
       {/* Rótulo de vida */}

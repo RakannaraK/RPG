@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { rolarNotacao } from '../lib/diceNotation'
+import { aplicarCritico } from '../lib/criticoEngine'
 
 /**
  * Hook central de rolagem.
@@ -42,7 +43,7 @@ export function useRolagem() {
    * @param {string}  params.notacao  — Ex: "2d6+3", "1d20"
    * @returns {Promise<{ notacao, individuais, mantidos, descartados, modificador, total }>}
    */
-  async function registrarRolagem({ mesaId, fichaId = null, rotulo = null, notacao, sessaoId = null, percentual = 0 }) {
+  async function registrarRolagem({ mesaId, fichaId = null, rotulo = null, notacao, sessaoId = null, percentual = 0, critico = null }) {
     setErro('')
     setRolando(true)
 
@@ -54,6 +55,17 @@ export function useRolagem() {
       setErro(err.message || 'Notação inválida.')
       setRolando(false)
       throw err
+    }
+
+    // Fase 22.4 — crítico: multiplica dados+fixos ANTES dos percentuais (contrato:
+    // dados+fixos → multiplicador crítico → percentuais → piso).
+    let criticoInfo = null
+    if (critico?.multiplicador) {
+      const dadosTotal = (resultado.mantidos || []).reduce((s, v) => s + (Number(v) || 0), 0)
+      const fixos = resultado.total - dadosTotal
+      const sub = aplicarCritico({ dadosTotal, fixos, multiplicador: critico.multiplicador, modo: critico.modo })
+      criticoInfo = { multiplicador: critico.multiplicador, modo: critico.modo || 'total', antes: resultado.total }
+      resultado = { ...resultado, total: sub }
     }
 
     // Fase 18.3 — percentual de rolagem: aplica sobre o TOTAL (após vant/desv e fixos), piso
@@ -83,6 +95,7 @@ export function useRolagem() {
           descartados: resultado.descartados,
           modificador: resultado.modificador,
           ...(percentual ? { percentual, total_base: resultado.total_base } : {}),
+          ...(criticoInfo ? { critico: criticoInfo } : {}),
         },
         total: resultado.total,
       }

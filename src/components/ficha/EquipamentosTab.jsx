@@ -4,6 +4,7 @@ import { useRolagem } from '../../hooks/useRolagem'
 import { validarNotacao, resolverNotacao } from '../../lib/diceNotation'
 import { montarNotacaoComModificadores } from '../../lib/rollModifiers'
 import { descreverTipoDano } from '../../lib/conversao'
+import { limiarCritico, dadoPuro, ehCritico, multiplicadorCritico } from '../../lib/criticoEngine'
 import { ModificadorForm, labelModificador } from '../sistema/RacasClassesEditor'
 import { tocarSomDado, estimarNumDados } from '../../lib/diceSounds'
 import { usePreferencias } from '../../context/PreferenciasContext'
@@ -545,7 +546,7 @@ function RecursoDurabilidade({ item, isDono, onRecurso, onDurab }) {
   )
 }
 
-export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [], categorias = [], maestria = null, onGanharMaestria, maestriaDoItem, atributos = [], camposCombate = [], pericias = [], classes = [], pools = [] }) {
+export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [], categorias = [], maestria = null, onGanharMaestria, maestriaDoItem, atributos = [], camposCombate = [], pericias = [], classes = [], pools = [], critico = null }) {
   const { itens, loading, error, createItem, updateItem, deleteItem } = useItens(fichaId)
   const { registrarRolagem, registrarEvento } = useRolagem()
   const { preferencias } = usePreferencias()
@@ -560,6 +561,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
   const [rollRolando, setRollRolando] = useState(false)
   const [rollProcessing, setRollProcessing] = useState(false)
   const [rollItemId, setRollItemId] = useState(null)
+  const [rollCritico, setRollCritico] = useState(null) // 22.3 — { natural, limiar }
   const [rollErro, setRollErro] = useState('')
 
   async function handleSalvar(data) {
@@ -659,6 +661,12 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
     if (tipo === 'dano' && item.atributos_extras?.tipo_dano) {
       rotulo += ` [${descreverTipoDano(item.atributos_extras.tipo_dano, modificadoresAtivos)}]`
     }
+    // 22.4 — dano em modo crítico: multiplica dados+fixos antes dos percentuais
+    const critDano = (tipo === 'dano' && rollCritico?.itemId === item.id)
+      ? { multiplicador: rollCritico.multiplicador, modo: rollCritico.modo }
+      : null
+    if (critDano) rotulo += ` — 🎯 crítico ×${critDano.multiplicador}`
+
     setRollProcessing(true)
     setRollItemId(item.id)
     setRollErro('')
@@ -674,12 +682,32 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
         rotulo,
         notacao: notacaoFinal,
         percentual: percentualTotal,
+        critico: critDano,
       })
+      if (critDano) setRollCritico(null) // consumido pelo dano
       setRollResultado(res)
       setRollRotulo(rotulo)
       setRollDetalhamento(detalhamento)
       setRollRolando(true)
       setTimeout(() => { setRollRolando(false); setRollProcessing(false) }, 1400)
+
+      // 22.3 — crítico: avaliado no DADO PURO do ACERTO (antes de bônus)
+      setRollCritico(null)
+      if (tipo === 'acerto' && critico?.ativo) {
+        const catCrit = categorias.find(c => c.id === item.categoria_id)?.critico_config
+        const limiar = limiarCritico(critico, { maestria: mst?.nivel ?? 0 })
+        const natural = dadoPuro(res.dados)
+        if (ehCritico(natural, limiar)) {
+          setRollCritico({ itemId: item.id, natural, limiar, multiplicador: multiplicadorCritico(critico, catCrit), modo: critico.modo_multiplicador || 'total' })
+          try {
+            await registrarEvento({
+              mesaId, fichaId,
+              rotulo: `🎯 CRÍTICO! ${item.nome} (rolou ${natural}, limiar ${limiar})`,
+              notacao: '', total: natural, dados: [],
+            })
+          } catch { /* feed best-effort */ }
+        }
+      }
     } catch {
       setRollProcessing(false)
     }
@@ -846,16 +874,22 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                               🎲 Rolar ataque
                             </button>
                           )}
-                          {(temDano || extras.dano) && (
-                            <button
-                              type="button"
-                              onClick={() => handleRolarItem(item, 'dano')}
-                              disabled={rollProcessing}
-                              className="px-3 py-1.5 text-xs bg-red-900 hover:bg-red-800 disabled:opacity-40 text-white rounded-lg transition-colors"
-                            >
-                              🎲 Rolar dano
-                            </button>
-                          )}
+                          {(temDano || extras.dano) && (() => {
+                            const critPronto = rollCritico?.itemId === item.id
+                            return (
+                              <button
+                                type="button"
+                                onClick={() => handleRolarItem(item, 'dano')}
+                                disabled={rollProcessing}
+                                className={`px-3 py-1.5 text-xs disabled:opacity-40 text-white rounded-lg transition-colors ${
+                                  critPronto ? 'bg-amber-700 hover:bg-amber-600 font-semibold animate-pulse' : 'bg-red-900 hover:bg-red-800'
+                                }`}
+                                title={critPronto ? `Dano crítico ×${rollCritico.multiplicador} (${rollCritico.modo})` : undefined}
+                              >
+                                {critPronto ? `🎯 Dano crítico ×${rollCritico.multiplicador}` : '🎲 Rolar dano'}
+                              </button>
+                            )
+                          })()}
                         </div>
 
                         {rollItemId === item.id && rollErro && (
@@ -868,10 +902,19 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                               resultado={rollResultado}
                               rotulo={rollRotulo}
                               rolando={rollRolando}
-                              onClose={() => { setRollResultado(null); setRollItemId(null) }}
+                              onClose={() => { setRollResultado(null); setRollItemId(null); setRollCritico(null) }}
                               skin={preferencias.dado_skin}
                               detalhamento={rollDetalhamento}
                             />
+                            {/* 22.3 — crítico detectado no acerto */}
+                            {rollCritico?.itemId === item.id && !rollRolando && (
+                              <div className="mt-1.5 flex items-center gap-2 flex-wrap bg-amber-950/50 border border-amber-600/60 rounded-lg px-2.5 py-1.5">
+                                <span className="text-amber-300 text-sm font-bold animate-pulse">🎯 CRÍTICO!</span>
+                                <span className="text-amber-500/80 text-[11px]">
+                                  rolou {rollCritico.natural}, limiar {rollCritico.limiar} · dano ×{rollCritico.multiplicador} ({rollCritico.modo})
+                                </span>
+                              </div>
+                            )}
                             {isDono && onGanharMaestria && (
                               <MaestriaGanhoInline
                                 item={item}

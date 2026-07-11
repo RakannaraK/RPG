@@ -53,6 +53,7 @@ export function useCategorias(sistemaId) {
     const patch = {}
     if (updates.nome !== undefined) patch.nome = updates.nome.trim()
     if (updates.descricao !== undefined) patch.descricao = (updates.descricao || '').trim() || null
+    if (updates.critico_config !== undefined) patch.critico_config = updates.critico_config // 22.3
     const { error: err } = await supabase.from('categorias_item').update(patch).eq('id', id)
     if (err) throw err
     setCategorias(prev => prev.map(c => (c.id === id ? { ...c, ...patch } : c)))
