@@ -71,6 +71,7 @@ export default function AbasCentrais({
   categorias = [], // 21.1
   maestria = null, onGanharMaestria, // 21.3
   maestriaDoItem, // 21.4
+  atributos = [], camposCombate = [], pericias = [], classes = [], pools = [], // 21 — item como modificador
 }) {
   const temHabilidades = habilidades.length > 0 || habilidadesFicha.length > 0 || condicoesManuaisDisponiveis.length > 0
     || habilidadesBloqueadas.length > 0
@@ -128,6 +129,11 @@ export default function AbasCentrais({
             maestria={maestria}
             onGanharMaestria={onGanharMaestria}
             maestriaDoItem={maestriaDoItem}
+            atributos={atributos}
+            camposCombate={camposCombate}
+            pericias={pericias}
+            classes={classes}
+            pools={pools}
           />
         )}
         {currentTab === 'tracos' && (

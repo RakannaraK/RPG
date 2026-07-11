@@ -27,6 +27,7 @@ const TIPOS_MOD = [
   { value: 'desvantagem',     label: 'Desvantagem (teste)' },
   { value: 'cura',            label: 'Cura (ação)' },
   { value: 'vida_temp_acao',  label: 'Vida temp. (ação)' },
+  { value: 'converter',       label: 'Converter tipo de dano' }, // 21.5
 ]
 
 const OPERACOES = [
@@ -57,7 +58,7 @@ function descCondicao(mod, atributos) {
   return null
 }
 
-function labelModificador(mod, atributos, camposCombate, pericias = []) {
+export function labelModificador(mod, atributos, camposCombate, pericias = []) {
   const opv = fmtOpValor(mod)
   let base
   switch (mod.tipo) {
@@ -93,6 +94,10 @@ function labelModificador(mod, atributos, camposCombate, pericias = []) {
       base = `Cura ${mod.valor || '?'}${mod.operacao === 'continua' ? ' (contínua)' : ''}`; break
     case 'vida_temp_acao':
       base = `Vida temp. ${mod.valor || '?'} (ação)`; break
+    case 'converter': {
+      let r = {}; try { r = typeof mod.valor === 'string' ? JSON.parse(mod.valor) : (mod.valor || {}) } catch {}
+      base = `Converte dano ${r.de || '*'} → ${r.para || '?'}`; break
+    }
     default: base = mod.tipo
   }
   // 19.4 — sinaliza escalonamento: "↗ 1d10 → 4d10 por faixa"
@@ -154,7 +159,7 @@ function CustoPoolEditor({ custo = [], pools = [], onChange }) {
   )
 }
 
-function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], classes = [], pools = [] }) {
+export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], classes = [], pools = [] }) {
   const [tipo, setTipo] = useState('atributo')
   const [alvo, setAlvo] = useState('')
   const [operacao, setOperacao] = useState('somar')
@@ -163,6 +168,8 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], class
   const [escalaFaixa, setEscalaFaixa] = useState(false) // 19.4
   const [faixaSpec, setFaixaSpec] = useState({ variavel: 'nivel', campo: 'valor', faixas: [] })
   const [nivelMinimo, setNivelMinimo] = useState('') // 19.5
+  const [convDe, setConvDe] = useState('') // 21.5 — conversão de tipo
+  const [convPara, setConvPara] = useState('')
   const [dadosExtras, setDadosExtras] = useState('')
   const [percRolagem, setPercRolagem] = useState('') // 18.3
   const [escopoCategoria, setEscopoCategoria] = useState('')
@@ -182,7 +189,7 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], class
     setTipo(novo); setAlvo(''); setValor(''); setValorEhFormula(false); setDadosExtras(''); setPercRolagem(''); setEscopoCategoria('')
     setVantTipoAlvo('atributo'); setCuraModo('pontual'); setErro('')
     setEscalaFaixa(false); setFaixaSpec({ variavel: 'nivel', campo: 'valor', faixas: [] })
-    setNivelMinimo('')
+    setNivelMinimo(''); setConvDe(''); setConvPara('')
   }
 
   // 17.5 — tipos cujo valor pode ser fórmula (número → fórmula com nivel/recurso/perícia)
@@ -195,6 +202,22 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], class
 
   async function handleAdd() {
     setErro('')
+    // 21.5 — conversão de tipo de dano (operacao 'converter', alvo tipo_dano)
+    if (tipo === 'converter') {
+      if (!convPara.trim()) { setErro('Informe o tipo de destino (para).'); return }
+      setSalvando(true)
+      try {
+        await onAdd({
+          tipo: 'converter',
+          operacao: 'converter',
+          alvo: 'tipo_dano',
+          valor: JSON.stringify({ de: convDe.trim() || '*', para: convPara.trim() }),
+        })
+        setConvDe(''); setConvPara('')
+      } catch (err) { setErro(err.message || 'Erro ao adicionar conversão.') }
+      finally { setSalvando(false) }
+      return
+    }
     // Validação por tipo
     if (usaAtributoAlvo(tipo) && !alvo)  { setErro('Selecione um atributo.'); return }
     if (usaCombateAlvo(tipo) && !alvo)   { setErro('Selecione um campo de combate.'); return }
@@ -256,6 +279,18 @@ function ModificadorForm({ onAdd, atributos, camposCombate, pericias = [], class
         <select value={tipo} onChange={e => handleTipoChange(e.target.value)} className={ic}>
           {TIPOS_MOD.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
+
+        {/* 21.5 — conversão de tipo de dano */}
+        {tipo === 'converter' && (
+          <>
+            <span className="text-purple-500 text-[11px]">de</span>
+            <input type="text" value={convDe} onChange={e => setConvDe(e.target.value)}
+              placeholder="físico (ou * = qualquer)" className={`${ic} w-32`} />
+            <span className="text-purple-500 text-[11px]">para</span>
+            <input type="text" value={convPara} onChange={e => setConvPara(e.target.value)}
+              placeholder="elétrico" className={`${ic} w-28`} />
+          </>
+        )}
 
         {usaAtributoAlvo(tipo) && (
           <select value={alvo} onChange={e => setAlvo(e.target.value)} className={ic}>

@@ -416,6 +416,7 @@ export default function FichaPage() {
         raca: racaAtiva,
         classes: classesAtivas,
         habilidadesFicha,
+        itens: itensFicha, // 21 — itens equipados como fonte de modificador
         estadoFicha,
         condicoesManuais,
       }),
@@ -438,6 +439,7 @@ export default function FichaPage() {
     raca: racaAtiva,
     classes: classesAtivas,
     habilidadesFicha,
+    itens: itensFicha, // 21
     estadoFicha, // 19.5 — não oferece interruptor de efeito ainda bloqueado
   })
   const baseMotor = {
@@ -922,6 +924,11 @@ export default function FichaPage() {
               maestria={config.maestria}
               onGanharMaestria={handleGanharMaestria}
               maestriaDoItem={maestriaDoItem}
+              atributos={valoresAtributos.map(va => va.atributo).filter(Boolean)}
+              camposCombate={camposCombate}
+              pericias={periciasDoSistema}
+              classes={classes}
+              pools={pools}
             />
           </div>
 

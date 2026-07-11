@@ -3,6 +3,8 @@ import { useItens } from '../../hooks/useItens'
 import { useRolagem } from '../../hooks/useRolagem'
 import { validarNotacao, resolverNotacao } from '../../lib/diceNotation'
 import { montarNotacaoComModificadores } from '../../lib/rollModifiers'
+import { descreverTipoDano } from '../../lib/conversao'
+import { ModificadorForm, labelModificador } from '../sistema/RacasClassesEditor'
 import { tocarSomDado, estimarNumDados } from '../../lib/diceSounds'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import { redimensionarImagem } from '../../lib/imageUtils'
@@ -101,11 +103,18 @@ function RollResultCompact({ resultado, rotulo, rolando, onClose, skin, detalham
   )
 }
 
-function ItemForm({ item, fichaId, donoId, categorias = [], onSalvar, onFechar }) {
+function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camposCombate = [], pericias = [], classes = [], pools = [], onSalvar, onFechar }) {
   const [nome, setNome] = useState(item?.nome || '')
   const [tipo, setTipo] = useState(item?.tipo || 'item')
   const [categoriaId, setCategoriaId] = useState(item?.categoria_id || '') // 21.1
   const [descricao, setDescricao] = useState(item?.descricao || '')
+  const [tipoDano, setTipoDano] = useState(item?.atributos_extras?.tipo_dano || '') // 21.5
+  // 21.5 — recurso (contador) e durabilidade
+  const [rec, setRec] = useState(item?.recurso || null)
+  const [durab, setDurab] = useState(item?.durabilidade || null)
+  // 21 — item como fonte de modificador
+  const [mods, setMods] = useState(Array.isArray(item?.modificadores) ? item.modificadores : [])
+  const [equipado, setEquipado] = useState(item?.equipado ?? true)
   const [pairs, setPairs] = useState(objectToPairs(item?.atributos_extras))
   const [selectedFile, setSelectedFile] = useState(null)
   const [salvando, setSalvando] = useState(false)
@@ -144,6 +153,21 @@ function ItemForm({ item, fichaId, donoId, categorias = [], onSalvar, onFechar }
       }
 
       const atributosObj = pairsToObject(pairs)
+      if (tipoDano.trim()) atributosObj.tipo_dano = tipoDano.trim() // 21.5
+
+      // 21.5 — normaliza recurso/durabilidade (números; nulo se vazio)
+      const recurso = rec && String(rec.nome || '').trim()
+        ? {
+            nome: rec.nome.trim(),
+            atual: Math.max(0, Math.floor(Number(rec.atual) || 0)),
+            maximo: Math.max(1, Math.floor(Number(rec.maximo) || 1)),
+            ao_completar: (rec.ao_completar || '').trim() || null,
+            reinicia_ao_completar: !!rec.reinicia_ao_completar,
+          }
+        : null
+      const durabilidade = durab && durab.maximo
+        ? { atual: Math.max(0, Math.floor(Number(durab.atual ?? durab.maximo) || 0)), maximo: Math.max(1, Math.floor(Number(durab.maximo) || 1)) }
+        : null
 
       await onSalvar({
         nome: nome.trim(),
@@ -151,6 +175,10 @@ function ItemForm({ item, fichaId, donoId, categorias = [], onSalvar, onFechar }
         categoria_id: categoriaId || null, // 21.1
         descricao: descricao.trim() || null,
         atributos_extras: Object.keys(atributosObj).length > 0 ? atributosObj : null,
+        recurso,
+        durabilidade,
+        modificadores: mods.length > 0 ? mods : null, // 21 — efeitos do item
+        equipado,
         imagem_url,
       })
     } catch (err) {
@@ -225,6 +253,103 @@ function ItemForm({ item, fichaId, donoId, categorias = [], onSalvar, onFechar }
               placeholder="Descrição, história ou efeito do item..."
               rows={3}
               className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+            />
+          </div>
+
+          {/* 21.5 — tipo de dano (base para conversões) */}
+          <div>
+            <label className="block text-sm font-medium text-purple-200 mb-1">Tipo de dano</label>
+            <input
+              type="text"
+              value={tipoDano}
+              onChange={e => setTipoDano(e.target.value)}
+              placeholder="ex: físico, fogo, elétrico (opcional)"
+              className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+            <p className="text-purple-600 text-xs mt-1">Usado pelas conversões (manoplas físico → elétrico) e resistências do alvo.</p>
+          </div>
+
+          {/* 21.5 — recurso (contador) */}
+          <div className="border border-purple-900/60 rounded-lg p-3">
+            <label className="flex items-center gap-2 text-sm font-medium text-purple-200 cursor-pointer">
+              <input type="checkbox" checked={!!rec}
+                onChange={e => setRec(e.target.checked ? { nome: '', atual: 0, maximo: 10, ao_completar: '', reinicia_ao_completar: false } : null)}
+                className="accent-purple-500" />
+              Recurso / contador (ex: Almas 29/50)
+            </label>
+            {rec && (
+              <div className="mt-2 space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  <input type="text" value={rec.nome} onChange={e => setRec({ ...rec, nome: e.target.value })}
+                    placeholder="Nome (Almas)" className="flex-1 min-w-[8rem] px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                  <input type="number" value={rec.atual} onChange={e => setRec({ ...rec, atual: e.target.value })}
+                    placeholder="atual" className="w-20 px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                  <span className="text-purple-500 self-center">/</span>
+                  <input type="number" value={rec.maximo} onChange={e => setRec({ ...rec, maximo: e.target.value })}
+                    placeholder="máx" className="w-20 px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                </div>
+                <input type="text" value={rec.ao_completar || ''} onChange={e => setRec({ ...rec, ao_completar: e.target.value })}
+                  placeholder="Ao completar (texto do efeito)" className="w-full px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                <label className="text-purple-400 text-xs flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" checked={!!rec.reinicia_ao_completar}
+                    onChange={e => setRec({ ...rec, reinicia_ao_completar: e.target.checked })} className="accent-purple-500" />
+                  reinicia ao completar (volta a 0)
+                </label>
+              </div>
+            )}
+          </div>
+
+          {/* 21.5 — durabilidade */}
+          <div className="border border-purple-900/60 rounded-lg p-3">
+            <label className="flex items-center gap-2 text-sm font-medium text-purple-200 cursor-pointer">
+              <input type="checkbox" checked={!!durab}
+                onChange={e => setDurab(e.target.checked ? { atual: 100, maximo: 100 } : null)}
+                className="accent-purple-500" />
+              Durabilidade
+            </label>
+            {durab && (
+              <div className="mt-2 flex items-center gap-2">
+                <input type="number" value={durab.atual} onChange={e => setDurab({ ...durab, atual: e.target.value })}
+                  placeholder="atual" className="w-20 px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                <span className="text-purple-500">/</span>
+                <input type="number" value={durab.maximo} onChange={e => setDurab({ ...durab, maximo: e.target.value })}
+                  placeholder="máx" className="w-20 px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                <span className="text-purple-600 text-xs">em 0 = danificado (efeitos desativados)</span>
+              </div>
+            )}
+          </div>
+
+          {/* 21 — item como fonte de modificador (efeitos ao equipar) */}
+          <div className="border border-purple-900/60 rounded-lg p-3 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <label className="text-sm font-medium text-purple-200">Efeitos do item</label>
+              <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer" title="Só o item equipado aplica seus efeitos">
+                <input type="checkbox" checked={equipado} onChange={e => setEquipado(e.target.checked)} className="accent-purple-500" />
+                equipado
+              </label>
+            </div>
+            <p className="text-purple-600 text-xs">
+              Modificadores que entram no motor quando o item está equipado (ex: manoplas convertendo
+              físico → elétrico). Item danificado (durabilidade 0) desliga os efeitos.
+            </p>
+            {mods.length > 0 && (
+              <div className="space-y-1">
+                {mods.map((m, i) => (
+                  <div key={i} className="flex items-center gap-2 bg-purple-950/40 border border-purple-800 rounded-lg px-2 py-1">
+                    <span className="text-purple-200 text-xs flex-1 min-w-0 truncate">{labelModificador(m, atributos, camposCombate, pericias)}</span>
+                    <button type="button" onClick={() => setMods(mods.filter((_, j) => j !== i))}
+                      className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors">×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <ModificadorForm
+              onAdd={m => { setMods(prev => [...prev, m]); return Promise.resolve() }}
+              atributos={atributos}
+              camposCombate={camposCombate}
+              pericias={pericias}
+              classes={classes}
+              pools={pools}
             />
           </div>
 
@@ -357,9 +482,72 @@ function MaestriaChips({ info }) {
   )
 }
 
-export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [], categorias = [], maestria = null, onGanharMaestria, maestriaDoItem }) {
+// 21.5 — contador de recurso, barra de durabilidade e badge de danificado
+function RecursoDurabilidade({ item, isDono, onRecurso, onDurab }) {
+  const r = item.recurso
+  const d = item.durabilidade
+  const danificado = d && Number(d.atual) <= 0
+  if (!r && !d) return null
+  const btn = 'w-6 h-6 flex items-center justify-center rounded-lg border border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors disabled:opacity-30'
+
+  return (
+    <div className="mt-2 space-y-1.5">
+      {danificado && (
+        <span className="inline-block text-[11px] px-2 py-0.5 rounded-full bg-red-950/60 border border-red-800 text-red-300">
+          ⚠ Danificado — efeitos desativados até reparo
+        </span>
+      )}
+
+      {r && (() => {
+        const max = Number(r.maximo) || 0
+        const atual = Number(r.atual) || 0
+        const pct = max > 0 ? Math.min(100, (atual / max) * 100) : 0
+        const cheio = atual >= max
+        return (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-purple-300 text-xs">{r.nome}</span>
+            <div className="flex-1 min-w-[6rem] h-2 bg-slate-700 rounded-full overflow-hidden">
+              <div className={`h-full rounded-full transition-all ${cheio ? 'bg-amber-400' : 'bg-purple-500'}`} style={{ width: `${pct}%` }} />
+            </div>
+            <span className={`text-xs font-mono ${cheio ? 'text-amber-300' : 'text-purple-400'}`}>{atual}/{max}</span>
+            {isDono && (
+              <span className="flex items-center gap-1">
+                <button onClick={() => onRecurso(-1)} disabled={atual <= 0} className={btn} title="−1">−</button>
+                <button onClick={() => onRecurso(1)} className={btn} title="+1">+</button>
+              </span>
+            )}
+          </div>
+        )
+      })()}
+
+      {d && (() => {
+        const max = Number(d.maximo) || 0
+        const atual = Number(d.atual) || 0
+        const pct = max > 0 ? Math.max(0, Math.min(100, (atual / max) * 100)) : 0
+        const cor = pct > 50 ? 'bg-emerald-500' : pct > 20 ? 'bg-amber-500' : 'bg-red-500'
+        return (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-purple-300 text-xs">Durabilidade</span>
+            <div className="flex-1 min-w-[6rem] h-2 bg-slate-700 rounded-full overflow-hidden">
+              <div className={`h-full rounded-full transition-all ${cor}`} style={{ width: `${pct}%` }} />
+            </div>
+            <span className="text-xs font-mono text-purple-400">{atual}/{max}</span>
+            {isDono && (
+              <span className="flex items-center gap-1">
+                <button onClick={() => onDurab(-1)} disabled={atual <= 0} className={btn} title="Consumir 1">−</button>
+                <button onClick={() => onDurab(1)} disabled={atual >= max} className={btn} title="Reparar 1">+</button>
+              </span>
+            )}
+          </div>
+        )
+      })()}
+    </div>
+  )
+}
+
+export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [], categorias = [], maestria = null, onGanharMaestria, maestriaDoItem, atributos = [], camposCombate = [], pericias = [], classes = [], pools = [] }) {
   const { itens, loading, error, createItem, updateItem, deleteItem } = useItens(fichaId)
-  const { registrarRolagem } = useRolagem()
+  const { registrarRolagem, registrarEvento } = useRolagem()
   const { preferencias } = usePreferencias()
   const [showForm, setShowForm] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
@@ -384,6 +572,41 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
     setEditingItem(null)
   }
 
+  // 21.5 — contador de recurso do item: ajusta, avisa no feed ao completar,
+  // reinicia se configurado.
+  async function ajustarRecurso(item, delta) {
+    const r = item.recurso
+    if (!r) return
+    const max = Number(r.maximo) || 0
+    const antes = Number(r.atual) || 0
+    let novo = Math.max(0, Math.min(max, antes + delta))
+    const completou = antes < max && novo >= max
+    try {
+      await updateItem(item.id, { recurso: { ...r, atual: completou && r.reinicia_ao_completar ? 0 : novo } })
+      if (completou && mesaId) {
+        await registrarEvento({
+          mesaId, fichaId,
+          rotulo: `${item.nome} — ${r.nome} completo!${r.ao_completar ? ` ${r.ao_completar}` : ''}`,
+          notacao: '', total: max, dados: [],
+        })
+      }
+    } catch { /* silencioso */ }
+  }
+
+  // 21.5 — consumo/reparo de durabilidade
+  async function ajustarDurabilidade(item, delta) {
+    const d = item.durabilidade
+    if (!d) return
+    const max = Number(d.maximo) || 0
+    const novo = Math.max(0, Math.min(max, (Number(d.atual) || 0) + delta))
+    try { await updateItem(item.id, { durabilidade: { ...d, atual: novo } }) } catch {}
+  }
+
+  // 21 — equipar/desequipar rápido (só faz sentido se o item tem efeitos)
+  async function toggleEquipado(item) {
+    try { await updateItem(item.id, { equipado: !(item.equipado ?? true) }) } catch {}
+  }
+
   async function handleDelete(item) {
     if (!window.confirm(`Remover "${item.nome}"? Esta ação não pode ser desfeita.`)) return
     setDeletingId(item.id)
@@ -406,9 +629,11 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
       return
     }
     const tipo = campo === 'dano' ? 'dano' : 'acerto'
+    // 21.5 — item danificado (durabilidade 0): efeitos do item desativados
+    const danificado = item.durabilidade && Number(item.durabilidade.atual) <= 0
     // 21.4 — maestria do item: efeitos das propriedades desbloqueadas entram no
     // cálculo (F12) e o percentual da maestria soma no pipeline (F18).
-    const mst = maestriaDoItem?.(item) || null
+    const mst = danificado ? null : (maestriaDoItem?.(item) || null)
     const propMods = (mst?.desbloqueadas || [])
       .map(p => p.modificador_config)
       .filter(cfg => cfg && cfg.tipo === tipo)
@@ -428,8 +653,12 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
     // percentual da maestria (acerto → acerto_percentual; dano → efeito_percentual)
     const pctMaestria = mst ? (tipo === 'dano' ? mst.efeito_percentual : mst.acerto_percentual) : 0
     const percentualTotal = (percentual || 0) + (Number(pctMaestria) || 0)
-    const rotulo = `${campo === 'dano' ? 'Dano' : 'Ataque'} — ${item.nome}`
+    let rotulo = `${campo === 'dano' ? 'Dano' : 'Ataque'} — ${item.nome}`
       + (mst?.nivel > 0 ? ` (Maestria ${mst.nivel})` : '')
+    // 21.5 — tipo de dano final (após conversões ativas) no rótulo do dano
+    if (tipo === 'dano' && item.atributos_extras?.tipo_dano) {
+      rotulo += ` [${descreverTipoDano(item.atributos_extras.tipo_dano, modificadoresAtivos)}]`
+    }
     setRollProcessing(true)
     setRollItemId(item.id)
     setRollErro('')
@@ -537,6 +766,24 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                         >
                           {TIPO_LABELS[item.tipo] || item.tipo}
                         </span>
+                        {/* 21 — equipar/desequipar (só se o item tem efeitos) */}
+                        {Array.isArray(item.modificadores) && item.modificadores.length > 0 && (
+                          isDono ? (
+                            <button
+                              onClick={() => toggleEquipado(item)}
+                              className={`ml-1.5 inline-block text-xs px-2 py-0.5 rounded-full transition-colors ${
+                                (item.equipado ?? true)
+                                  ? 'bg-emerald-900/50 border border-emerald-700 text-emerald-300 hover:bg-emerald-800/60'
+                                  : 'bg-slate-800 border border-purple-900 text-purple-500 hover:text-white'
+                              }`}
+                              title="Equipar / desequipar"
+                            >
+                              {(item.equipado ?? true) ? '✓ equipado' : 'desequipado'}
+                            </button>
+                          ) : (
+                            (item.equipado ?? true) && <span className="ml-1.5 inline-block text-xs px-2 py-0.5 rounded-full bg-emerald-900/50 border border-emerald-700 text-emerald-300">✓ equipado</span>
+                          )
+                        )}
                         <MaestriaChips info={maestriaDoItem?.(item)} />
                       </div>
                       {isDono && (
@@ -563,6 +810,14 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                     {item.descricao && (
                       <p className="text-purple-400 text-sm mt-2">{item.descricao}</p>
                     )}
+
+                    {/* 21.5 — recurso, durabilidade e badge de danificado */}
+                    <RecursoDurabilidade
+                      item={item}
+                      isDono={isDono}
+                      onRecurso={d => ajustarRecurso(item, d)}
+                      onDurab={d => ajustarDurabilidade(item, d)}
+                    />
 
                     {Object.keys(extras).length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-2">
@@ -643,6 +898,11 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
           fichaId={fichaId}
           donoId={donoId}
           categorias={categorias}
+          atributos={atributos}
+          camposCombate={camposCombate}
+          pericias={pericias}
+          classes={classes}
+          pools={pools}
           onSalvar={handleSalvar}
           onFechar={() => { setShowForm(false); setEditingItem(null) }}
         />

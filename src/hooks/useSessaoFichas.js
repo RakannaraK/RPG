@@ -18,7 +18,7 @@ function groupBy(rows, key) {
  * Constrói o "card" computado de uma ficha para o painel da sessão, passando os
  * valores pelo motor de modificadores (Fases 9-12). Puro — sem acesso a banco.
  */
-function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRows, poolsRows, slotsRows) {
+function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRows, poolsRows, slotsRows, itensRows) {
   const raca = (sis.racas || []).find(r => r.id === fichaRow.raca_id) || null
   const classe = (sis.classes || []).find(c => c.id === fichaRow.classe_id) || null
 
@@ -130,7 +130,7 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
   // 19.4 — faixa ativa antes das fórmulas (mesma ordem do FichaPage)
   const modificadoresAtivos = resolverValoresFormula(
     resolverFaixas(
-      coletarModificadores({ raca, classes: classesParaMotor, habilidadesFicha, estadoFicha, condicoesManuais }),
+      coletarModificadores({ raca, classes: classesParaMotor, habilidadesFicha, itens: itensRows || [], estadoFicha, condicoesManuais }),
       ctxMod
     ),
     ctxMod
@@ -251,7 +251,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
   // Recarrega os dados de UMA ficha e devolve o card computado
   const carregarCard = useCallback(async (fichaId) => {
     const sis = sisRef.current || {}
-    const [fichaResp, habsResp, condResp, combResp, clsResp, poolsResp, slotsResp] = await Promise.all([
+    const [fichaResp, habsResp, condResp, combResp, clsResp, poolsResp, slotsResp, itensResp] = await Promise.all([
       supabase.from('fichas').select('*').eq('id', fichaId).single(),
       supabase.from('habilidades_ficha').select('*').eq('ficha_id', fichaId),
       supabase.from('condicoes_manuais_ficha').select('ficha_id, modificador_id, ativa').eq('ficha_id', fichaId),
@@ -259,9 +259,10 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       supabase.from('classes_ficha').select('ficha_id, classe_id, nivel, ordem').eq('ficha_id', fichaId),
       supabase.from('pools_ficha').select('ficha_id, pool_id, atual').eq('ficha_id', fichaId),
       supabase.from('slots_ficha').select('ficha_id, circulo, usados').eq('ficha_id', fichaId),
+      supabase.from('itens_ficha').select('id, nome, equipado, durabilidade, modificadores').eq('ficha_id', fichaId),
     ])
     if (fichaResp.error || !fichaResp.data) return null
-    return construirCard(fichaResp.data, habsResp.data, condResp.data, combResp.data, sis, clsResp.data, poolsResp.data, slotsResp.data)
+    return construirCard(fichaResp.data, habsResp.data, condResp.data, combResp.data, sis, clsResp.data, poolsResp.data, slotsResp.data, itensResp.data)
   }, [])
 
   const recarregarFicha = useCallback(async (fichaId) => {
@@ -294,13 +295,14 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       idsRef.current = new Set(ids)
       if (ids.length === 0) { setCards([]); return }
 
-      const [habsResp, condResp, combResp, clsResp, poolsResp, slotsResp] = await Promise.all([
+      const [habsResp, condResp, combResp, clsResp, poolsResp, slotsResp, itensResp] = await Promise.all([
         supabase.from('habilidades_ficha').select('*').in('ficha_id', ids),
         supabase.from('condicoes_manuais_ficha').select('ficha_id, modificador_id, ativa').in('ficha_id', ids),
         supabase.from('valores_combate').select('ficha_id, campo_id, valor').in('ficha_id', ids),
         supabase.from('classes_ficha').select('ficha_id, classe_id, nivel, ordem').in('ficha_id', ids),
         supabase.from('pools_ficha').select('ficha_id, pool_id, atual').in('ficha_id', ids),
         supabase.from('slots_ficha').select('ficha_id, circulo, usados').in('ficha_id', ids),
+        supabase.from('itens_ficha').select('id, ficha_id, nome, equipado, durabilidade, modificadores').in('ficha_id', ids),
       ])
       const habsBy = groupBy(habsResp.data, 'ficha_id')
       const condBy = groupBy(condResp.data, 'ficha_id')
@@ -308,8 +310,9 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       const clsBy = groupBy(clsResp.data, 'ficha_id')
       const poolsBy = groupBy(poolsResp.data, 'ficha_id')
       const slotsBy = groupBy(slotsResp.data, 'ficha_id')
+      const itensBy = groupBy(itensResp.data, 'ficha_id')
       const sis = sisRef.current || {}
-      setCards(fichas.map(f => construirCard(f, habsBy[f.id], condBy[f.id], combBy[f.id], sis, clsBy[f.id], poolsBy[f.id], slotsBy[f.id])))
+      setCards(fichas.map(f => construirCard(f, habsBy[f.id], condBy[f.id], combBy[f.id], sis, clsBy[f.id], poolsBy[f.id], slotsBy[f.id], itensBy[f.id])))
     } catch (err) {
       setError(err.message || 'Erro ao carregar fichas da sessão.')
     } finally {
@@ -350,6 +353,8 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pools_ficha' }, afetaFicha)
       // 20.6 — gasto de slot idem
       .on('postgres_changes', { event: '*', schema: 'public', table: 'slots_ficha' }, afetaFicha)
+      // 21 — equipar/desequipar item muda os modificadores em jogo
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'itens_ficha' }, afetaFicha)
       .subscribe(status => {
         if (status === 'SUBSCRIBED') {
           // Reconexão: re-sincroniza o estado (pode ter perdido eventos offline)

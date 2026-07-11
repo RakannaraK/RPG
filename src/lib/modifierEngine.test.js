@@ -136,3 +136,38 @@ describe('19.1 — coleta multiclasse (várias classes)', () => {
     expect(coletarModificadores({})).toHaveLength(0)
   })
 })
+
+describe('21 — itens como fonte de modificador', () => {
+  const conv = { tipo: 'converter', operacao: 'converter', alvo: 'tipo_dano', valor: '{"de":"fisico","para":"eletrico"}' }
+  const manoplas = nome => ({ id: 'i1', nome, equipado: true, modificadores: [conv] })
+
+  it('item equipado contribui seus modificadores, com _fonte e _origemItemId', () => {
+    const mods = coletarModificadores({ itens: [manoplas('Manoplas')] })
+    expect(mods).toHaveLength(1)
+    expect(mods[0]._fonte).toBe('Manoplas')
+    expect(mods[0]._origemItemId).toBe('i1')
+    expect(mods[0].operacao).toBe('converter')
+  })
+
+  it('item NÃO equipado não contribui', () => {
+    expect(coletarModificadores({ itens: [{ id: 'i1', nome: 'X', equipado: false, modificadores: [conv] }] })).toHaveLength(0)
+  })
+
+  it('item danificado (durabilidade 0) não contribui', () => {
+    const danif = { id: 'i1', nome: 'X', equipado: true, durabilidade: { atual: 0, maximo: 10 }, modificadores: [conv] }
+    expect(coletarModificadores({ itens: [danif] })).toHaveLength(0)
+  })
+
+  it('item sem modificadores é ignorado; equipado default (undefined) conta', () => {
+    expect(coletarModificadores({ itens: [{ id: 'i1', nome: 'X' }] })).toHaveLength(0)
+    const semFlag = { id: 'i2', nome: 'Anel', modificadores: [{ tipo: 'atributo', alvo: 'a', operacao: 'somar', valor: 2 }] }
+    expect(coletarModificadores({ itens: [semFlag] })).toHaveLength(1)
+  })
+
+  it('convive com raça/classe/habilidade na mesma coleta', () => {
+    const classe = { nome: 'Bárbaro', modificadores: [{ tipo: 'atributo', alvo: 'a', operacao: 'somar', valor: 2 }] }
+    const mods = coletarModificadores({ classes: [classe], itens: [manoplas('Manoplas')] })
+    expect(mods).toHaveLength(2)
+    expect(mods.map(m => m._fonte).sort()).toEqual(['Bárbaro', 'Manoplas'])
+  })
+})

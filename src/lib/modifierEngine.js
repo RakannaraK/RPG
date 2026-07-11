@@ -108,7 +108,7 @@ function condicaoSatisfeita(mod, estadoFicha, condicoesManuais) {
  * @param {object} [contexto.condicoesManuais] — { [modificador_id]: boolean } (condições manuais)
  * @returns {Array} lista plana de modificadores ativos com campo _fonte
  */
-function coletarEmJogo({ raca, classe, classes, habilidadesFicha = [], estadoFicha = null }) {
+function coletarEmJogo({ raca, classe, classes, habilidadesFicha = [], itens = [], estadoFicha = null }) {
   const lista = []
   // Fase 19.5 — `_origemClasseId`/`_origemRacaId` dizem contra qual nível o
   // requisito do modificador é medido (classe de origem, ou total).
@@ -136,6 +136,16 @@ function coletarEmJogo({ raca, classe, classes, habilidadesFicha = [], estadoFic
       _origemRacaId: hab.raca_id || undefined,
     })))
   }
+  // Fase 21 — itens da ficha como fonte de modificador (manoplas, itens mágicos).
+  // Só o que está EQUIPADO e não DANIFICADO (durabilidade 0 desliga os efeitos).
+  for (const it of itens) {
+    if (!it || it.equipado === false) continue
+    if (it.durabilidade && Number(it.durabilidade.atual) <= 0) continue
+    const mods = it.modificadores
+    if (Array.isArray(mods) && mods.length) {
+      lista.push(...mods.map(m => ({ ...m, _fonte: it.nome, _origemItemId: it.id })))
+    }
+  }
   return lista
 }
 
@@ -144,11 +154,12 @@ export function coletarModificadores({
   classe,
   classes,
   habilidadesFicha = [],
+  itens = [],
   estadoFicha = null,
   condicoesManuais = {},
 } = {}) {
   // Fase 12 — filtra por condição (auto/manual); Fase 19.5 — e por nível mínimo
-  return coletarEmJogo({ raca, classe, classes, habilidadesFicha, estadoFicha })
+  return coletarEmJogo({ raca, classe, classes, habilidadesFicha, itens, estadoFicha })
     .filter(mod => atendeNivelMinimo(mod, estadoFicha || {}))
     .filter(mod => condicaoSatisfeita(mod, estadoFicha, condicoesManuais))
 }
@@ -161,8 +172,8 @@ export function coletarModificadores({
  *
  * @returns {Array} modificadores com condicao_tipo === 'manual'
  */
-export function listarCondicoesManuais({ raca, classe, classes, habilidadesFicha = [], estadoFicha = null } = {}) {
-  return coletarEmJogo({ raca, classe, classes, habilidadesFicha, estadoFicha })
+export function listarCondicoesManuais({ raca, classe, classes, habilidadesFicha = [], itens = [], estadoFicha = null } = {}) {
+  return coletarEmJogo({ raca, classe, classes, habilidadesFicha, itens, estadoFicha })
     .filter(mod => atendeNivelMinimo(mod, estadoFicha || {}))
     .filter(mod => mod.condicao_tipo === 'manual')
 }
