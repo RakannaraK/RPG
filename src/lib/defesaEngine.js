@@ -53,6 +53,50 @@ export function resolverDefesa({ ataque = 0, defesa = 0, dano = 0, faixas = [] }
 }
 
 /**
+ * Fase 22.6 — decide a resolução de uma defesa pendente (função PURA). Não toca
+ * banco/React: o chamador aplica os efeitos (HP, condição no atacante, feed).
+ *
+ * @param {object} dp  defesa_pendente { ataque, dano, atacante_combatente_id,
+ *                     atacante_nome, resposta: { opcao_id, opcao_nome,
+ *                     contra_ataque, defesa_total } | null }
+ * @param {object} cfg config_layout.defesa_ativa { faixas, contra_ataque }
+ * @param {string} alvoNome
+ * @returns {{ danoFinal, condicao, narracao, contraAtaque } | null}
+ *   condicao = null | { combatente_id, nome, descricao, duracao_rodadas }
+ */
+export function planejarDefesa(dp, cfg = {}, alvoNome = 'Alvo') {
+  if (!dp) return null
+  const r = dp.resposta
+
+  // Sem resposta ou "não reagir" → dano cheio (fallback do mestre; nunca trava).
+  if (!r || r.opcao_id === 'nao_reagir') {
+    return { danoFinal: Number(dp.dano) || 0, condicao: null, contraAtaque: false,
+      narracao: `${alvoNome} não reagiu — dano cheio (${Number(dp.dano) || 0})` }
+  }
+
+  const res = resolverDefesa({ ataque: dp.ataque, defesa: r.defesa_total, dano: dp.dano, faixas: cfg.faixas || [] })
+  const sinal = res.diferenca >= 0 ? `+${res.diferenca}` : `${res.diferenca}`
+
+  if (r.contra_ataque) {
+    const contra = cfg.contra_ataque || {}
+    const danoFinal = contra.sofre_dano_cheio === false ? res.danoReduzido : (Number(dp.dano) || 0)
+    const cond = contra.condicao
+    const condicao = (cond?.nome && dp.atacante_combatente_id)
+      ? { combatente_id: dp.atacante_combatente_id, nome: cond.nome, descricao: cond.descricao, duracao_rodadas: cond.duracao_rodadas }
+      : null
+    const narracao = `${alvoNome} contra-atacou (${r.defesa_total} vs ${dp.ataque}, ${sinal})`
+      + (condicao && dp.atacante_nome ? ` — ${dp.atacante_nome} sofre ${cond.nome}` : '')
+      + ` — sofre ${danoFinal}, pode contra-atacar`
+    return { danoFinal, condicao, narracao, contraAtaque: true }
+  }
+
+  const danoFinal = res.danoReduzido
+  const narracao = `${alvoNome} ${r.opcao_nome} (${r.defesa_total} vs ${dp.ataque}, ${sinal})`
+    + (res.faixa ? `: −${res.reducao}% → ${danoFinal}` : `: sem redução → ${danoFinal}`)
+  return { danoFinal, condicao: null, narracao, contraAtaque: false }
+}
+
+/**
  * Valida as faixas: contíguas, sem sobreposição; a primeira pode ser aberta
  * embaixo (de = null) e a última aberta em cima (ate = null). Mesmo espírito da
  * F19.4, adaptado a extremos abertos dos dois lados.

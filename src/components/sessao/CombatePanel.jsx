@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import AcoesCombate from './AcoesCombate'
+import DefesaAtivaPrompt from './DefesaAtivaPrompt'
+import { ordenarPorIniciativa } from '../../lib/iniciativa'
 
 /**
  * Fase 14 — painel de combate dentro da SessaoPage.
@@ -88,11 +90,61 @@ function CondicaoForm({ onAplicar, onFechar }) {
   )
 }
 
+// F22.6 — o mestre pede a defesa: informa o acerto do atacante e o dano (o dano
+// vem pré-preenchido de um dano de poder pendente, se houver).
+function PedirDefesaForm({ combatente, sugestaoDano, onPedir, onFechar }) {
+  const [ataque, setAtaque] = useState('')
+  const [dano, setDano] = useState(sugestaoDano ? String(sugestaoDano.valor) : '')
+  const [busy, setBusy] = useState(false)
+  const inp = 'w-16 px-1.5 py-0.5 bg-purple-950 border border-purple-700 text-white text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-sky-500'
+  async function submit() {
+    if (dano === '') return
+    setBusy(true)
+    try { await onPedir(combatente, { ataque: Number(ataque) || 0, dano: Number(dano) || 0 }); onFechar() }
+    finally { setBusy(false) }
+  }
+  return (
+    <div className="mt-1.5 ml-6 flex items-center gap-1.5 flex-wrap">
+      <label className="text-sky-300 text-[11px] flex items-center gap-1">acerto
+        <input type="number" value={ataque} onChange={e => setAtaque(e.target.value)} placeholder="71" className={inp} /></label>
+      <label className="text-sky-300 text-[11px] flex items-center gap-1">dano
+        <input type="number" value={dano} onChange={e => setDano(e.target.value)} placeholder="20" className={inp} /></label>
+      <button onClick={submit} disabled={busy || dano === ''} className="px-2 py-0.5 bg-sky-700 hover:bg-sky-600 disabled:opacity-50 text-white text-xs rounded transition-colors">Pedir</button>
+      <button onClick={onFechar} className="px-1.5 py-0.5 text-purple-400 hover:text-white text-xs transition-colors">Cancelar</button>
+    </div>
+  )
+}
+
+// F22.6 — status + resolução da defesa pendente (só mestre). Sem resposta =
+// fallback "dano cheio"; nunca trava o turno.
+function ResolverDefesaControl({ combatente, onResolver, onCancelar }) {
+  const [busy, setBusy] = useState(false)
+  const dp = combatente.defesa_pendente || {}
+  const r = dp.resposta
+  const label = r
+    ? (r.opcao_id === 'nao_reagir' ? 'não reagiu' : `${r.opcao_nome}${r.defesa_total != null ? ` (${r.defesa_total} vs ${dp.ataque})` : ''}`)
+    : `aguardando ${combatente.nome}…`
+  async function resolver() { setBusy(true); try { await onResolver(combatente) } finally { setBusy(false) } }
+  return (
+    <div className="mt-1.5 ml-6 flex items-center gap-2 flex-wrap rounded-lg border border-sky-700/50 bg-sky-950/30 px-2 py-1.5">
+      <span className="text-sky-300 text-[11px]">🛡 defesa: <span className="text-sky-100 font-medium">{label}</span></span>
+      <button onClick={resolver} disabled={busy}
+        className={`ml-auto px-2 py-0.5 text-xs rounded transition-colors disabled:opacity-50 ${r ? 'bg-sky-700 hover:bg-sky-600 text-white' : 'bg-red-800 hover:bg-red-700 text-white'}`}>
+        {r ? '✓ Resolver' : 'Resolver (dano cheio)'}
+      </button>
+      <button onClick={() => onCancelar(combatente)} disabled={busy} className="text-purple-400 hover:text-white text-xs transition-colors" title="Cancelar pedido">✕</button>
+    </div>
+  )
+}
+
 function CombatenteRow({
   c, cardsPorFicha, campoCaId, condsDoComb = [], rodadaAtual,
   isMestre, podeAgir, ativo, podeSubir, podeDescer, onMover,
   onRemover, onRolarIniciativa, onSetIniciativa, onAplicarCondicao, onRemoverCondicao, onAplicarHp,
   sugestaoDano = null, onAplicarSugestao, // F14.6
+  // F22.6 — defesa ativa
+  defesaAtiva = null, atributosSistema = [], souDefensor = false,
+  mesaId, sessaoId, onPedirDefesa, onResponderDefesa, onResolverDefesa, onCancelarDefesa,
 }) {
   const estilo = TIPO_ESTILO[c.tipo] || TIPO_ESTILO.inimigo
   const hp = hpDoCombatente(c, cardsPorFicha)
@@ -100,6 +152,13 @@ function CombatenteRow({
   const [rolando, setRolando] = useState(false)
   const [addCond, setAddCond] = useState(false)
   const [dc, setDc] = useState('')
+  const [pedindoDef, setPedindoDef] = useState(false)
+
+  // F22.6 — defesa ativa: pedido pendente neste combatente e papéis na cena
+  const dp = c.defesa_pendente || null
+  const defAtiva = defesaAtiva?.ativo && (defesaAtiva.opcoes?.length > 0)
+  const podePedirDefesa = defAtiva && isMestre && !dp && hp.atual != null
+  const mostrarPromptDefensor = dp && !dp.resposta && souDefensor
 
   async function rolar() {
     setRolando(true)
@@ -194,7 +253,47 @@ function CombatenteRow({
               ⚔ −{sugestaoDano.valor}
             </button>
           )}
+          {/* F22.6 — em vez de aplicar direto, pedir defesa ativa ao alvo */}
+          {podePedirDefesa && (
+            <button
+              onClick={() => setPedindoDef(v => !v)}
+              className="px-2 py-0.5 bg-sky-800 hover:bg-sky-700 text-white text-xs rounded transition-colors"
+              title="Pedir defesa ativa (rolagem oposta)"
+            >
+              🛡 Pedir defesa
+            </button>
+          )}
         </div>
+      )}
+
+      {/* F22.6 — form do mestre p/ pedir defesa */}
+      {pedindoDef && podePedirDefesa && (
+        <PedirDefesaForm combatente={c} sugestaoDano={sugestaoDano} onPedir={onPedirDefesa} onFechar={() => setPedindoDef(false)} />
+      )}
+
+      {/* F22.6 — prompt de reação para o defensor */}
+      {mostrarPromptDefensor && (
+        <DefesaAtivaPrompt
+          combatente={c}
+          card={c.ficha_id ? cardsPorFicha[c.ficha_id] : null}
+          config={defesaAtiva}
+          atributosSistema={atributosSistema}
+          mesaId={mesaId}
+          sessaoId={sessaoId}
+          onResponder={onResponderDefesa}
+        />
+      )}
+
+      {/* F22.6 — controle do mestre p/ resolver (status + fallback) */}
+      {dp && isMestre && (
+        <ResolverDefesaControl combatente={c} onResolver={onResolverDefesa} onCancelar={onCancelarDefesa} />
+      )}
+
+      {/* F22.6 — o defensor já respondeu e espera o mestre resolver */}
+      {dp && dp.resposta && souDefensor && !isMestre && (
+        <p className="mt-1.5 ml-6 text-sky-400/80 text-[11px]">
+          🛡 {dp.resposta.opcao_id === 'nao_reagir' ? 'Você não reagiu' : `${dp.resposta.opcao_nome} (${dp.resposta.defesa_total})`} — aguardando o mestre resolver…
+        </p>
       )}
 
       {/* Chips de condições ativas */}
@@ -219,18 +318,6 @@ function CombatenteRow({
       )}
     </div>
   )
-}
-
-// Ordena por iniciativa (desc, nulos por último), desempate por `ordem` e criação.
-// Determinístico → todos os clientes veem a mesma ordem (base para os turnos, 14.3).
-function ordenarPorIniciativa(lista) {
-  return [...lista].sort((a, b) => {
-    const ia = a.iniciativa ?? -Infinity
-    const ib = b.iniciativa ?? -Infinity
-    if (ib !== ia) return ib - ia
-    if ((a.ordem || 0) !== (b.ordem || 0)) return (a.ordem || 0) - (b.ordem || 0)
-    return new Date(a.created_at) - new Date(b.created_at)
-  })
 }
 
 function FormInimigo({ onAdicionar }) {
@@ -311,6 +398,13 @@ export default function CombatePanel({
   sugestaoDano = null,          // F14.6
   onAplicarSugestao,
   onLimparSugestao,
+  // F22.6 — defesa ativa
+  defesaAtiva = null,
+  atributosSistema = [],
+  onPedirDefesa,
+  onResponderDefesa,
+  onResolverDefesa,
+  onCancelarDefesa,
 }) {
   const [busy, setBusy] = useState(false)
   const [erro, setErro] = useState('')
@@ -328,6 +422,12 @@ export default function CombatePanel({
   // Pode definir/rolar iniciativa deste combatente: mestre (todos) ou dono da ficha (o seu)
   const podeAgir = c =>
     isMestre || (c.ficha_id && cardsPorFicha[c.ficha_id]?.ficha?.dono_id === meuUserId)
+
+  // F22.6 — defensor: o dono do alvo (jogador); o mestre responde pelos inimigos
+  const souDefensor = c =>
+    c.ficha_id
+      ? cardsPorFicha[c.ficha_id]?.ficha?.dono_id === meuUserId
+      : isMestre
 
   // Sem combate ativo
   if (!encontro) {
@@ -466,6 +566,15 @@ export default function CombatePanel({
               onAplicarHp={onAplicarHp}
               sugestaoDano={sugestaoDano}
               onAplicarSugestao={onAplicarSugestao}
+              defesaAtiva={defesaAtiva}
+              atributosSistema={atributosSistema}
+              souDefensor={souDefensor(c)}
+              mesaId={mesaId}
+              sessaoId={sessaoId}
+              onPedirDefesa={onPedirDefesa}
+              onResponderDefesa={onResponderDefesa}
+              onResolverDefesa={onResolverDefesa}
+              onCancelarDefesa={onCancelarDefesa}
             />
           ))}
         </div>

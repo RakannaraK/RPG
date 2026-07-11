@@ -11,6 +11,8 @@ import { planejarTurno } from '../lib/custoHabilidade'
 import { useEncontro } from '../hooks/useEncontro'
 import { useRolagem } from '../hooks/useRolagem'
 import { calcularDescanso } from '../lib/restEngine'
+import { planejarDefesa } from '../lib/defesaEngine'
+import { ordenarPorIniciativa } from '../lib/iniciativa'
 import PresencaBar from '../components/sessao/PresencaBar'
 import PainelFichas from '../components/sessao/PainelFichas'
 import CombatePanel from '../components/sessao/CombatePanel'
@@ -57,6 +59,7 @@ export default function SessaoPage() {
   )
   const camposCombate = sistema?.config_layout?.campos_combate || []
   const descansos = sistema?.config_layout?.descansos || []
+  const defesaAtiva = sistema?.config_layout?.defesa_ativa || null // 22.6
   const { cards, loading: loadingCards, error: erroCards, conectado } = useSessaoFichas(mesaId, sistemaBundle)
 
   // Encontro de combate (Fase 14)
@@ -94,9 +97,14 @@ export default function SessaoPage() {
     return encontroApi.atualizarCombatente(id, { iniciativa: val === '' ? null : Number(val) })
   }
 
+  // Ordem de iniciativa dos combatentes (mesma dos turnos). Usada p/ achar quem
+  // age agora (custo por turno 20.5; atacante da defesa ativa 22.6).
+  const ordemIniciativa = () => ordenarPorIniciativa(encontroApi.combatentes)
+
   // Aplica dano (delta<0) ou cura (delta>0) a um combatente (14.5).
   // Jogador → HP da ficha (vida temp consumida antes); inimigo → HP do combatente.
-  async function handleAplicarHp(c, delta) {
+  // rotuloCustom (22.6) substitui a narração padrão do feed, se informado.
+  async function handleAplicarHp(c, delta, rotuloCustom = null) {
     if (!delta) return
     try {
       if (c.ficha_id) {
@@ -126,13 +134,63 @@ export default function SessaoPage() {
       }
       await registrarEvento({
         mesaId, sessaoId, fichaId: c.ficha_id || null,
-        rotulo: `${c.nome} ${delta < 0 ? `sofreu ${-delta} de dano` : `recuperou ${delta} de vida`}`,
+        rotulo: rotuloCustom || `${c.nome} ${delta < 0 ? `sofreu ${-delta} de dano` : `recuperou ${delta} de vida`}`,
         notacao: '', total: Math.abs(delta), dados: [],
       })
     } catch {
       // silenciado — sem permissão (RLS) ou falha de rede não deve quebrar a UI
     }
   }
+
+  // ---- Defesa ativa (22.6) — fluxo assíncrono no combate ----
+  // O mestre PEDE a defesa: grava o pedido no combatente-alvo (Realtime). O
+  // atacante é quem age agora (turno atual). Consome o dano de poder pendente.
+  async function handlePedirDefesa(alvo, { ataque, dano }) {
+    const idx = encontroApi.encontro?.turno_atual ?? 0
+    const atacante = ordemIniciativa()[idx] || null
+    const pendente = {
+      ataque: Number(ataque) || 0,
+      dano: Number(dano) || 0,
+      atacante_combatente_id: atacante && atacante.id !== alvo.id ? atacante.id : null,
+      atacante_nome: atacante && atacante.id !== alvo.id ? atacante.nome : null,
+      solicitado_em: new Date().toISOString(),
+      resposta: null,
+    }
+    await encontroApi.atualizarCombatente(alvo.id, { defesa_pendente: pendente })
+    setSugestaoDano(null)
+  }
+
+  // O DEFENSOR responde: grava a escolha + total no PRÓPRIO combatente (mesma
+  // permissão de definir a iniciativa). O mestre então resolve.
+  async function handleResponderDefesa(alvo, resposta) {
+    const dp = alvo.defesa_pendente
+    if (!dp) return
+    await encontroApi.atualizarCombatente(alvo.id, {
+      defesa_pendente: { ...dp, resposta: { ...resposta, respondido_em: new Date().toISOString() } },
+    })
+  }
+
+  // O MESTRE resolve: o motor puro decide dano/condição/narração; aqui só os
+  // efeitos (HP, condição no atacante, feed). Sem resposta = dano cheio. Limpa.
+  async function handleResolverDefesa(alvo) {
+    const dp = alvo.defesa_pendente
+    if (!dp) return
+    const plano = planejarDefesa(dp, defesaAtiva || {}, alvo.nome)
+    if (!plano) return
+
+    if (plano.condicao) {
+      try {
+        await encontroApi.aplicarCondicao(plano.condicao.combatente_id, {
+          nome: plano.condicao.nome, descricao: plano.condicao.descricao, duracaoRodadas: plano.condicao.duracao_rodadas,
+        })
+      } catch { /* RLS — segue sem a condição */ }
+    }
+    if (plano.danoFinal > 0) await handleAplicarHp(alvo, -plano.danoFinal, plano.narracao)
+    else await registrarEvento({ mesaId, sessaoId, fichaId: alvo.ficha_id || null, rotulo: plano.narracao, notacao: '', total: 0, dados: [] })
+    await encontroApi.atualizarCombatente(alvo.id, { defesa_pendente: null })
+  }
+
+  const handleCancelarDefesa = (alvo) => encontroApi.atualizarCombatente(alvo.id, { defesa_pendente: null })
 
   // F14.6 — dano de poder rolado por um jogador vira sugestão para o mestre lançar
   // num alvo do combate. Só o mestre; o próprio handleAplicarHp já registra no feed.
@@ -417,6 +475,12 @@ export default function SessaoPage() {
             sugestaoDano={sugestaoDano}
             onAplicarSugestao={aplicarSugestaoDano}
             onLimparSugestao={() => setSugestaoDano(null)}
+            defesaAtiva={defesaAtiva}
+            atributosSistema={atributos || []}
+            onPedirDefesa={handlePedirDefesa}
+            onResponderDefesa={handleResponderDefesa}
+            onResolverDefesa={handleResolverDefesa}
+            onCancelarDefesa={handleCancelarDefesa}
           />
         )}
 
