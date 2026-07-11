@@ -2,6 +2,75 @@
 import FormulaInput from './FormulaInput'
 import ProgressaoEditor from './ProgressaoEditor'
 import { avaliarFormula } from '../../lib/formulaEngine'
+import { ehRolado } from '../../lib/pontosEngine'
+
+const INP_PS = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500'
+
+/**
+ * Fase 22.1 — config de pontos de status (point-buy). EXCLUDENTE com a rolagem
+ * de atributo (F3): o editor avisa. Inicial e ganho aceitam número, fórmula ou
+ * notação rolada ("1d6 + 10").
+ */
+function PontosStatusEditor({ cfg = {}, onChange }) {
+  const set = patch => onChange({ ...cfg, ...patch })
+  return (
+    <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-purple-200 text-sm font-semibold">Pontos de status (distribuição)</p>
+        <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer">
+          <input type="checkbox" checked={!!cfg.ativo} onChange={e => set({ ativo: e.target.checked })} className="accent-purple-500" />
+          ativar
+        </label>
+      </div>
+      <p className="text-purple-500 text-xs">
+        Point-buy: um pool inicial e ganho por nível, distribuídos nos atributos. É um modo
+        <span className="text-amber-400"> alternativo</span> — não use junto com a rolagem de atributo (F3).
+        Valores aceitam número, fórmula (<span className="font-mono">nivel</span>) ou notação rolada
+        (<span className="font-mono">1d6 + 10</span>, rolada a cada nível).
+      </p>
+      {cfg.ativo && (
+        <>
+          <div className="flex flex-wrap gap-2 items-center">
+            <label className="text-purple-400 text-xs shrink-0">Rótulo</label>
+            <input type="text" value={cfg.rotulo || ''} onChange={e => set({ rotulo: e.target.value })}
+              placeholder="Pontos de Status" className={`${INP_PS} flex-1 min-w-[8rem]`} />
+          </div>
+          <div className="flex flex-wrap gap-3 items-center">
+            <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" checked={!!cfg.inicial_por_raca} onChange={e => set({ inicial_por_raca: e.target.checked })} className="accent-purple-500" />
+              inicial por raça
+            </label>
+            {!cfg.inicial_por_raca && (
+              <span className="flex items-center gap-1.5">
+                <span className="text-purple-400 text-xs">inicial</span>
+                <input type="text" value={cfg.inicial || ''} onChange={e => set({ inicial: e.target.value })}
+                  placeholder="16" className={`${INP_PS} w-24 font-mono`} />
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-3 items-center">
+            <span className="flex items-center gap-1.5">
+              <span className="text-purple-400 text-xs">ganho por nível</span>
+              <input type="text" value={cfg.ganho_por_nivel || ''} onChange={e => set({ ganho_por_nivel: e.target.value })}
+                placeholder="1d6 + 10" className={`${INP_PS} w-28 font-mono`} />
+              {ehRolado(cfg.ganho_por_nivel) && <span className="text-amber-400/80 text-[11px]">🎲 rolado</span>}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-purple-400 text-xs">custo por ponto</span>
+              <input type="number" min={1} value={cfg.custo_por_ponto ?? 1} onChange={e => set({ custo_por_ponto: Number(e.target.value) })}
+                className={`${INP_PS} w-16 text-center`} />
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-purple-400 text-xs">teto/atributo</span>
+              <input type="number" value={cfg.maximo_por_atributo ?? ''} onChange={e => set({ maximo_por_atributo: e.target.value === '' ? null : Number(e.target.value) })}
+                placeholder="—" className={`${INP_PS} w-16 text-center`} />
+            </span>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 const SECOES = [
   { id: 'acoes',         label: 'Ações / Ataques',      desc: 'Lista de ataques e habilidades ativas' },
@@ -193,6 +262,12 @@ export default function LayoutEditor({
       <ProgressaoEditor
         progressao={config.progressao_xp}
         onChange={p => onConfigChange({ ...config, progressao_xp: p })}
+      />
+
+      {/* Pontos de status (22.1) */}
+      <PontosStatusEditor
+        cfg={config.pontos_status}
+        onChange={ps => onConfigChange({ ...config, pontos_status: ps })}
       />
 
       {/* Rótulo de vida */}

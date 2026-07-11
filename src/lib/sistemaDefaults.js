@@ -23,6 +23,17 @@ export const CONFIG_LAYOUT_DEFAULT = {
   poderes_rotulo: 'Poderes',
   // Fase 21.6 — moedas / economia. Desativada = sem carteira na ficha.
   moedas: { ativo: false, denominacoes: [] }, // [{ id, nome, sigla, valor }]
+  // Fase 22.1 — distribuição de pontos de status (point-buy). EXCLUDENTE com a
+  // rolagem de atributo (F3). Desativado = fluxo de atributos normal.
+  pontos_status: {
+    ativo: false,
+    rotulo: 'Pontos de Status',
+    inicial_por_raca: false,
+    inicial: '16',
+    ganho_por_nivel: '1d6 + 10',
+    custo_por_ponto: 1,
+    maximo_por_atributo: null,
+  },
   // Fase 21.1 — maestria por uso. Desativada = nada aparece na ficha.
   maestria: {
     ativo: false,
@@ -68,6 +79,7 @@ export function mergeConfigLayout(raw) {
     },
     poderes_rotulo: (raw || {}).poderes_rotulo || 'Poderes',
     moedas: { ...CONFIG_LAYOUT_DEFAULT.moedas, ...((raw || {}).moedas || {}) },
+    pontos_status: { ...CONFIG_LAYOUT_DEFAULT.pontos_status, ...((raw || {}).pontos_status || {}) },
     maestria: {
       ...CONFIG_LAYOUT_DEFAULT.maestria,
       ...((raw || {}).maestria || {}),
