@@ -819,9 +819,13 @@ function ItemCard({
   item, parentTipo,
   onUpdate, onDelete, onAddMod, onRemoveMod,
   atributos, camposCombate, pericias = [], classes = [], pools = [],
+  pontosStatus = null, onUpdatePontos, // 22.2
   habilidades, onCreateHabilidade, onUpdateHabilidade, onDeleteHabilidade,
   onAddHabilidadeMod, onRemoveHabilidadeMod,
 }) {
+  // 22.2 — override de pontos por raça (só quando o sistema usa inicial por raça)
+  const mostraPontos = parentTipo === 'raca' && pontosStatus?.ativo && pontosStatus?.inicial_por_raca
+  const pc = item.pontos_config || {}
   const [expandido, setExpandido] = useState(false)
   const [editando, setEditando] = useState(false)
   const [editNome, setEditNome] = useState('')
@@ -903,6 +907,26 @@ function ItemCard({
 
       {expandido && !editando && (
         <>
+          {/* 22.2 — override de pontos de status por raça */}
+          {mostraPontos && (
+            <div className="mt-2 flex flex-wrap gap-2 items-center bg-slate-700/40 border border-purple-800/50 rounded-lg p-2">
+              <span className="text-purple-400 text-[11px]">Pontos:</span>
+              <span className="flex items-center gap-1">
+                <span className="text-purple-500 text-[11px]">inicial</span>
+                <input type="text" defaultValue={pc.inicial || ''}
+                  onBlur={e => { const v = e.target.value.trim(); if (v !== (pc.inicial || '')) onUpdatePontos(item.id, { ...pc, inicial: v || null }).catch(() => {}) }}
+                  placeholder="16" className="w-20 px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs font-mono placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500" />
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="text-purple-500 text-[11px]">ganho/nível</span>
+                <input type="text" defaultValue={pc.ganho_por_nivel || ''}
+                  onBlur={e => { const v = e.target.value.trim(); if (v !== (pc.ganho_por_nivel || '')) onUpdatePontos(item.id, { ...pc, ganho_por_nivel: v || null }).catch(() => {}) }}
+                  placeholder="1d6 + 10" className="w-24 px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs font-mono placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500" />
+              </span>
+              <span className="text-purple-600 text-[10px]">vazio = usa o padrão do sistema</span>
+            </div>
+          )}
+
           <ModificadoresExpandido
             modificadores={item.modificadores}
             onAddMod={onAddMod}
@@ -934,6 +958,7 @@ function SecaoRacaClasse({
   titulo, descTipo, itens, parentTipo,
   onCreate, onUpdate, onDelete, onAddMod, onRemoveMod,
   atributos, camposCombate, pericias = [], classes = [], pools = [],
+  pontosStatus = null, onUpdatePontos, // 22.2
   habilidades, onCreateHabilidade, onUpdateHabilidade, onDeleteHabilidade,
   onAddHabilidadeMod, onRemoveHabilidadeMod,
 }) {
@@ -1017,6 +1042,8 @@ function SecaoRacaClasse({
               atributos={atributos}
               camposCombate={camposCombate}
               pericias={pericias} classes={classes} pools={pools}
+              pontosStatus={pontosStatus}
+              onUpdatePontos={onUpdatePontos}
               habilidades={habilidades}
               onCreateHabilidade={onCreateHabilidade}
               onUpdateHabilidade={onUpdateHabilidade}
@@ -1177,11 +1204,11 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
 
 // ──────────────────────────────────────────────────────────
 
-export default function RacasClassesEditor({ sistemaId, atributos, camposCombate, pericias = [] }) {
+export default function RacasClassesEditor({ sistemaId, atributos, camposCombate, pericias = [], pontosStatus = null }) {
   const { pools } = usePools(sistemaId) // 20.5 — custo de pool em habilidades
   const {
     racas, classes, loading, error,
-    createRaca, updateRaca, deleteRaca,
+    createRaca, updateRaca, deleteRaca, atualizarPontosRaca,
     createClasse, updateClasse, deleteClasse,
     addModificador, removeModificador,
   } = useRacasClasses(sistemaId)
@@ -1243,6 +1270,8 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
         camposCombate={camposCombate}
         pericias={periciasSalvas}
         classes={classes} pools={pools}
+        pontosStatus={pontosStatus}
+        onUpdatePontos={atualizarPontosRaca}
         habilidades={habilidades}
         onCreateHabilidade={createHabilidade}
         onUpdateHabilidade={updateHabilidade}

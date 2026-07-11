@@ -299,6 +299,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
             atributos={atributos}
             camposCombate={configLayout.campos_combate || []}
             pericias={pericias}
+            pontosStatus={configLayout.pontos_status}
           />
         )}
 

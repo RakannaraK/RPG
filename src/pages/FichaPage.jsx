@@ -35,6 +35,9 @@ import { bonusMaestria } from '../lib/masteryEngine'
 import { useItens } from '../hooks/useItens'
 import PainelMaestrias from '../components/ficha/PainelMaestrias'
 import PainelCarteira from '../components/ficha/PainelCarteira'
+import { usePontosStatus } from '../hooks/usePontosStatus'
+import PainelPontos from '../components/ficha/PainelPontos'
+import { inicialDaRaca, ganhoPorNivelDaRaca, ehRolado, notacaoDoGanho, avaliarGanho } from '../lib/pontosEngine'
 import BarraXp from '../components/ficha/BarraXp'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
 import DescansoBar from '../components/ficha/DescansoBar'
@@ -90,6 +93,8 @@ export default function FichaPage() {
   const { itens: itensFicha } = useItens(fichaId)
   // 21.4 — propriedades desbloqueáveis do sistema
   const { propriedades: propriedadesSistema } = usePropriedades(sistema?.id)
+  // 22.2 — pontos de status (pool + histórico)
+  const { disponiveis: pontosDisp, log: pontosLog, jaRecebeuInicial, registrar: registrarPontos } = usePontosStatus(fichaId)
   // 20.4 — catálogo de poderes + poderes da ficha
   const { poderes: catalogoPoderes } = usePoderes(sistema?.id)
   const {
@@ -243,6 +248,7 @@ export default function FichaPage() {
       // 19.6 — recompensas daquele nível (da classe escolhida + do nível total)
       await gerarRecompensas(cf?.classe_id ?? null, novo, total)
       await anunciarNivel(total, cf?.classe?.nome ? `${cf.classe.nome} ${novo}` : null)
+      await creditarPontosNivel(total) // 22.2
       return total
     }
     // Sistema sem classes estruturadas: o nível vive só em fichas.nivel
@@ -250,8 +256,29 @@ export default function FichaPage() {
     await updateFicha(fichaId, { nivel: total })
     await gerarRecompensas(null, 0, total)
     await anunciarNivel(total, null)
+    await creditarPontosNivel(total) // 22.2
     refetch()
     return total
+  }
+
+  // 22.2 — ao subir de nível, rola/resolve o ganho de pontos e credita + loga.
+  // Função declarada (hoisted) — usa config/racaAtiva/contextoFormula do render.
+  async function creditarPontosNivel(nivel) {
+    const ps = config?.pontos_status
+    if (!ps?.ativo) return
+    const expr = ganhoPorNivelDaRaca(ps, racaAtiva)
+    if (!String(expr || '').trim()) return
+    try {
+      if (ehRolado(expr)) {
+        const nota = notacaoDoGanho(expr, contextoFormula)
+        const r = rolarNotacao(nota)
+        await registrarPontos({ delta: r.total, tipo: 'ganho_nivel', detalhe: { rolagem: nota, resultado: r.total, nivel } })
+        await registrarEvento({ mesaId, fichaId, rotulo: `${ficha.nome_personagem} ganhou ${r.total} ${ps.rotulo || 'pontos'} (${nota})`, notacao: nota, total: r.total, dados: r.dados })
+      } else {
+        const v = avaliarGanho(expr, contextoFormula)
+        await registrarPontos({ delta: v, tipo: 'ganho_nivel', detalhe: { valor: v, nivel } })
+      }
+    } catch { /* não bloqueia o level-up */ }
   }
 
   // 19.7 — o feed da mesa anuncia a subida de nível (o ganho de XP é silencioso)
@@ -586,6 +613,39 @@ export default function FichaPage() {
     } catch { /* erro silenciado — o valor local reverte no hook */ }
   }
 
+  // 22.2 — receber os pontos iniciais (rola se for notação; feed)
+  async function handleReceberInicial() {
+    const ps = config.pontos_status
+    const expr = inicialDaRaca(ps, racaAtiva)
+    if (ehRolado(expr)) {
+      const nota = notacaoDoGanho(expr, contextoFormula)
+      const r = rolarNotacao(nota)
+      await registrarPontos({ delta: r.total, tipo: 'ganho_inicial', detalhe: { rolagem: nota, resultado: r.total } })
+      try { await registrarEvento({ mesaId, fichaId, rotulo: `${ficha.nome_personagem} — ${ps.rotulo || 'pontos'} iniciais: ${r.total} (${nota})`, notacao: nota, total: r.total, dados: r.dados }) } catch {}
+    } else {
+      const v = avaliarGanho(expr, contextoFormula)
+      await registrarPontos({ delta: v, tipo: 'ganho_inicial', detalhe: { valor: v } })
+    }
+  }
+
+  // 22.2 — distribuir: aplica os deltas nos atributos e debita o pool (gasto)
+  async function handleDistribuirPontos(dist, custo) {
+    for (const [attrId, delta] of Object.entries(dist)) {
+      const d = Math.floor(Number(delta) || 0)
+      if (d <= 0) continue
+      const va = valoresAtributos.find(v => v.atributo?.id === attrId)
+      const base = va?.valor ?? 0
+      await updateValorAtributo(fichaId, attrId, base + d, va?.dados_rolados)
+    }
+    await registrarPontos({ delta: -custo, tipo: 'gasto', detalhe: { distribuicao: dist } })
+    refetch()
+  }
+
+  // 22.2 — ajuste do mestre (com motivo, registrado no log)
+  async function handleAjustarPontos(quantidade, motivo) {
+    await registrarPontos({ delta: quantidade, tipo: 'ajuste', detalhe: { motivo: (motivo || '').trim() || null } })
+  }
+
   // 20.1 — rolagem de um pool de DADOS vai ao feed
   async function handleRolagemPool({ pool, notacao, total, dados }) {
     try {
@@ -859,6 +919,27 @@ export default function FichaPage() {
             onAplicar={handleAplicarDescanso}
           />
         )}
+
+        {/* Pontos de status (22.2) — adaptativo: some se o modo pontos está off */}
+        <PainelPontos
+          config={config.pontos_status}
+          atributos={valoresAtributos.map(va => ({ id: va.atributo?.id, nome: va.atributo?.nome, valor: va.valor ?? 0 })).filter(a => a.id)}
+          disponiveis={pontosDisp}
+          log={pontosLog}
+          jaRecebeuInicial={jaRecebeuInicial}
+          isDono={isDono}
+          isMestre={souGestor}
+          inicialResolvido={(() => {
+            const ps = config.pontos_status
+            if (!ps?.ativo) return null
+            const e = inicialDaRaca(ps, racaAtiva)
+            if (!String(e || '').trim()) return null
+            return ehRolado(e) ? notacaoDoGanho(e, contextoFormula) : avaliarGanho(e, contextoFormula)
+          })()}
+          onReceberInicial={handleReceberInicial}
+          onDistribuir={handleDistribuirPontos}
+          onAjustar={handleAjustarPontos}
+        />
 
         {/* Faixa de atributos */}
         <FaixaAtributos

@@ -80,6 +80,13 @@ export function useRacasClasses(sistemaId) {
     setRacas(prev => prev.filter(r => r.id !== id))
   }
 
+  // Fase 22.2 — override de pontos de status por raça ({ inicial, ganho_por_nivel })
+  async function atualizarPontosRaca(id, pontos_config) {
+    const { error } = await supabase.from('racas').update({ pontos_config }).eq('id', id)
+    if (error) throw error
+    setRacas(prev => prev.map(r => (r.id === id ? { ...r, pontos_config } : r)))
+  }
+
   async function createClasse(nome, descricao) {
     const { data, error } = await supabase
       .from('classes')
@@ -149,7 +156,7 @@ export function useRacasClasses(sistemaId) {
 
   return {
     racas, classes, loading, error, refetch: fetchAll,
-    createRaca, updateRaca, deleteRaca,
+    createRaca, updateRaca, deleteRaca, atualizarPontosRaca,
     createClasse, updateClasse, deleteClasse,
     addModificador, removeModificador,
   }
