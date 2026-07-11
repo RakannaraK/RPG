@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import FormulaInput from './FormulaInput'
 import { useCategorias } from '../../hooks/useCategorias'
+import PropriedadesEditor from './PropriedadesEditor'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
 
@@ -14,8 +15,7 @@ function parseTabela(texto) {
 }
 
 /** CRUD das categorias de item do sistema. */
-function CategoriasEditor({ sistemaId }) {
-  const { categorias, criarCategoria, atualizarCategoria, removerCategoria } = useCategorias(sistemaId)
+function CategoriasEditor({ categorias, criarCategoria, atualizarCategoria, removerCategoria }) {
   const [nome, setNome] = useState('')
   const [descricao, setDescricao] = useState('')
   const [erro, setErro] = useState('')
@@ -109,6 +109,7 @@ function GanhosEditor({ ganhos = [], onChange }) {
  * (masteryEngine); aqui só editamos os parâmetros.
  */
 export default function MaestriaItensEditor({ sistemaId, config, onChange }) {
+  const cats = useCategorias(sistemaId)
   const m = config?.maestria || {}
   const curva = m.curva || { modo: 'formula', formula: '', tabela: [] }
   const bonus = m.bonus_por_nivel || { acerto_percentual: 0, efeito_percentual: 0 }
@@ -217,8 +218,16 @@ export default function MaestriaItensEditor({ sistemaId, config, onChange }) {
       {/* Categorias */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
         <p className="text-purple-200 text-sm font-semibold">Categorias de item</p>
-        <CategoriasEditor sistemaId={sistemaId} />
+        <CategoriasEditor
+          categorias={cats.categorias}
+          criarCategoria={cats.criarCategoria}
+          atualizarCategoria={cats.atualizarCategoria}
+          removerCategoria={cats.removerCategoria}
+        />
       </div>
+
+      {/* Propriedades desbloqueáveis (21.4) */}
+      <PropriedadesEditor sistemaId={sistemaId} categorias={cats.categorias} />
     </div>
   )
 }

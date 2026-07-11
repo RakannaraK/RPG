@@ -30,6 +30,8 @@ import PainelPoderes from '../components/ficha/PainelPoderes'
 import { podeAtivarHabilidade, planejarTurno } from '../lib/custoHabilidade'
 import { useCategorias } from '../hooks/useCategorias'
 import { useMaestrias } from '../hooks/useMaestrias'
+import { usePropriedades } from '../hooks/usePropriedades'
+import { bonusMaestria } from '../lib/masteryEngine'
 import { useItens } from '../hooks/useItens'
 import PainelMaestrias from '../components/ficha/PainelMaestrias'
 import BarraXp from '../components/ficha/BarraXp'
@@ -85,6 +87,8 @@ export default function FichaPage() {
   const maestriaCfg = mergeConfigLayout(sistema?.config_layout).maestria
   const { linhasMaestria, ganharXp } = useMaestrias(fichaId, maestriaCfg?.curva)
   const { itens: itensFicha } = useItens(fichaId)
+  // 21.4 — propriedades desbloqueáveis do sistema
+  const { propriedades: propriedadesSistema } = usePropriedades(sistema?.id)
   // 20.4 — catálogo de poderes + poderes da ficha
   const { poderes: catalogoPoderes } = usePoderes(sistema?.id)
   const {
@@ -678,6 +682,20 @@ export default function FichaPage() {
     } catch { /* vida não muda se falhar */ }
   }
 
+  // 21.4 — maestria de um item: nível + bônus percentuais + propriedades
+  // (desbloqueadas/bloqueadas). Propriedades aplicáveis: gerais + da categoria do item.
+  function maestriaDoItem(item) {
+    const mc = config.maestria
+    if (!mc?.ativo) return null
+    const escopo = mc.escopo === 'item' ? 'item' : 'categoria'
+    const linha = linhasMaestria.find(l =>
+      escopo === 'item' ? l.item_id === item.id : (item.categoria_id && l.categoria_id === item.categoria_id)
+    )
+    const nivel = linha?.nivel ?? 0
+    const props = (propriedadesSistema || []).filter(p => !p.categoria_id || p.categoria_id === item.categoria_id)
+    return { nivel, ...bonusMaestria(nivel, mc, props) }
+  }
+
   const hasLeft = secoes.pericias || secoes.proficiencias
   const hasRight = secoes.combate || secoes.defesas || secoes.imagens
 
@@ -903,6 +921,7 @@ export default function FichaPage() {
               categorias={categorias}
               maestria={config.maestria}
               onGanharMaestria={handleGanharMaestria}
+              maestriaDoItem={maestriaDoItem}
             />
           </div>
 

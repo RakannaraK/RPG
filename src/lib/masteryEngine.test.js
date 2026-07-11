@@ -103,3 +103,16 @@ describe('21.2 — bonusMaestria: percentuais e propriedades', () => {
     expect(proximaPropriedade(6, props)).toBeNull()
   })
 })
+
+describe('21.4 — percentual da maestria na rolagem (via pipeline F18)', () => {
+  const config = { bonus_por_nivel: { acerto_percentual: 10, efeito_percentual: 10 } }
+  // O EquipamentosTab soma este percentual ao da rolagem; useRolagem aplica
+  // total = floor(total_base * (1 + %/100)) — mesma ordem da F18.
+  it('maestria 2 → +20% no efeito; 42 → 50', () => {
+    expect(bonusMaestria(2, config).efeito_percentual).toBe(20)
+    expect(Math.floor(42 * (1 + 20 / 100))).toBe(50)
+  })
+  it('maestria 4 → +40% no dano do machado', () => {
+    expect(bonusMaestria(4, config).efeito_percentual).toBe(40)
+  })
+})

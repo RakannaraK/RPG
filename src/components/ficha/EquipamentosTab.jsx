@@ -334,7 +334,30 @@ function MaestriaGanhoInline({ item, maestria, categorias, onGanhar }) {
   )
 }
 
-export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [], categorias = [], maestria = null, onGanharMaestria }) {
+// 21.4 — chips das propriedades de maestria do item (desbloqueadas + bloqueadas)
+function MaestriaChips({ info }) {
+  if (!info) return null
+  const { desbloqueadas = [], bloqueadas = [] } = info
+  if (desbloqueadas.length === 0 && bloqueadas.length === 0) return null
+  return (
+    <div className="flex flex-wrap gap-1 mt-1.5">
+      {desbloqueadas.map(p => (
+        <span key={p.id} title={p.descricao}
+          className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/50 border border-amber-700/60 text-amber-200 cursor-help">
+          {p.sigla || p.nome}
+        </span>
+      ))}
+      {bloqueadas.map(p => (
+        <span key={p.id} title={`${p.descricao} (requer maestria ${p.maestria_minima})`}
+          className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 border border-purple-900/60 text-purple-600 cursor-help">
+          🔒 {p.sigla || p.nome} <span className="text-purple-700">nv {p.maestria_minima}</span>
+        </span>
+      ))}
+    </div>
+  )
+}
+
+export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [], categorias = [], maestria = null, onGanharMaestria, maestriaDoItem }) {
   const { itens, loading, error, createItem, updateItem, deleteItem } = useItens(fichaId)
   const { registrarRolagem } = useRolagem()
   const { preferencias } = usePreferencias()
@@ -382,14 +405,31 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
       setRollErro(`Notação inválida: "${notacaoBase}". Ex: 1d8+4, 1d20+5`)
       return
     }
+    const tipo = campo === 'dano' ? 'dano' : 'acerto'
+    // 21.4 — maestria do item: efeitos das propriedades desbloqueadas entram no
+    // cálculo (F12) e o percentual da maestria soma no pipeline (F18).
+    const mst = maestriaDoItem?.(item) || null
+    const propMods = (mst?.desbloqueadas || [])
+      .map(p => p.modificador_config)
+      .filter(cfg => cfg && cfg.tipo === tipo)
+      .map(cfg => ({
+        tipo, operacao: 'somar',
+        valor: cfg.valor, dados_extras: cfg.dados_extras, percentual_rolagem: cfg.percentual_rolagem,
+        _fonte: 'Propriedade',
+      }))
+
     // Aplica modificadores de acerto/dano ativos (globais + categoria da arma) — Fase 12.2
     const { notacaoFinal, detalhamento, percentual } = montarNotacaoComModificadores({
-      tipo: campo === 'dano' ? 'dano' : 'acerto',
+      tipo,
       notacaoBase,
       categoria: item.atributos_extras?.categoria || null,
-      modificadoresAtivos,
+      modificadoresAtivos: [...modificadoresAtivos, ...propMods],
     })
+    // percentual da maestria (acerto → acerto_percentual; dano → efeito_percentual)
+    const pctMaestria = mst ? (tipo === 'dano' ? mst.efeito_percentual : mst.acerto_percentual) : 0
+    const percentualTotal = (percentual || 0) + (Number(pctMaestria) || 0)
     const rotulo = `${campo === 'dano' ? 'Dano' : 'Ataque'} — ${item.nome}`
+      + (mst?.nivel > 0 ? ` (Maestria ${mst.nivel})` : '')
     setRollProcessing(true)
     setRollItemId(item.id)
     setRollErro('')
@@ -404,7 +444,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
         fichaId,
         rotulo,
         notacao: notacaoFinal,
-        percentual,
+        percentual: percentualTotal,
       })
       setRollResultado(res)
       setRollRotulo(rotulo)
@@ -497,6 +537,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                         >
                           {TIPO_LABELS[item.tipo] || item.tipo}
                         </span>
+                        <MaestriaChips info={maestriaDoItem?.(item)} />
                       </div>
                       {isDono && (
                         <div className="flex gap-1 shrink-0">
