@@ -470,6 +470,16 @@ export default function LayoutEditor({
                         <p className="text-purple-600 text-[11px] mt-1">
                           Pode usar atributos, mod, nível, perícias — mas não outro campo (evita ciclos).
                         </p>
+                        {/* 22.7 — destacar este derivado no painel de combate */}
+                        <label className="mt-1.5 flex items-center gap-1.5 text-purple-300 text-[11px] cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={!!campo.exibir_combate}
+                            onChange={e => updateCampoCombate(i, { exibir_combate: e.target.checked })}
+                            className="accent-purple-500"
+                          />
+                          exibir no combate (ex: "Ações extras: 3")
+                        </label>
                       </div>
                     )}
                   </div>

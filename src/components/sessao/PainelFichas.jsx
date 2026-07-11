@@ -25,7 +25,7 @@ function ChipEstado({ chip }) {
   )
 }
 
-const FichaCard = memo(function FichaCard({ card, camposCombate }) {
+const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false, onToggleCondicao }) {
   const hpMax = card.hpMax || card.hpMaxBase || 0
   const pct = hpMax > 0 ? Math.min(100, Math.max(0, (card.hpAtual / hpMax) * 100)) : 0
   const subtitulo = [card.racaNome, card.classeNome, card.nivel ? `Nível ${card.nivel}` : null]
@@ -87,6 +87,27 @@ const FichaCard = memo(function FichaCard({ card, camposCombate }) {
         </div>
       )}
 
+      {/* 22.7 — interruptores situacionais do dono (ex: CA 17/19/21), ao vivo */}
+      {souDono && (card.togglesManuais || []).length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {card.togglesManuais.map(t => (
+            <button
+              key={t.id}
+              onClick={() => onToggleCondicao?.(card.id, t.id, !t.ativo)}
+              className={`text-[11px] px-2 py-0.5 rounded-md border transition-colors ${
+                t.ativo
+                  ? 'bg-amber-800/70 border-amber-500/70 text-amber-100'
+                  : 'bg-slate-900/60 border-slate-600/50 text-slate-400 hover:border-amber-600/60 hover:text-amber-200'
+              }`}
+              title={t.ativo ? 'Ligado — clique p/ desligar' : 'Desligado — clique p/ ligar'}
+            >
+              {t.ativo ? '◉' : '○'} {t.rotulo}
+              {t.caDelta != null && <span className="ml-1 font-mono">{t.caDelta >= 0 ? `+${t.caDelta}` : t.caDelta} CA</span>}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Pools (20.1) — recursos visíveis ao mestre, ao vivo */}
       {(card.pools || []).length > 0 && (
         <div className="flex flex-wrap gap-1.5">
@@ -144,7 +165,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate }) {
   )
 })
 
-export default function PainelFichas({ cards = [], camposCombate = [], loading, error }) {
+export default function PainelFichas({ cards = [], camposCombate = [], loading, error, meuUserId = null, onToggleCondicao }) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -175,7 +196,13 @@ export default function PainelFichas({ cards = [], camposCombate = [], loading, 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {cards.map(card => (
-        <FichaCard key={card.id} card={card} camposCombate={camposCombate} />
+        <FichaCard
+          key={card.id}
+          card={card}
+          camposCombate={camposCombate}
+          souDono={!!meuUserId && card.ficha?.dono_id === meuUserId}
+          onToggleCondicao={onToggleCondicao}
+        />
       ))}
     </div>
   )

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import { coletarModificadores, calcularValoresFinais, agregarDefesas, resolverValoresFormula } from '../lib/modifierEngine'
+import { coletarModificadores, calcularValoresFinais, agregarDefesas, resolverValoresFormula, listarCondicoesManuais } from '../lib/modifierEngine'
 import { resolverFaixas } from '../lib/faixas'
+import { avaliarFormula } from '../lib/formulaEngine'
 import { calcularMaximos, mapaPools, atualDePool } from '../lib/poolEngine'
 import { slotsTotais, usadosPorCirculo, slotsDisponiveis, slotsAtivos } from '../lib/slotsEngine'
 
@@ -18,7 +19,7 @@ function groupBy(rows, key) {
  * Constrói o "card" computado de uma ficha para o painel da sessão, passando os
  * valores pelo motor de modificadores (Fases 9-12). Puro — sem acesso a banco.
  */
-function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRows, poolsRows, slotsRows, itensRows) {
+function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRows, poolsRows, slotsRows, itensRows, atributosRows) {
   const raca = (sis.racas || []).find(r => r.id === fichaRow.raca_id) || null
   const classe = (sis.classes || []).find(c => c.id === fichaRow.classe_id) || null
 
@@ -145,6 +146,50 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
   const valoresFinais = calcularValoresFinais(base, modificadoresAtivos)
   const defesas = agregarDefesas(modificadoresAtivos)
 
+  // 22.7 — campos de combate CALCULADOS (F17.4) no card da sessão. Precisam dos
+  // atributos FINAIS (base + mods), computados à parte (os mods não dependem de
+  // campo de combate → sem ciclo). Antes ficavam "—" na sessão (só a ficha
+  // computava). Inclui "CA sem armadura" e derivados como "Ações extras".
+  const baseAtributos = {}
+  for (const r of atributosRows || []) baseAtributos[r.atributo_id] = r.valor ?? 0
+  const finaisAttr = calcularValoresFinais({ atributos: baseAtributos, vida_max: 0, combate: {} }, modificadoresAtivos).atributos
+  const atributosCtx = {}
+  for (const a of sis.atributos || []) {
+    const v = finaisAttr[a.id]
+    if (v != null) { atributosCtx[a.id] = v; if (a.nome) atributosCtx[a.nome] = v }
+  }
+  const ctxCalc = { ...ctxMod, atributos: atributosCtx }
+  const camposCombate = sis.campos_combate || []
+  const combateCalculado = { ...valoresFinais.combate }
+  const derivadosCombate = [] // 22.7 — calculados marcados "exibir no combate"
+  for (const campo of camposCombate) {
+    if (campo.tipo !== 'calculado' || !campo.formula) continue
+    let valor = null
+    try { valor = avaliarFormula(campo.formula, ctxCalc) } catch { valor = null }
+    if (valor != null) combateCalculado[campo.id] = valor
+    if (campo.exibir_combate) derivadosCombate.push({ id: campo.id, nome: campo.nome, valor })
+  }
+
+  // 22.7 — interruptores de condição manual (F12) p/ o dono ligar/desligar na
+  // sessão (ex: CA situacional 17/19/21). Ativos+inativos, com o delta na CA.
+  const caCampo = camposCombate.find(cc => {
+    const n = (cc.nome || '').trim().toLowerCase()
+    return n === 'ca' || n.includes('armadura') || n.includes('defesa')
+  }) || null
+  const togglesVistos = new Set()
+  const togglesManuais = []
+  for (const m of listarCondicoesManuais({ raca, classe, classes: classesParaMotor, habilidadesFicha, itens: itensRows || [], estadoFicha })) {
+    const rotulo = (m.condicao_config?.rotulo || '').trim() || 'Condição'
+    if (togglesVistos.has(m.id)) continue
+    togglesVistos.add(m.id)
+    const mexeCa = caCampo && m.tipo === 'combate' && m.alvo === caCampo.id
+    togglesManuais.push({
+      id: m.id, rotulo,
+      ativo: condicoesManuais[m.id] === true,
+      caDelta: mexeCa && m.valor != null ? Number(m.valor) : null,
+    })
+  }
+
   // Mapa id→nome para rótulos de vantagem/desvantagem
   const nomes = {}
   ;(sis.atributos || []).forEach(a => { if (a?.id) nomes[a.id] = a.nome })
@@ -219,7 +264,9 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
     hpMax: valoresFinais.vida_max,
     hpMaxBase: fichaRow.hp_maximo ?? 0,
     vidaTemp: vidaTempEfetiva,
-    combate: valoresFinais.combate,
+    combate: combateCalculado, // 22.7 — inclui os campos calculados (CA calc./derivados)
+    derivadosCombate,          // 22.7 — calculados marcados "exibir no combate"
+    togglesManuais,            // 22.7 — interruptores situacionais (ex: CA 17/19/21)
     defesas,
     chips,
     modificadoresAtivos, // 14.6 — para ataques/dano com os buffs ativos
@@ -251,7 +298,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
   // Recarrega os dados de UMA ficha e devolve o card computado
   const carregarCard = useCallback(async (fichaId) => {
     const sis = sisRef.current || {}
-    const [fichaResp, habsResp, condResp, combResp, clsResp, poolsResp, slotsResp, itensResp] = await Promise.all([
+    const [fichaResp, habsResp, condResp, combResp, clsResp, poolsResp, slotsResp, itensResp, attrResp] = await Promise.all([
       supabase.from('fichas').select('*').eq('id', fichaId).single(),
       supabase.from('habilidades_ficha').select('*').eq('ficha_id', fichaId),
       supabase.from('condicoes_manuais_ficha').select('ficha_id, modificador_id, ativa').eq('ficha_id', fichaId),
@@ -260,9 +307,10 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       supabase.from('pools_ficha').select('ficha_id, pool_id, atual').eq('ficha_id', fichaId),
       supabase.from('slots_ficha').select('ficha_id, circulo, usados').eq('ficha_id', fichaId),
       supabase.from('itens_ficha').select('id, nome, equipado, durabilidade, modificadores').eq('ficha_id', fichaId),
+      supabase.from('valores_atributos').select('ficha_id, atributo_id, valor').eq('ficha_id', fichaId),
     ])
     if (fichaResp.error || !fichaResp.data) return null
-    return construirCard(fichaResp.data, habsResp.data, condResp.data, combResp.data, sis, clsResp.data, poolsResp.data, slotsResp.data, itensResp.data)
+    return construirCard(fichaResp.data, habsResp.data, condResp.data, combResp.data, sis, clsResp.data, poolsResp.data, slotsResp.data, itensResp.data, attrResp.data)
   }, [])
 
   const recarregarFicha = useCallback(async (fichaId) => {
@@ -295,7 +343,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       idsRef.current = new Set(ids)
       if (ids.length === 0) { setCards([]); return }
 
-      const [habsResp, condResp, combResp, clsResp, poolsResp, slotsResp, itensResp] = await Promise.all([
+      const [habsResp, condResp, combResp, clsResp, poolsResp, slotsResp, itensResp, attrResp] = await Promise.all([
         supabase.from('habilidades_ficha').select('*').in('ficha_id', ids),
         supabase.from('condicoes_manuais_ficha').select('ficha_id, modificador_id, ativa').in('ficha_id', ids),
         supabase.from('valores_combate').select('ficha_id, campo_id, valor').in('ficha_id', ids),
@@ -303,6 +351,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
         supabase.from('pools_ficha').select('ficha_id, pool_id, atual').in('ficha_id', ids),
         supabase.from('slots_ficha').select('ficha_id, circulo, usados').in('ficha_id', ids),
         supabase.from('itens_ficha').select('id, ficha_id, nome, equipado, durabilidade, modificadores').in('ficha_id', ids),
+        supabase.from('valores_atributos').select('ficha_id, atributo_id, valor').in('ficha_id', ids),
       ])
       const habsBy = groupBy(habsResp.data, 'ficha_id')
       const condBy = groupBy(condResp.data, 'ficha_id')
@@ -311,8 +360,9 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       const poolsBy = groupBy(poolsResp.data, 'ficha_id')
       const slotsBy = groupBy(slotsResp.data, 'ficha_id')
       const itensBy = groupBy(itensResp.data, 'ficha_id')
+      const attrBy = groupBy(attrResp.data, 'ficha_id')
       const sis = sisRef.current || {}
-      setCards(fichas.map(f => construirCard(f, habsBy[f.id], condBy[f.id], combBy[f.id], sis, clsBy[f.id], poolsBy[f.id], slotsBy[f.id], itensBy[f.id])))
+      setCards(fichas.map(f => construirCard(f, habsBy[f.id], condBy[f.id], combBy[f.id], sis, clsBy[f.id], poolsBy[f.id], slotsBy[f.id], itensBy[f.id], attrBy[f.id])))
     } catch (err) {
       setError(err.message || 'Erro ao carregar fichas da sessão.')
     } finally {
@@ -347,6 +397,8 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'habilidades_ficha' }, afetaFicha)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'condicoes_manuais_ficha' }, afetaFicha)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'valores_combate' }, afetaFicha)
+      // 22.7 — mudança de atributo recalcula os campos de combate calculados
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'valores_atributos' }, afetaFicha)
       // 19.1/19.4 — subir de nível ou trocar de classe move faixas e modificadores
       .on('postgres_changes', { event: '*', schema: 'public', table: 'classes_ficha' }, afetaFicha)
       // 20.1 — gasto de pool aparece ao vivo no painel do mestre

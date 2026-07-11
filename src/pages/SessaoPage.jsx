@@ -48,16 +48,17 @@ export default function SessaoPage() {
   const formulaModificador = sistema?.config_layout?.formula_modificador || ''
   const formulaProficiencia = sistema?.config_layout?.formula_proficiencia || ''
   const configSlots = sistema?.config_layout?.slots || null
+  const camposCombate = sistema?.config_layout?.campos_combate || []
   const sistemaBundle = useMemo(
     () => ({
       racas, classes, habilidades, atributos, pericias, pools,
       formula_modificador: formulaModificador,
       formula_proficiencia: formulaProficiencia,
       slots: configSlots,
+      campos_combate: camposCombate, // 22.7 — computar campos calculados no card
     }),
-    [racas, classes, habilidades, atributos, pericias, pools, formulaModificador, formulaProficiencia, configSlots]
+    [racas, classes, habilidades, atributos, pericias, pools, formulaModificador, formulaProficiencia, configSlots, camposCombate]
   )
-  const camposCombate = sistema?.config_layout?.campos_combate || []
   const descansos = sistema?.config_layout?.descansos || []
   const defesaAtiva = sistema?.config_layout?.defesa_ativa || null // 22.6
   const { cards, loading: loadingCards, error: erroCards, conectado } = useSessaoFichas(mesaId, sistemaBundle)
@@ -191,6 +192,17 @@ export default function SessaoPage() {
   }
 
   const handleCancelarDefesa = (alvo) => encontroApi.atualizarCombatente(alvo.id, { defesa_pendente: null })
+
+  // 22.7 — o dono liga/desliga uma condição manual (ex: CA situacional) direto na
+  // sessão. Escreve no próprio (RLS ok); o Realtime recalcula o card.
+  async function handleToggleCondicao(fichaId, modificadorId, novo) {
+    try {
+      await supabase.from('condicoes_manuais_ficha').upsert(
+        { ficha_id: fichaId, modificador_id: modificadorId, ativa: novo },
+        { onConflict: 'ficha_id,modificador_id' }
+      )
+    } catch { /* RLS/rede — silencioso, o card não muda */ }
+  }
 
   // F14.6 — dano de poder rolado por um jogador vira sugestão para o mestre lançar
   // num alvo do combate. Só o mestre; o próprio handleAplicarHp já registra no feed.
@@ -518,6 +530,8 @@ export default function SessaoPage() {
               camposCombate={camposCombate}
               loading={loadingCards}
               error={erroCards}
+              meuUserId={session?.user?.id}
+              onToggleCondicao={handleToggleCondicao}
             />
           </div>
 

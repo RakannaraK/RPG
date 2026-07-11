@@ -508,6 +508,18 @@ export default function CombatePanel({
         </div>
       )}
 
+      {/* 22.7 — derivados marcados "exibir no combate" do personagem ativo (todos veem) */}
+      {ativo?.ficha_id && (cardsPorFicha[ativo.ficha_id]?.derivadosCombate || []).length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-purple-500 text-[11px]">{ativo.nome}:</span>
+          {cardsPorFicha[ativo.ficha_id].derivadosCombate.map(d => (
+            <span key={d.id} className="text-[11px] px-2 py-0.5 rounded-md border bg-slate-900/70 border-purple-800/60 text-purple-200">
+              {d.nome} <span className="text-white font-bold">{d.valor != null ? d.valor : '—'}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Ações do personagem ativo (14.6) */}
       {ativo?.ficha_id && podeAgir(ativo) && cardsPorFicha[ativo.ficha_id] && (
         <div className="rounded-xl border border-amber-800/50 bg-amber-950/20 p-3 space-y-2">
