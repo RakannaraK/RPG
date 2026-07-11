@@ -2,6 +2,7 @@ import { useState } from 'react'
 import FormulaInput from './FormulaInput'
 import { useCategorias } from '../../hooks/useCategorias'
 import PropriedadesEditor from './PropriedadesEditor'
+import MoedasEditor from './MoedasEditor'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
 
@@ -228,6 +229,9 @@ export default function MaestriaItensEditor({ sistemaId, config, onChange }) {
 
       {/* Propriedades desbloqueáveis (21.4) */}
       <PropriedadesEditor sistemaId={sistemaId} categorias={cats.categorias} />
+
+      {/* Moedas (21.6) */}
+      <MoedasEditor config={config} onChange={onChange} />
     </div>
   )
 }

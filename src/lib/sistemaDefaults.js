@@ -21,6 +21,8 @@ export const CONFIG_LAYOUT_DEFAULT = {
   progressao_xp: { modo: 'nenhum', tabela: [], formula: '' },
   // Fase 20.6 — rótulo do painel de poderes na ficha (o mestre nomeia)
   poderes_rotulo: 'Poderes',
+  // Fase 21.6 — moedas / economia. Desativada = sem carteira na ficha.
+  moedas: { ativo: false, denominacoes: [] }, // [{ id, nome, sigla, valor }]
   // Fase 21.1 — maestria por uso. Desativada = nada aparece na ficha.
   maestria: {
     ativo: false,
@@ -65,6 +67,7 @@ export function mergeConfigLayout(raw) {
       ...((raw || {}).slots || {}),
     },
     poderes_rotulo: (raw || {}).poderes_rotulo || 'Poderes',
+    moedas: { ...CONFIG_LAYOUT_DEFAULT.moedas, ...((raw || {}).moedas || {}) },
     maestria: {
       ...CONFIG_LAYOUT_DEFAULT.maestria,
       ...((raw || {}).maestria || {}),

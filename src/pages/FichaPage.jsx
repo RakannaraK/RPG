@@ -34,6 +34,7 @@ import { usePropriedades } from '../hooks/usePropriedades'
 import { bonusMaestria } from '../lib/masteryEngine'
 import { useItens } from '../hooks/useItens'
 import PainelMaestrias from '../components/ficha/PainelMaestrias'
+import PainelCarteira from '../components/ficha/PainelCarteira'
 import BarraXp from '../components/ficha/BarraXp'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
 import DescansoBar from '../components/ficha/DescansoBar'
@@ -822,6 +823,14 @@ export default function FichaPage() {
           linhasMaestria={linhasMaestria}
           isDono={isDono}
           onGanhar={handleGanharMaestria}
+        />
+
+        {/* Carteira (21.6) — adaptativo: some se o sistema não tem moedas */}
+        <PainelCarteira
+          moedas={config.moedas}
+          carteira={ficha.carteira || {}}
+          isDono={isDono}
+          onSalvar={async nova => { await updateFicha(fichaId, { carteira: nova }); refetch() }}
         />
 
         {/* Recompensas de nível (19.6) — checklist-guia, some se não houver nenhuma */}
