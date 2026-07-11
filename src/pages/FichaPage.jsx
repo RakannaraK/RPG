@@ -598,7 +598,7 @@ export default function FichaPage() {
       }
     }
 
-    // 3) feed
+    // 3) feed. Dano de poder vira "aplicável": o mestre lança num alvo no combate (F14.6).
     const rotulo = `${ficha.nome_personagem} ${frasesDeUso(poder, circuloUsado, 'usou')}`
     try {
       await registrarEvento({
@@ -606,6 +606,9 @@ export default function FichaPage() {
         notacao: resultado?.notacao || '',
         total: resultado?.total ?? 0,
         dados: resultado?.dados || [],
+        aplicavel: resultado?.tipo === 'dano' && resultado?.total > 0
+          ? { tipo: 'dano', valor: resultado.total, origem: poder.nome }
+          : null,
       })
     } catch { /* o custo já foi pago; o feed é best-effort */ }
 

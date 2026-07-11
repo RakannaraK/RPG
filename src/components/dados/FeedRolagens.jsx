@@ -165,7 +165,7 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
             setAnimandoId(payload.new.id)
             setTimeout(() => setAnimandoId(null), 1400)
             playDiceNotify()
-            onNovaRolagem?.()
+            onNovaRolagem?.(payload.new)
           }
         }
       )

@@ -113,7 +113,7 @@ export function useRolagem() {
    * @param {number} params.total   — quantidade final (curada / vida temp)
    * @param {Array}  [params.dados] — [{lados, valor, descartado}] se houve rolagem
    */
-  async function registrarEvento({ mesaId, fichaId = null, rotulo, notacao = '', total, dados = [], sessaoId = null }) {
+  async function registrarEvento({ mesaId, fichaId = null, rotulo, notacao = '', total, dados = [], sessaoId = null, aplicavel = null }) {
     try {
       const payload = {
         mesa_id: mesaId,
@@ -128,6 +128,8 @@ export function useRolagem() {
           mantidos: dados.filter(d => !d.descartado).map(d => d.valor),
           descartados: dados.filter(d => d.descartado).map(d => d.valor),
           modificador: 0,
+          // F14.6 — marca dano/cura de poder para o mestre aplicar a um alvo no combate
+          ...(aplicavel ? { aplicavel } : {}),
         },
         total,
       }

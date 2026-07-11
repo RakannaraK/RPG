@@ -34,6 +34,7 @@ export default function SessaoPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [avisoTurno, setAvisoTurno] = useState('') // 20.5 — cobrança de custo por turno
+  const [sugestaoDano, setSugestaoDano] = useState(null) // F14.6 — dano de poder a aplicar num alvo
 
   const { conectados } = usePresencaSessao(sessaoId, mesaId)
 
@@ -131,6 +132,22 @@ export default function SessaoPage() {
     } catch {
       // silenciado — sem permissão (RLS) ou falha de rede não deve quebrar a UI
     }
+  }
+
+  // F14.6 — dano de poder rolado por um jogador vira sugestão para o mestre lançar
+  // num alvo do combate. Só o mestre; o próprio handleAplicarHp já registra no feed.
+  function aoNovaRolagem(rolagem) {
+    if (!isMestre || !sessao?.ativa) return
+    const ap = rolagem?.resultados?.aplicavel
+    if (ap?.tipo === 'dano' && Number(ap.valor) > 0) {
+      setSugestaoDano({ valor: Number(ap.valor), origem: ap.origem || '', autor: rolagem.autor_nome || '' })
+    }
+  }
+
+  async function aplicarSugestaoDano(combatente) {
+    if (!sugestaoDano) return
+    await handleAplicarHp(combatente, -sugestaoDano.valor)
+    setSugestaoDano(null)
   }
 
   // Descanso do grupo (15.4): calcula e aplica por ficha; retorna resumo por personagem.
@@ -397,6 +414,9 @@ export default function SessaoPage() {
             onRemoverCondicao={encontroApi.removerCondicao}
             onAplicarHp={handleAplicarHp}
             onReordenar={encontroApi.reordenar}
+            sugestaoDano={sugestaoDano}
+            onAplicarSugestao={aplicarSugestaoDano}
+            onLimparSugestao={() => setSugestaoDano(null)}
           />
         )}
 
@@ -443,7 +463,7 @@ export default function SessaoPage() {
               {sessao.ativa ? 'Rolagens' : 'Rolagens da sessão'}
             </p>
             {sessao.ativa ? (
-              <FeedRolagens mesaId={mesaId} />
+              <FeedRolagens mesaId={mesaId} onNovaRolagem={aoNovaRolagem} />
             ) : (
               <FeedRolagens
                 mesaId={mesaId}

@@ -92,6 +92,7 @@ function CombatenteRow({
   c, cardsPorFicha, campoCaId, condsDoComb = [], rodadaAtual,
   isMestre, podeAgir, ativo, podeSubir, podeDescer, onMover,
   onRemover, onRolarIniciativa, onSetIniciativa, onAplicarCondicao, onRemoverCondicao, onAplicarHp,
+  sugestaoDano = null, onAplicarSugestao, // F14.6
 }) {
   const estilo = TIPO_ESTILO[c.tipo] || TIPO_ESTILO.inimigo
   const hp = hpDoCombatente(c, cardsPorFicha)
@@ -183,6 +184,16 @@ function CombatenteRow({
           />
           <button onClick={() => aplicarHp(-1)} className="px-2 py-0.5 bg-red-800 hover:bg-red-700 text-white text-xs rounded transition-colors" title="Aplicar dano">− Dano</button>
           <button onClick={() => aplicarHp(+1)} className="px-2 py-0.5 bg-green-800 hover:bg-green-700 text-white text-xs rounded transition-colors" title="Aplicar cura">＋ Cura</button>
+          {/* F14.6 — aplicar o dano de poder pendente neste alvo */}
+          {sugestaoDano && (
+            <button
+              onClick={() => onAplicarSugestao?.(c)}
+              className="px-2 py-0.5 bg-amber-700 hover:bg-amber-600 text-white text-xs rounded transition-colors font-medium animate-pulse"
+              title={`Aplicar ${sugestaoDano.valor} de dano${sugestaoDano.origem ? ` (${sugestaoDano.origem})` : ''} neste alvo`}
+            >
+              ⚔ −{sugestaoDano.valor}
+            </button>
+          )}
         </div>
       )}
 
@@ -297,6 +308,9 @@ export default function CombatePanel({
   onRemoverCondicao,
   onAplicarHp,
   onReordenar,
+  sugestaoDano = null,          // F14.6
+  onAplicarSugestao,
+  onLimparSugestao,
 }) {
   const [busy, setBusy] = useState(false)
   const [erro, setErro] = useState('')
@@ -412,6 +426,19 @@ export default function CombatePanel({
         </div>
       )}
 
+      {/* F14.6 — dano de poder rolado por um jogador, aguardando um alvo */}
+      {sugestaoDano && (
+        <div className="mb-2 rounded-lg border border-amber-700/70 bg-amber-950/40 px-3 py-2 flex items-center gap-2 flex-wrap">
+          <span className="text-amber-300 text-sm">
+            ⚔ Dano pendente: <span className="font-bold">{sugestaoDano.valor}</span>
+            {sugestaoDano.origem && <span className="text-amber-400/80"> — {sugestaoDano.origem}</span>}
+            {sugestaoDano.autor && <span className="text-amber-500/70"> ({sugestaoDano.autor})</span>}
+          </span>
+          <span className="text-amber-500/70 text-xs">Clique no <span className="font-mono">⚔ −{sugestaoDano.valor}</span> de um alvo.</span>
+          <button onClick={onLimparSugestao} className="ml-auto text-amber-500 hover:text-amber-200 text-sm" title="Descartar">✕</button>
+        </div>
+      )}
+
       {/* Lista de combatentes (ordenada por iniciativa) */}
       {combatentes.length === 0 ? (
         <p className="text-purple-500 text-sm py-2">Nenhum combatente ainda. {isMestre && 'Adicione abaixo.'}</p>
@@ -437,6 +464,8 @@ export default function CombatePanel({
               onAplicarCondicao={onAplicarCondicao}
               onRemoverCondicao={onRemoverCondicao}
               onAplicarHp={onAplicarHp}
+              sugestaoDano={sugestaoDano}
+              onAplicarSugestao={onAplicarSugestao}
             />
           ))}
         </div>
