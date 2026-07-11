@@ -1,16 +1,19 @@
 import { useState } from 'react'
-import { calcularMaestria } from '../../lib/masteryEngine'
+import { calcularMaestria, proximaPropriedade, xpParaNivel } from '../../lib/masteryEngine'
 
 /**
  * Fase 21.3 — painel de maestrias da ficha (adaptativo: some se maestria
  * desativada). Mostra nível, barra de XP e os botões de ganho rápido do sistema.
  * O ganho é semiautomático (um clique) — nunca automático.
  */
-function MaestriaCard({ nome, sub, xp, curva, ganhos, isDono, onGanhar }) {
+function MaestriaCard({ nome, sub, xp, curva, ganhos, propriedades = [], isDono, onGanhar }) {
   const [manual, setManual] = useState('')
   const [ocupado, setOcupado] = useState(false)
   const { nivel, xpNoNivel, xpParaProximo, faltam } = calcularMaestria(xp, curva)
   const pct = xpParaProximo > 0 ? Math.max(0, Math.min(100, (xpNoNivel / xpParaProximo) * 100)) : 100
+  // 21.7 — próximo desbloqueio de propriedade ("faltam X para Dupla")
+  const prox = proximaPropriedade(nivel, propriedades)
+  const faltamProx = prox ? Math.max(0, xpParaNivel(prox.maestria_minima, curva) - xp) : 0
 
   async function ganhar(delta) {
     if (!delta) return
@@ -36,6 +39,12 @@ function MaestriaCard({ nome, sub, xp, curva, ganhos, isDono, onGanhar }) {
           ? <>XP {xp} · faltam <span className="text-purple-400">{faltam}</span> para a maestria {nivel + 1}</>
           : <>XP {xp} · nível máximo da curva</>}
       </p>
+      {prox && (
+        <p className="text-amber-500/70 text-[11px]">
+          🔒 Próximo: <span className="text-amber-400">{prox.nome}</span> na maestria {prox.maestria_minima}
+          {faltamProx > 0 && <> — faltam {faltamProx} XP</>}
+        </p>
+      )}
 
       {isDono && (
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -79,6 +88,7 @@ export default function PainelMaestrias({
   categorias = [],
   itens = [],
   linhasMaestria = [],
+  propriedades = [], // 21.7
   isDono,
   onGanhar,
 }) {
@@ -114,6 +124,12 @@ export default function PainelMaestrias({
     return l?.xp ?? 0
   }
 
+  // 21.7 — propriedades aplicáveis a um alvo (gerais + da categoria)
+  function propsDe(card) {
+    const catId = escopo === 'categoria' ? card.id : (itens.find(i => i.id === card.id)?.categoria_id)
+    return (propriedades || []).filter(p => !p.categoria_id || p.categoria_id === catId)
+  }
+
   return (
     <div className="bg-slate-800 border border-purple-800 rounded-2xl p-4 space-y-2.5">
       <p className="text-purple-200 text-sm font-semibold">Maestrias</p>
@@ -133,6 +149,7 @@ export default function PainelMaestrias({
             xp={xpDe(c.alvo)}
             curva={curva}
             ganhos={ganhos}
+            propriedades={propsDe(c)}
             isDono={isDono}
             onGanhar={delta => onGanhar(c.alvo, delta, c.nome)}
           />

@@ -821,6 +821,7 @@ export default function FichaPage() {
           categorias={categorias}
           itens={itensFicha}
           linhasMaestria={linhasMaestria}
+          propriedades={propriedadesSistema}
           isDono={isDono}
           onGanhar={handleGanharMaestria}
         />

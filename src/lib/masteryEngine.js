@@ -96,6 +96,18 @@ export function bonusMaestria(nivel, config, propriedades = []) {
   }
 }
 
+/** XP acumulado necessário para ESTAR num nível (soma dos custos 1..nivel). */
+export function xpParaNivel(nivel, curva) {
+  let total = 0
+  for (let n = 1; n <= Math.min(MAX_NIVEL, Math.max(0, Math.floor(Number(nivel) || 0))); n++) {
+    let custo
+    try { custo = custoDoNivel(n, curva) } catch { custo = 0 }
+    if (custo <= 0) break
+    total += custo
+  }
+  return total
+}
+
 /** Próxima propriedade a desbloquear (a de menor requisito ainda bloqueada). */
 export function proximaPropriedade(nivel, propriedades = []) {
   const n = Math.max(0, Number(nivel) || 0)
