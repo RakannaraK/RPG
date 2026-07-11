@@ -69,6 +69,7 @@ export default function AbasCentrais({
   habilidadesBloqueadas = [], // 19.5
   poolsPorId = {}, onPagarTurno,  // 20.5
   categorias = [], // 21.1
+  maestria = null, onGanharMaestria, // 21.3
 }) {
   const temHabilidades = habilidades.length > 0 || habilidadesFicha.length > 0 || condicoesManuaisDisponiveis.length > 0
     || habilidadesBloqueadas.length > 0
@@ -123,6 +124,8 @@ export default function AbasCentrais({
             valoresFinais={valoresFinais}
             modificadoresAtivos={modificadoresAtivos}
             categorias={categorias}
+            maestria={maestria}
+            onGanharMaestria={onGanharMaestria}
           />
         )}
         {currentTab === 'tracos' && (

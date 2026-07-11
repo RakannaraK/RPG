@@ -306,7 +306,35 @@ function ItemForm({ item, fichaId, donoId, categorias = [], onSalvar, onFechar }
   )
 }
 
-export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [], categorias = [] }) {
+// 21.3 — atalho de ganho de XP de maestria após rolar acerto/dano com uma arma
+function MaestriaGanhoInline({ item, maestria, categorias, onGanhar }) {
+  if (!maestria?.ativo) return null
+  const escopo = maestria.escopo === 'item' ? 'item' : 'categoria'
+  const alvo = escopo === 'item'
+    ? { item_id: item.id }
+    : (item.categoria_id ? { categoria_id: item.categoria_id } : null)
+  const ganhos = maestria.ganhos_padrao || []
+  if (!alvo || ganhos.length === 0) return null
+  const nome = escopo === 'item' ? item.nome : (categorias.find(c => c.id === item.categoria_id)?.nome || 'categoria')
+
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap mt-1.5 pt-1.5 border-t border-purple-900/40">
+      <span className="text-amber-400/80 text-[11px]">Maestria ({nome}):</span>
+      {ganhos.map((g, i) => (
+        <button
+          key={i}
+          onClick={() => onGanhar(alvo, Number(g.xp) || 0, nome)}
+          className="text-[11px] px-2 py-0.5 rounded-lg bg-amber-900/40 hover:bg-amber-800/60 text-amber-200 transition-colors"
+          title={`+${g.xp} XP de maestria`}
+        >
+          {g.rotulo || `+${g.xp}`} <span className="text-amber-400/70">+{g.xp}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
+export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [], categorias = [], maestria = null, onGanharMaestria }) {
   const { itens, loading, error, createItem, updateItem, deleteItem } = useItens(fichaId)
   const { registrarRolagem } = useRolagem()
   const { preferencias } = usePreferencias()
@@ -539,14 +567,24 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                         )}
 
                         {rollItemId === item.id && rollResultado && !rollErro && (
-                          <RollResultCompact
-                            resultado={rollResultado}
-                            rotulo={rollRotulo}
-                            rolando={rollRolando}
-                            onClose={() => { setRollResultado(null); setRollItemId(null) }}
-                            skin={preferencias.dado_skin}
-                            detalhamento={rollDetalhamento}
-                          />
+                          <>
+                            <RollResultCompact
+                              resultado={rollResultado}
+                              rotulo={rollRotulo}
+                              rolando={rollRolando}
+                              onClose={() => { setRollResultado(null); setRollItemId(null) }}
+                              skin={preferencias.dado_skin}
+                              detalhamento={rollDetalhamento}
+                            />
+                            {isDono && onGanharMaestria && (
+                              <MaestriaGanhoInline
+                                item={item}
+                                maestria={maestria}
+                                categorias={categorias}
+                                onGanhar={onGanharMaestria}
+                              />
+                            )}
+                          </>
                         )}
                       </div>
                     )}

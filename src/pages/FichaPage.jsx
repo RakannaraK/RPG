@@ -29,6 +29,9 @@ import { usePoderesFicha } from '../hooks/usePoderesFicha'
 import PainelPoderes from '../components/ficha/PainelPoderes'
 import { podeAtivarHabilidade, planejarTurno } from '../lib/custoHabilidade'
 import { useCategorias } from '../hooks/useCategorias'
+import { useMaestrias } from '../hooks/useMaestrias'
+import { useItens } from '../hooks/useItens'
+import PainelMaestrias from '../components/ficha/PainelMaestrias'
 import BarraXp from '../components/ficha/BarraXp'
 import { useCondicoesManuais } from '../hooks/useCondicoesManuais'
 import DescansoBar from '../components/ficha/DescansoBar'
@@ -78,6 +81,10 @@ export default function FichaPage() {
   const { linhasSlots, definirUsados } = useSlotsFicha(fichaId)
   // 21.1 — categorias de item (dropdown no inventário)
   const { categorias } = useCategorias(sistema?.id)
+  // 21.3 — maestrias da ficha (nível derivado da curva do sistema)
+  const maestriaCfg = mergeConfigLayout(sistema?.config_layout).maestria
+  const { linhasMaestria, ganharXp } = useMaestrias(fichaId, maestriaCfg?.curva)
+  const { itens: itensFicha } = useItens(fichaId)
   // 20.4 — catálogo de poderes + poderes da ficha
   const { poderes: catalogoPoderes } = usePoderes(sistema?.id)
   const {
@@ -558,6 +565,20 @@ export default function FichaPage() {
     } catch { /* falha silenciada — não quebra a ficha */ }
   }
 
+  // 21.3 — credita XP de maestria; ao subir de nível, anuncia no feed
+  async function handleGanharMaestria(alvo, delta, nome) {
+    try {
+      const r = await ganharXp(alvo, delta)
+      if (r.subiu) {
+        await registrarEvento({
+          mesaId, fichaId,
+          rotulo: `${ficha.nome_personagem} — Maestria em ${nome} subiu para ${r.nivel}!`,
+          notacao: '', total: r.nivel, dados: [],
+        })
+      }
+    } catch { /* erro silenciado — o valor local reverte no hook */ }
+  }
+
   // 20.1 — rolagem de um pool de DADOS vai ao feed
   async function handleRolagemPool({ pool, notacao, total, dados }) {
     try {
@@ -773,6 +794,16 @@ export default function FichaPage() {
           onCurar={handleCurarComPool}
         />
 
+        {/* Maestrias (21.3) — adaptativo: some se maestria desativada */}
+        <PainelMaestrias
+          config={config.maestria}
+          categorias={categorias}
+          itens={itensFicha}
+          linhasMaestria={linhasMaestria}
+          isDono={isDono}
+          onGanhar={handleGanharMaestria}
+        />
+
         {/* Recompensas de nível (19.6) — checklist-guia, some se não houver nenhuma */}
         <PainelRecompensas
           recompensasFicha={recompensasFicha}
@@ -870,6 +901,8 @@ export default function FichaPage() {
               nomesAlvos={nomesAlvos}
               habilidadesBloqueadas={habilidadesBloqueadas}
               categorias={categorias}
+              maestria={config.maestria}
+              onGanharMaestria={handleGanharMaestria}
             />
           </div>
 
