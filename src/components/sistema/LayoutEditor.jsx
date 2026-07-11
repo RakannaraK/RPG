@@ -1,6 +1,7 @@
 // Editor de layout/seções do sistema — usado pelo mestre no SistemaEditor
 import FormulaInput from './FormulaInput'
 import ProgressaoEditor from './ProgressaoEditor'
+import DefesaAtivaEditor from './DefesaAtivaEditor'
 import { avaliarFormula } from '../../lib/formulaEngine'
 import { ehRolado } from '../../lib/pontosEngine'
 
@@ -335,6 +336,12 @@ export default function LayoutEditor({
       <CriticoEditor
         cfg={config.critico}
         onChange={c => onConfigChange({ ...config, critico: c })}
+      />
+
+      {/* Defesa ativa (22.5) */}
+      <DefesaAtivaEditor
+        cfg={config.defesa_ativa}
+        onChange={d => onConfigChange({ ...config, defesa_ativa: d })}
       />
 
       {/* Rótulo de vida */}

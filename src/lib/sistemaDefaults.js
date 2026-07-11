@@ -23,6 +23,17 @@ export const CONFIG_LAYOUT_DEFAULT = {
   poderes_rotulo: 'Poderes',
   // Fase 21.6 — moedas / economia. Desativada = sem carteira na ficha.
   moedas: { ativo: false, denominacoes: [] }, // [{ id, nome, sigla, valor }]
+  // Fase 22.5 — defesa ativa (rolagem oposta no combate). Opcional.
+  defesa_ativa: {
+    ativo: false,
+    opcoes: [],   // [{ id, nome, notacao }]
+    faixas: [],   // [{ de, ate, reducao_percentual, rotulo }]
+    contra_ataque: {
+      sofre_dano_cheio: true,
+      efeito_no_atacante: 'condicao',
+      condicao: { nome: 'Exposto', duracao_rodadas: 1, descricao: '' },
+    },
+  },
   // Fase 22.3 — crítico configurável. Limiar por fórmula (var `maestria`).
   critico: {
     ativo: false,
@@ -89,6 +100,11 @@ export function mergeConfigLayout(raw) {
     moedas: { ...CONFIG_LAYOUT_DEFAULT.moedas, ...((raw || {}).moedas || {}) },
     pontos_status: { ...CONFIG_LAYOUT_DEFAULT.pontos_status, ...((raw || {}).pontos_status || {}) },
     critico: { ...CONFIG_LAYOUT_DEFAULT.critico, ...((raw || {}).critico || {}) },
+    defesa_ativa: {
+      ...CONFIG_LAYOUT_DEFAULT.defesa_ativa,
+      ...((raw || {}).defesa_ativa || {}),
+      contra_ataque: { ...CONFIG_LAYOUT_DEFAULT.defesa_ativa.contra_ataque, ...((raw || {}).defesa_ativa?.contra_ataque || {}) },
+    },
     maestria: {
       ...CONFIG_LAYOUT_DEFAULT.maestria,
       ...((raw || {}).maestria || {}),
