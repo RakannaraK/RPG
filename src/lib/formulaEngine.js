@@ -10,7 +10,7 @@
  *   variáveis-função (arg = nome/id bruto): atributo(x) mod(x) pericia(x) recurso(x)
  *     nivel(classe)[F19: nível na classe, 0 se ausente] · pool(x)[F20: valor atual]
  *     reservada (parseia, avaliação falha): maestria(x)[F21]
- *   variáveis simples: nivel, proficiencia[F19], vida_atual, vida_max, x (só na fórmula de modificador)
+ *   variáveis simples: nivel, proficiencia[F19], proximo_nivel[F21: curva de maestria], vida_atual, vida_max, x
  *   funções matemáticas: piso teto arredondar abs (1 arg) · min max (2 args)
  *   case-insensitive; nomes resolvidos por id OU nome normalizado (sem acento, minúsculo)
  */
@@ -221,6 +221,8 @@ function evalVar(name, ctx) {
       }
       return avaliarFormula(f, { ...ctx, _emProficiencia: true })
     }
+    // Fase 21 — variável da CURVA de maestria (nível sendo adquirido: 1, 2, 3…).
+    case 'proximo_nivel': return comoNumero(ctx.proximo_nivel ?? 0, 'nível', 'proximo_nivel')
   }
   // Atalho opt-in (só na camada de notação de dado, Fase 17.2): nome solto que
   // não é variável embutida é resolvido como o atributo com aquele nome.
