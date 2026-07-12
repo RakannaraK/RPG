@@ -271,8 +271,11 @@ export function calcularValoresFinais(base, modificadores) {
     // resultariam em negativo → piso em 0"). Sem percentual, o subtotal passa
     // intacto — fichas sem percentual não mudam NADA (regressão F9), inclusive
     // podendo ficar negativas por somas, como no engine pré-Fase-18.
+    // Aritmética inteira: `× (1 + p/100)` sofre erro de ponto flutuante
+    // (100 com +13% dava 112, não 113 — 100 × 1.13 = 112.9999…). `× (100+p)/100`
+    // é exato para percentuais inteiros.
     const subtotal2 = percTotal !== 0
-      ? Math.max(0, Math.floor(subtotal1 * (1 + percTotal / 100)))
+      ? Math.max(0, Math.floor(subtotal1 * (100 + percTotal) / 100))
       : subtotal1
 
     // 4 — multiplicadores duros (em sequência)

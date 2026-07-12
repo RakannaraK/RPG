@@ -68,12 +68,13 @@ export function useRolagem() {
       resultado = { ...resultado, total: sub }
     }
 
-    // Fase 18.3 — percentual de rolagem: aplica sobre o TOTAL (após vant/desv e fixos), piso
+    // Fase 18.3 — percentual de rolagem: aplica sobre o TOTAL (após vant/desv e fixos), piso.
+    // Aritmética inteira (× (100+p)/100) p/ evitar o erro de ponto flutuante do × (1+p/100).
     if (percentual) {
       const totalBase = resultado.total
       resultado = {
         ...resultado,
-        total: Math.floor(totalBase * (1 + percentual / 100)),
+        total: Math.floor(totalBase * (100 + percentual) / 100),
         total_base: totalBase,
         percentual,
       }
