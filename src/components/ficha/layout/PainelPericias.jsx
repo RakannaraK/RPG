@@ -90,12 +90,13 @@ export default function PainelPericias({
     // "Força + Briga"), alvo (roll_under) ou modificador (faixas).
     if (modoResolucao !== 'soma' && registrarResolvida) {
       const valorModo = (Number(pf.bonus) || 0) + (Number(atributoVal) || 0)
+      const estado = resolverVantagem({ alvo: pericia.id, modificadoresAtivos })
       setRolando(true)
-      setRollAtivo({ periciaId: pericia.id, resultado: null, rolando: true, estado: 'normal' })
+      setRollAtivo({ periciaId: pericia.id, resultado: null, rolando: true, estado })
       tocarSomDado(preferencias.dado_skin, { ativo: preferencias.som_ativo, volume: preferencias.som_volume, numDados: modoResolucao === 'sucessos' ? valorModo : 2 })
       try {
-        const res = await registrarResolvida({ mesaId, fichaId, rotulo: `Teste de ${pericia.nome}`, resolucao, valor: valorModo, especiaisQtd })
-        setRollAtivo({ periciaId: pericia.id, resultado: res, rolando: false, estado: 'normal' })
+        const res = await registrarResolvida({ mesaId, fichaId, rotulo: `Teste de ${pericia.nome}`, resolucao, valor: valorModo, especiaisQtd, vantagem: estado })
+        setRollAtivo({ periciaId: pericia.id, resultado: res, rolando: false, estado })
       } catch { setRollAtivo(null) } finally { setRolando(false) }
       return
     }

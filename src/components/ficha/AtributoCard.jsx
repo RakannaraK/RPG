@@ -163,13 +163,13 @@ export default function AtributoCard({
     if (testando || !registrarRolagem) return
 
     // 23.3 — modos de resolução: o atributo vira parada (sucessos), alvo
-    // (roll_under) ou modificador (faixas). Vantagem por modo fica p/ a 23.6.
+    // (roll_under) ou modificador (faixas). Vantagem por modo (23.6).
     if (modoResolucao !== 'soma' && registrarResolvida) {
       setTestando(true); setErroTeste('')
       const valorModo = modoResolucao === 'faixas' ? (temMod ? modAtributo : display) : display
       try {
-        const res = await registrarResolvida({ mesaId, fichaId, rotulo: `Teste de ${atributo.nome}`, resolucao, valor: Number(valorModo) || 0, especiaisQtd })
-        setTesteResultado(res); setTesteVantagem('normal'); setTesteRolando(true)
+        const res = await registrarResolvida({ mesaId, fichaId, rotulo: `Teste de ${atributo.nome}`, resolucao, valor: Number(valorModo) || 0, especiaisQtd, vantagem: vantagemEstado })
+        setTesteResultado(res); setTesteVantagem(vantagemEstado); setTesteRolando(true)
         setTimeout(() => { setTesteRolando(false); setTestando(false) }, 1400)
       } catch (err) { setErroTeste(err.message || 'Erro ao rolar.'); setTestando(false) }
       return

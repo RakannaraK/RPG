@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { rolarNotacao } from '../lib/diceNotation'
 import { rolarDados } from '../lib/dice'
 import { aplicarCritico } from '../lib/criticoEngine'
-import { resolverRolagem } from '../lib/resolutionEngine'
+import { resolverRolagem, paradaComVantagem, escolherRollUnder } from '../lib/resolutionEngine'
 
 // Troca os valores nos índices dados (imutável) — usado na rerolagem (23.4)
 function replaceAt(arr, indices, novos) {
@@ -129,7 +129,7 @@ export function useRolagem() {
    * atributo/perícia contribui: parada (sucessos), alvo (roll_under) ou
    * modificador (faixas). `dificuldade` é o ajuste ad-hoc da rolagem.
    */
-  async function registrarResolvida({ mesaId, fichaId = null, sessaoId = null, rotulo = null, resolucao, valor = 0, dificuldade = null, especiaisQtd = 0 }) {
+  async function registrarResolvida({ mesaId, fichaId = null, sessaoId = null, rotulo = null, resolucao, valor = 0, dificuldade = null, especiaisQtd = 0, vantagem = 'normal' }) {
     setErro('')
     setRolando(true)
     const modo = resolucao?.modo || 'soma'
@@ -139,19 +139,29 @@ export function useRolagem() {
     let difParam = null
     let notacaoStr = ''
     let dados3D = null
+    let descartadoRU = null // 23.6 — o dado não usado no roll_under com vant/desv
+    const sufVant = vantagem === 'vantagem' ? ' [vantagem]' : vantagem === 'desvantagem' ? ' [desvantagem]' : ''
 
     try {
       if (modo === 'sucessos') {
-        const qtd = Math.max(0, Math.floor(Number(valor) || 0))
+        // Vantagem por modo (23.6): ±2 dados na parada
+        const qtd = paradaComVantagem(Number(valor) || 0, vantagem)
         dadosNum = rolarDados(qtd, faces)
         const esp = Math.max(0, Math.min(Math.floor(Number(especiaisQtd) || 0), qtd))
         especiais_idx = Array.from({ length: esp }, (_, i) => i)
         difParam = dificuldade != null && dificuldade !== '' ? Number(dificuldade) : (resolucao.dificuldade_padrao ?? 6)
-        notacaoStr = `${qtd}d${faces} (dif ${difParam})`
+        notacaoStr = `${qtd}d${faces} (dif ${difParam})${sufVant}`
       } else if (modo === 'roll_under') {
-        dadosNum = rolarDados(1, faces)
+        // Vantagem por modo (23.6): rola 2, pega o menor (vant.) / maior (desv.)
+        if (vantagem === 'normal') {
+          dadosNum = rolarDados(1, faces)
+        } else {
+          const { usado, descartado } = escolherRollUnder(rolarDados(2, faces), vantagem)
+          descartadoRU = descartado
+          dadosNum = [usado]
+        }
         difParam = dificuldade != null && dificuldade !== '' ? Number(dificuldade) : (Number(valor) || 0)
-        notacaoStr = `1d${faces} ≤ ${difParam}`
+        notacaoStr = `1d${faces} ≤ ${difParam}${sufVant}`
       } else if (modo === 'faixas') {
         const nb = resolucao.notacao_base || '2d6'
         const rolado = rolarNotacao(nb)
@@ -178,6 +188,7 @@ export function useRolagem() {
       total = estruturado.sucessos
     } else if (modo === 'roll_under') {
       dadosFeed = [{ lados: faces, valor: estruturado.valor, descartado: false }]
+      if (descartadoRU != null) dadosFeed.push({ lados: faces, valor: descartadoRU, descartado: true })
       total = estruturado.valor
     } else if (modo === 'faixas') {
       dadosFeed = dados3D || []

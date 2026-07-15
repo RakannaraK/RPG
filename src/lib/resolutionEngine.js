@@ -246,6 +246,29 @@ export function estiloVantagem(modo) {
 }
 
 /**
+ * Vantagem no modo SUCESSOS (23.6): +2 dados na parada (vantagem) / −2 (desv.),
+ * nunca abaixo de 0. Convenção documentada.
+ */
+export function paradaComVantagem(qtd, vantagem) {
+  const n = Math.max(0, Math.floor(Number(qtd) || 0))
+  if (vantagem === 'vantagem') return n + 2
+  if (vantagem === 'desvantagem') return Math.max(0, n - 2)
+  return n
+}
+
+/**
+ * Vantagem no modo ROLL_UNDER (23.6): rola 2 e pega o MENOR (vantagem — mais fácil
+ * passar sob o alvo) ou o MAIOR (desvantagem). Devolve o usado e o descartado.
+ */
+export function escolherRollUnder(dois = [], vantagem) {
+  const a = Number(dois[0]) || 0
+  const b = Number(dois[1] ?? dois[0]) || 0
+  if (vantagem === 'vantagem') return { usado: Math.min(a, b), descartado: Math.max(a, b) }
+  if (vantagem === 'desvantagem') return { usado: Math.max(a, b), descartado: Math.min(a, b) }
+  return { usado: a, descartado: null }
+}
+
+/**
  * Validação da config de resolução para o editor (23.2). Retorna erros (impedem)
  * e avisos (informam). Não bloqueia sobreposição de faixas: o tier "opcional" (12+
  * sobre 10+) é intencional — vence a de maior `de`.

@@ -229,6 +229,15 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
       {modo !== 'soma' && val.valido && val.erros.length === 0 && (
         <p className="text-green-600 text-[11px]">✓ configuração válida</p>
       )}
+
+      {/* Ajuda: vantagem por modo (23.6) */}
+      {(modo === 'sucessos' || modo === 'roll_under') && (
+        <p className="text-purple-600 text-[11px] border-t border-purple-900/40 pt-2">
+          Vantagem/desvantagem neste modo: {modo === 'sucessos'
+            ? '+2 / −2 dados na parada.'
+            : 'rola duas vezes e pega a melhor / pior.'}
+        </p>
+      )}
     </div>
   )
 }
