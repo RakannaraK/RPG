@@ -194,6 +194,60 @@ export function resolverRolagem({ config = {}, dados = [], dificuldade, especiai
 }
 
 /**
+ * Percentuais (F18) só fazem sentido matemático onde há um TOTAL numérico: soma e
+ * faixas. Em sucessos/roll_under o resultado é contagem/comparação — um bônus %
+ * não teria efeito. O editor usa isto para esconder/avisar (23.2/23.6).
+ */
+export function percentuaisAplicaveis(modo) {
+  return modo === 'soma' || modo === 'faixas' || modo == null
+}
+
+/**
+ * Vantagem/desvantagem POR MODO (23.6). Convenções documentadas, não improvisadas:
+ *   soma/faixas → 'notacao' (vira 2dNkh1/kl1, como hoje)
+ *   sucessos    → '±2 dados' na parada
+ *   roll_under  → 'duas rolagens' (pega melhor/pior)
+ */
+export function estiloVantagem(modo) {
+  if (modo === 'sucessos') return 'dados'
+  if (modo === 'roll_under') return 'duas_rolagens'
+  return 'notacao'
+}
+
+/**
+ * Validação da config de resolução para o editor (23.2). Retorna erros (impedem)
+ * e avisos (informam). Não bloqueia sobreposição de faixas: o tier "opcional" (12+
+ * sobre 10+) é intencional — vence a de maior `de`.
+ */
+export function validarResolucao(config = {}) {
+  const erros = []
+  const avisos = []
+  const modo = config.modo || 'soma'
+
+  if (modo === 'sucessos') {
+    if ((Number(config.dado) || 0) < 2) erros.push('O dado da parada precisa ter ao menos 2 lados.')
+    if ((Number(config.dificuldade_padrao) || 0) < 1) erros.push('A dificuldade padrão precisa ser ao menos 1.')
+  } else if (modo === 'roll_under') {
+    if ((Number(config.dado) || 0) < 2) erros.push('O dado precisa ter ao menos 2 lados.')
+  } else if (modo === 'faixas') {
+    const fs = config.faixas || []
+    if (fs.length === 0) erros.push('Defina ao menos uma faixa de resultado.')
+    fs.forEach((f, i) => {
+      if (!String(f.rotulo || '').trim()) erros.push(`Faixa ${i + 1}: dê um rótulo.`)
+      const de = f.de == null || f.de === '' ? -Infinity : Number(f.de)
+      const ate = f.ate == null || f.ate === '' ? Infinity : Number(f.ate)
+      if (Number.isFinite(ate) && Number.isFinite(de) && ate < de) erros.push(`Faixa ${i + 1}: "até" menor que "de".`)
+    })
+  }
+
+  if (!percentuaisAplicaveis(modo)) {
+    avisos.push('Modificadores percentuais (F18) não se aplicam neste modo — o resultado é contagem/comparação, não um total.')
+  }
+
+  return { valido: erros.length === 0, erros, avisos }
+}
+
+/**
  * Re-resolve após uma rerolagem parcial (23.4): troca os dados nos índices dados
  * pelos novos e reaplica o contrato inteiro (sucessos recontados, faixa remapeada).
  * @param {object} paramsOriginais — os mesmos passados a resolverRolagem

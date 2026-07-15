@@ -2,6 +2,7 @@
 import FormulaInput from './FormulaInput'
 import ProgressaoEditor from './ProgressaoEditor'
 import DefesaAtivaEditor from './DefesaAtivaEditor'
+import ResolucaoEditor from './ResolucaoEditor'
 import { avaliarFormula } from '../../lib/formulaEngine'
 import { ehRolado } from '../../lib/pontosEngine'
 
@@ -342,6 +343,12 @@ export default function LayoutEditor({
       <DefesaAtivaEditor
         cfg={config.defesa_ativa}
         onChange={d => onConfigChange({ ...config, defesa_ativa: d })}
+      />
+
+      {/* Resolução de rolagens (23.2) */}
+      <ResolucaoEditor
+        cfg={config.resolucao}
+        onChange={r => onConfigChange({ ...config, resolucao: r })}
       />
 
       {/* Rótulo de vida */}

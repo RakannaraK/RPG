@@ -23,6 +23,30 @@ export const CONFIG_LAYOUT_DEFAULT = {
   poderes_rotulo: 'Poderes',
   // Fase 21.6 — moedas / economia. Desativada = sem carteira na ficha.
   moedas: { ativo: false, denominacoes: [] }, // [{ id, nome, sigla, valor }]
+  // Fase 23 — modo de RESOLUÇÃO da rolagem. Ausente/'soma' = comportamento de
+  // sempre (retrocompatível byte a byte). Um modo por sistema.
+  resolucao: {
+    modo: 'soma', // 'soma' | 'sucessos' | 'roll_under' | 'faixas'
+    // sucessos:
+    dado: 10,
+    dificuldade_padrao: 6,
+    max_conta_dobrado: false,
+    par_de_max_critico: false,
+    um_anula_sucesso: false,
+    botch: true,
+    // roll_under:
+    faixas_qualidade: true,
+    critico_em: 1,
+    desastre_em: 100,
+    desastre_faixas: [], // [{ ate_alvo, desastre_em }]
+    // faixas:
+    notacao_base: '2d6',
+    faixas: [], // [{ de, ate, rotulo, texto, cor, opcional }]
+    // transversais:
+    explosao: { ativo: false },
+    rerolagem: { ativo: false, pool_id: null, custo: 1, max_dados: 3 },
+    dados_especiais: { ativo: false, nome: '', quantidade_formula: '', marcacoes: [] },
+  },
   // Fase 22.5 — defesa ativa (rolagem oposta no combate). Opcional.
   defesa_ativa: {
     ativo: false,
@@ -100,6 +124,13 @@ export function mergeConfigLayout(raw) {
     moedas: { ...CONFIG_LAYOUT_DEFAULT.moedas, ...((raw || {}).moedas || {}) },
     pontos_status: { ...CONFIG_LAYOUT_DEFAULT.pontos_status, ...((raw || {}).pontos_status || {}) },
     critico: { ...CONFIG_LAYOUT_DEFAULT.critico, ...((raw || {}).critico || {}) },
+    resolucao: {
+      ...CONFIG_LAYOUT_DEFAULT.resolucao,
+      ...((raw || {}).resolucao || {}),
+      explosao: { ...CONFIG_LAYOUT_DEFAULT.resolucao.explosao, ...((raw || {}).resolucao?.explosao || {}) },
+      rerolagem: { ...CONFIG_LAYOUT_DEFAULT.resolucao.rerolagem, ...((raw || {}).resolucao?.rerolagem || {}) },
+      dados_especiais: { ...CONFIG_LAYOUT_DEFAULT.resolucao.dados_especiais, ...((raw || {}).resolucao?.dados_especiais || {}) },
+    },
     defesa_ativa: {
       ...CONFIG_LAYOUT_DEFAULT.defesa_ativa,
       ...((raw || {}).defesa_ativa || {}),

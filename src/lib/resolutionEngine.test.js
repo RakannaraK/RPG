@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { resolverRolagem, reresolver } from './resolutionEngine'
+import { resolverRolagem, reresolver, validarResolucao, percentuaisAplicaveis, estiloVantagem } from './resolutionEngine'
 
 // Rolador determinístico: consome uma fila de resultados (para explosão/rerolagem)
 const fila = (...seq) => { let i = 0; return () => seq[i++] }
@@ -176,5 +176,40 @@ describe('23.1 · modo soma — intocado (regressão)', () => {
     const r = resolverRolagem({ dados: [1, 2, 3] })
     expect(r.modo).toBe('soma')
     expect(r.total).toBe(6)
+  })
+})
+
+describe('23.2 · validação e regras por modo (para o editor)', () => {
+  it('percentuais só valem em soma e faixas', () => {
+    expect(percentuaisAplicaveis('soma')).toBe(true)
+    expect(percentuaisAplicaveis('faixas')).toBe(true)
+    expect(percentuaisAplicaveis('sucessos')).toBe(false)
+    expect(percentuaisAplicaveis('roll_under')).toBe(false)
+  })
+
+  it('vantagem por modo (convenção documentada)', () => {
+    expect(estiloVantagem('sucessos')).toBe('dados')       // ±2 dados na parada
+    expect(estiloVantagem('roll_under')).toBe('duas_rolagens')
+    expect(estiloVantagem('soma')).toBe('notacao')
+  })
+
+  it('sistema "parada d10 dif6 com par-crítico e botch" é válido', () => {
+    const cfg = { modo: 'sucessos', dado: 10, dificuldade_padrao: 6, par_de_max_critico: true, botch: true }
+    const v = validarResolucao(cfg)
+    expect(v.valido).toBe(true)
+    expect(v.avisos.some(a => a.includes('percentuais'))).toBe(true) // avisa que % não se aplica
+  })
+
+  it('"d100 roll-under com qualidades" é válido', () => {
+    expect(validarResolucao({ modo: 'roll_under', dado: 100, faixas_qualidade: true }).valido).toBe(true)
+  })
+
+  it('faixas sem rótulo ou sem faixa nenhuma → erro', () => {
+    expect(validarResolucao({ modo: 'faixas', faixas: [] }).valido).toBe(false)
+    expect(validarResolucao({ modo: 'faixas', faixas: [{ ate: 6, rotulo: '' }] }).valido).toBe(false)
+  })
+
+  it('soma não gera aviso de percentual', () => {
+    expect(validarResolucao({ modo: 'soma' }).avisos).toEqual([])
   })
 })
