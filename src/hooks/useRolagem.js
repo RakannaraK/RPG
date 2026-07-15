@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { rolarNotacao } from '../lib/diceNotation'
+import { rolarDados } from '../lib/dice'
 import { aplicarCritico } from '../lib/criticoEngine'
+import { resolverRolagem } from '../lib/resolutionEngine'
 
 /**
  * Hook central de rolagem.
@@ -115,6 +117,97 @@ export function useRolagem() {
   }
 
   /**
+   * Fase 23.3 — rolagem nos MODOS de resolução (sucessos/roll_under/faixas). O
+   * modo soma segue por registrarRolagem (intocado). `valor` é o número que o
+   * atributo/perícia contribui: parada (sucessos), alvo (roll_under) ou
+   * modificador (faixas). `dificuldade` é o ajuste ad-hoc da rolagem.
+   */
+  async function registrarResolvida({ mesaId, fichaId = null, sessaoId = null, rotulo = null, resolucao, valor = 0, dificuldade = null, especiaisQtd = 0 }) {
+    setErro('')
+    setRolando(true)
+    const modo = resolucao?.modo || 'soma'
+    const faces = Number(resolucao?.dado) || 10
+    let dadosNum = []
+    let especiais_idx = []
+    let difParam = null
+    let notacaoStr = ''
+    let dados3D = null
+
+    try {
+      if (modo === 'sucessos') {
+        const qtd = Math.max(0, Math.floor(Number(valor) || 0))
+        dadosNum = rolarDados(qtd, faces)
+        const esp = Math.max(0, Math.min(Math.floor(Number(especiaisQtd) || 0), qtd))
+        especiais_idx = Array.from({ length: esp }, (_, i) => i)
+        difParam = dificuldade != null && dificuldade !== '' ? Number(dificuldade) : (resolucao.dificuldade_padrao ?? 6)
+        notacaoStr = `${qtd}d${faces} (dif ${difParam})`
+      } else if (modo === 'roll_under') {
+        dadosNum = rolarDados(1, faces)
+        difParam = dificuldade != null && dificuldade !== '' ? Number(dificuldade) : (Number(valor) || 0)
+        notacaoStr = `1d${faces} ≤ ${difParam}`
+      } else if (modo === 'faixas') {
+        const nb = resolucao.notacao_base || '2d6'
+        const rolado = rolarNotacao(nb)
+        dadosNum = rolado.mantidos
+        dados3D = rolado.dados
+        difParam = Number(valor) || 0
+        notacaoStr = `${nb}${difParam > 0 ? `+${difParam}` : difParam < 0 ? `${difParam}` : ''}`
+      } else {
+        difParam = Number(valor) || 0
+      }
+    } catch (err) {
+      setErro(err.message || 'Notação inválida.')
+      setRolando(false)
+      throw err
+    }
+
+    const estruturado = resolverRolagem({ config: resolucao, dados: dadosNum, dificuldade: difParam, especiais_idx })
+
+    // Dados p/ o 3D no feed + total de compatibilidade (rolagens.total)
+    let total
+    let dadosFeed
+    if (modo === 'sucessos') {
+      dadosFeed = (estruturado.dados || []).map(d => ({ lados: faces, valor: d.valor, descartado: false, sucesso: d.sucesso, especial: d.especial, explosao: d.explosao }))
+      total = estruturado.sucessos
+    } else if (modo === 'roll_under') {
+      dadosFeed = [{ lados: faces, valor: estruturado.valor, descartado: false }]
+      total = estruturado.valor
+    } else if (modo === 'faixas') {
+      dadosFeed = dados3D || []
+      total = estruturado.total
+    } else {
+      dadosFeed = []
+      total = difParam
+    }
+
+    const resultadoLocal = { notacao: notacaoStr, dados: dadosFeed, mantidos: dadosNum, descartados: [], modificador: 0, total, modo, estruturado }
+
+    try {
+      const payload = {
+        mesa_id: mesaId,
+        autor_id: session.user.id,
+        autor_nome: autorNome || session.user.email,
+        ficha_id: fichaId || null,
+        rotulo: rotulo || null,
+        notacao: notacaoStr,
+        resultados: { dados: dadosFeed, mantidos: dadosNum, descartados: [], modificador: 0 },
+        total,
+        modo,
+        resultado_estruturado: estruturado,
+      }
+      if (sessaoId) payload.sessao_id = sessaoId
+      const { error } = await supabase.from('rolagens').insert(payload)
+      if (error) throw error
+    } catch (err) {
+      setErro(err.message || 'Erro ao salvar rolagem no servidor.')
+    } finally {
+      setRolando(false)
+    }
+
+    return resultadoLocal
+  }
+
+  /**
    * Registra um EVENTO já resolvido no feed (sem rolar de novo) — usado por
    * efeitos pontuais de habilidade como cura e vida temporária (Fase 12.4).
    * O chamador já calculou o total (e os dados, se rolou); aqui só persiste.
@@ -155,5 +248,5 @@ export function useRolagem() {
     }
   }
 
-  return { registrarRolagem, registrarEvento, rolando, erro, autorNome }
+  return { registrarRolagem, registrarResolvida, registrarEvento, rolando, erro, autorNome }
 }

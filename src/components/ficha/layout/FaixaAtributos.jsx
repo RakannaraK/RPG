@@ -6,6 +6,8 @@ export default function FaixaAtributos({
   mesaId,
   fichaId,
   registrarRolagem,
+  registrarResolvida = null,
+  resolucao = null,
   dadoPadrao,
   valoresFinaisMotor,
   detalhamentoMotor,
@@ -43,6 +45,8 @@ export default function FaixaAtributos({
             mesaId={mesaId}
             fichaId={fichaId}
             registrarRolagem={registrarRolagem}
+            registrarResolvida={registrarResolvida}
+            resolucao={resolucao}
             dadoPadrao={dadoPadrao}
             valorFinal={valoresFinaisMotor ? valoresFinaisMotor[va.atributo?.id] : undefined}
             fontesMod={

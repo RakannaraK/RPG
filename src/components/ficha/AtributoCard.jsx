@@ -4,6 +4,7 @@ import Dice3D from '../dados/Dice3D'
 import { tocarSomDado, estimarNumDados } from '../../lib/diceSounds'
 import { resolverVantagem, aplicarVantagem } from '../../lib/rollModifiers'
 import { avaliarFormula } from '../../lib/formulaEngine'
+import { descreverResultado } from '../../lib/resolutionEngine'
 import { usePreferencias } from '../../context/PreferenciasContext'
 
 // Aviso visual de vantagem/desvantagem/anulada (Fase 12.3)
@@ -67,6 +68,8 @@ export default function AtributoCard({
   modificadoresAtivos = [],
   formulaMod = '',
   contextoFormula = null,
+  resolucao = null,          // 23.3 — modo de resolução do sistema
+  registrarResolvida = null,
   compact = false,
 }) {
   const { preferencias } = usePreferencias()
@@ -151,8 +154,24 @@ export default function AtributoCard({
     }
   }
 
+  const modoResolucao = resolucao?.modo || 'soma'
+
   async function handleTestar() {
     if (testando || !registrarRolagem) return
+
+    // 23.3 — modos de resolução: o atributo vira parada (sucessos), alvo
+    // (roll_under) ou modificador (faixas). Vantagem por modo fica p/ a 23.6.
+    if (modoResolucao !== 'soma' && registrarResolvida) {
+      setTestando(true); setErroTeste('')
+      const valorModo = modoResolucao === 'faixas' ? (temMod ? modAtributo : display) : display
+      try {
+        const res = await registrarResolvida({ mesaId, fichaId, rotulo: `Teste de ${atributo.nome}`, resolucao, valor: Number(valorModo) || 0 })
+        setTesteResultado(res); setTesteVantagem('normal'); setTesteRolando(true)
+        setTimeout(() => { setTesteRolando(false); setTestando(false) }, 1400)
+      } catch (err) { setErroTeste(err.message || 'Erro ao rolar.'); setTestando(false) }
+      return
+    }
+
     setTestando(true)
     setErroTeste('')
     // Com fórmula de modificador, o teste usa o MODIFICADOR (ex: 1d20+mod), não o valor
@@ -185,6 +204,9 @@ export default function AtributoCard({
 
   // ── Modo compacto ────────────────────────────────────────────────────────────
   const buffado = fontesMod && fontesMod.length > 0
+  // 23.3 — resumo do teste quando o sistema usa um modo de resolução
+  const descTeste = testeResultado?.modo && testeResultado.modo !== 'soma'
+    ? descreverResultado(testeResultado.estruturado) : null
 
   if (compact) {
     return (
@@ -287,10 +309,12 @@ export default function AtributoCard({
                   skin={preferencias.dado_skin}
                 />
               ))}
-              <span className="text-white font-bold text-xl leading-none ml-1">
-                {testeResultado.total}
-              </span>
+              {!descTeste && (
+                <span className="text-white font-bold text-xl leading-none ml-1">{testeResultado.total}</span>
+              )}
             </div>
+            {descTeste && <p className="text-center text-sm font-bold text-purple-100">{descTeste.texto}</p>}
+            {descTeste?.textoFaixa && <p className="text-purple-300 text-[10px] text-center italic">"{descTeste.textoFaixa}"</p>}
             {erroTeste && <p className="text-red-400 text-[10px] text-center">{erroTeste}</p>}
           </div>
         )}
@@ -442,11 +466,14 @@ export default function AtributoCard({
               </div>
             ))}
             <div className="flex items-baseline gap-1.5 ml-1">
-              <span className="text-purple-400 text-xs">Total:</span>
-              <span className="text-2xl font-bold text-white leading-none">{testeResultado.total}</span>
+              <span className="text-purple-400 text-xs">{descTeste ? '' : 'Total:'}</span>
+              {descTeste
+                ? <span className="text-xl font-bold text-purple-100 leading-none">{descTeste.texto}</span>
+                : <span className="text-2xl font-bold text-white leading-none">{testeResultado.total}</span>}
             </div>
           </div>
-          {(testeResultado.mantidos.length > 1 || testeResultado.modificador !== 0) && (
+          {descTeste?.textoFaixa && <p className="text-purple-300 text-xs italic">"{descTeste.textoFaixa}"</p>}
+          {!descTeste && (testeResultado.mantidos.length > 1 || testeResultado.modificador !== 0) && (
             <p className="text-purple-500 text-xs">
               ({testeResultado.mantidos.join(' + ')}
               {testeResultado.modificador > 0 && ` + ${testeResultado.modificador}`}

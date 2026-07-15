@@ -193,6 +193,37 @@ export function resolverRolagem({ config = {}, dados = [], dificuldade, especiai
   }
 }
 
+const cap = s => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
+
+/**
+ * Descrição do resultado para o feed (23.3). PURA. Recebe o resultado_estruturado
+ * (tem `.modo`). soma → null (o feed usa o total normal). Devolve { texto, cor,
+ * textoFaixa?, marcacao? } — os rótulos/textos que aparecem na mesa.
+ */
+export function descreverResultado(res) {
+  if (!res || !res.modo || res.modo === 'soma') return null
+
+  if (res.modo === 'sucessos') {
+    const n = res.sucessos || 0
+    const sufixo = res.critico ? ' — crítico!' : res.botch ? ' — botch!' : ''
+    const cor = res.critico ? 'verde' : res.botch ? 'vermelho' : n > 0 ? 'verde' : 'roxo'
+    return { texto: `${n} sucesso${n === 1 ? '' : 's'}${sufixo}`, cor, marcacao: res.marcacao || null }
+  }
+  if (res.modo === 'roll_under') {
+    const q = res.critico ? 'Crítico'
+      : res.desastre ? 'Desastre'
+      : res.sucesso ? (res.qualidade ? cap(res.qualidade) : 'Sucesso')
+      : 'Falha'
+    const cor = res.critico ? 'verde' : res.desastre ? 'vermelho' : res.sucesso ? 'verde' : 'vermelho'
+    return { texto: `${res.valor} vs ${res.alvo} — ${q}`, cor }
+  }
+  if (res.modo === 'faixas') {
+    const f = res.faixa
+    return { texto: `${f?.rotulo || '—'} (${res.total})`, cor: f?.cor || 'roxo', textoFaixa: f?.texto || '' }
+  }
+  return null
+}
+
 /**
  * Percentuais (F18) só fazem sentido matemático onde há um TOTAL numérico: soma e
  * faixas. Em sucessos/roll_under o resultado é contagem/comparação — um bônus %

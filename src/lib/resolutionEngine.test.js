@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { resolverRolagem, reresolver, validarResolucao, percentuaisAplicaveis, estiloVantagem } from './resolutionEngine'
+import { resolverRolagem, reresolver, validarResolucao, percentuaisAplicaveis, estiloVantagem, descreverResultado } from './resolutionEngine'
 
 // Rolador determinístico: consome uma fila de resultados (para explosão/rerolagem)
 const fila = (...seq) => { let i = 0; return () => seq[i++] }
@@ -211,5 +211,34 @@ describe('23.2 · validação e regras por modo (para o editor)', () => {
 
   it('soma não gera aviso de percentual', () => {
     expect(validarResolucao({ modo: 'soma' }).avisos).toEqual([])
+  })
+})
+
+describe('23.3 · descreverResultado (o texto do feed por modo)', () => {
+  it('sucessos: "6 sucessos — crítico!"', () => {
+    const d = descreverResultado({ modo: 'sucessos', sucessos: 6, critico: true })
+    expect(d.texto).toBe('6 sucessos — crítico!')
+    expect(d.cor).toBe('verde')
+  })
+  it('sucessos: botch e singular', () => {
+    expect(descreverResultado({ modo: 'sucessos', sucessos: 0, botch: true }).texto).toBe('0 sucessos — botch!')
+    expect(descreverResultado({ modo: 'sucessos', sucessos: 1 }).texto).toBe('1 sucesso')
+  })
+  it('sucessos: marcação repassada', () => {
+    const m = { evento: 'critico_com_especial', rotulo: 'Crítico Sujo' }
+    expect(descreverResultado({ modo: 'sucessos', sucessos: 6, critico: true, marcacao: m }).marcacao).toEqual(m)
+  })
+  it('roll_under: "11 vs 60 — Extremo"', () => {
+    expect(descreverResultado({ modo: 'roll_under', valor: 11, alvo: 60, sucesso: true, qualidade: 'extremo' }).texto).toBe('11 vs 60 — Extremo')
+    expect(descreverResultado({ modo: 'roll_under', valor: 61, alvo: 60, sucesso: false }).texto).toBe('61 vs 60 — Falha')
+  })
+  it('faixas: "Sucesso parcial (9)" + texto', () => {
+    const d = descreverResultado({ modo: 'faixas', total: 9, faixa: { rotulo: 'Sucesso parcial', texto: 'Você consegue, mas a um custo.', cor: 'ambar' } })
+    expect(d.texto).toBe('Sucesso parcial (9)')
+    expect(d.textoFaixa).toBe('Você consegue, mas a um custo.')
+    expect(d.cor).toBe('ambar')
+  })
+  it('soma → null (usa o total normal)', () => {
+    expect(descreverResultado({ modo: 'soma', total: 12 })).toBeNull()
   })
 })

@@ -3,6 +3,7 @@ import { usePericiasFicha } from '../../../hooks/usePericiasFicha'
 import { useRolagem } from '../../../hooks/useRolagem'
 import { tocarSomDado, estimarNumDados } from '../../../lib/diceSounds'
 import { resolverVantagem, aplicarVantagem } from '../../../lib/rollModifiers'
+import { descreverResultado } from '../../../lib/resolutionEngine'
 import { usePreferencias } from '../../../context/PreferenciasContext'
 import Dice3D from '../../dados/Dice3D'
 
@@ -36,9 +37,11 @@ export default function PainelPericias({
   mesaId,
   dadoPadrao,
   modificadoresAtivos = [],
+  resolucao = null, // 23.3
 }) {
   const { periciasFicha, savePericia } = usePericiasFicha(fichaId)
-  const { registrarRolagem } = useRolagem()
+  const { registrarRolagem, registrarResolvida } = useRolagem()
+  const modoResolucao = resolucao?.modo || 'soma'
   const { preferencias } = usePreferencias()
   const [localBonus, setLocalBonus] = useState({})
   const [rollAtivo, setRollAtivo] = useState(null)
@@ -79,6 +82,21 @@ export default function PainelPericias({
     if (rolando) return
     const pf = getPericiaFicha(pericia.id)
     const atributoVal = getAtributoValor(pericia.atributo_base_id)
+
+    // 23.3 — modos de resolução: atributo-base + bônus vira parada (sucessos, ex
+    // "Força + Briga"), alvo (roll_under) ou modificador (faixas).
+    if (modoResolucao !== 'soma' && registrarResolvida) {
+      const valorModo = (Number(pf.bonus) || 0) + (Number(atributoVal) || 0)
+      setRolando(true)
+      setRollAtivo({ periciaId: pericia.id, resultado: null, rolando: true, estado: 'normal' })
+      tocarSomDado(preferencias.dado_skin, { ativo: preferencias.som_ativo, volume: preferencias.som_volume, numDados: modoResolucao === 'sucessos' ? valorModo : 2 })
+      try {
+        const res = await registrarResolvida({ mesaId, fichaId, rotulo: `Teste de ${pericia.nome}`, resolucao, valor: valorModo })
+        setRollAtivo({ periciaId: pericia.id, resultado: res, rolando: false, estado: 'normal' })
+      } catch { setRollAtivo(null) } finally { setRolando(false) }
+      return
+    }
+
     const notacaoBase = buildNotacao(pf.bonus, atributoVal, dadoPadrao)
 
     // Vantagem/desvantagem desta perícia (12.3)
@@ -208,19 +226,29 @@ export default function PainelPericias({
                     </div>
                     <div className="flex flex-wrap gap-1.5 items-center">
                       {rollAtivo.resultado.dados.map((d, i) => (
-                        <Dice3D
-                          key={i}
-                          lados={d.lados}
-                          resultado={d.valor}
-                          rolando={rollAtivo.rolando}
-                          descartado={d.descartado}
-                          skin={preferencias.dado_skin}
-                        />
+                        <div key={i} className={`rounded-lg ${d.sucesso ? 'ring-1 ring-green-500/70' : ''} ${d.especial ? 'ring-1 ring-red-500/80' : ''}`}>
+                          <Dice3D
+                            lados={d.lados}
+                            resultado={d.valor}
+                            rolando={rollAtivo.rolando}
+                            descartado={d.descartado}
+                            skin={preferencias.dado_skin}
+                          />
+                        </div>
                       ))}
-                      <span className="text-white font-bold text-lg leading-none ml-1">
-                        {rollAtivo.resultado.total}
-                      </span>
+                      {(() => {
+                        const desc = rollAtivo.resultado.modo && rollAtivo.resultado.modo !== 'soma'
+                          ? descreverResultado(rollAtivo.resultado.estruturado) : null
+                        return desc
+                          ? <span className="text-purple-100 font-bold text-base leading-none ml-1">{desc.texto}</span>
+                          : <span className="text-white font-bold text-lg leading-none ml-1">{rollAtivo.resultado.total}</span>
+                      })()}
                     </div>
+                    {(() => {
+                      const desc = rollAtivo.resultado.modo && rollAtivo.resultado.modo !== 'soma'
+                        ? descreverResultado(rollAtivo.resultado.estruturado) : null
+                      return desc?.textoFaixa ? <p className="text-purple-300 text-[10px] italic mt-1">"{desc.textoFaixa}"</p> : null
+                    })()}
                   </div>
                 )}
               </div>

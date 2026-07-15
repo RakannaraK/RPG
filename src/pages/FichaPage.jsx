@@ -58,7 +58,7 @@ export default function FichaPage() {
   const { ficha, valoresAtributos, loading, error, refetch } = useFicha(fichaId)
   const { sistema, pericias: periciasDoSistema, racas, classes, habilidades } = useSistema(mesaId)
   const { updateValorAtributo, updateFicha } = useUpdateFicha()
-  const { registrarRolagem, registrarEvento } = useRolagem()
+  const { registrarRolagem, registrarResolvida, registrarEvento } = useRolagem()
   const {
     habilidadesFicha,
     toggleHabilidade,
@@ -948,6 +948,8 @@ export default function FichaPage() {
           mesaId={mesaId}
           fichaId={fichaId}
           registrarRolagem={registrarRolagem}
+          registrarResolvida={registrarResolvida}
+          resolucao={config.resolucao}
           dadoPadrao={dadoPadrao}
           valoresFinaisMotor={valoresFinais.atributos}
           detalhamentoMotor={valoresFinais.detalhamento}
@@ -972,6 +974,7 @@ export default function FichaPage() {
                   mesaId={mesaId}
                   dadoPadrao={dadoPadrao}
                   modificadoresAtivos={modificadoresAtivos}
+                  resolucao={config.resolucao}
                 />
               )}
               {secoes.proficiencias && (

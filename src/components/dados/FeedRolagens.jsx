@@ -3,7 +3,66 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import { playDiceNotify } from '../../lib/diceSound'
+import { descreverResultado } from '../../lib/resolutionEngine'
 import Dice3D from './Dice3D'
+
+const COR_TXT = { verde: 'text-green-300', ambar: 'text-amber-300', vermelho: 'text-red-300', roxo: 'text-purple-200' }
+const COR_CARD = { verde: 'border-green-700/50', ambar: 'border-amber-700/50', vermelho: 'border-red-800/50', roxo: 'border-purple-800/40' }
+
+// 23.3 — resultado nos MODOS de resolução (sucessos/roll_under/faixas)
+function ResultadoModo({ rolagem, animando, ehMeu, minhaSkin }) {
+  const { rotulo, notacao, resultado_estruturado, created_at } = rolagem
+  const desc = descreverResultado(resultado_estruturado)
+  const dados = rolagem.resultados?.dados || []
+  const corTxt = COR_TXT[desc?.cor] || COR_TXT.roxo
+
+  return (
+    <div className={`bg-slate-800/60 border rounded-xl p-3 space-y-2 ${COR_CARD[desc?.cor] || COR_CARD.roxo}`}>
+      <div className="flex items-baseline justify-between gap-2 flex-wrap">
+        <div className="flex items-baseline gap-2 flex-wrap min-w-0">
+          <span className="text-purple-300 text-xs font-semibold shrink-0">{rolagem._nome}</span>
+          {rotulo && <span className="text-white text-sm font-medium">{rotulo}</span>}
+          <span className="text-purple-600 font-mono text-xs shrink-0">{notacao}</span>
+        </div>
+        <span className="text-purple-700 text-xs shrink-0">{tempoRelativo(created_at)}</span>
+      </div>
+
+      {/* Dados: pontuados destacados (sucessos); especiais em cor distinta */}
+      <div className="flex flex-wrap gap-1.5 items-center">
+        {dados.map((d, i) => {
+          const base = ehMeu
+            ? <Dice3D lados={d.lados} resultado={d.valor} rolando={animando} descartado={d.descartado} skin={minhaSkin} />
+            : (
+              <span className={`px-2 h-8 min-w-8 flex items-center justify-center rounded-lg border text-sm font-bold ${
+                d.especial ? 'bg-red-950/70 border-red-600 text-red-200'
+                  : d.sucesso ? 'bg-green-950/60 border-green-600 text-green-200'
+                  : 'bg-slate-800 border-slate-700 text-slate-400'
+              }`}>{d.valor}</span>
+            )
+          return (
+            <div key={i} className={`flex flex-col items-center gap-0.5 rounded-lg ${d.sucesso ? 'ring-1 ring-green-500/70' : ''} ${d.especial ? 'ring-1 ring-red-500/80' : ''}`}>
+              {base}
+              {d.especial && <span className="text-red-400 text-[8px] leading-none">esp.</span>}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Resumo do modo */}
+      {desc && (
+        <p className={`text-sm font-bold ${corTxt}`}>{desc.texto}</p>
+      )}
+      {desc?.textoFaixa && (
+        <p className="text-purple-300 text-xs italic">"{desc.textoFaixa}"</p>
+      )}
+      {desc?.marcacao && (
+        <span className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-red-950/60 border-red-600/70 text-red-200">
+          ⚡ {desc.marcacao.rotulo}{desc.marcacao.texto ? ` — ${desc.marcacao.texto}` : ''}
+        </span>
+      )}
+    </div>
+  )
+}
 
 function tempoRelativo(ts) {
   if (!ts) return ''
@@ -21,6 +80,11 @@ function tempoRelativo(ts) {
 function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
   const { autor_nome, rotulo, notacao, resultados, total, created_at } = rolagem
   const nome = nomeExibicao || autor_nome
+
+  // 23.3 — modos de resolução (sucessos/roll_under/faixas) têm seu próprio card
+  if (rolagem.modo && rolagem.modo !== 'soma' && rolagem.resultado_estruturado) {
+    return <ResultadoModo rolagem={{ ...rolagem, _nome: nome }} animando={animando} ehMeu={ehMeu} minhaSkin={minhaSkin} />
+  }
   const dados = resultados?.dados || []
   const mantidos = resultados?.mantidos || []
   const descartados = resultados?.descartados || []
