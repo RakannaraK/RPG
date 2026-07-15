@@ -44,6 +44,15 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
   const set = patch => onChange({ ...cfg, ...patch })
   const rerol = cfg.rerolagem || {}
   const setRerol = patch => set({ rerolagem: { ...rerol, ...patch } })
+  const esp = cfg.dados_especiais || {}
+  const setEsp = patch => set({ dados_especiais: { ...esp, ...patch } })
+  const marc = evento => (esp.marcacoes || []).find(m => m.evento === evento) || { evento, rotulo: '', texto: '' }
+  const setMarc = (evento, patch) => {
+    const lista = esp.marcacoes || []
+    const existe = lista.some(m => m.evento === evento)
+    const nova = existe ? lista.map(m => (m.evento === evento ? { ...m, ...patch } : m)) : [...lista, { evento, rotulo: '', texto: '', ...patch }]
+    setEsp({ marcacoes: nova })
+  }
   const faixas = cfg.faixas || []
   const setFaixa = (i, patch) => set({ faixas: faixas.map((f, j) => (j === i ? { ...f, ...patch } : f)) })
 
@@ -178,6 +187,39 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
             </div>
           )}
           {rerol.ativo && !rerol.pool_id && <p className="text-amber-400/80 text-[11px] pl-5">Escolha o pool que a rerolagem gasta{pools.length === 0 ? ' (crie um recurso na aba Recursos primeiro).' : '.'}</p>}
+        </div>
+      )}
+
+      {/* Dados especiais na parada (23.5) — modo sucessos */}
+      {modo === 'sucessos' && (
+        <div className="border-t border-purple-900/50 pt-2 space-y-2">
+          <Check label="Dados especiais na parada" hint="parte da parada em outra cor (ex: Dados de Fome)" checked={esp.ativo} onChange={v => setEsp({ ativo: v })} />
+          {esp.ativo && (
+            <div className="space-y-2 pl-5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <label className="text-purple-300 text-xs flex items-center gap-1">nome
+                  <input type="text" value={esp.nome || ''} onChange={e => setEsp({ nome: e.target.value })} placeholder="Fome" className={`${INP} w-28`} /></label>
+                <label className="text-purple-300 text-xs flex items-center gap-1">quantidade (fórmula)
+                  <input type="text" value={esp.quantidade_formula || ''} onChange={e => setEsp({ quantidade_formula: e.target.value })} placeholder="recurso(fome)" className={`${INP} w-40 font-mono`} /></label>
+              </div>
+              <p className="text-purple-500 text-[11px]">Os N primeiros dados da parada viram especiais. Eventos com eles disparam marcações (o efeito é arbitrado pela mesa):</p>
+              {[
+                { evento: 'critico_com_especial', rotulo: 'Crítico envolvendo dado especial', ph: 'Crítico Sujo' },
+                { evento: 'falha_com_especial', rotulo: 'Falha/botch com 1 em dado especial', ph: 'Falha Bestial' },
+              ].map(({ evento, rotulo, ph }) => {
+                const m = marc(evento)
+                return (
+                  <div key={evento} className="rounded-lg border border-purple-900/50 bg-slate-900/40 p-2 space-y-1">
+                    <p className="text-purple-400 text-[11px]">{rotulo}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <input type="text" value={m.rotulo} onChange={e => setMarc(evento, { rotulo: e.target.value })} placeholder={`rótulo (ex: ${ph})`} className={`${INP} w-40`} />
+                      <input type="text" value={m.texto} onChange={e => setMarc(evento, { texto: e.target.value })} placeholder="texto no feed (opcional)" className={`${INP} flex-1 min-w-[10rem]`} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
 

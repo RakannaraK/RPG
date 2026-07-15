@@ -72,6 +72,7 @@ export default function AtributoCard({
   resolucao = null,          // 23.3 — modo de resolução do sistema
   registrarResolvida = null,
   rerolagem = null,          // 23.4 — bundle de rerolagem (pool + débito)
+  especiaisQtd = 0,          // 23.5 — dados especiais na parada (Fome)
   compact = false,
 }) {
   const { preferencias } = usePreferencias()
@@ -167,7 +168,7 @@ export default function AtributoCard({
       setTestando(true); setErroTeste('')
       const valorModo = modoResolucao === 'faixas' ? (temMod ? modAtributo : display) : display
       try {
-        const res = await registrarResolvida({ mesaId, fichaId, rotulo: `Teste de ${atributo.nome}`, resolucao, valor: Number(valorModo) || 0 })
+        const res = await registrarResolvida({ mesaId, fichaId, rotulo: `Teste de ${atributo.nome}`, resolucao, valor: Number(valorModo) || 0, especiaisQtd })
         setTesteResultado(res); setTesteVantagem('normal'); setTesteRolando(true)
         setTimeout(() => { setTesteRolando(false); setTestando(false) }, 1400)
       } catch (err) { setErroTeste(err.message || 'Erro ao rolar.'); setTestando(false) }
@@ -302,14 +303,9 @@ export default function AtributoCard({
             </div>
             <div className="flex flex-wrap gap-1 items-center justify-center">
               {testeResultado.dados.map((d, i) => (
-                <Dice3D
-                  key={i}
-                  lados={d.lados}
-                  resultado={d.valor}
-                  rolando={testeRolando}
-                  descartado={d.descartado}
-                  skin={preferencias.dado_skin}
-                />
+                <div key={i} className={`rounded-lg ${d.sucesso ? 'ring-1 ring-green-500/70' : ''} ${d.especial ? 'ring-1 ring-red-500/80' : ''}`}>
+                  <Dice3D lados={d.lados} resultado={d.valor} rolando={testeRolando} descartado={d.descartado} skin={preferencias.dado_skin} />
+                </div>
               ))}
               {!descTeste && (
                 <span className="text-white font-bold text-xl leading-none ml-1">{testeResultado.total}</span>
@@ -317,6 +313,9 @@ export default function AtributoCard({
             </div>
             {descTeste && <p className="text-center text-sm font-bold text-purple-100">{descTeste.texto}</p>}
             {descTeste?.textoFaixa && <p className="text-purple-300 text-[10px] text-center italic">"{descTeste.textoFaixa}"</p>}
+            {descTeste?.marcacao && (
+              <p className="text-center text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-red-950/60 border-red-600/70 text-red-200">⚡ {descTeste.marcacao.rotulo}</p>
+            )}
             <RerolagemBox resultado={testeResultado} rerolagem={rerolagem} mesaId={mesaId} fichaId={fichaId} rotulo={`Teste de ${atributo.nome}`} onRerolado={setTesteResultado} />
             {erroTeste && <p className="text-red-400 text-[10px] text-center">{erroTeste}</p>}
           </div>
@@ -476,6 +475,9 @@ export default function AtributoCard({
             </div>
           </div>
           {descTeste?.textoFaixa && <p className="text-purple-300 text-xs italic">"{descTeste.textoFaixa}"</p>}
+          {descTeste?.marcacao && (
+            <span className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-red-950/60 border-red-600/70 text-red-200">⚡ {descTeste.marcacao.rotulo}{descTeste.marcacao.texto ? ` — ${descTeste.marcacao.texto}` : ''}</span>
+          )}
           <RerolagemBox resultado={testeResultado} rerolagem={rerolagem} mesaId={mesaId} fichaId={fichaId} rotulo={`Teste de ${atributo.nome}`} onRerolado={setTesteResultado} />
           {!descTeste && (testeResultado.mantidos.length > 1 || testeResultado.modificador !== 0) && (
             <p className="text-purple-500 text-xs">

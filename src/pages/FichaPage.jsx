@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase'
 import { mergeConfigLayout } from '../lib/sistemaDefaults'
 import { coletarModificadores, calcularValoresFinais, agregarDefesas, listarCondicoesManuais, resolverValoresFormula } from '../lib/modifierEngine'
 import { validarNotacao, rolarNotacao, resolverNotacaoFormula } from '../lib/diceNotation'
+import { avaliarFormula } from '../lib/formulaEngine'
 import { useHabilidadesFicha } from '../hooks/useHabilidadesFicha'
 import { useClassesFicha } from '../hooks/useClassesFicha'
 import { nivelTotalDe } from '../components/ficha/layout/ClassesFicha'
@@ -523,6 +524,14 @@ export default function FichaPage() {
     recursos: {},
   }
 
+  // 23.5 — quantidade de dados especiais (ex: Fome) por fórmula, no contexto da ficha
+  const dadosEspCfg = config.resolucao?.dados_especiais
+  let especiaisQtd = 0
+  if (dadosEspCfg?.ativo && String(dadosEspCfg.quantidade_formula || '').trim()) {
+    try { especiaisQtd = Math.max(0, Math.floor(avaliarFormula(dadosEspCfg.quantidade_formula, contextoFormula) || 0)) }
+    catch { especiaisQtd = 0 }
+  }
+
   // 20.4 — tudo que o motor precisa para decidir se um poder pode ser usado
   const poolsPorId = Object.fromEntries(pools.map(p => [p.id, p]))
   const estadoPoderes = {
@@ -963,6 +972,7 @@ export default function FichaPage() {
           registrarResolvida={registrarResolvida}
           resolucao={config.resolucao}
           rerolagem={rerolagem}
+          especiaisQtd={especiaisQtd}
           dadoPadrao={dadoPadrao}
           valoresFinaisMotor={valoresFinais.atributos}
           detalhamentoMotor={valoresFinais.detalhamento}
@@ -989,6 +999,7 @@ export default function FichaPage() {
                   modificadoresAtivos={modificadoresAtivos}
                   resolucao={config.resolucao}
                   rerolagem={rerolagem}
+                  especiaisQtd={especiaisQtd}
                 />
               )}
               {secoes.proficiencias && (

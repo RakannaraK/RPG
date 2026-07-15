@@ -40,6 +40,7 @@ export default function PainelPericias({
   modificadoresAtivos = [],
   resolucao = null, // 23.3
   rerolagem = null, // 23.4
+  especiaisQtd = 0, // 23.5
 }) {
   const { periciasFicha, savePericia } = usePericiasFicha(fichaId)
   const { registrarRolagem, registrarResolvida } = useRolagem()
@@ -93,7 +94,7 @@ export default function PainelPericias({
       setRollAtivo({ periciaId: pericia.id, resultado: null, rolando: true, estado: 'normal' })
       tocarSomDado(preferencias.dado_skin, { ativo: preferencias.som_ativo, volume: preferencias.som_volume, numDados: modoResolucao === 'sucessos' ? valorModo : 2 })
       try {
-        const res = await registrarResolvida({ mesaId, fichaId, rotulo: `Teste de ${pericia.nome}`, resolucao, valor: valorModo })
+        const res = await registrarResolvida({ mesaId, fichaId, rotulo: `Teste de ${pericia.nome}`, resolucao, valor: valorModo, especiaisQtd })
         setRollAtivo({ periciaId: pericia.id, resultado: res, rolando: false, estado: 'normal' })
       } catch { setRollAtivo(null) } finally { setRolando(false) }
       return
@@ -250,6 +251,13 @@ export default function PainelPericias({
                       const desc = rollAtivo.resultado.modo && rollAtivo.resultado.modo !== 'soma'
                         ? descreverResultado(rollAtivo.resultado.estruturado) : null
                       return desc?.textoFaixa ? <p className="text-purple-300 text-[10px] italic mt-1">"{desc.textoFaixa}"</p> : null
+                    })()}
+                    {(() => {
+                      const desc = rollAtivo.resultado.modo && rollAtivo.resultado.modo !== 'soma'
+                        ? descreverResultado(rollAtivo.resultado.estruturado) : null
+                      return desc?.marcacao ? (
+                        <span className="inline-block mt-1 text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-red-950/60 border-red-600/70 text-red-200">⚡ {desc.marcacao.rotulo}</span>
+                      ) : null
                     })()}
                     <RerolagemBox
                       resultado={rollAtivo.resultado}
