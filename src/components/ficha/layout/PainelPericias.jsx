@@ -6,6 +6,7 @@ import { resolverVantagem, aplicarVantagem } from '../../../lib/rollModifiers'
 import { descreverResultado } from '../../../lib/resolutionEngine'
 import { usePreferencias } from '../../../context/PreferenciasContext'
 import Dice3D from '../../dados/Dice3D'
+import RerolagemBox from '../../dados/RerolagemBox'
 
 function AvisoVantagem({ estado }) {
   if (!estado || estado === 'normal') return null
@@ -38,6 +39,7 @@ export default function PainelPericias({
   dadoPadrao,
   modificadoresAtivos = [],
   resolucao = null, // 23.3
+  rerolagem = null, // 23.4
 }) {
   const { periciasFicha, savePericia } = usePericiasFicha(fichaId)
   const { registrarRolagem, registrarResolvida } = useRolagem()
@@ -249,6 +251,14 @@ export default function PainelPericias({
                         ? descreverResultado(rollAtivo.resultado.estruturado) : null
                       return desc?.textoFaixa ? <p className="text-purple-300 text-[10px] italic mt-1">"{desc.textoFaixa}"</p> : null
                     })()}
+                    <RerolagemBox
+                      resultado={rollAtivo.resultado}
+                      rerolagem={rerolagem}
+                      mesaId={mesaId}
+                      fichaId={fichaId}
+                      rotulo={`Teste de ${pericia.nome}`}
+                      onRerolado={novo => setRollAtivo(prev => ({ ...prev, resultado: novo }))}
+                    />
                   </div>
                 )}
               </div>

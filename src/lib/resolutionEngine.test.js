@@ -138,6 +138,19 @@ describe('23.1 · rerolagem re-resolve o contrato inteiro', () => {
   })
 })
 
+describe('23.4 · rerolagem gastando recurso (WoD Força de Vontade)', () => {
+  const cfg = { modo: 'sucessos', dado: 10, dificuldade_padrao: 6, par_de_max_critico: true, botch: true }
+  it('rerolar 3 dados que falharam recontou os sucessos; os não-rerolados ficam', () => {
+    const params = { config: cfg, dados: [8, 3, 4, 2, 9] } // 8 e 9 já passam = 2 sucessos
+    expect(resolverRolagem(params).sucessos).toBe(2)
+    // rerola os três que falharam (índices 1,2,3) → 6,10,7
+    const r = reresolver(params, [1, 2, 3], [6, 10, 7])
+    // parada vira [8,6,10,7,9] → todos ≥6 = 5 sucessos
+    expect(r.sucessos).toBe(5)
+    expect(r.dados.map(d => d.valor)).toEqual([8, 6, 10, 7, 9]) // 8 e 9 preservados
+  })
+})
+
 describe('23.1 · dados especiais (Fome) → marcações', () => {
   const marcacoes = [
     { evento: 'critico_com_especial', rotulo: 'Crítico Sujo', texto: 'A Besta se manifesta.' },

@@ -184,6 +184,7 @@ export default function LayoutEditor({
   onUpdatePericia,
   onRemovePericia,
   atributos,
+  pools = [],
 }) {
   function toggleSecao(id, value) {
     onConfigChange({
@@ -345,9 +346,10 @@ export default function LayoutEditor({
         onChange={d => onConfigChange({ ...config, defesa_ativa: d })}
       />
 
-      {/* Resolução de rolagens (23.2) */}
+      {/* Resolução de rolagens (23.2/23.4) */}
       <ResolucaoEditor
         cfg={config.resolucao}
+        pools={pools}
         onChange={r => onConfigChange({ ...config, resolucao: r })}
       />
 

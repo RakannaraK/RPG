@@ -38,10 +38,12 @@ function Check({ label, checked, onChange, hint }) {
  * Fase 23.2 — config do MODO de resolução do sistema. Um modo por sistema. Trocar
  * o modo muda como TODAS as rolagens se resolvem — avisa quando muda.
  */
-export default function ResolucaoEditor({ cfg = {}, onChange }) {
+export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
   const modoInicial = useRef(cfg.modo || 'soma')
   const modo = cfg.modo || 'soma'
   const set = patch => onChange({ ...cfg, ...patch })
+  const rerol = cfg.rerolagem || {}
+  const setRerol = patch => set({ rerolagem: { ...rerol, ...patch } })
   const faixas = cfg.faixas || []
   const setFaixa = (i, patch) => set({ faixas: faixas.map((f, j) => (j === i ? { ...f, ...patch } : f)) })
 
@@ -154,6 +156,28 @@ export default function ResolucaoEditor({ cfg = {}, onChange }) {
       {modo !== 'roll_under' && (
         <div className="border-t border-purple-900/50 pt-2">
           <Check label="Dados explosivos" hint="o máximo rola de novo e acumula (trava de 20 por dado)" checked={cfg.explosao?.ativo} onChange={v => set({ explosao: { ...(cfg.explosao || {}), ativo: v } })} />
+        </div>
+      )}
+
+      {/* Rerolagem com recurso (23.4) — modo sucessos */}
+      {modo === 'sucessos' && (
+        <div className="border-t border-purple-900/50 pt-2 space-y-2">
+          <Check label="Rerolagem gastando recurso" hint="ex: Força de Vontade rerola dados" checked={rerol.ativo} onChange={v => setRerol({ ativo: v })} />
+          {rerol.ativo && (
+            <div className="flex items-center gap-2 flex-wrap pl-5">
+              <label className="text-purple-300 text-xs flex items-center gap-1">recurso
+                <select value={rerol.pool_id || ''} onChange={e => setRerol({ pool_id: e.target.value || null })} className={INP}>
+                  <option value="">— escolha um pool —</option>
+                  {pools.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+                </select>
+              </label>
+              <label className="text-purple-300 text-xs flex items-center gap-1">custo
+                <input type="number" min={1} value={rerol.custo ?? 1} onChange={e => setRerol({ custo: Number(e.target.value) })} className={`${INP} w-14`} /></label>
+              <label className="text-purple-300 text-xs flex items-center gap-1">máx. dados
+                <input type="number" min={1} value={rerol.max_dados ?? 3} onChange={e => setRerol({ max_dados: Number(e.target.value) })} className={`${INP} w-14`} /></label>
+            </div>
+          )}
+          {rerol.ativo && !rerol.pool_id && <p className="text-amber-400/80 text-[11px] pl-5">Escolha o pool que a rerolagem gasta{pools.length === 0 ? ' (crie um recurso na aba Recursos primeiro).' : '.'}</p>}
         </div>
       )}
 

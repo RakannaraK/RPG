@@ -418,6 +418,18 @@ export default function FichaPage() {
   const atualDoPool = poolId =>
     atualDePool(linhasPools.find(l => l.pool_id === poolId), maximosPools[poolId] ?? 0)
 
+  // 23.4 — bundle de rerolagem: config + pool escolhido (atual/máx) + débito
+  const rerolCfg = config.resolucao?.rerolagem
+  const rerolagem = rerolCfg?.ativo && rerolCfg.pool_id
+    ? {
+        config: rerolCfg,
+        pool: pools.find(p => p.id === rerolCfg.pool_id) || null,
+        atual: atualDoPool(rerolCfg.pool_id),
+        maximo: maximosPools[rerolCfg.pool_id] ?? 0,
+        gastar: qtd => definirAtual(rerolCfg.pool_id, Math.max(0, atualDoPool(rerolCfg.pool_id) - qtd)),
+      }
+    : null
+
   // 20.3 — totais de slot DERIVADOS da grade × classes da ficha (nunca armazenados)
   const fonteClasses = classesFicha.length
     ? classesFicha
@@ -950,6 +962,7 @@ export default function FichaPage() {
           registrarRolagem={registrarRolagem}
           registrarResolvida={registrarResolvida}
           resolucao={config.resolucao}
+          rerolagem={rerolagem}
           dadoPadrao={dadoPadrao}
           valoresFinaisMotor={valoresFinais.atributos}
           detalhamentoMotor={valoresFinais.detalhamento}
@@ -975,6 +988,7 @@ export default function FichaPage() {
                   dadoPadrao={dadoPadrao}
                   modificadoresAtivos={modificadoresAtivos}
                   resolucao={config.resolucao}
+                  rerolagem={rerolagem}
                 />
               )}
               {secoes.proficiencias && (

@@ -5,6 +5,7 @@ import { tocarSomDado, estimarNumDados } from '../../lib/diceSounds'
 import { resolverVantagem, aplicarVantagem } from '../../lib/rollModifiers'
 import { avaliarFormula } from '../../lib/formulaEngine'
 import { descreverResultado } from '../../lib/resolutionEngine'
+import RerolagemBox from '../dados/RerolagemBox'
 import { usePreferencias } from '../../context/PreferenciasContext'
 
 // Aviso visual de vantagem/desvantagem/anulada (Fase 12.3)
@@ -70,6 +71,7 @@ export default function AtributoCard({
   contextoFormula = null,
   resolucao = null,          // 23.3 — modo de resolução do sistema
   registrarResolvida = null,
+  rerolagem = null,          // 23.4 — bundle de rerolagem (pool + débito)
   compact = false,
 }) {
   const { preferencias } = usePreferencias()
@@ -315,6 +317,7 @@ export default function AtributoCard({
             </div>
             {descTeste && <p className="text-center text-sm font-bold text-purple-100">{descTeste.texto}</p>}
             {descTeste?.textoFaixa && <p className="text-purple-300 text-[10px] text-center italic">"{descTeste.textoFaixa}"</p>}
+            <RerolagemBox resultado={testeResultado} rerolagem={rerolagem} mesaId={mesaId} fichaId={fichaId} rotulo={`Teste de ${atributo.nome}`} onRerolado={setTesteResultado} />
             {erroTeste && <p className="text-red-400 text-[10px] text-center">{erroTeste}</p>}
           </div>
         )}
@@ -473,6 +476,7 @@ export default function AtributoCard({
             </div>
           </div>
           {descTeste?.textoFaixa && <p className="text-purple-300 text-xs italic">"{descTeste.textoFaixa}"</p>}
+          <RerolagemBox resultado={testeResultado} rerolagem={rerolagem} mesaId={mesaId} fichaId={fichaId} rotulo={`Teste de ${atributo.nome}`} onRerolado={setTesteResultado} />
           {!descTeste && (testeResultado.mantidos.length > 1 || testeResultado.modificador !== 0) && (
             <p className="text-purple-500 text-xs">
               ({testeResultado.mantidos.join(' + ')}

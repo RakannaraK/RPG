@@ -8,6 +8,7 @@ export default function FaixaAtributos({
   registrarRolagem,
   registrarResolvida = null,
   resolucao = null,
+  rerolagem = null,
   dadoPadrao,
   valoresFinaisMotor,
   detalhamentoMotor,
@@ -47,6 +48,7 @@ export default function FaixaAtributos({
             registrarRolagem={registrarRolagem}
             registrarResolvida={registrarResolvida}
             resolucao={resolucao}
+            rerolagem={rerolagem}
             dadoPadrao={dadoPadrao}
             valorFinal={valoresFinaisMotor ? valoresFinaisMotor[va.atributo?.id] : undefined}
             fontesMod={

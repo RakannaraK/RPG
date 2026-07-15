@@ -6,6 +6,13 @@ import { rolarDados } from '../lib/dice'
 import { aplicarCritico } from '../lib/criticoEngine'
 import { resolverRolagem } from '../lib/resolutionEngine'
 
+// Troca os valores nos índices dados (imutável) — usado na rerolagem (23.4)
+function replaceAt(arr, indices, novos) {
+  const out = [...(arr || [])]
+  indices.forEach((idx, k) => { if (idx >= 0 && idx < out.length) out[idx] = novos[k] })
+  return out
+}
+
 /**
  * Hook central de rolagem.
  *
@@ -180,7 +187,9 @@ export function useRolagem() {
       total = difParam
     }
 
-    const resultadoLocal = { notacao: notacaoStr, dados: dadosFeed, mantidos: dadosNum, descartados: [], modificador: 0, total, modo, estruturado }
+    // paramsOriginais: o necessário p/ rerolar (23.4) — a parada ORIGINAL (pré-explosão)
+    const paramsOriginais = { config: resolucao, dados: dadosNum, dificuldade: difParam, especiais_idx, faces }
+    const resultadoLocal = { notacao: notacaoStr, dados: dadosFeed, mantidos: dadosNum, descartados: [], modificador: 0, total, modo, estruturado, paramsOriginais }
 
     try {
       const payload = {
@@ -204,6 +213,52 @@ export function useRolagem() {
       setRolando(false)
     }
 
+    return resultadoLocal
+  }
+
+  /**
+   * Fase 23.4 — rerola os dados nos índices escolhidos (na parada ORIGINAL),
+   * re-resolve o contrato inteiro e registra uma NOVA rolagem marcada (↻). O
+   * débito do pool acontece ANTES, no chamador (RerolagemBox).
+   */
+  async function rerolarResolvida({ mesaId, fichaId = null, sessaoId = null, rotulo = null, paramsOriginais, indices = [] }) {
+    setErro('')
+    setRolando(true)
+    const { config: resolucao, faces } = paramsOriginais
+    const modo = resolucao?.modo || 'soma'
+    const novos = indices.map(() => rolarDados(1, faces)[0])
+    const estruturado = resolverRolagem({ ...paramsOriginais, dados: replaceAt(paramsOriginais.dados, indices, novos) })
+
+    let total
+    let dadosFeed
+    if (modo === 'sucessos') {
+      dadosFeed = (estruturado.dados || []).map(d => ({ lados: faces, valor: d.valor, descartado: false, sucesso: d.sucesso, especial: d.especial, explosao: d.explosao }))
+      total = estruturado.sucessos
+    } else {
+      dadosFeed = (estruturado.dados || []).map(d => ({ lados: faces, valor: d.valor, descartado: false }))
+      total = estruturado.total ?? estruturado.valor ?? 0
+    }
+    const notacaoStr = `↻ rerolagem (${indices.length} dado${indices.length === 1 ? '' : 's'})`
+
+    const resultadoLocal = { notacao: notacaoStr, dados: dadosFeed, mantidos: replaceAt(paramsOriginais.dados, indices, novos), descartados: [], modificador: 0, total, modo, estruturado, paramsOriginais: null }
+
+    try {
+      const payload = {
+        mesa_id: mesaId, autor_id: session.user.id, autor_nome: autorNome || session.user.email,
+        ficha_id: fichaId || null,
+        rotulo: rotulo ? `↻ ${rotulo}` : '↻ Rerolagem',
+        notacao: notacaoStr,
+        resultados: { dados: dadosFeed, mantidos: resultadoLocal.mantidos, descartados: [], modificador: 0 },
+        total, modo, resultado_estruturado: { ...estruturado, rerolada: true },
+      }
+      if (sessaoId) payload.sessao_id = sessaoId
+      const { error } = await supabase.from('rolagens').insert(payload)
+      if (error) throw error
+    } catch (err) {
+      setErro(err.message || 'Erro ao salvar rerolagem.')
+    } finally {
+      setRolando(false)
+    }
     return resultadoLocal
   }
 
@@ -248,5 +303,5 @@ export function useRolagem() {
     }
   }
 
-  return { registrarRolagem, registrarResolvida, registrarEvento, rolando, erro, autorNome }
+  return { registrarRolagem, registrarResolvida, rerolarResolvida, registrarEvento, rolando, erro, autorNome }
 }

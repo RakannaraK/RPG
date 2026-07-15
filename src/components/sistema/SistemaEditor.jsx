@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSistema, useSaveSistema } from '../../hooks/useSistema'
+import { usePools } from '../../hooks/usePools'
 import { mergeConfigLayout } from '../../lib/sistemaDefaults'
 import AtributoEditor from './AtributoEditor'
 import LayoutEditor from './LayoutEditor'
@@ -42,6 +43,7 @@ function newPericia() {
 
 export default function SistemaEditor({ mesaId, isMestre }) {
   const { sistema: sistemaDB, atributos: atributosDB, pericias: periciasDB, loading, error, refetch } = useSistema(mesaId)
+  const { pools } = usePools(sistemaDB?.id) // 23.4 — p/ escolher o pool da rerolagem
   const { saveSistema, loading: saving } = useSaveSistema()
 
   const [activeTab, setActiveTab] = useState('Atributos')
@@ -290,6 +292,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
             onUpdatePericia={updatePericia}
             onRemovePericia={removePericia}
             atributos={atributos}
+            pools={pools}
           />
         )}
 
