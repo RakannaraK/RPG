@@ -58,10 +58,20 @@ describe('23.1 · modo roll_under — contratos canônicos (alvo 60)', () => {
   it('1 → crítico', () => { const r = rolar(1); expect(r.critico).toBe(true); expect(r.sucesso).toBe(true) })
   it('100 → desastre', () => { const r = rolar(100); expect(r.desastre).toBe(true); expect(r.sucesso).toBe(false) })
 
-  it('desastre_em configurável (ex: 96 para alvos baixos)', () => {
+  it('desastre_em fixo (número)', () => {
     const cfg = { modo: 'roll_under', dado: 100, critico_em: 1, desastre_em: 96 }
     expect(resolverRolagem({ config: cfg, dados: [96], dificuldade: 30 }).desastre).toBe(true)
     expect(resolverRolagem({ config: cfg, dados: [95], dificuldade: 30 }).desastre).toBe(false)
+  })
+
+  it('desastre por faixa de alvo (CoC: alvo ≤ 49 → 96; senão → 100)', () => {
+    const cfg = { modo: 'roll_under', dado: 100, critico_em: 1, desastre_faixas: [{ ate_alvo: 49, desastre_em: 96 }, { ate_alvo: null, desastre_em: 100 }] }
+    // alvo baixo (30): desastre a partir de 96
+    expect(resolverRolagem({ config: cfg, dados: [96], dificuldade: 30 }).desastre).toBe(true)
+    expect(resolverRolagem({ config: cfg, dados: [95], dificuldade: 30 }).desastre).toBe(false)
+    // alvo alto (60): só 100 é desastre
+    expect(resolverRolagem({ config: cfg, dados: [96], dificuldade: 60 }).desastre).toBe(false)
+    expect(resolverRolagem({ config: cfg, dados: [100], dificuldade: 60 }).desastre).toBe(true)
   })
 })
 

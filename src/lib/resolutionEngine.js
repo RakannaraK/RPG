@@ -99,12 +99,34 @@ function resolverSucessos(config, parada, dificuldade) {
 }
 
 // ─────────────────────────────────────────────────────────── roll_under
+/**
+ * Limiar de desastre para o alvo. Liberdade ao criador: `desastre_faixas` é uma
+ * tabela de degraus por faixa de alvo (ex CoC: alvo ≤ 49 → 96; senão → 100).
+ * A primeira faixa cujo `ate_alvo` cobre o alvo vence (ate_alvo null = pega tudo).
+ * Sem tabela, usa `desastre_em` (número; default 100).
+ */
+function limiarDesastre(config, alvo) {
+  const faixas = config.desastre_faixas
+  if (Array.isArray(faixas) && faixas.length) {
+    const ordenadas = [...faixas].sort((a, b) => {
+      const av = a.ate_alvo == null || a.ate_alvo === '' ? Infinity : Number(a.ate_alvo)
+      const bv = b.ate_alvo == null || b.ate_alvo === '' ? Infinity : Number(b.ate_alvo)
+      return av - bv
+    })
+    for (const f of ordenadas) {
+      const ate = f.ate_alvo == null || f.ate_alvo === '' ? Infinity : Number(f.ate_alvo)
+      if (alvo <= ate) return Number(f.desastre_em ?? 100)
+    }
+  }
+  return Number(config.desastre_em ?? 100)
+}
+
 function resolverRollUnder(config, parada, alvoRaw) {
   const valor = parada.length ? parada[0].valor : 0
   const alvo = Math.max(0, Math.floor(Number(alvoRaw) || 0))
   const sucesso = valor <= alvo
   const critico = valor <= Number(config.critico_em ?? 1)
-  const desastre = valor >= Number(config.desastre_em ?? 100)
+  const desastre = valor >= limiarDesastre(config, alvo)
 
   let qualidade = null
   if (config.faixas_qualidade && sucesso) {
