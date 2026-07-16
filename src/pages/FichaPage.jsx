@@ -20,6 +20,9 @@ import { useRecompensas, useRecompensasFicha } from '../hooks/useRecompensas'
 import PainelRecompensas from '../components/ficha/PainelRecompensas'
 import { calcularMaximos, mapaPools, atualDePool } from '../lib/poolEngine'
 import { usePools, usePoolsFicha } from '../hooks/usePools'
+import { useTrilhasFicha } from '../hooks/useTrilhasFicha'
+import { recuperarTrilha } from '../lib/trackEngine'
+import PainelTrilhas from '../components/ficha/PainelTrilhas'
 import PainelPools from '../components/ficha/PainelPools'
 import { slotsTotais, usadosPorCirculo, slotsAtivos, gastarSlot } from '../lib/slotsEngine'
 import { useSlotsFicha } from '../hooks/useSlotsFicha'
@@ -84,6 +87,7 @@ export default function FichaPage() {
   // 20.1 — pools do sistema + estado na ficha
   const { pools } = usePools(sistema?.id)
   const { linhasPools, definirAtual } = usePoolsFicha(fichaId)
+  const { marcasDe, salvarMarcas } = useTrilhasFicha(fichaId) // 24.2
   // 20.3 — slots (modo opcional): só `usados` é armazenado
   const { linhasSlots, definirUsados } = useSlotsFicha(fichaId)
   // 21.1 — categorias de item (dropdown no inventário)
@@ -600,6 +604,15 @@ export default function FichaPage() {
       for (const s of resultado.slots || []) {
         await definirUsados(s.circulo, s.para)
       }
+      // 24.2 — trilhas curadas pelo descanso (por tipo de marca, conforme a config)
+      for (const t of config.trilhas || []) {
+        const atuais = marcasDe(t.id)
+        if (!atuais) continue
+        const r = recuperarTrilha(atuais, t, tipo.id)
+        if (Object.keys(r.curadas).length > 0) {
+          try { await salvarMarcas(t.id, r.marcas) } catch { /* segue */ }
+        }
+      }
       try {
         await supabase.from('descansos_log').insert({
           ficha_id: fichaId,
@@ -618,6 +631,24 @@ export default function FichaPage() {
       })
       refetch()
     } catch { /* falha silenciada — não quebra a ficha */ }
+  }
+
+  // 24.2 — eventos de trilha (encheu do maior / transbordo) anunciados no feed
+  async function handleEventosTrilha(t, eventos) {
+    if (t.feed === false) return
+    if (eventos.includes('encheu_do_maior') && t.ao_encher_do_maior?.rotulo) {
+      await registrarEvento({
+        mesaId, fichaId,
+        rotulo: `${ficha.nome_personagem} — ${t.ao_encher_do_maior.rotulo}! (${t.nome} cheia)`,
+        notacao: '', total: 0, dados: [],
+      })
+    } else if (eventos.includes('transbordo_convertido')) {
+      await registrarEvento({
+        mesaId, fichaId,
+        rotulo: `${ficha.nome_personagem} — ${t.nome}: dano transbordou (marca agravada)`,
+        notacao: '', total: 0, dados: [],
+      })
+    }
   }
 
   // 21.3 — credita XP de maestria; ao subir de nível, anuncia no feed
@@ -839,6 +870,17 @@ export default function FichaPage() {
           vidaMaxFinal={valoresFinais.vida_max}
           vidaTemp={valoresFinais.vida_temp}
           vidaTempPontual={ficha.vida_temp_atual ?? 0}
+          esconderVida={(config.trilhas || []).some(t => t.substitui_vida)}
+        />
+
+        {/* Trilhas (24.2) — adaptativo: some se o sistema não tem trilhas */}
+        <PainelTrilhas
+          trilhas={config.trilhas || []}
+          marcasDe={marcasDe}
+          salvarMarcas={salvarMarcas}
+          contextoFormula={contextoFormula}
+          isDono={isDono}
+          onEventos={handleEventosTrilha}
         />
 
         {/* XP e nível (Fase 19.3). Sistema sem XP: só o dono vê (botão de subir). */}

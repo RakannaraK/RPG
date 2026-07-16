@@ -164,6 +164,34 @@ export function ordenarExibicao(marcas = [], config = {}) {
   return [...marcadas, ...vazias]
 }
 
+/**
+ * Fase 24.2 — recuperação por descanso (integra F15). A config da trilha tem
+ * `recuperacao = { "<descanso_id>": { "<tipo_id>": { modo: 'nada'|'total'|'fixo', valor } } }`.
+ * 'total' cura todas as marcas do tipo; 'fixo' cura até `valor` (mais recentes
+ * primeiro, mesma regra do curar). Sem regra p/ o descanso = no-op.
+ * @returns {{ marcas: Array, curadas: Record<string, number> }}
+ */
+export function recuperarTrilha(marcas = [], config = {}, descansoId) {
+  const regras = config?.recuperacao?.[descansoId]
+  if (!regras) return { marcas: [...marcas], curadas: {} }
+  let out = [...marcas]
+  const curadas = {}
+  for (const [tipoId, regra] of Object.entries(regras)) {
+    const modo = regra?.modo || 'nada'
+    if (modo === 'nada') continue
+    const alvo = modo === 'total'
+      ? out.filter(m => m === tipoId).length
+      : Math.max(0, Math.floor(Number(regra?.valor) || 0))
+    for (let i = 0; i < alvo; i++) {
+      const r = curar(out, tipoId)
+      if (!r.curada) break
+      out = r.marcas
+      curadas[tipoId] = (curadas[tipoId] || 0) + 1
+    }
+  }
+  return { marcas: out, curadas }
+}
+
 /** Contagem por tipo + vazias (para "5/10" e chips). */
 export function contarMarcas(marcas = []) {
   const porTipo = {}

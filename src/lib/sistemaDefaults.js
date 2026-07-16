@@ -23,6 +23,10 @@ export const CONFIG_LAYOUT_DEFAULT = {
   poderes_rotulo: 'Poderes',
   // Fase 21.6 — moedas / economia. Desativada = sem carteira na ficha.
   moedas: { ativo: false, denominacoes: [] }, // [{ id, nome, sigla, valor }]
+  // Fase 24 — trilhas de caixinhas (Vitalidade/FdV/Sanidade/relógios). Vazio =
+  // nada aparece. [{ id, nome, tamanho_formula, tipos_marca, regra_transbordo,
+  // ao_encher_do_maior, substitui_vida, recuperacao, feed }]
+  trilhas: [],
   // Fase 23 — modo de RESOLUÇÃO da rolagem. Ausente/'soma' = comportamento de
   // sempre (retrocompatível byte a byte). Um modo por sistema.
   resolucao: {
@@ -124,6 +128,7 @@ export function mergeConfigLayout(raw) {
     moedas: { ...CONFIG_LAYOUT_DEFAULT.moedas, ...((raw || {}).moedas || {}) },
     pontos_status: { ...CONFIG_LAYOUT_DEFAULT.pontos_status, ...((raw || {}).pontos_status || {}) },
     critico: { ...CONFIG_LAYOUT_DEFAULT.critico, ...((raw || {}).critico || {}) },
+    trilhas: (raw || {}).trilhas || [],
     resolucao: {
       ...CONFIG_LAYOUT_DEFAULT.resolucao,
       ...((raw || {}).resolucao || {}),

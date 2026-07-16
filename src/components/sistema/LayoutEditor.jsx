@@ -3,6 +3,7 @@ import FormulaInput from './FormulaInput'
 import ProgressaoEditor from './ProgressaoEditor'
 import DefesaAtivaEditor from './DefesaAtivaEditor'
 import ResolucaoEditor from './ResolucaoEditor'
+import TrilhasEditor from './TrilhasEditor'
 import { avaliarFormula } from '../../lib/formulaEngine'
 import { ehRolado } from '../../lib/pontosEngine'
 
@@ -351,6 +352,13 @@ export default function LayoutEditor({
         cfg={config.resolucao}
         pools={pools}
         onChange={r => onConfigChange({ ...config, resolucao: r })}
+      />
+
+      {/* Trilhas (24.2) */}
+      <TrilhasEditor
+        trilhas={config.trilhas}
+        descansos={config.descansos || []}
+        onChange={t => onConfigChange({ ...config, trilhas: t })}
       />
 
       {/* Rótulo de vida */}

@@ -21,6 +21,7 @@ export default function CabecalhoPersonagem({
   vidaMaxFinal,
   vidaTemp = 0,
   vidaTempPontual = 0,
+  esconderVida = false, // 24.2 — uma trilha substitui a vida (o painel dela assume)
 }) {
   const { updateFicha } = useUpdateFicha()
   const [hpAtual, setHpAtual] = useState(ficha.hp_atual ?? '')
@@ -186,8 +187,8 @@ export default function CabecalhoPersonagem({
             </div>
           )}
 
-          {/* HP */}
-          <div>
+          {/* HP — escondido quando uma trilha substitui a vida (24.2) */}
+          <div className={esconderVida ? 'hidden' : ''}>
             <div className="flex items-center gap-2 mb-1.5">
               <p className="text-purple-400 text-xs font-medium uppercase tracking-wider">
                 {rotuloVida}

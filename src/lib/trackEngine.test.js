@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { marcar, curar, redimensionar, ordenarExibicao, contarMarcas, tipoMaisSevero } from './trackEngine'
+import { marcar, curar, redimensionar, ordenarExibicao, contarMarcas, tipoMaisSevero, recuperarTrilha } from './trackEngine'
 
 // Config de referência (V5-like, sem conteúdo proprietário: nomes do mestre)
 const CFG = {
@@ -181,6 +181,39 @@ describe('24.1 · exibição e contagem', () => {
   it('contarMarcas: "5/7" com detalhe por tipo', () => {
     const c = contarMarcas([A, A, S, S, S, _, _])
     expect(c).toEqual({ porTipo: { agravado: 2, superficial: 3 }, livres: 2, total: 7, marcadas: 5 })
+  })
+})
+
+describe('24.2 · recuperação por descanso (F15)', () => {
+  const CFG_REC = {
+    ...CFG,
+    recuperacao: {
+      d_longo: { superficial: { modo: 'total' }, agravado: { modo: 'fixo', valor: 1 } },
+      d_curto: { superficial: { modo: 'fixo', valor: 2 } },
+    },
+  }
+
+  it('descanso longo: superficiais total + 1 agravado', () => {
+    const r = recuperarTrilha([A, A, S, S, S, _, _], CFG_REC, 'd_longo')
+    expect(contarMarcas(r.marcas).porTipo).toEqual({ agravado: 1 })
+    expect(r.curadas).toEqual({ superficial: 3, agravado: 1 })
+  })
+
+  it('descanso curto: cura até 2 superficiais, agravado fica', () => {
+    const r = recuperarTrilha([A, S, S, S], CFG_REC, 'd_curto')
+    expect(r.marcas).toEqual([A, S, _, _])
+    expect(r.curadas).toEqual({ superficial: 2 })
+  })
+
+  it('fixo maior que as marcas existentes cura só o que há', () => {
+    const r = recuperarTrilha([S, _, _], CFG_REC, 'd_curto')
+    expect(r.curadas).toEqual({ superficial: 1 })
+  })
+
+  it('descanso sem regra para a trilha = no-op', () => {
+    const r = recuperarTrilha([A, S], CFG_REC, 'd_inexistente')
+    expect(r.marcas).toEqual([A, S])
+    expect(r.curadas).toEqual({})
   })
 })
 
