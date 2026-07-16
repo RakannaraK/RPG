@@ -32,18 +32,21 @@ export default function Dots({
         const cheia = n <= v
         const buffada = cheia && n > base // preenchida só por modificador
         return (
+          // botão com área de toque generosa (mobile); a bolinha é o span interno
           <button
             key={n}
             type="button"
             onClick={() => clicar(n)}
             disabled={!canEdit}
-            className={`${dim} rounded-full border-2 transition-all duration-150 ${
+            className={`p-1 -m-0.5 ${canEdit ? 'cursor-pointer group/dot' : 'cursor-default'}`}
+            title={canEdit ? `Definir ${n === base ? n - 1 : n}` : `${v}`}
+          >
+            <span className={`block ${dim} rounded-full border-2 transition-all duration-150 ${
               buffada ? 'bg-green-400 border-green-300'
                 : cheia ? 'bg-purple-200 border-purple-100'
                 : 'bg-transparent border-purple-700'
-            } ${canEdit ? 'cursor-pointer hover:scale-125 hover:border-purple-300' : 'cursor-default'}`}
-            title={canEdit ? `Definir ${n === base ? n - 1 : n}` : `${v}`}
-          />
+            } ${canEdit ? 'group-hover/dot:scale-125 group-hover/dot:border-purple-300' : ''}`} />
+          </button>
         )
       })}
       {extras > 0 && (
