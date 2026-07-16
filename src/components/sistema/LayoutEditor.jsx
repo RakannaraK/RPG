@@ -4,6 +4,7 @@ import ProgressaoEditor from './ProgressaoEditor'
 import DefesaAtivaEditor from './DefesaAtivaEditor'
 import ResolucaoEditor from './ResolucaoEditor'
 import TrilhasEditor from './TrilhasEditor'
+import EstadosEditor from './EstadosEditor'
 import { avaliarFormula } from '../../lib/formulaEngine'
 import { ehRolado } from '../../lib/pontosEngine'
 
@@ -392,6 +393,16 @@ export default function LayoutEditor({
         trilhas={config.trilhas}
         descansos={config.descansos || []}
         onChange={t => onConfigChange({ ...config, trilhas: t })}
+      />
+
+      {/* Estados com gatilhos (24.4) */}
+      <EstadosEditor
+        estados={config.estados}
+        onChange={e => onConfigChange({ ...config, estados: e })}
+        atributos={atributos}
+        pericias={pericias}
+        camposCombate={config.campos_combate || []}
+        pools={pools}
       />
 
       {/* Rótulo de vida */}

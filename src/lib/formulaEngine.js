@@ -23,7 +23,7 @@ export class FormulaError extends Error {
   }
 }
 
-const NAME_FUNCS = new Set(['atributo', 'mod', 'pericia', 'recurso', 'nivel', 'pool', 'maestria'])
+const NAME_FUNCS = new Set(['atributo', 'mod', 'pericia', 'recurso', 'nivel', 'pool', 'maestria', 'estado'])
 const MATH_FUNCS = { piso: 1, teto: 1, arredondar: 1, abs: 1, min: 2, max: 2 }
 // Variáveis simples embutidas (resolvidas em evalVar): nivel, proficiencia[F19],
 // vida_atual, vida_max, x (só na fórmula de modificador). Nomes fora dessa lista
@@ -247,6 +247,8 @@ function evalCall(fn, arg, ctx) {
     case 'nivel':    return resolverNivelClasse(ctx.niveisClasse, arg) // Fase 19
     // Fase 20 — valor ATUAL do pool (mesma semântica de recurso())
     case 'pool':     return resolverNome(ctx.pools, arg, 'pool')
+    // Fase 24 — valor atual de um ESTADO (Fome, Sanidade...); por id ou nome
+    case 'estado':   return resolverNome(ctx.estados, arg, 'estado')
     case 'maestria': throw new FormulaError("'maestria()' estará disponível na Fase 21")
     default: throw new FormulaError(`Função '${fn}' desconhecida`)
   }

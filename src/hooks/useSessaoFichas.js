@@ -4,6 +4,7 @@ import { coletarModificadores, calcularValoresFinais, agregarDefesas, resolverVa
 import { resolverFaixas } from '../lib/faixas'
 import { avaliarFormula } from '../lib/formulaEngine'
 import { redimensionar, ordenarExibicao, contarMarcas, tipoMaisSevero } from '../lib/trackEngine'
+import { modificadoresDeEstados, mapaEstados, clampEstado, faixaAtivaDoEstado, calorDoEstado } from '../lib/estadosEngine'
 import { calcularMaximos, mapaPools, atualDePool } from '../lib/poolEngine'
 import { slotsTotais, usadosPorCirculo, slotsDisponiveis, slotsAtivos } from '../lib/slotsEngine'
 
@@ -20,7 +21,7 @@ function groupBy(rows, key) {
  * Constrói o "card" computado de uma ficha para o painel da sessão, passando os
  * valores pelo motor de modificadores (Fases 9-12). Puro — sem acesso a banco.
  */
-function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRows, poolsRows, slotsRows, itensRows, atributosRows, trilhasRows) {
+function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRows, poolsRows, slotsRows, itensRows, atributosRows, trilhasRows, estadosRows) {
   const raca = (sis.racas || []).find(r => r.id === fichaRow.raca_id) || null
   const classe = (sis.classes || []).find(c => c.id === fichaRow.classe_id) || null
 
@@ -129,10 +130,19 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
     pericias: {},
     formulaModificador: (sis.formula_modificador || ''),
   }
+  // 24.4 — valores dos estados (linha ausente = inicial) + efeitos por faixa
+  const valoresEstados = {}
+  for (const r of estadosRows || []) valoresEstados[r.estado_id] = r.valor
+  const estadosCfg = sis.estados || []
+
   // 19.4 — faixa ativa antes das fórmulas (mesma ordem do FichaPage)
+  // 24.4 — efeitos dos estados no MESMO pipeline (sem segundo mecanismo)
   const modificadoresAtivos = resolverValoresFormula(
     resolverFaixas(
-      coletarModificadores({ raca, classes: classesParaMotor, habilidadesFicha, itens: itensRows || [], estadoFicha, condicoesManuais }),
+      [
+        ...coletarModificadores({ raca, classes: classesParaMotor, habilidadesFicha, itens: itensRows || [], estadoFicha, condicoesManuais }),
+        ...modificadoresDeEstados(estadosCfg, valoresEstados),
+      ],
       ctxMod
     ),
     ctxMod
@@ -159,7 +169,7 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
     const v = finaisAttr[a.id]
     if (v != null) { atributosCtx[a.id] = v; if (a.nome) atributosCtx[a.nome] = v }
   }
-  const ctxCalc = { ...ctxMod, atributos: atributosCtx }
+  const ctxCalc = { ...ctxMod, atributos: atributosCtx, estados: mapaEstados(estadosCfg, valoresEstados) }
   const camposCombate = sis.campos_combate || []
   const combateCalculado = { ...valoresFinais.combate }
   const derivadosCombate = [] // 22.7 — calculados marcados "exibir no combate"
@@ -293,6 +303,15 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
     vidaTemp: vidaTempEfetiva,
     trilhas: trilhasCard, // 24.2 — trilhas ao vivo (a substitui_vida troca a barra)
     trilhaVida,
+    // 24.4 — estados em destaque, ao vivo no card do mestre
+    estados: estadosCfg.filter(e => e.destaque !== false).map(cfg => {
+      const v = clampEstado(valoresEstados[cfg.id], cfg)
+      return {
+        id: cfg.id, nome: cfg.nome, valor: v, max: cfg.max ?? 10,
+        calor: calorDoEstado(cfg, v),
+        aviso: faixaAtivaDoEstado(cfg, v)?.aviso || null,
+      }
+    }),
     combate: combateCalculado, // 22.7 — inclui os campos calculados (CA calc./derivados)
     derivadosCombate,          // 22.7 — calculados marcados "exibir no combate"
     togglesManuais,            // 22.7 — interruptores situacionais (ex: CA 17/19/21)
@@ -327,7 +346,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
   // Recarrega os dados de UMA ficha e devolve o card computado
   const carregarCard = useCallback(async (fichaId) => {
     const sis = sisRef.current || {}
-    const [fichaResp, habsResp, condResp, combResp, clsResp, poolsResp, slotsResp, itensResp, attrResp, trilhasResp] = await Promise.all([
+    const [fichaResp, habsResp, condResp, combResp, clsResp, poolsResp, slotsResp, itensResp, attrResp, trilhasResp, estadosResp] = await Promise.all([
       supabase.from('fichas').select('*').eq('id', fichaId).single(),
       supabase.from('habilidades_ficha').select('*').eq('ficha_id', fichaId),
       supabase.from('condicoes_manuais_ficha').select('ficha_id, modificador_id, ativa').eq('ficha_id', fichaId),
@@ -338,9 +357,10 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       supabase.from('itens_ficha').select('id, nome, equipado, durabilidade, modificadores').eq('ficha_id', fichaId),
       supabase.from('valores_atributos').select('ficha_id, atributo_id, valor').eq('ficha_id', fichaId),
       supabase.from('trilhas_ficha').select('ficha_id, trilha_id, marcas').eq('ficha_id', fichaId),
+      supabase.from('estados_ficha').select('ficha_id, estado_id, valor').eq('ficha_id', fichaId),
     ])
     if (fichaResp.error || !fichaResp.data) return null
-    return construirCard(fichaResp.data, habsResp.data, condResp.data, combResp.data, sis, clsResp.data, poolsResp.data, slotsResp.data, itensResp.data, attrResp.data, trilhasResp.data)
+    return construirCard(fichaResp.data, habsResp.data, condResp.data, combResp.data, sis, clsResp.data, poolsResp.data, slotsResp.data, itensResp.data, attrResp.data, trilhasResp.data, estadosResp.data)
   }, [])
 
   const recarregarFicha = useCallback(async (fichaId) => {
@@ -373,7 +393,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       idsRef.current = new Set(ids)
       if (ids.length === 0) { setCards([]); return }
 
-      const [habsResp, condResp, combResp, clsResp, poolsResp, slotsResp, itensResp, attrResp, trilhasResp] = await Promise.all([
+      const [habsResp, condResp, combResp, clsResp, poolsResp, slotsResp, itensResp, attrResp, trilhasResp, estadosResp] = await Promise.all([
         supabase.from('habilidades_ficha').select('*').in('ficha_id', ids),
         supabase.from('condicoes_manuais_ficha').select('ficha_id, modificador_id, ativa').in('ficha_id', ids),
         supabase.from('valores_combate').select('ficha_id, campo_id, valor').in('ficha_id', ids),
@@ -383,6 +403,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
         supabase.from('itens_ficha').select('id, ficha_id, nome, equipado, durabilidade, modificadores').in('ficha_id', ids),
         supabase.from('valores_atributos').select('ficha_id, atributo_id, valor').in('ficha_id', ids),
         supabase.from('trilhas_ficha').select('ficha_id, trilha_id, marcas').in('ficha_id', ids),
+        supabase.from('estados_ficha').select('ficha_id, estado_id, valor').in('ficha_id', ids),
       ])
       const habsBy = groupBy(habsResp.data, 'ficha_id')
       const condBy = groupBy(condResp.data, 'ficha_id')
@@ -393,8 +414,9 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       const itensBy = groupBy(itensResp.data, 'ficha_id')
       const attrBy = groupBy(attrResp.data, 'ficha_id')
       const trilhasBy = groupBy(trilhasResp.data, 'ficha_id')
+      const estadosBy = groupBy(estadosResp.data, 'ficha_id')
       const sis = sisRef.current || {}
-      setCards(fichas.map(f => construirCard(f, habsBy[f.id], condBy[f.id], combBy[f.id], sis, clsBy[f.id], poolsBy[f.id], slotsBy[f.id], itensBy[f.id], attrBy[f.id], trilhasBy[f.id])))
+      setCards(fichas.map(f => construirCard(f, habsBy[f.id], condBy[f.id], combBy[f.id], sis, clsBy[f.id], poolsBy[f.id], slotsBy[f.id], itensBy[f.id], attrBy[f.id], trilhasBy[f.id], estadosBy[f.id])))
     } catch (err) {
       setError(err.message || 'Erro ao carregar fichas da sessão.')
     } finally {
@@ -433,6 +455,8 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'valores_atributos' }, afetaFicha)
       // 24.2 — marcas de trilha aparecem ao vivo (vida por caixinhas no card)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'trilhas_ficha' }, afetaFicha)
+      // 24.4 — Fome/estados mudando ao vivo no card do mestre
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'estados_ficha' }, afetaFicha)
       // 19.1/19.4 — subir de nível ou trocar de classe move faixas e modificadores
       .on('postgres_changes', { event: '*', schema: 'public', table: 'classes_ficha' }, afetaFicha)
       // 20.1 — gasto de pool aparece ao vivo no painel do mestre

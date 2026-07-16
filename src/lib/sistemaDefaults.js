@@ -31,6 +31,10 @@ export const CONFIG_LAYOUT_DEFAULT = {
   // nada aparece. [{ id, nome, tamanho_formula, tipos_marca, regra_transbordo,
   // ao_encher_do_maior, substitui_vida, recuperacao, feed }]
   trilhas: [],
+  // Fase 24.4 — estados com gatilhos (Fome, Sanidade...). Vazio = nada aparece.
+  // [{ id, nome, min, max, inicial, destaque, feed, efeitos_por_faixa,
+  //    alimenta_dados_especiais }]
+  estados: [],
   // Fase 23 — modo de RESOLUÇÃO da rolagem. Ausente/'soma' = comportamento de
   // sempre (retrocompatível byte a byte). Um modo por sistema.
   resolucao: {
@@ -133,6 +137,7 @@ export function mergeConfigLayout(raw) {
     pontos_status: { ...CONFIG_LAYOUT_DEFAULT.pontos_status, ...((raw || {}).pontos_status || {}) },
     critico: { ...CONFIG_LAYOUT_DEFAULT.critico, ...((raw || {}).critico || {}) },
     trilhas: (raw || {}).trilhas || [],
+    estados: (raw || {}).estados || [],
     exibicao_atributos: (raw || {}).exibicao_atributos || 'numero',
     maximo_dots: (raw || {}).maximo_dots || 5,
     resolucao: {

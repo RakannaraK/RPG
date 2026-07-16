@@ -103,6 +103,25 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
         <MiniTrilha key={t.id} trilha={t} />
       ))}
 
+      {/* Estados em destaque (24.4) — Fome/Sanidade ao vivo */}
+      {(card.estados || []).length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {card.estados.map(e => (
+            <span key={e.id}
+              className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border font-semibold ${
+                e.calor >= 0.99 ? 'bg-red-950/70 border-red-500 text-red-200'
+                : e.calor >= 0.75 ? 'bg-orange-950/60 border-orange-500/80 text-orange-200'
+                : e.calor >= 0.5 ? 'bg-amber-950/50 border-amber-500/70 text-amber-200'
+                : 'bg-purple-950/60 border-purple-700 text-purple-200'
+              }`}
+              title={e.aviso || ''}>
+              {e.nome} {e.valor}<span className="opacity-50 font-normal">/{e.max}</span>
+              {e.aviso && <span>⚠</span>}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Campos de combate */}
       {camposCombate.length > 0 && (
         <div className="flex flex-wrap gap-2">

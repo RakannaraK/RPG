@@ -21,8 +21,11 @@ import PainelRecompensas from '../components/ficha/PainelRecompensas'
 import { calcularMaximos, mapaPools, atualDePool } from '../lib/poolEngine'
 import { usePools, usePoolsFicha } from '../hooks/usePools'
 import { useTrilhasFicha } from '../hooks/useTrilhasFicha'
+import { useEstadosFicha } from '../hooks/useEstadosFicha'
 import { recuperarTrilha } from '../lib/trackEngine'
+import { modificadoresDeEstados, mapaEstados, especiaisDeEstados, clampEstado } from '../lib/estadosEngine'
 import PainelTrilhas from '../components/ficha/PainelTrilhas'
+import PainelEstados from '../components/ficha/PainelEstados'
 import PainelPools from '../components/ficha/PainelPools'
 import { slotsTotais, usadosPorCirculo, slotsAtivos, gastarSlot } from '../lib/slotsEngine'
 import { useSlotsFicha } from '../hooks/useSlotsFicha'
@@ -88,6 +91,7 @@ export default function FichaPage() {
   const { pools } = usePools(sistema?.id)
   const { linhasPools, definirAtual } = usePoolsFicha(fichaId)
   const { marcasDe, salvarMarcas } = useTrilhasFicha(fichaId) // 24.2
+  const { valores: valoresEstados, definirValor: definirEstado } = useEstadosFicha(fichaId) // 24.4
   // 20.3 — slots (modo opcional): só `usados` é armazenado
   const { linhasSlots, definirUsados } = useSlotsFicha(fichaId)
   // 21.1 — categorias de item (dropdown no inventário)
@@ -455,16 +459,21 @@ export default function FichaPage() {
   }
   // 19.4 — a faixa ativa é escolhida ANTES de resolver fórmulas: o valor da
   // faixa ainda pode ser fórmula (ou notação de dado, que passa direto).
+  // 24.4 — efeitos dos ESTADOS entram no MESMO pipeline (sem segundo mecanismo):
+  // a faixa ativa do estado só seleciona; a aplicação é a F12/18 normal.
   const modificadoresAtivos = resolverValoresFormula(
     resolverFaixas(
-      coletarModificadores({
-        raca: racaAtiva,
-        classes: classesAtivas,
-        habilidadesFicha,
-        itens: itensFicha, // 21 — itens equipados como fonte de modificador
-        estadoFicha,
-        condicoesManuais,
-      }),
+      [
+        ...coletarModificadores({
+          raca: racaAtiva,
+          classes: classesAtivas,
+          habilidadesFicha,
+          itens: itensFicha, // 21 — itens equipados como fonte de modificador
+          estadoFicha,
+          condicoesManuais,
+        }),
+        ...modificadoresDeEstados(config.estados || [], valoresEstados),
+      ],
       ctxModificador
     ),
     ctxModificador
@@ -526,14 +535,21 @@ export default function FichaPage() {
     vida_max: valoresFinais.vida_max ?? ficha.hp_maximo ?? 0,
     pericias: {},
     recursos: {},
+    estados: mapaEstados(config.estados || [], valoresEstados), // 24.4 — estado(x)
   }
 
-  // 23.5 — quantidade de dados especiais (ex: Fome) por fórmula, no contexto da ficha
+  // 23.5/24.4 — quantidade de dados especiais (ex: Fome): um estado com
+  // alimenta_dados_especiais manda; senão, a fórmula da config F23.
   const dadosEspCfg = config.resolucao?.dados_especiais
   let especiaisQtd = 0
-  if (dadosEspCfg?.ativo && String(dadosEspCfg.quantidade_formula || '').trim()) {
-    try { especiaisQtd = Math.max(0, Math.floor(avaliarFormula(dadosEspCfg.quantidade_formula, contextoFormula) || 0)) }
-    catch { especiaisQtd = 0 }
+  if (dadosEspCfg?.ativo) {
+    const doEstado = especiaisDeEstados(config.estados || [], valoresEstados)
+    if (doEstado != null) {
+      especiaisQtd = doEstado
+    } else if (String(dadosEspCfg.quantidade_formula || '').trim()) {
+      try { especiaisQtd = Math.max(0, Math.floor(avaliarFormula(dadosEspCfg.quantidade_formula, contextoFormula) || 0)) }
+      catch { especiaisQtd = 0 }
+    }
   }
 
   // 20.4 — tudo que o motor precisa para decidir se um poder pode ser usado
@@ -631,6 +647,21 @@ export default function FichaPage() {
       })
       refetch()
     } catch { /* falha silenciada — não quebra a ficha */ }
+  }
+
+  // 24.4 — muda o valor de um estado (clamp no motor); feed opcional por estado
+  async function handleSetEstado(cfg, novoValor) {
+    const v = clampEstado(novoValor, cfg)
+    try {
+      await definirEstado(cfg.id, v)
+      if (cfg.feed !== false) {
+        await registrarEvento({
+          mesaId, fichaId,
+          rotulo: `${ficha.nome_personagem} — ${cfg.nome}: ${v}`,
+          notacao: '', total: v, dados: [],
+        })
+      }
+    } catch { /* upsert reverte sozinho */ }
   }
 
   // 24.2 — eventos de trilha (encheu do maior / transbordo) anunciados no feed
@@ -871,6 +902,15 @@ export default function FichaPage() {
           vidaTemp={valoresFinais.vida_temp}
           vidaTempPontual={ficha.vida_temp_atual ?? 0}
           esconderVida={(config.trilhas || []).some(t => t.substitui_vida)}
+        />
+
+        {/* Estados com gatilhos (24.4) — destaque ao lado da vida/trilha */}
+        <PainelEstados
+          estados={config.estados || []}
+          valores={valoresEstados}
+          isDono={isDono}
+          onSet={handleSetEstado}
+          apenasDestaque={false}
         />
 
         {/* Trilhas (24.2) — adaptativo: some se o sistema não tem trilhas */}
