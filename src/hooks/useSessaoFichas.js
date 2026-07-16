@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { coletarModificadores, calcularValoresFinais, agregarDefesas, resolverValoresFormula, listarCondicoesManuais } from '../lib/modifierEngine'
 import { resolverFaixas } from '../lib/faixas'
 import { avaliarFormula } from '../lib/formulaEngine'
+import { redimensionar, ordenarExibicao, contarMarcas, tipoMaisSevero } from '../lib/trackEngine'
 import { calcularMaximos, mapaPools, atualDePool } from '../lib/poolEngine'
 import { slotsTotais, usadosPorCirculo, slotsDisponiveis, slotsAtivos } from '../lib/slotsEngine'
 
@@ -19,7 +20,7 @@ function groupBy(rows, key) {
  * Constrói o "card" computado de uma ficha para o painel da sessão, passando os
  * valores pelo motor de modificadores (Fases 9-12). Puro — sem acesso a banco.
  */
-function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRows, poolsRows, slotsRows, itensRows, atributosRows) {
+function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRows, poolsRows, slotsRows, itensRows, atributosRows, trilhasRows) {
   const raca = (sis.racas || []).find(r => r.id === fichaRow.raca_id) || null
   const classe = (sis.classes || []).find(c => c.id === fichaRow.classe_id) || null
 
@@ -170,6 +171,32 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
     if (campo.exibir_combate) derivadosCombate.push({ id: campo.id, nome: campo.nome, valor })
   }
 
+  // 24.2 — trilhas do card (tamanho pela fórmula com atributos finais; marcas
+  // ao vivo via Realtime de trilhas_ficha). trilhaVida = a que substitui a vida.
+  const trilhasCard = []
+  let trilhaVida = null
+  for (const t of sis.trilhas || []) {
+    let tamanho
+    const f = String(t.tamanho_formula || '').trim()
+    try { tamanho = Math.max(0, Math.floor(avaliarFormula(f, ctxCalc))) }
+    catch { tamanho = Math.max(0, Math.floor(Number(f) || 0)) }
+    const raw = (trilhasRows || []).find(r => r.trilha_id === t.id)?.marcas ?? Array(tamanho).fill(null)
+    const ajuste = redimensionar(raw, tamanho, t)
+    const marcas = raw.length > tamanho && ajuste.removidas.length > 0 ? raw : ajuste.marcas
+    const topo = tipoMaisSevero(t)
+    const cheia = marcas.length > 0 && !!topo && marcas.every(m => m === topo)
+    const item = {
+      id: t.id, nome: t.nome, config: t, marcas,
+      exibicao: ordenarExibicao(marcas, t),
+      cont: contarMarcas(marcas),
+      cheiaDoMaior: cheia,
+      rotuloCheia: t.ao_encher_do_maior?.rotulo || null,
+      substitui_vida: !!t.substitui_vida,
+    }
+    trilhasCard.push(item)
+    if (t.substitui_vida && !trilhaVida) trilhaVida = item
+  }
+
   // 22.7 — interruptores de condição manual (F12) p/ o dono ligar/desligar na
   // sessão (ex: CA situacional 17/19/21). Ativos+inativos, com o delta na CA.
   const caCampo = camposCombate.find(cc => {
@@ -264,6 +291,8 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
     hpMax: valoresFinais.vida_max,
     hpMaxBase: fichaRow.hp_maximo ?? 0,
     vidaTemp: vidaTempEfetiva,
+    trilhas: trilhasCard, // 24.2 — trilhas ao vivo (a substitui_vida troca a barra)
+    trilhaVida,
     combate: combateCalculado, // 22.7 — inclui os campos calculados (CA calc./derivados)
     derivadosCombate,          // 22.7 — calculados marcados "exibir no combate"
     togglesManuais,            // 22.7 — interruptores situacionais (ex: CA 17/19/21)
@@ -298,7 +327,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
   // Recarrega os dados de UMA ficha e devolve o card computado
   const carregarCard = useCallback(async (fichaId) => {
     const sis = sisRef.current || {}
-    const [fichaResp, habsResp, condResp, combResp, clsResp, poolsResp, slotsResp, itensResp, attrResp] = await Promise.all([
+    const [fichaResp, habsResp, condResp, combResp, clsResp, poolsResp, slotsResp, itensResp, attrResp, trilhasResp] = await Promise.all([
       supabase.from('fichas').select('*').eq('id', fichaId).single(),
       supabase.from('habilidades_ficha').select('*').eq('ficha_id', fichaId),
       supabase.from('condicoes_manuais_ficha').select('ficha_id, modificador_id, ativa').eq('ficha_id', fichaId),
@@ -308,9 +337,10 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       supabase.from('slots_ficha').select('ficha_id, circulo, usados').eq('ficha_id', fichaId),
       supabase.from('itens_ficha').select('id, nome, equipado, durabilidade, modificadores').eq('ficha_id', fichaId),
       supabase.from('valores_atributos').select('ficha_id, atributo_id, valor').eq('ficha_id', fichaId),
+      supabase.from('trilhas_ficha').select('ficha_id, trilha_id, marcas').eq('ficha_id', fichaId),
     ])
     if (fichaResp.error || !fichaResp.data) return null
-    return construirCard(fichaResp.data, habsResp.data, condResp.data, combResp.data, sis, clsResp.data, poolsResp.data, slotsResp.data, itensResp.data, attrResp.data)
+    return construirCard(fichaResp.data, habsResp.data, condResp.data, combResp.data, sis, clsResp.data, poolsResp.data, slotsResp.data, itensResp.data, attrResp.data, trilhasResp.data)
   }, [])
 
   const recarregarFicha = useCallback(async (fichaId) => {
@@ -343,7 +373,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       idsRef.current = new Set(ids)
       if (ids.length === 0) { setCards([]); return }
 
-      const [habsResp, condResp, combResp, clsResp, poolsResp, slotsResp, itensResp, attrResp] = await Promise.all([
+      const [habsResp, condResp, combResp, clsResp, poolsResp, slotsResp, itensResp, attrResp, trilhasResp] = await Promise.all([
         supabase.from('habilidades_ficha').select('*').in('ficha_id', ids),
         supabase.from('condicoes_manuais_ficha').select('ficha_id, modificador_id, ativa').in('ficha_id', ids),
         supabase.from('valores_combate').select('ficha_id, campo_id, valor').in('ficha_id', ids),
@@ -352,6 +382,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
         supabase.from('slots_ficha').select('ficha_id, circulo, usados').in('ficha_id', ids),
         supabase.from('itens_ficha').select('id, ficha_id, nome, equipado, durabilidade, modificadores').in('ficha_id', ids),
         supabase.from('valores_atributos').select('ficha_id, atributo_id, valor').in('ficha_id', ids),
+        supabase.from('trilhas_ficha').select('ficha_id, trilha_id, marcas').in('ficha_id', ids),
       ])
       const habsBy = groupBy(habsResp.data, 'ficha_id')
       const condBy = groupBy(condResp.data, 'ficha_id')
@@ -361,8 +392,9 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       const slotsBy = groupBy(slotsResp.data, 'ficha_id')
       const itensBy = groupBy(itensResp.data, 'ficha_id')
       const attrBy = groupBy(attrResp.data, 'ficha_id')
+      const trilhasBy = groupBy(trilhasResp.data, 'ficha_id')
       const sis = sisRef.current || {}
-      setCards(fichas.map(f => construirCard(f, habsBy[f.id], condBy[f.id], combBy[f.id], sis, clsBy[f.id], poolsBy[f.id], slotsBy[f.id], itensBy[f.id], attrBy[f.id])))
+      setCards(fichas.map(f => construirCard(f, habsBy[f.id], condBy[f.id], combBy[f.id], sis, clsBy[f.id], poolsBy[f.id], slotsBy[f.id], itensBy[f.id], attrBy[f.id], trilhasBy[f.id])))
     } catch (err) {
       setError(err.message || 'Erro ao carregar fichas da sessão.')
     } finally {
@@ -399,6 +431,8 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'valores_combate' }, afetaFicha)
       // 22.7 — mudança de atributo recalcula os campos de combate calculados
       .on('postgres_changes', { event: '*', schema: 'public', table: 'valores_atributos' }, afetaFicha)
+      // 24.2 — marcas de trilha aparecem ao vivo (vida por caixinhas no card)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'trilhas_ficha' }, afetaFicha)
       // 19.1/19.4 — subir de nível ou trocar de classe move faixas e modificadores
       .on('postgres_changes', { event: '*', schema: 'public', table: 'classes_ficha' }, afetaFicha)
       // 20.1 — gasto de pool aparece ao vivo no painel do mestre

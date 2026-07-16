@@ -13,6 +13,7 @@ import { useRolagem } from '../hooks/useRolagem'
 import { calcularDescanso } from '../lib/restEngine'
 import { planejarDefesa } from '../lib/defesaEngine'
 import { ordenarPorIniciativa } from '../lib/iniciativa'
+import { marcar, curar } from '../lib/trackEngine'
 import PresencaBar from '../components/sessao/PresencaBar'
 import PainelFichas from '../components/sessao/PainelFichas'
 import CombatePanel from '../components/sessao/CombatePanel'
@@ -56,8 +57,10 @@ export default function SessaoPage() {
       formula_proficiencia: formulaProficiencia,
       slots: configSlots,
       campos_combate: camposCombate, // 22.7 — computar campos calculados no card
+      trilhas: sistema?.config_layout?.trilhas || [], // 24.2 — trilhas no card
     }),
-    [racas, classes, habilidades, atributos, pericias, pools, formulaModificador, formulaProficiencia, configSlots, camposCombate]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [racas, classes, habilidades, atributos, pericias, pools, formulaModificador, formulaProficiencia, configSlots, camposCombate, sistema?.config_layout?.trilhas]
   )
   const descansos = sistema?.config_layout?.descansos || []
   const defesaAtiva = sistema?.config_layout?.defesa_ativa || null // 22.6
@@ -202,6 +205,77 @@ export default function SessaoPage() {
         { onConflict: 'ficha_id,modificador_id' }
       )
     } catch { /* RLS/rede — silencioso, o card não muda */ }
+  }
+
+  // 24.2 — dano/cura do combate traduzidos para MARCAS quando a ficha tem uma
+  // trilha que substitui a vida. O fluxo é o mesmo do F14.5 (não bifurca): o
+  // controle do row chama isto em vez de HP. RLS: mestre marcar ficha alheia
+  // exige política de UPDATE p/ gestor em trilhas_ficha (senão falha silenciosa).
+  async function handleMarcarTrilha(c, tipoId, n) {
+    const card = cards.find(cd => cd.id === c.ficha_id)
+    const tv = card?.trilhaVida
+    if (!tv || !n) return
+    let marcas = tv.marcas
+    const eventos = []
+    for (let i = 0; i < n; i++) {
+      const r = marcar(marcas, tipoId, tv.config)
+      marcas = r.marcas
+      eventos.push(...r.eventos)
+    }
+    try {
+      const { error: err } = await supabase.from('trilhas_ficha')
+        .upsert({ ficha_id: c.ficha_id, trilha_id: tv.id, marcas }, { onConflict: 'ficha_id,trilha_id' })
+      if (err) throw err
+    } catch { return /* RLS/rede — silencioso, igual ao HP (F14.5) */ }
+    const tipoNome = (tv.config.tipos_marca || []).find(tm => tm.id === tipoId)?.nome || 'dano'
+    await registrarEvento({
+      mesaId, sessaoId, fichaId: c.ficha_id,
+      rotulo: `${c.nome} sofreu ${n} de dano ${tipoNome.toLowerCase()}`,
+      notacao: '', total: n, dados: [],
+    })
+    // Encheu do maior: anuncia e (se configurado) vira condição no combatente (F14)
+    if (eventos.includes('encheu_do_maior') && tv.config.ao_encher_do_maior?.rotulo) {
+      const enc = tv.config.ao_encher_do_maior
+      await registrarEvento({
+        mesaId, sessaoId, fichaId: c.ficha_id,
+        rotulo: `${c.nome} — ${enc.rotulo}! (${tv.nome} cheia)`,
+        notacao: '', total: 0, dados: [],
+      })
+      if (enc.aplica_condicao) {
+        try {
+          await encontroApi.aplicarCondicao(c.id, { nome: enc.rotulo, descricao: enc.descricao || null, duracaoRodadas: null })
+        } catch { /* RLS — segue sem a condição */ }
+      }
+    }
+  }
+
+  // Cura N marcas, das MENOS severas primeiro (a mais recente de cada tipo)
+  async function handleCurarTrilha(c, n) {
+    const card = cards.find(cd => cd.id === c.ficha_id)
+    const tv = card?.trilhaVida
+    if (!tv || !n) return
+    const tipos = [...(tv.config.tipos_marca || [])].sort((a, b) => (a.severidade || 0) - (b.severidade || 0))
+    let marcas = tv.marcas
+    let curadas = 0
+    for (let i = 0; i < n; i++) {
+      let ok = false
+      for (const tm of tipos) {
+        const r = curar(marcas, tm.id)
+        if (r.curada) { marcas = r.marcas; ok = true; curadas++; break }
+      }
+      if (!ok) break
+    }
+    if (curadas === 0) return
+    try {
+      const { error: err } = await supabase.from('trilhas_ficha')
+        .upsert({ ficha_id: c.ficha_id, trilha_id: tv.id, marcas }, { onConflict: 'ficha_id,trilha_id' })
+      if (err) throw err
+    } catch { return }
+    await registrarEvento({
+      mesaId, sessaoId, fichaId: c.ficha_id,
+      rotulo: `${c.nome} recuperou ${curadas} caixinha${curadas === 1 ? '' : 's'} de ${tv.nome}`,
+      notacao: '', total: curadas, dados: [],
+    })
   }
 
   // F14.6 — dano de poder rolado por um jogador vira sugestão para o mestre lançar
@@ -493,6 +567,8 @@ export default function SessaoPage() {
             onResponderDefesa={handleResponderDefesa}
             onResolverDefesa={handleResolverDefesa}
             onCancelarDefesa={handleCancelarDefesa}
+            onMarcarTrilha={handleMarcarTrilha}
+            onCurarTrilha={handleCurarTrilha}
           />
         )}
 

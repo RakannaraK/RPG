@@ -11,6 +11,28 @@ function corVida(pct) {
   return 'bg-red-500'
 }
 
+// 24.2 — trilha compacta (caixinhas mini) p/ card de sessão e combate
+export function MiniTrilha({ trilha }) {
+  const porId = Object.fromEntries((trilha.config?.tipos_marca || []).map(tm => [tm.id, tm]))
+  const sevMax = Math.max(0, ...(trilha.config?.tipos_marca || []).map(tm => Number(tm.severidade) || 0))
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      <span className="text-purple-400 text-[10px] uppercase tracking-wide">{trilha.nome}</span>
+      <div className="flex flex-wrap gap-0.5">
+        {trilha.exibicao.map((m, i) => {
+          const cls = m == null ? 'bg-slate-700/70'
+            : (Number(porId[m]?.severidade) || 0) >= sevMax ? 'bg-red-500' : 'bg-amber-500'
+          return <span key={i} className={`w-2.5 h-2.5 rounded-[3px] ${cls}`} title={m ? porId[m]?.nome : ''} />
+        })}
+      </div>
+      <span className="text-purple-500 text-[10px] font-mono">{trilha.cont.marcadas}/{trilha.cont.total}</span>
+      {trilha.cheiaDoMaior && trilha.rotuloCheia && (
+        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-950/80 border border-red-500 text-red-200">☠ {trilha.rotuloCheia}</span>
+      )}
+    </div>
+  )
+}
+
 function ChipEstado({ chip }) {
   const cls = {
     habilidade: 'bg-purple-900/60 border-purple-600/60 text-purple-200',
@@ -52,25 +74,34 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
         </div>
       </div>
 
-      {/* Vida */}
-      <div>
-        <div className="flex items-baseline justify-between mb-1">
-          <span className="text-purple-400 text-[11px] uppercase tracking-wider">Vida</span>
-          <span className="text-white text-sm font-semibold">
-            {card.hpAtual}
-            <span className="text-purple-500 font-normal"> / {hpMax || '?'}</span>
-            {temModVida && card.hpMax > card.hpMaxBase && (
-              <span className="text-green-400 text-[10px] font-mono ml-1">(+{card.hpMax - card.hpMaxBase})</span>
-            )}
-          </span>
+      {/* Vida — trilha substitui a barra quando configurada (24.2) */}
+      {card.trilhaVida ? (
+        <MiniTrilha trilha={card.trilhaVida} />
+      ) : (
+        <div>
+          <div className="flex items-baseline justify-between mb-1">
+            <span className="text-purple-400 text-[11px] uppercase tracking-wider">Vida</span>
+            <span className="text-white text-sm font-semibold">
+              {card.hpAtual}
+              <span className="text-purple-500 font-normal"> / {hpMax || '?'}</span>
+              {temModVida && card.hpMax > card.hpMaxBase && (
+                <span className="text-green-400 text-[10px] font-mono ml-1">(+{card.hpMax - card.hpMaxBase})</span>
+              )}
+            </span>
+          </div>
+          <div className="h-2.5 bg-slate-700 rounded-full overflow-hidden">
+            <div className={`h-full rounded-full transition-all duration-500 ${corVida(pct)}`} style={{ width: `${pct}%` }} />
+          </div>
+          {card.vidaTemp > 0 && (
+            <p className="text-sky-400 text-[11px] mt-1 font-medium">+{card.vidaTemp} vida temporária</p>
+          )}
         </div>
-        <div className="h-2.5 bg-slate-700 rounded-full overflow-hidden">
-          <div className={`h-full rounded-full transition-all duration-500 ${corVida(pct)}`} style={{ width: `${pct}%` }} />
-        </div>
-        {card.vidaTemp > 0 && (
-          <p className="text-sky-400 text-[11px] mt-1 font-medium">+{card.vidaTemp} vida temporária</p>
-        )}
-      </div>
+      )}
+
+      {/* Demais trilhas (24.2) — ao vivo */}
+      {(card.trilhas || []).filter(t => !t.substitui_vida).map(t => (
+        <MiniTrilha key={t.id} trilha={t} />
+      ))}
 
       {/* Campos de combate */}
       {camposCombate.length > 0 && (

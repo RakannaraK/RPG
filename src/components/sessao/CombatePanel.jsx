@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import AcoesCombate from './AcoesCombate'
 import DefesaAtivaPrompt from './DefesaAtivaPrompt'
+import { MiniTrilha } from './PainelFichas'
 import { ordenarPorIniciativa } from '../../lib/iniciativa'
 
 /**
@@ -145,6 +146,8 @@ function CombatenteRow({
   // F22.6 — defesa ativa
   defesaAtiva = null, atributosSistema = [], souDefensor = false,
   mesaId, sessaoId, onPedirDefesa, onResponderDefesa, onResolverDefesa, onCancelarDefesa,
+  // 24.2 — dano/cura por MARCAS quando a ficha tem trilha que substitui a vida
+  onMarcarTrilha, onCurarTrilha,
 }) {
   const estilo = TIPO_ESTILO[c.tipo] || TIPO_ESTILO.inimigo
   const hp = hpDoCombatente(c, cardsPorFicha)
@@ -172,7 +175,12 @@ function CombatenteRow({
     setDc('')
   }
 
-  const abatido = hp.atual != null && hp.atual <= 0
+  // 24.2 — trilha que substitui a vida (jogador): mostra caixinhas e traduz
+  // dano/cura para marcas; "abatido" = trilha cheia do tipo mais severo
+  const trilhaVida = c.ficha_id ? cardsPorFicha[c.ficha_id]?.trilhaVida : null
+  const abatido = trilhaVida
+    ? trilhaVida.cheiaDoMaior
+    : hp.atual != null && hp.atual <= 0
 
   return (
     <div className={`rounded-xl px-3 py-2 border transition-all duration-300 ${
@@ -204,9 +212,18 @@ function CombatenteRow({
         <span className={`text-[10px] px-1.5 py-0.5 rounded-md border shrink-0 ${estilo.badge}`}>{estilo.label}</span>
         <span className="text-white text-sm font-medium flex-1 min-w-0 truncate">
           {c.nome}
-          {abatido && <span className="ml-1.5 text-[10px] px-1 py-0.5 rounded bg-red-950 border border-red-800 text-red-300 align-middle">Abatido</span>}
+          {abatido && (
+            <span className="ml-1.5 text-[10px] px-1 py-0.5 rounded bg-red-950 border border-red-800 text-red-300 align-middle">
+              {trilhaVida?.rotuloCheia || 'Abatido'}
+            </span>
+          )}
         </span>
-        {hp.atual != null && (
+        {trilhaVida ? (
+          <span className={`text-xs font-mono shrink-0 ${abatido ? 'text-red-400' : 'text-purple-300'}`}
+            title={`${trilhaVida.nome}: ${trilhaVida.cont.marcadas}/${trilhaVida.cont.total} marcadas`}>
+            {trilhaVida.cont.marcadas}/{trilhaVida.cont.total} ▢
+          </span>
+        ) : hp.atual != null && (
           <span className={`text-xs font-mono shrink-0 ${abatido ? 'text-red-400' : 'text-purple-300'}`}>
             {hp.atual}{hp.max != null ? `/${hp.max}` : ''} HP
           </span>
@@ -230,8 +247,38 @@ function CombatenteRow({
         )}
       </div>
 
-      {/* Controles de dano/cura (14.5) */}
-      {podeAgir && hp.atual != null && (
+      {/* 24.2 — alvo com trilha-vida: dano/cura viram marcar/curar caixinhas */}
+      {trilhaVida && (
+        <div className="mt-1.5 pl-6 space-y-1.5">
+          <MiniTrilha trilha={trilhaVida} />
+          {podeAgir && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <input
+                type="number" min="1" value={dc} onChange={e => setDc(e.target.value)} placeholder="1"
+                className="w-12 px-1.5 py-0.5 bg-purple-950 border border-purple-700 text-white text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+                title="Quantas caixinhas"
+              />
+              {(trilhaVida.config.tipos_marca || []).map(tm => (
+                <button key={tm.id}
+                  onClick={() => { onMarcarTrilha?.(c, tm.id, Math.max(1, Math.abs(Number(dc) || 1))); setDc('') }}
+                  className="px-2 py-0.5 bg-red-800 hover:bg-red-700 text-white text-xs rounded transition-colors font-mono"
+                  title={`Marcar ${tm.nome}`}>
+                  − {tm.simbolo || tm.nome}
+                </button>
+              ))}
+              <button
+                onClick={() => { onCurarTrilha?.(c, Math.max(1, Math.abs(Number(dc) || 1))); setDc('') }}
+                className="px-2 py-0.5 bg-green-800 hover:bg-green-700 text-white text-xs rounded transition-colors"
+                title="Curar caixinhas (menos severas primeiro)">
+                ＋ Cura
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Controles de dano/cura (14.5) — HP numérico */}
+      {!trilhaVida && podeAgir && hp.atual != null && (
         <div className="flex items-center gap-1.5 mt-1.5 pl-6">
           <input
             type="number"
@@ -405,6 +452,9 @@ export default function CombatePanel({
   onResponderDefesa,
   onResolverDefesa,
   onCancelarDefesa,
+  // 24.2 — trilha-vida
+  onMarcarTrilha,
+  onCurarTrilha,
 }) {
   const [busy, setBusy] = useState(false)
   const [erro, setErro] = useState('')
@@ -587,6 +637,8 @@ export default function CombatePanel({
               onResponderDefesa={onResponderDefesa}
               onResolverDefesa={onResolverDefesa}
               onCancelarDefesa={onCancelarDefesa}
+              onMarcarTrilha={onMarcarTrilha}
+              onCurarTrilha={onCurarTrilha}
             />
           ))}
         </div>
