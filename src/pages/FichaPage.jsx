@@ -1015,6 +1015,8 @@ export default function FichaPage() {
           resolucao={config.resolucao}
           rerolagem={rerolagem}
           especiaisQtd={especiaisQtd}
+          exibicaoAtributos={config.exibicao_atributos}
+          maximoDots={config.maximo_dots}
           dadoPadrao={dadoPadrao}
           valoresFinaisMotor={valoresFinais.atributos}
           detalhamentoMotor={valoresFinais.detalhamento}
@@ -1042,6 +1044,8 @@ export default function FichaPage() {
                   resolucao={config.resolucao}
                   rerolagem={rerolagem}
                   especiaisQtd={especiaisQtd}
+                  exibicaoAtributos={config.exibicao_atributos}
+                  maximoDots={config.maximo_dots}
                 />
               )}
               {secoes.proficiencias && (

@@ -161,6 +161,7 @@ export function useSaveSistema() {
           ordem: i,
           regra_rolagem: attr.regra_rolagem,
           sistema_id: sistemaId,
+          exibicao: attr.exibicao ?? null, // 24.3 — null = padrão do sistema
         }
 
         if (!attr.id || attr.id.startsWith('temp_')) {

@@ -23,6 +23,10 @@ export const CONFIG_LAYOUT_DEFAULT = {
   poderes_rotulo: 'Poderes',
   // Fase 21.6 — moedas / economia. Desativada = sem carteira na ficha.
   moedas: { ativo: false, denominacoes: [] }, // [{ id, nome, sigla, valor }]
+  // Fase 24.3 — dots: modo de EXIBIÇÃO de atributos/perícias (o valor continua
+  // número em banco/motores/paradas). Override por atributo em atributos.exibicao.
+  exibicao_atributos: 'numero', // 'numero' | 'dots'
+  maximo_dots: 5,               // até 10; acima do máximo = bolinhas de destaque
   // Fase 24 — trilhas de caixinhas (Vitalidade/FdV/Sanidade/relógios). Vazio =
   // nada aparece. [{ id, nome, tamanho_formula, tipos_marca, regra_transbordo,
   // ao_encher_do_maior, substitui_vida, recuperacao, feed }]
@@ -129,6 +133,8 @@ export function mergeConfigLayout(raw) {
     pontos_status: { ...CONFIG_LAYOUT_DEFAULT.pontos_status, ...((raw || {}).pontos_status || {}) },
     critico: { ...CONFIG_LAYOUT_DEFAULT.critico, ...((raw || {}).critico || {}) },
     trilhas: (raw || {}).trilhas || [],
+    exibicao_atributos: (raw || {}).exibicao_atributos || 'numero',
+    maximo_dots: (raw || {}).maximo_dots || 5,
     resolucao: {
       ...CONFIG_LAYOUT_DEFAULT.resolucao,
       ...((raw || {}).resolucao || {}),

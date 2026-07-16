@@ -7,6 +7,7 @@ import { descreverResultado } from '../../../lib/resolutionEngine'
 import { usePreferencias } from '../../../context/PreferenciasContext'
 import Dice3D from '../../dados/Dice3D'
 import RerolagemBox from '../../dados/RerolagemBox'
+import Dots from '../Dots'
 
 function AvisoVantagem({ estado }) {
   if (!estado || estado === 'normal') return null
@@ -41,6 +42,8 @@ export default function PainelPericias({
   resolucao = null, // 23.3
   rerolagem = null, // 23.4
   especiaisQtd = 0, // 23.5
+  exibicaoAtributos = 'numero', // 24.3 — dots também nas perícias
+  maximoDots = 5,
 }) {
   const { periciasFicha, savePericia } = usePericiasFicha(fichaId)
   const { registrarRolagem, registrarResolvida } = useRolagem()
@@ -181,8 +184,18 @@ export default function PainelPericias({
                     <span className="text-purple-500 text-xs shrink-0">({atributoVal})</span>
                   )}
 
-                  {/* Bônus */}
-                  {isDono ? (
+                  {/* Bônus — dots (24.3) ou número */}
+                  {exibicaoAtributos === 'dots' ? (
+                    <div className="shrink-0">
+                      <Dots
+                        valor={Number(pf.bonus) || 0}
+                        max={maximoDots}
+                        canEdit={isDono}
+                        onSet={n => handleBonusBlur(pericia.id, n)}
+                        size="sm"
+                      />
+                    </div>
+                  ) : isDono ? (
                     <input
                       type="number"
                       value={localBonus[pericia.id] ?? pf.bonus ?? 0}

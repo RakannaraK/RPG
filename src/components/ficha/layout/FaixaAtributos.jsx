@@ -10,6 +10,8 @@ export default function FaixaAtributos({
   resolucao = null,
   rerolagem = null,
   especiaisQtd = 0,
+  exibicaoAtributos = 'numero',
+  maximoDots = 5,
   dadoPadrao,
   valoresFinaisMotor,
   detalhamentoMotor,
@@ -51,6 +53,8 @@ export default function FaixaAtributos({
             resolucao={resolucao}
             rerolagem={rerolagem}
             especiaisQtd={especiaisQtd}
+            exibicaoAtributos={exibicaoAtributos}
+            maximoDots={maximoDots}
             dadoPadrao={dadoPadrao}
             valorFinal={valoresFinaisMotor ? valoresFinaisMotor[va.atributo?.id] : undefined}
             fontesMod={

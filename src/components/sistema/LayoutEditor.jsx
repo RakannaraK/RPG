@@ -303,6 +303,39 @@ export default function LayoutEditor({
         />
       </div>
 
+      {/* Exibição de atributos — dots (24.3) */}
+      <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
+        <p className="text-purple-200 text-sm font-semibold">Exibição de atributos e perícias</p>
+        <p className="text-purple-500 text-xs">
+          <span className="text-purple-300">Dots</span> mostra bolinhas (●●●○○) em vez de número — só a
+          exibição muda; fórmulas e paradas continuam lendo o número. Override por atributo na aba Atributos.
+        </p>
+        <div className="flex items-center gap-3 flex-wrap">
+          <label className="text-purple-300 text-xs flex items-center gap-1.5">
+            padrão
+            <select
+              value={config.exibicao_atributos || 'numero'}
+              onChange={e => onConfigChange({ ...config, exibicao_atributos: e.target.value })}
+              className="px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+            >
+              <option value="numero">Número</option>
+              <option value="dots">Dots (bolinhas)</option>
+            </select>
+          </label>
+          {(config.exibicao_atributos || 'numero') === 'dots' && (
+            <label className="text-purple-300 text-xs flex items-center gap-1.5">
+              máximo de bolinhas
+              <input
+                type="number" min={1} max={10}
+                value={config.maximo_dots ?? 5}
+                onChange={e => onConfigChange({ ...config, maximo_dots: Math.max(1, Math.min(10, Number(e.target.value) || 5)) })}
+                className="w-16 px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs text-center focus:outline-none focus:ring-1 focus:ring-purple-500"
+              />
+            </label>
+          )}
+        </div>
+      </div>
+
       {/* Fórmula de proficiência (19.2) */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
         <p className="text-purple-200 text-sm font-semibold">Proficiência</p>

@@ -6,6 +6,7 @@ import { resolverVantagem, aplicarVantagem } from '../../lib/rollModifiers'
 import { avaliarFormula } from '../../lib/formulaEngine'
 import { descreverResultado } from '../../lib/resolutionEngine'
 import RerolagemBox from '../dados/RerolagemBox'
+import Dots from './Dots'
 import { usePreferencias } from '../../context/PreferenciasContext'
 
 // Aviso visual de vantagem/desvantagem/anulada (Fase 12.3)
@@ -73,6 +74,8 @@ export default function AtributoCard({
   registrarResolvida = null,
   rerolagem = null,          // 23.4 — bundle de rerolagem (pool + débito)
   especiaisQtd = 0,          // 23.5 — dados especiais na parada (Fome)
+  exibicaoAtributos = 'numero', // 24.3 — padrão do sistema ('numero' | 'dots')
+  maximoDots = 5,
   compact = false,
 }) {
   const { preferencias } = usePreferencias()
@@ -104,6 +107,18 @@ export default function AtributoCard({
   }
   const temMod = modAtributo !== null && Number.isFinite(modAtributo)
   const fmtMod = m => (m >= 0 ? `+${m}` : String(m))
+
+  // 24.3 — dots: exibição por atributo (override) ou padrão do sistema.
+  // SÓ exibição: o valor segue número nos motores; o clique edita o BASE.
+  const usaDots = (atributo?.exibicao || exibicaoAtributos) === 'dots'
+  async function setDots(n) {
+    if (salvando) return
+    setSalvando(true)
+    setErro('')
+    try { await onSave(atributo.id, Math.max(0, n), null) }
+    catch (err) { setErro(err.message || 'Erro ao salvar.') }
+    finally { setSalvando(false) }
+  }
 
   // Flash de borda quando o valor final muda (feedback de toggle de habilidade)
   const [pulsando, setPulsando] = useState(false)
@@ -223,14 +238,25 @@ export default function AtributoCard({
 
         {/* Valor com tooltip de rastreabilidade */}
         <div className="relative group/val w-full flex flex-col items-center">
-          <p className={`font-bold text-4xl leading-none transition-colors duration-300 ${buffado ? 'text-green-300' : 'text-white'}`}>
-            {temMod ? fmtMod(modAtributo) : (display !== undefined && display !== null ? display : '—')}
-          </p>
-          {temMod ? (
+          {usaDots ? (
+            <Dots
+              valor={Number(display) || 0}
+              valorBase={Number(valor) || 0}
+              max={maximoDots}
+              canEdit={canEdit}
+              onSet={setDots}
+              size="sm"
+            />
+          ) : (
+            <p className={`font-bold text-4xl leading-none transition-colors duration-300 ${buffado ? 'text-green-300' : 'text-white'}`}>
+              {temMod ? fmtMod(modAtributo) : (display !== undefined && display !== null ? display : '—')}
+            </p>
+          )}
+          {!usaDots && (temMod ? (
             <p className="text-purple-400 text-[10px] leading-none mt-0.5">valor {display}</p>
           ) : fontesMod && fontesMod.length > 0 && (
             <p className="text-purple-500 text-[9px] leading-none mt-0.5">base {valor}</p>
-          )}
+          ))}
           {/* Tooltip de rastreabilidade */}
           {fontesMod && fontesMod.length > 0 && (
             <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 z-50
@@ -395,14 +421,24 @@ export default function AtributoCard({
         </div>
         <div className="flex flex-col items-end gap-1 ml-4 shrink-0">
           <div className="relative group/val flex flex-col items-end">
-            <p className={`font-bold text-3xl leading-none transition-colors duration-300 ${buffado ? 'text-green-300' : 'text-white'}`}>
-              {temMod ? fmtMod(modAtributo) : (display !== undefined && display !== null ? display : '—')}
-            </p>
-            {temMod ? (
+            {usaDots ? (
+              <Dots
+                valor={Number(display) || 0}
+                valorBase={Number(valor) || 0}
+                max={maximoDots}
+                canEdit={canEdit}
+                onSet={setDots}
+              />
+            ) : (
+              <p className={`font-bold text-3xl leading-none transition-colors duration-300 ${buffado ? 'text-green-300' : 'text-white'}`}>
+                {temMod ? fmtMod(modAtributo) : (display !== undefined && display !== null ? display : '—')}
+              </p>
+            )}
+            {!usaDots && (temMod ? (
               <p className="text-purple-400 text-[10px] leading-none">valor {display}</p>
             ) : fontesMod && fontesMod.length > 0 && (
               <p className="text-purple-500 text-[10px] leading-none">base {valor}</p>
-            )}
+            ))}
             {fontesMod && fontesMod.length > 0 && (
               <div className="absolute right-0 bottom-full mb-1.5 z-50
                               pointer-events-none opacity-0 group-hover/val:opacity-100
