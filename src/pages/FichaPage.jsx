@@ -26,6 +26,10 @@ import { recuperarTrilha } from '../lib/trackEngine'
 import { modificadoresDeEstados, mapaEstados, especiaisDeEstados, clampEstado } from '../lib/estadosEngine'
 import PainelTrilhas from '../components/ficha/PainelTrilhas'
 import PainelEstados from '../components/ficha/PainelEstados'
+import PainelXpDireto from '../components/ficha/PainelXpDireto'
+import { useXpLog } from '../hooks/useXpLog'
+import { usePericiasFicha } from '../hooks/usePericiasFicha'
+import { registroDeCompra } from '../lib/purchaseEngine'
 import PainelPools from '../components/ficha/PainelPools'
 import { slotsTotais, usadosPorCirculo, slotsAtivos, gastarSlot } from '../lib/slotsEngine'
 import { useSlotsFicha } from '../hooks/useSlotsFicha'
@@ -90,8 +94,11 @@ export default function FichaPage() {
   // 20.1 — pools do sistema + estado na ficha
   const { pools } = usePools(sistema?.id)
   const { linhasPools, definirAtual } = usePoolsFicha(fichaId)
-  const { marcasDe, salvarMarcas } = useTrilhasFicha(fichaId) // 24.2
+  const { marcasDe, salvarMarcas, bonusDe, salvarBonus } = useTrilhasFicha(fichaId) // 24.2/25.2
   const { valores: valoresEstados, definirValor: definirEstado } = useEstadosFicha(fichaId) // 24.4
+  const { log: xpLog, inserir: inserirXpLog } = useXpLog(fichaId) // 25.2
+  const { periciasFicha: periciasFichaPage, savePericia: savePericiaPage } = usePericiasFicha(fichaId) // 25.2 — alvo de compra
+  const [periciasKey, setPericiasKey] = useState(0) // remonta o painel após compra
   // 20.3 — slots (modo opcional): só `usados` é armazenado
   const { linhasSlots, definirUsados } = useSlotsFicha(fichaId)
   // 21.1 — categorias de item (dropdown no inventário)
@@ -664,6 +671,58 @@ export default function FichaPage() {
     } catch { /* upsert reverte sozinho */ }
   }
 
+  // ---- Fase 25.2 — progressão por XP direto ----
+  // Alvos compráveis de uma categoria: { id, nome, valor ATUAL, fora? }.
+  // Linhas de poder entram na 25.3 (o painel avisa "nenhum alvo" até lá).
+  function alvosCompraDe(categoria) {
+    switch (categoria.alvo) {
+      case 'atributo':
+        return valoresAtributos
+          .filter(va => va.atributo?.id)
+          .map(va => ({ id: va.atributo.id, nome: va.atributo.nome, valor: Math.floor(Number(va.valor) || 0) }))
+      case 'pericia':
+        return (periciasDoSistema || []).map(p => ({
+          id: p.id, nome: p.nome,
+          valor: Math.floor(Number(periciasFichaPage.find(x => x.pericia_id === p.id)?.bonus) || 0),
+        }))
+      case 'trilha_tamanho_bonus':
+        return (config.trilhas || []).map(t => ({ id: t.id, nome: t.nome, valor: bonusDe(t.id) }))
+      default:
+        return [] // linha_poder — 25.3
+    }
+  }
+
+  // Mestre/dono concede XP com motivo: RPC da F19 (SECURITY DEFINER) + log
+  async function handleConcederXp(quantidade, motivo) {
+    await handleAddXp(quantidade)
+    await inserirXpLog({ tipo: 'ganho', quantidade, detalhe: { motivo: motivo || null } })
+  }
+
+  // Compra (contrato 25.1): +1 no alvo, débito via RPC, log e feed — nessa ordem
+  // de segurança: só debita depois de aplicar o +1 com sucesso.
+  async function handleComprarXp(categoria, alvo, validacao) {
+    const { custo, novoValor } = validacao
+    if (categoria.alvo === 'atributo') {
+      await handleSaveValor(alvo.id, novoValor, null)
+    } else if (categoria.alvo === 'pericia') {
+      const atual = periciasFichaPage.find(x => x.pericia_id === alvo.id)
+      await savePericiaPage(alvo.id, { proficiente: atual?.proficiente ?? false, bonus: novoValor })
+      setPericiasKey(k => k + 1) // remonta o painel de perícias (instância própria)
+    } else if (categoria.alvo === 'trilha_tamanho_bonus') {
+      await salvarBonus(alvo.id, novoValor)
+    } else {
+      throw new Error('Este alvo entra na próxima etapa (linhas de poder).')
+    }
+    await handleAddXp(-custo)
+    await inserirXpLog(registroDeCompra(categoria, alvo.id, alvo.valor, custo))
+    await registrarEvento({
+      mesaId, fichaId,
+      rotulo: `${ficha.nome_personagem} subiu ${alvo.nome} para ${novoValor} — ${custo} XP`,
+      notacao: '', total: custo, dados: [],
+    })
+    refetch()
+  }
+
   // 24.2 — eventos de trilha (encheu do maior / transbordo) anunciados no feed
   async function handleEventosTrilha(t, eventos) {
     if (t.feed === false) return
@@ -921,10 +980,27 @@ export default function FichaPage() {
           contextoFormula={contextoFormula}
           isDono={isDono}
           onEventos={handleEventosTrilha}
+          bonusDe={bonusDe}
         />
 
-        {/* XP e nível (Fase 19.3). Sistema sem XP: só o dono vê (botão de subir). */}
-        {(modoProgressao(config.progressao_xp) !== 'nenhum' || isDono) && (
+        {/* 25.2 — modo XP DIRETO: sem nível/level-up; XP em destaque + compras */}
+        {config.progressao?.modo === 'xp_direto' && (
+          <PainelXpDireto
+            ficha={ficha}
+            progressao={config.progressao}
+            contextoFormula={contextoFormula}
+            isDono={isDono}
+            souGestor={souGestor}
+            nomes={nomesAlvos}
+            alvosDe={alvosCompraDe}
+            onConceder={handleConcederXp}
+            onComprar={handleComprarXp}
+            log={xpLog}
+          />
+        )}
+
+        {/* XP e nível (Fase 19.3) — só no modo de progressão POR NÍVEL (25.1). */}
+        {(config.progressao?.modo ?? 'nivel') === 'nivel' && (modoProgressao(config.progressao_xp) !== 'nenhum' || isDono) && (
           <BarraXp
             xp={ficha.xp ?? 0}
             nivelTotal={nivelTotal}
@@ -1074,6 +1150,7 @@ export default function FichaPage() {
             <div className="w-full lg:w-64 xl:w-72 shrink-0 space-y-4">
               {secoes.pericias && (
                 <PainelPericias
+                  key={periciasKey}
                   pericias={periciasDoSistema}
                   fichaId={fichaId}
                   isDono={isDono}

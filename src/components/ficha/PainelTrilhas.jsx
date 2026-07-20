@@ -18,12 +18,13 @@ function tamanhoDaTrilha(t, contextoFormula) {
   catch { return Math.max(0, Math.floor(Number(f) || 0)) }
 }
 
-function Trilha({ t, marcasRaw, salvar, contextoFormula, isDono, onEventos }) {
+function Trilha({ t, marcasRaw, salvar, contextoFormula, isDono, onEventos, bonus = 0 }) {
   const tipos = t.tipos_marca || []
   const [tipoSel, setTipoSel] = useState(tipos[0]?.id || null)
   const [erro, setErro] = useState('')
 
-  const tamanho = tamanhoDaTrilha(t, contextoFormula)
+  // 25.2 — caixinhas extras compradas com XP somam ao tamanho da fórmula
+  const tamanho = tamanhoDaTrilha(t, contextoFormula) + (Number(bonus) || 0)
   const raw = marcasRaw ?? Array(tamanho).fill(null)
 
   // Redimensionamento pela fórmula: crescer/encolher-sem-perder aplica direto na
@@ -139,13 +140,14 @@ function Trilha({ t, marcasRaw, salvar, contextoFormula, isDono, onEventos }) {
   )
 }
 
-export default function PainelTrilhas({ trilhas = [], marcasDe, salvarMarcas, contextoFormula, isDono, onEventos }) {
+export default function PainelTrilhas({ trilhas = [], marcasDe, salvarMarcas, contextoFormula, isDono, onEventos, bonusDe = null }) {
   if (!trilhas.length) return null
   return (
     <div className="space-y-3">
       {trilhas.map(t => (
         <Trilha key={t.id} t={t} marcasRaw={marcasDe(t.id)} salvar={salvarMarcas}
-          contextoFormula={contextoFormula} isDono={isDono} onEventos={onEventos} />
+          contextoFormula={contextoFormula} isDono={isDono} onEventos={onEventos}
+          bonus={bonusDe ? bonusDe(t.id) : 0} />
       ))}
     </div>
   )

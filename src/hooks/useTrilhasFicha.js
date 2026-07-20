@@ -35,6 +35,24 @@ export function useTrilhasFicha(fichaId) {
   const marcasDe = trilhaId =>
     linhas.find(l => l.trilha_id === trilhaId)?.marcas ?? null
 
+  /** 25.2 — caixinhas EXTRAS compradas com XP (soma ao tamanho da fórmula). */
+  const bonusDe = trilhaId =>
+    Number(linhas.find(l => l.trilha_id === trilhaId)?.tamanho_bonus) || 0
+
+  /** Grava o bônus de tamanho (upsert só da coluna; marcas ficam como estão). */
+  async function salvarBonus(trilhaId, bonus) {
+    const { data, error: err } = await supabase
+      .from('trilhas_ficha')
+      .upsert({ ficha_id: fichaId, trilha_id: trilhaId, tamanho_bonus: Math.max(0, Math.floor(Number(bonus) || 0)) }, { onConflict: 'ficha_id,trilha_id' })
+      .select()
+      .single()
+    if (err) throw new Error(err.message)
+    setLinhas(prev => {
+      const existe = prev.some(l => l.trilha_id === trilhaId)
+      return existe ? prev.map(l => (l.trilha_id === trilhaId ? data : l)) : [...prev, data]
+    })
+  }
+
   /** Grava o array de marcas (upsert otimista; reverte se o banco falhar). */
   async function salvarMarcas(trilhaId, marcas) {
     const anterior = linhas.find(l => l.trilha_id === trilhaId)
@@ -62,5 +80,5 @@ export function useTrilhasFicha(fichaId) {
     }
   }
 
-  return { linhasTrilhas: linhas, loading, error, refetch: fetchAll, marcasDe, salvarMarcas }
+  return { linhasTrilhas: linhas, loading, error, refetch: fetchAll, marcasDe, salvarMarcas, bonusDe, salvarBonus }
 }

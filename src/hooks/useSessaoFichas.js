@@ -186,11 +186,13 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
   const trilhasCard = []
   let trilhaVida = null
   for (const t of sis.trilhas || []) {
+    const row = (trilhasRows || []).find(r => r.trilha_id === t.id)
     let tamanho
     const f = String(t.tamanho_formula || '').trim()
     try { tamanho = Math.max(0, Math.floor(avaliarFormula(f, ctxCalc))) }
     catch { tamanho = Math.max(0, Math.floor(Number(f) || 0)) }
-    const raw = (trilhasRows || []).find(r => r.trilha_id === t.id)?.marcas ?? Array(tamanho).fill(null)
+    tamanho += Number(row?.tamanho_bonus) || 0 // 25.2 — caixinhas compradas com XP
+    const raw = row?.marcas ?? Array(tamanho).fill(null)
     const ajuste = redimensionar(raw, tamanho, t)
     const marcas = raw.length > tamanho && ajuste.removidas.length > 0 ? raw : ajuste.marcas
     const topo = tipoMaisSevero(t)
@@ -356,7 +358,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       supabase.from('slots_ficha').select('ficha_id, circulo, usados').eq('ficha_id', fichaId),
       supabase.from('itens_ficha').select('id, nome, equipado, durabilidade, modificadores').eq('ficha_id', fichaId),
       supabase.from('valores_atributos').select('ficha_id, atributo_id, valor').eq('ficha_id', fichaId),
-      supabase.from('trilhas_ficha').select('ficha_id, trilha_id, marcas').eq('ficha_id', fichaId),
+      supabase.from('trilhas_ficha').select('*').eq('ficha_id', fichaId),
       supabase.from('estados_ficha').select('ficha_id, estado_id, valor').eq('ficha_id', fichaId),
     ])
     if (fichaResp.error || !fichaResp.data) return null
@@ -402,7 +404,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
         supabase.from('slots_ficha').select('ficha_id, circulo, usados').in('ficha_id', ids),
         supabase.from('itens_ficha').select('id, ficha_id, nome, equipado, durabilidade, modificadores').in('ficha_id', ids),
         supabase.from('valores_atributos').select('ficha_id, atributo_id, valor').in('ficha_id', ids),
-        supabase.from('trilhas_ficha').select('ficha_id, trilha_id, marcas').in('ficha_id', ids),
+        supabase.from('trilhas_ficha').select('*').in('ficha_id', ids),
         supabase.from('estados_ficha').select('ficha_id, estado_id, valor').in('ficha_id', ids),
       ])
       const habsBy = groupBy(habsResp.data, 'ficha_id')

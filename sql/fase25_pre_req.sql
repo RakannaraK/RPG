@@ -94,3 +94,9 @@ SET config_layout = jsonb_set(
   true
 )
 WHERE config_layout IS NULL OR NOT (config_layout ? 'progressao');
+
+-- ============================================================================
+-- 6) 25.2 — caixinhas extras de trilha compradas com XP
+--    (alvo 'trilha_tamanho_bonus' das categorias de compra)
+-- ============================================================================
+ALTER TABLE trilhas_ficha ADD COLUMN tamanho_bonus INTEGER DEFAULT 0;
