@@ -226,6 +226,9 @@ function evalVar(name, ctx) {
     // Fase 22 — nível de maestria do item usado na rolagem (0 se não houver).
     // Usada no limiar de crítico dinâmico do IC. Ex: "85 - 15 * piso(maestria/2)".
     case 'maestria': return comoNumero(ctx.maestria ?? 0, 'maestria', 'maestria')
+    // Fase 25 — variável canônica das fórmulas de CUSTO de compra por XP:
+    // o valor APÓS a compra. Ex: "novo_valor * 5".
+    case 'novo_valor': return comoNumero(ctx.novo_valor ?? 0, 'valor', 'novo_valor')
   }
   // Atalho opt-in (só na camada de notação de dado, Fase 17.2): nome solto que
   // não é variável embutida é resolvido como o atributo com aquele nome.

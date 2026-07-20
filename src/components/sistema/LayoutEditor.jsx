@@ -361,6 +361,8 @@ export default function LayoutEditor({
       <ProgressaoEditor
         progressao={config.progressao_xp}
         onChange={p => onConfigChange({ ...config, progressao_xp: p })}
+        modoProgressao={config.progressao}
+        onModoChange={p => onConfigChange({ ...config, progressao: p })}
       />
 
       {/* Pontos de status (22.1) */}

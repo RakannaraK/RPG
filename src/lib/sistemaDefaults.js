@@ -19,6 +19,16 @@ export const CONFIG_LAYOUT_DEFAULT = {
   formula_proficiencia: '', // Fase 19.2 — fórmula da proficiência ('' = sistema sem proficiência)
   // Fase 19.3 — curva de progressão. 'nenhum' = sistema sem XP (subida manual).
   progressao_xp: { modo: 'nenhum', tabela: [], formula: '' },
+  // Fase 25.1 — MODO de progressão unificado (excludente por sistema):
+  //   'nivel'     = F19 (níveis; a curva segue em progressao_xp) — padrão/migração
+  //   'xp_direto' = sem níveis; XP compra melhorias pelas categorias abaixo
+  //   'nenhum'    = sem progressão exibida
+  progressao: {
+    modo: 'nivel',
+    // [{ id, nome, alvo: 'atributo'|'pericia'|'linha_poder'|'trilha_tamanho_bonus',
+    //    custo_formula, maximo, custo_formula_fora? }]
+    categorias_compra: [],
+  },
   // Fase 20.6 — rótulo do painel de poderes na ficha (o mestre nomeia)
   poderes_rotulo: 'Poderes',
   // Fase 21.6 — moedas / economia. Desativada = sem carteira na ficha.
@@ -127,6 +137,14 @@ export function mergeConfigLayout(raw) {
     progressao_xp: {
       ...CONFIG_LAYOUT_DEFAULT.progressao_xp,
       ...((raw || {}).progressao_xp || {}),
+    },
+    // 25.1 — MIGRAÇÃO F19→25 (read-time, idempotente): config sem `progressao`
+    // vira modo 'nivel' (comportamento F19 idêntico, curva segue em progressao_xp).
+    // Sistemas que já têm `progressao` passam intactos.
+    progressao: {
+      ...CONFIG_LAYOUT_DEFAULT.progressao,
+      ...((raw || {}).progressao || {}),
+      categorias_compra: (raw || {}).progressao?.categorias_compra || [],
     },
     slots: {
       ...CONFIG_LAYOUT_DEFAULT.slots,
