@@ -37,6 +37,7 @@ import PainelSlots from '../components/ficha/PainelSlots'
 import { podeUsarPoder, montarNotacaoUso, custoDeSlot, frasesDeUso } from '../lib/poderes'
 import { usePoderes } from '../hooks/usePoderes'
 import { usePoderesFicha } from '../hooks/usePoderesFicha'
+import { useLinhasPoder, useLinhasFicha } from '../hooks/useLinhasPoder'
 import PainelPoderes from '../components/ficha/PainelPoderes'
 import { podeAtivarHabilidade, planejarTurno } from '../lib/custoHabilidade'
 import { useCategorias } from '../hooks/useCategorias'
@@ -113,6 +114,8 @@ export default function FichaPage() {
   const { disponiveis: pontosDisp, log: pontosLog, jaRecebeuInicial, registrar: registrarPontos } = usePontosStatus(fichaId)
   // 20.4 — catálogo de poderes + poderes da ficha
   const { poderes: catalogoPoderes } = usePoderes(sistema?.id)
+  const { linhas: linhasPoderSistema } = useLinhasPoder(sistema?.id)
+  const { ratingDe, definirRating } = useLinhasFicha(fichaId)
   const {
     poderesFicha, aprenderPoder, esquecerPoder, definirPreparado, sincronizarPoderesClasses,
   } = usePoderesFicha(fichaId, catalogoPoderes)
@@ -687,8 +690,17 @@ export default function FichaPage() {
         }))
       case 'trilha_tamanho_bonus':
         return (config.trilhas || []).map(t => ({ id: t.id, nome: t.nome, valor: bonusDe(t.id) }))
+      case 'linha_poder': {
+        const nativas = new Set([
+          ...(racaAtiva?.linhas_nativas || []),
+          ...classesAtivas.flatMap(c => c?.linhas_nativas || []),
+        ])
+        return linhasPoderSistema.map(l => ({
+          id: l.id, nome: l.nome, valor: ratingDe(l.id), fora: !nativas.has(l.id),
+        }))
+      }
       default:
-        return [] // linha_poder — 25.3
+        return []
     }
   }
 
@@ -710,8 +722,10 @@ export default function FichaPage() {
       setPericiasKey(k => k + 1) // remonta o painel de perícias (instância própria)
     } else if (categoria.alvo === 'trilha_tamanho_bonus') {
       await salvarBonus(alvo.id, novoValor)
+    } else if (categoria.alvo === 'linha_poder') {
+      await definirRating(alvo.id, novoValor)
     } else {
-      throw new Error('Este alvo entra na próxima etapa (linhas de poder).')
+      throw new Error('Categoria de compra desconhecida: ' + categoria.alvo)
     }
     await handleAddXp(-custo)
     await inserirXpLog(registroDeCompra(categoria, alvo.id, alvo.valor, custo))
