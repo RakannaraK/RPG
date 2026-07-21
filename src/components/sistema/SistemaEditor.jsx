@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useSistema, useSaveSistema } from '../../hooks/useSistema'
 import { usePools } from '../../hooks/usePools'
+import { useLinhasPoder } from '../../hooks/useLinhasPoder'
 import { mergeConfigLayout } from '../../lib/sistemaDefaults'
 import AtributoEditor from './AtributoEditor'
 import LayoutEditor from './LayoutEditor'
 import RacasClassesEditor from './RacasClassesEditor'
 import PoolsEditor from './PoolsEditor'
 import PoderesEditor from './PoderesEditor'
+import LinhasPoderEditor from './LinhasPoderEditor'
 import SlotsEditor from './SlotsEditor'
 import MaestriaItensEditor from './MaestriaItensEditor'
 import DescansosEditor from './DescansosEditor'
@@ -44,6 +46,7 @@ function newPericia() {
 export default function SistemaEditor({ mesaId, isMestre }) {
   const { sistema: sistemaDB, atributos: atributosDB, pericias: periciasDB, loading, error, refetch } = useSistema(mesaId)
   const { pools } = usePools(sistemaDB?.id) // 23.4 — p/ escolher o pool da rerolagem
+  const { linhas: linhasPoderSistema } = useLinhasPoder(sistemaDB?.id) // 25.3 — p/ threadar em Raças & Classes
   const { saveSistema, loading: saving } = useSaveSistema()
 
   const [activeTab, setActiveTab] = useState('Atributos')
@@ -303,6 +306,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
             camposCombate={configLayout.campos_combate || []}
             pericias={pericias}
             pontosStatus={configLayout.pontos_status}
+            linhasPoder={linhasPoderSistema}
           />
         )}
 
@@ -345,6 +349,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
                   className="flex-1 min-w-[10rem] px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
+              <LinhasPoderEditor sistemaId={sistemaDB.id} />
               <PoderesEditor sistemaId={sistemaDB.id} />
             </div>
           ) : (

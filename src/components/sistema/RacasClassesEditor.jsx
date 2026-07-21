@@ -820,12 +820,15 @@ function ItemCard({
   onUpdate, onDelete, onAddMod, onRemoveMod,
   atributos, camposCombate, pericias = [], classes = [], pools = [],
   pontosStatus = null, onUpdatePontos, // 22.2
+  linhasPoder = [], onUpdateLinhasNativasRaca, onUpdateLinhasNativasClasse, // 25.3
   habilidades, onCreateHabilidade, onUpdateHabilidade, onDeleteHabilidade,
   onAddHabilidadeMod, onRemoveHabilidadeMod,
 }) {
   // 22.2 — override de pontos por raça (só quando o sistema usa inicial por raça)
   const mostraPontos = parentTipo === 'raca' && pontosStatus?.ativo && pontosStatus?.inicial_por_raca
   const pc = item.pontos_config || {}
+  // 25.3 — linhas nativas (raça ou classe concede a linha de poder automaticamente)
+  const onUpdateLinhasNativas = parentTipo === 'raca' ? onUpdateLinhasNativasRaca : onUpdateLinhasNativasClasse
   const [expandido, setExpandido] = useState(false)
   const [editando, setEditando] = useState(false)
   const [editNome, setEditNome] = useState('')
@@ -927,6 +930,35 @@ function ItemCard({
             </div>
           )}
 
+          {/* 25.3 — linhas nativas (a raça/classe concede a linha automaticamente) */}
+          {linhasPoder.length > 0 && (
+            <div className="mt-2 bg-slate-700/40 border border-purple-800/50 rounded-lg p-2 space-y-1.5">
+              <span className="text-purple-400 text-[11px]">Linhas nativas</span>
+              <div className="flex flex-wrap gap-2">
+                {linhasPoder.map(l => {
+                  const marcada = (item.linhas_nativas || []).includes(l.id)
+                  return (
+                    <label key={l.id} className="text-purple-300 text-[11px] flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={marcada}
+                        onChange={e => {
+                          const atuais = item.linhas_nativas || []
+                          const novo = e.target.checked
+                            ? [...atuais, l.id]
+                            : atuais.filter(id => id !== l.id)
+                          onUpdateLinhasNativas(item.id, novo).catch(() => {})
+                        }}
+                        className="accent-purple-500"
+                      />
+                      {l.nome}
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           <ModificadoresExpandido
             modificadores={item.modificadores}
             onAddMod={onAddMod}
@@ -959,6 +991,7 @@ function SecaoRacaClasse({
   onCreate, onUpdate, onDelete, onAddMod, onRemoveMod,
   atributos, camposCombate, pericias = [], classes = [], pools = [],
   pontosStatus = null, onUpdatePontos, // 22.2
+  linhasPoder = [], onUpdateLinhasNativasRaca, onUpdateLinhasNativasClasse, // 25.3
   habilidades, onCreateHabilidade, onUpdateHabilidade, onDeleteHabilidade,
   onAddHabilidadeMod, onRemoveHabilidadeMod,
 }) {
@@ -1044,6 +1077,9 @@ function SecaoRacaClasse({
               pericias={pericias} classes={classes} pools={pools}
               pontosStatus={pontosStatus}
               onUpdatePontos={onUpdatePontos}
+              linhasPoder={linhasPoder}
+              onUpdateLinhasNativasRaca={onUpdateLinhasNativasRaca}
+              onUpdateLinhasNativasClasse={onUpdateLinhasNativasClasse}
               habilidades={habilidades}
               onCreateHabilidade={onCreateHabilidade}
               onUpdateHabilidade={onUpdateHabilidade}
@@ -1204,13 +1240,14 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
 
 // ──────────────────────────────────────────────────────────
 
-export default function RacasClassesEditor({ sistemaId, atributos, camposCombate, pericias = [], pontosStatus = null }) {
+export default function RacasClassesEditor({ sistemaId, atributos, camposCombate, pericias = [], pontosStatus = null, linhasPoder = [] }) {
   const { pools } = usePools(sistemaId) // 20.5 — custo de pool em habilidades
   const {
     racas, classes, loading, error,
     createRaca, updateRaca, deleteRaca, atualizarPontosRaca,
     createClasse, updateClasse, deleteClasse,
     addModificador, removeModificador,
+    atualizarLinhasNativasRaca, atualizarLinhasNativasClasse, // 25.3
   } = useRacasClasses(sistemaId)
 
   const {
@@ -1272,6 +1309,9 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
         classes={classes} pools={pools}
         pontosStatus={pontosStatus}
         onUpdatePontos={atualizarPontosRaca}
+        linhasPoder={linhasPoder}
+        onUpdateLinhasNativasRaca={atualizarLinhasNativasRaca}
+        onUpdateLinhasNativasClasse={atualizarLinhasNativasClasse}
         habilidades={habilidades}
         onCreateHabilidade={createHabilidade}
         onUpdateHabilidade={updateHabilidade}
@@ -1296,6 +1336,9 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
         camposCombate={camposCombate}
         pericias={periciasSalvas}
         classes={classes} pools={pools}
+        linhasPoder={linhasPoder}
+        onUpdateLinhasNativasRaca={atualizarLinhasNativasRaca}
+        onUpdateLinhasNativasClasse={atualizarLinhasNativasClasse}
         habilidades={habilidades}
         onCreateHabilidade={createHabilidade}
         onUpdateHabilidade={updateHabilidade}

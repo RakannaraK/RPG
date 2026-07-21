@@ -87,6 +87,13 @@ export function useRacasClasses(sistemaId) {
     setRacas(prev => prev.map(r => (r.id === id ? { ...r, pontos_config } : r)))
   }
 
+  // Fase 25.3 — linhas nativas de raça (linhas de poder concedidas automaticamente)
+  async function atualizarLinhasNativasRaca(id, linhas_nativas) {
+    const { error } = await supabase.from('racas').update({ linhas_nativas }).eq('id', id)
+    if (error) throw error
+    setRacas(prev => prev.map(r => (r.id === id ? { ...r, linhas_nativas } : r)))
+  }
+
   async function createClasse(nome, descricao) {
     const { data, error } = await supabase
       .from('classes')
@@ -112,6 +119,13 @@ export function useRacasClasses(sistemaId) {
     const { error } = await supabase.from('classes').delete().eq('id', id)
     if (error) throw error
     setClasses(prev => prev.filter(c => c.id !== id))
+  }
+
+  // Fase 25.3 — linhas nativas de classe (linhas de poder concedidas automaticamente)
+  async function atualizarLinhasNativasClasse(id, linhas_nativas) {
+    const { error } = await supabase.from('classes').update({ linhas_nativas }).eq('id', id)
+    if (error) throw error
+    setClasses(prev => prev.map(c => (c.id === id ? { ...c, linhas_nativas } : c)))
   }
 
   async function addModificador({ raca_id, classe_id, tipo, alvo, operacao, valor, dados_extras, escopo_categoria, valor_e_formula, percentual_rolagem, condicao_tipo, condicao_config, faixas, nivel_minimo }) {
@@ -159,5 +173,6 @@ export function useRacasClasses(sistemaId) {
     createRaca, updateRaca, deleteRaca, atualizarPontosRaca,
     createClasse, updateClasse, deleteClasse,
     addModificador, removeModificador,
+    atualizarLinhasNativasRaca, atualizarLinhasNativasClasse,
   }
 }

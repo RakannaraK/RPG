@@ -32,6 +32,8 @@ function montarPayload(p) {
     tags: parseTags(p.tags),
     classe_id: p.classe_id || null,
     nivel_minimo: limparNumero(p.nivel_minimo),
+    linha_id: p.linha_id || null,
+    nivel_linha: limparNumero(p.nivel_linha),
   }
 }
 

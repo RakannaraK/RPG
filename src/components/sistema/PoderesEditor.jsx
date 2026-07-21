@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { usePoderes } from '../../hooks/usePoderes'
 import { usePools } from '../../hooks/usePools'
+import { useLinhasPoder } from '../../hooks/useLinhasPoder'
 import { useRacasClasses } from '../../hooks/useRacasClasses'
 import {
   validarPoder, descreverCusto, descreverEscala,
@@ -16,6 +17,7 @@ const VAZIO = {
   custo: [], acao: '', alcance: '', duracao: '',
   efeito_notacao: '', efeito_tipo: '', escala_circulo: null,
   cd_formula: '', tags: '', classe_id: '', nivel_minimo: '',
+  linha_id: '', nivel_linha: '',
 }
 
 function paraFormulario(p) {
@@ -28,10 +30,12 @@ function paraFormulario(p) {
     classe_id: p.classe_id || '',
     custo: p.custo || [],
     tags: Array.isArray(p.tags) ? p.tags.join(', ') : (p.tags || ''),
+    linha_id: p.linha_id || '',
+    nivel_linha: p.nivel_linha ?? '',
   }
 }
 
-function PoderForm({ inicial, pools, classes, onSalvar, onCancelar }) {
+function PoderForm({ inicial, pools, classes, linhas = [], onSalvar, onCancelar }) {
   const [f, setF] = useState(inicial || VAZIO)
   const [erro, setErro] = useState('')
   const [salvando, setSalvando] = useState(false)
@@ -124,6 +128,17 @@ function PoderForm({ inicial, pools, classes, onSalvar, onCancelar }) {
         <span className="text-purple-500 text-[11px]">nv mín.</span>
         <input type="number" min={1} value={f.nivel_minimo} onChange={e => set({ nivel_minimo: e.target.value })}
           placeholder="—" className={`${INP} w-14 text-center`} />
+        <select value={f.linha_id} onChange={e => set({ linha_id: e.target.value })} className={INP}>
+          <option value="">— sem linha —</option>
+          {linhas.map(l => <option key={l.id} value={l.id}>{l.nome}</option>)}
+        </select>
+        {f.linha_id && (
+          <>
+            <span className="text-purple-500 text-[11px]">nv na linha</span>
+            <input type="number" min={1} value={f.nivel_linha} onChange={e => set({ nivel_linha: e.target.value })}
+              placeholder="—" className={`${INP} w-14 text-center`} />
+          </>
+        )}
         <input type="text" value={f.tags} onChange={e => set({ tags: e.target.value })}
           placeholder="tags: cura, área" className={`${INP} flex-1 min-w-[8rem]`} />
       </div>
@@ -151,6 +166,7 @@ function PoderForm({ inicial, pools, classes, onSalvar, onCancelar }) {
 export default function PoderesEditor({ sistemaId }) {
   const { poderes, criarPoder, atualizarPoder, removerPoder } = usePoderes(sistemaId)
   const { pools } = usePools(sistemaId)
+  const { linhas } = useLinhasPoder(sistemaId) // 25.3 — p/ vincular poder a uma linha de poder
   const { classes } = useRacasClasses(sistemaId) // p/ vincular poder a uma classe
   const [criando, setCriando] = useState(false)
   const [editando, setEditando] = useState(null) // id
@@ -216,6 +232,7 @@ export default function PoderesEditor({ sistemaId }) {
               inicial={paraFormulario(p)}
               pools={pools}
               classes={classes}
+              linhas={linhas}
               onSalvar={async dados => { await atualizarPoder(p.id, dados); setEditando(null) }}
               onCancelar={() => setEditando(null)}
             />
@@ -258,6 +275,7 @@ export default function PoderesEditor({ sistemaId }) {
         <PoderForm
           pools={pools}
           classes={classes}
+          linhas={linhas}
           onSalvar={async dados => { await criarPoder(dados); setCriando(false) }}
           onCancelar={() => setCriando(false)}
         />
