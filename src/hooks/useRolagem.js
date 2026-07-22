@@ -52,7 +52,7 @@ export function useRolagem() {
    * @param {string}  params.notacao  — Ex: "2d6+3", "1d20"
    * @returns {Promise<{ notacao, individuais, mantidos, descartados, modificador, total }>}
    */
-  async function registrarRolagem({ mesaId, fichaId = null, rotulo = null, notacao, sessaoId = null, percentual = 0, critico = null }) {
+  async function registrarRolagem({ mesaId, fichaId = null, rotulo = null, notacao, sessaoId = null, percentual = 0, critico = null, som = null }) {
     setErro('')
     setRolando(true)
 
@@ -106,6 +106,9 @@ export function useRolagem() {
           modificador: resultado.modificador,
           ...(percentual ? { percentual, total_base: resultado.total_base } : {}),
           ...(criticoInfo ? { critico: criticoInfo } : {}),
+          // FV.5b — decisão de som já resolvida no cliente que rolou (o preset
+          // certo depende de dados só ele tem: item/habilidade da própria ficha)
+          ...(som ? { som } : {}),
         },
         total: resultado.total,
       }
@@ -286,7 +289,7 @@ export function useRolagem() {
    * @param {number} params.total   — quantidade final (curada / vida temp)
    * @param {Array}  [params.dados] — [{lados, valor, descartado}] se houve rolagem
    */
-  async function registrarEvento({ mesaId, fichaId = null, rotulo, notacao = '', total, dados = [], sessaoId = null, aplicavel = null }) {
+  async function registrarEvento({ mesaId, fichaId = null, rotulo, notacao = '', total, dados = [], sessaoId = null, aplicavel = null, som = null }) {
     try {
       const payload = {
         mesa_id: mesaId,
@@ -303,6 +306,8 @@ export function useRolagem() {
           modificador: 0,
           // F14.6 — marca dano/cura de poder para o mestre aplicar a um alvo no combate
           ...(aplicavel ? { aplicavel } : {}),
+          // FV.5b — som da ação já resolvido no cliente que registrou o evento
+          ...(som ? { som } : {}),
         },
         total,
       }

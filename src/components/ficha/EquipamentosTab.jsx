@@ -12,6 +12,8 @@ import { redimensionarImagem } from '../../lib/imageUtils'
 import { supabase } from '../../lib/supabase'
 import ImageUpload from './ImageUpload'
 import Dice3D from '../dados/Dice3D'
+import { PRESET_IDS, resolveActionSound } from '../../engines/actionSoundEngine'
+import { tocarPresetAcao, tocarSomAcao } from '../../audio/actionSynth'
 
 const TIPOS_ITEM = ['item', 'arma', 'armadura', 'magico', 'outro']
 
@@ -105,11 +107,13 @@ function RollResultCompact({ resultado, rotulo, rolando, onClose, skin, detalham
 }
 
 function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camposCombate = [], pericias = [], classes = [], pools = [], onSalvar, onFechar }) {
+  const { preferencias } = usePreferencias()
   const [nome, setNome] = useState(item?.nome || '')
   const [tipo, setTipo] = useState(item?.tipo || 'item')
   const [categoriaId, setCategoriaId] = useState(item?.categoria_id || '') // 21.1
   const [descricao, setDescricao] = useState(item?.descricao || '')
   const [tipoDano, setTipoDano] = useState(item?.atributos_extras?.tipo_dano || '') // 21.5
+  const [somPreset, setSomPreset] = useState(item?.som_preset || '') // FV.5a — som da ação (opcional)
   // 21.5 — recurso (contador) e durabilidade
   const [rec, setRec] = useState(item?.recurso || null)
   const [durab, setDurab] = useState(item?.durabilidade || null)
@@ -181,6 +185,7 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
         modificadores: mods.length > 0 ? mods : null, // 21 — efeitos do item
         equipado,
         imagem_url,
+        som_preset: somPreset || null, // FV.5a
       })
     } catch (err) {
       setErro(err.message || 'Erro ao salvar item.')
@@ -268,6 +273,29 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
               className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
             />
             <p className="text-ink-dim text-xs mt-1">Usado pelas conversões (manoplas físico → elétrico) e resistências do alvo.</p>
+          </div>
+
+          {/* FV.5a — som da ação (opcional; vazio = usa o som padrão do sistema, se houver) */}
+          <div>
+            <label className="block text-sm font-medium text-ink mb-1">Som da ação</label>
+            <div className="flex items-center gap-2">
+              <select
+                value={somPreset}
+                onChange={e => setSomPreset(e.target.value)}
+                className="flex-1 px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
+              >
+                <option value="">Nenhum (usa o padrão do sistema)</option>
+                {PRESET_IDS.map(id => <option key={id} value={id}>{id}</option>)}
+              </select>
+              {somPreset && (
+                <button
+                  type="button"
+                  onClick={() => tocarPresetAcao(somPreset, { ativo: preferencias.som_acao_ativo, volume: preferencias.som_acao_volume })}
+                  title="Ouvir"
+                  className="text-accent-300 hover:text-ink text-sm shrink-0"
+                >▶</button>
+              )}
+            </div>
           </div>
 
           {/* 21.5 — recurso (contador) */}
@@ -546,7 +574,7 @@ function RecursoDurabilidade({ item, isDono, onRecurso, onDurab }) {
   )
 }
 
-export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [], categorias = [], maestria = null, onGanharMaestria, maestriaDoItem, atributos = [], camposCombate = [], pericias = [], classes = [], pools = [], critico = null }) {
+export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [], categorias = [], maestria = null, onGanharMaestria, maestriaDoItem, atributos = [], camposCombate = [], pericias = [], classes = [], pools = [], critico = null, configSom = null }) {
   const { itens, loading, error, createItem, updateItem, deleteItem } = useItens(fichaId)
   const { registrarRolagem, registrarEvento } = useRolagem()
   const { preferencias } = usePreferencias()
@@ -675,6 +703,13 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
       volume: preferencias.som_volume,
       numDados: estimarNumDados(notacaoFinal),
     })
+    // FV.5b — som da ação: o preset do próprio item vence; sem preset, cai no
+    // padrão do sistema por tipo de evento. Nunca inventa crítico/falha.
+    const tipoEvento = tipo === 'acerto' ? 'ataque' : 'dano'
+    const som = item.som_preset
+      ? { presetId: item.som_preset, intensity: 1, layer: critDano ? 'critico' : null }
+      : resolveActionSound({ tipo: tipoEvento, resultado: { critico: !!critDano } }, configSom)
+
     try {
       const res = await registrarRolagem({
         mesaId,
@@ -683,13 +718,19 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
         notacao: notacaoFinal,
         percentual: percentualTotal,
         critico: critDano,
+        som,
       })
       if (critDano) setRollCritico(null) // consumido pelo dano
       setRollResultado(res)
       setRollRotulo(rotulo)
       setRollDetalhamento(detalhamento)
       setRollRolando(true)
-      setTimeout(() => { setRollRolando(false); setRollProcessing(false) }, 1400)
+      setTimeout(() => {
+        setRollRolando(false)
+        setRollProcessing(false)
+        // FV.5b — som de ação sincronizado com o pouso do dado (não com o clique)
+        if (som) tocarSomAcao(som, { ativo: preferencias.som_acao_ativo, volume: preferencias.som_acao_volume })
+      }, 1400)
 
       // 22.3 — crítico: avaliado no DADO PURO do ACERTO (antes de bônus)
       setRollCritico(null)

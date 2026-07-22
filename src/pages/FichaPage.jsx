@@ -62,6 +62,7 @@ import PainelProficiencias from '../components/ficha/layout/PainelProficiencias'
 import PainelDefesas from '../components/ficha/layout/PainelDefesas'
 import PainelImagens from '../components/ficha/layout/PainelImagens'
 import AbasCentrais from '../components/ficha/layout/AbasCentrais'
+import { resolveActionSound } from '../engines/actionSoundEngine'
 
 export default function FichaPage() {
   const { id: mesaId, fichaId } = useParams()
@@ -576,7 +577,7 @@ export default function FichaPage() {
 
   // 12.4 — usa um efeito pontual (cura ou vida_temp_acao) de uma habilidade:
   // rola se for notação, aplica à vida e registra no feed.
-  async function handleUsarAcao(mod, nomeHab) {
+  async function handleUsarAcao(mod, nomeHab, somPresetHab) {
     const valorStr = (mod.valor ?? '').toString().trim()
     let total = 0
     let dados = []
@@ -600,6 +601,14 @@ export default function FichaPage() {
         const novoTemp = Math.max(ficha.vida_temp_atual ?? 0, total)
         await updateFicha(fichaId, { vida_temp_atual: novoTemp })
       }
+      // FV.5b — som da ação: o preset da própria habilidade vence; sem preset,
+      // cai no padrão do sistema por tipo de evento (cura). Sem falha aqui —
+      // não há noção de "falha" para um efeito pontual de habilidade.
+      const tipoEventoAcao = mod.tipo === 'cura' ? 'cura' : 'defesa'
+      const som = somPresetHab
+        ? { presetId: somPresetHab, intensity: 1, layer: null }
+        : resolveActionSound({ tipo: tipoEventoAcao }, config.sons)
+
       await registrarEvento({
         mesaId,
         fichaId,
@@ -607,6 +616,7 @@ export default function FichaPage() {
         notacao: dados.length ? valorStr : '',
         total,
         dados,
+        som,
       })
       refetch()
     } catch {
@@ -1253,6 +1263,7 @@ export default function FichaPage() {
               classes={classes}
               pools={pools}
               critico={config.critico}
+              configSom={config.sons}
             />
           </div>
 

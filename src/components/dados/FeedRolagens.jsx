@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import { playDiceNotify } from '../../lib/diceSound'
 import { descreverResultado } from '../../lib/resolutionEngine'
+import { tocarSomAcao } from '../../audio/actionSynth'
 import Dice3D from './Dice3D'
 
 const COR_TXT = { verde: 'text-ok', ambar: 'text-dice-400', vermelho: 'text-harm', roxo: 'text-accent-300' }
@@ -174,6 +175,12 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
   const [animandoId, setAnimandoId] = useState(null)
   const [apelidos, setApelidos] = useState({}) // 16.6 — autor_id → apelido da mesa
 
+  // FV.5b — ref sempre atualizada: o handler do Realtime é fechado uma vez por
+  // (re)subscrição do canal, mas o mudo/volume de sons de ação pode mudar a
+  // qualquer momento sem re-subscrever.
+  const preferenciasRef = useRef(preferencias)
+  useEffect(() => { preferenciasRef.current = preferencias }, [preferencias])
+
   // Apelidos por autor (fallback para autor_nome gravado na rolagem)
   useEffect(() => {
     if (!mesaId) return
@@ -232,6 +239,20 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
             setTimeout(() => setAnimandoId(null), 1400)
             playDiceNotify()
             onNovaRolagem?.(payload.new)
+
+            // FV.5b — som de ação: sincronizado com o pouso do dado (1400ms,
+            // mesma janela da animação acima), não com o clique. Descarta
+            // eventos de rajada de reconexão (>5s de idade) e respeita o mudo.
+            const idadeMs = Date.now() - new Date(payload.new.created_at).getTime()
+            if (idadeMs <= 5000) {
+              const som = payload.new.resultados?.som
+              if (som) {
+                setTimeout(() => {
+                  const p = preferenciasRef.current
+                  tocarSomAcao(som, { ativo: p.som_acao_ativo, volume: p.som_acao_volume })
+                }, 1400)
+              }
+            }
           }
         }
       )

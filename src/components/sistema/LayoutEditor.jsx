@@ -8,6 +8,8 @@ import TrilhasEditor from './TrilhasEditor'
 import EstadosEditor from './EstadosEditor'
 import { avaliarFormula } from '../../lib/formulaEngine'
 import { ehRolado } from '../../lib/pontosEngine'
+import { PRESET_IDS } from '../../engines/actionSoundEngine'
+import { tocarPresetAcao } from '../../audio/actionSynth'
 
 const INP_PS = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500'
 
@@ -433,6 +435,47 @@ export default function LayoutEditor({
         <p className="text-purple-600 text-xs">
           Ex: "Pontos de Vida", "Vitalidade", "HP", "Sanidade"
         </p>
+      </div>
+
+      {/* FV.5a — sons padrão por tipo de evento (fallback quando a arma/habilidade
+          não tem som próprio). Opcional; vazio = silêncio, como hoje. */}
+      <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
+        <p className="text-purple-200 text-sm font-semibold">Sons padrão (ações de combate)</p>
+        <p className="text-purple-500 text-xs">
+          Toca quando a arma/item ou habilidade não tem um som próprio configurado.
+          Opcional — deixe em branco para não tocar nada (como hoje).
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { chave: 'ataque', label: 'Ataque' },
+            { chave: 'dano', label: 'Dano' },
+            { chave: 'cura', label: 'Cura' },
+            { chave: 'defesa', label: 'Defesa' },
+          ].map(({ chave, label }) => (
+            <div key={chave} className="flex items-center gap-2">
+              <label className="text-purple-400 text-xs w-14 shrink-0">{label}</label>
+              <select
+                value={config.sons?.padroes?.[chave] || ''}
+                onChange={e => onConfigChange({
+                  ...config,
+                  sons: { ...config.sons, padroes: { ...config.sons?.padroes, [chave]: e.target.value || undefined } },
+                })}
+                className={`${INP_PS} flex-1`}
+              >
+                <option value="">Nenhum</option>
+                {PRESET_IDS.map(id => <option key={id} value={id}>{id}</option>)}
+              </select>
+              {config.sons?.padroes?.[chave] && (
+                <button
+                  type="button"
+                  onClick={() => tocarPresetAcao(config.sons.padroes[chave], { ativo: true, volume: 0.6 })}
+                  title="Ouvir"
+                  className="text-purple-300 hover:text-white text-sm shrink-0"
+                >▶</button>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Seções */}

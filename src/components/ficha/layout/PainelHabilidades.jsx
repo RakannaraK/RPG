@@ -70,7 +70,7 @@ function AcoesPontuais({ hf, onUsarAcao, isDono }) {
         return (
           <button
             key={m.id}
-            onClick={() => onUsarAcao(m, hf.habilidade.nome)}
+            onClick={() => onUsarAcao(m, hf.habilidade.nome, hf.habilidade.som_preset)}
             className={`px-2 py-1 text-xs rounded-lg text-ink transition-colors ${
               ehCura ? 'bg-ok/80 hover:bg-ok' : 'bg-temp/80 hover:bg-temp'
             }`}

@@ -11,6 +11,8 @@ import { validarFaixas } from '../../lib/faixas'
 import FormulaInput from './FormulaInput'
 import FaixasEditor from './FaixasEditor'
 import RecompensasEditor from './RecompensasEditor'
+import { PRESET_IDS } from '../../engines/actionSoundEngine'
+import { tocarPresetAcao } from '../../audio/actionSynth'
 
 // Fase 12.5 — vocabulário ampliado de efeitos. `grupo` só organiza o dropdown.
 const TIPOS_MOD = [
@@ -515,6 +517,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
   const [editRecMax, setEditRecMax] = useState('')
   const [editNivelMin, setEditNivelMin] = useState('') // 19.5
   const [editCustoPool, setEditCustoPool] = useState([]) // 20.5
+  const [editSomPreset, setEditSomPreset] = useState('') // FV.5a
   const [salvando, setSalvando] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [erro, setErro] = useState('')
@@ -533,6 +536,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
         recurso_max: editTipo === 'ativavel' && editRecNome.trim() ? editRecMax : null,
         nivel_minimo: editNivelMin,
         custo_pool: editTipo === 'ativavel' ? editCustoPool.filter(c => c.pool_id) : [],
+        som_preset: editSomPreset,
       })
       setEditando(false)
     } catch (err) {
@@ -556,6 +560,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
     setEditRecMax(habilidade.recurso_max != null ? String(habilidade.recurso_max) : '')
     setEditNivelMin(habilidade.nivel_minimo != null ? String(habilidade.nivel_minimo) : '')
     setEditCustoPool(Array.isArray(habilidade.custo_pool) ? habilidade.custo_pool : [])
+    setEditSomPreset(habilidade.som_preset || '')
     setErro(''); setEditando(true)
   }
 
@@ -602,6 +607,20 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
                 <input type="number" value={editNivelMin} onChange={e => setEditNivelMin(e.target.value)}
                   min="1" placeholder="—" className={`${SEL} w-20 text-center`}
                   title="Só é concedida a partir deste nível (da classe de origem; raça/avulsa usam o nível total)." />
+              </div>
+              {/* FV.5a — som da ação (opcional; vazio = usa o padrão do sistema) */}
+              <div>
+                <p className="text-purple-400 text-xs mb-1">Som da ação</p>
+                <div className="flex items-center gap-1.5">
+                  <select value={editSomPreset} onChange={e => setEditSomPreset(e.target.value)} className={`${SEL} w-32`}>
+                    <option value="">Padrão do sistema</option>
+                    {PRESET_IDS.map(id => <option key={id} value={id}>{id}</option>)}
+                  </select>
+                  {editSomPreset && (
+                    <button type="button" onClick={() => tocarPresetAcao(editSomPreset, { ativo: true, volume: 0.6 })}
+                      title="Ouvir" className="text-purple-300 hover:text-white text-sm">▶</button>
+                  )}
+                </div>
               </div>
             </div>
 

@@ -42,7 +42,7 @@ export function useHabilidades(sistemaId) {
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
-  async function createHabilidade({ nome, descricao, tipo, recurso_nome, recurso_max, raca_id, classe_id, nivel_minimo }) {
+  async function createHabilidade({ nome, descricao, tipo, recurso_nome, recurso_max, raca_id, classe_id, nivel_minimo, som_preset }) {
     const payload = {
       sistema_id: sistemaId,
       nome: nome.trim(),
@@ -55,6 +55,7 @@ export function useHabilidades(sistemaId) {
       classe_id: classe_id || null,
       // 19.5 — null = sem requisito de nível
       nivel_minimo: nivel_minimo !== '' && nivel_minimo != null ? Number(nivel_minimo) : null,
+      som_preset: som_preset || null, // FV.5a
     }
     const { data, error } = await supabase.from('habilidades').insert(payload).select().single()
     if (error) throw error
@@ -77,6 +78,8 @@ export function useHabilidades(sistemaId) {
     // 20.5 — custo de pool (null = sem custo)
     if (updates.custo_pool !== undefined) payload.custo_pool =
       updates.custo_pool?.length ? updates.custo_pool : null
+    // FV.5a — som da ação (null = sem som próprio; usa o padrão do sistema)
+    if (updates.som_preset !== undefined) payload.som_preset = updates.som_preset || null
 
     const { error } = await supabase.from('habilidades').update(payload).eq('id', id)
     if (error) throw error
