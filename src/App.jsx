@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { PreferenciasProvider } from './context/PreferenciasContext'
+import PageTransition from './theme/PageTransition'
 import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import MesaPage from './pages/MesaPage'
@@ -46,50 +47,52 @@ function PublicRoute({ children }) {
 
 function AppRoutes() {
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <PublicRoute>
-            <AuthPage />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/mesa/:id"
-        element={
-          <ProtectedRoute>
-            <MesaPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/mesa/:id/ficha/:fichaId"
-        element={
-          <ProtectedRoute>
-            <FichaPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/mesa/:id/sessao/:sessaoId"
-        element={
-          <ProtectedRoute>
-            <SessaoPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="/teste-dados" element={<DadosTestePage />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <PageTransition>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <PublicRoute>
+              <AuthPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mesa/:id"
+          element={
+            <ProtectedRoute>
+              <MesaPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mesa/:id/ficha/:fichaId"
+          element={
+            <ProtectedRoute>
+              <FichaPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mesa/:id/sessao/:sessaoId"
+          element={
+            <ProtectedRoute>
+              <SessaoPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/teste-dados" element={<DadosTestePage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </PageTransition>
   )
 }
 
