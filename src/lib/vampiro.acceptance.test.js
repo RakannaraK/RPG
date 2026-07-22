@@ -5,13 +5,18 @@ import { marcar, curar, redimensionar, ordenarExibicao, contarMarcas, recuperarT
 import { modificadoresDeEstados, mapaEstados, especiaisDeEstados, faixaAtivaDoEstado, clampEstado } from './estadosEngine'
 import { calcularValoresFinais } from './modifierEngine'
 import { resolverRolagem, descreverResultado } from './resolutionEngine'
+import { prioridadeDoGrupo, validarOrdemGrupos, valorFinalMembro, validarDistribuicaoGrupo, validarPontosLivres } from './prioridadesEngine'
+import { custoCompra, validarCompra, registroDeCompra, saldoDoLog } from './purchaseEngine'
 
 /**
- * TESTE DE ACEITAÇÃO — Fase 24 (o "Vampiro-like" completo, sem conteúdo
+ * TESTE DE ACEITAÇÃO — Fases 24-25 (o "Vampiro-like" completo, sem conteúdo
  * proprietário: nomes/símbolos/textos são os que um mestre digitaria).
  * Sistema de referência PERMANENTE: dots + trilhas (Vitalidade substituindo a
  * vida) + Fome alimentando os dados especiais da parada (F23) + efeito por
- * faixa + descanso curando marcas. Trava a fase contra regressão.
+ * faixa + descanso curando marcas (F24); criação por prioridades (7/5/3
+ * atributos, 13/9/5 perícias, 3 pontos em linha nativa) + XP direto comprando
+ * atributo/perícia/rating de linha, desbloqueando poderes por nível (F25).
+ * Trava as fases contra regressão.
  */
 
 const S = 'superficial'
@@ -159,5 +164,121 @@ describe('Aceitação 24 · retrocompatibilidade absoluta (a régua)', () => {
     expect(CONFIG_LAYOUT_DEFAULT.estados).toEqual([])
     expect(CONFIG_LAYOUT_DEFAULT.exibicao_atributos).toBe('numero')
     expect(CONFIG_LAYOUT_DEFAULT.maximo_dots).toBe(5)
+  })
+})
+
+// ─── Fase 25 — progressão e criação (mesmo sistema de referência) ────────────
+const GRUPOS_ATRIBUTOS = [
+  { id: 'fisico', nome: 'Físico', membros: ['forca', 'destreza', 'vigor'] },
+  { id: 'social', nome: 'Social', membros: ['carisma', 'manipulacao', 'compostura'] },
+  { id: 'mental', nome: 'Mental', membros: ['inteligencia', 'raciocinio', 'determinacao'] },
+]
+const GRUPOS_PERICIAS = [
+  { id: 'fisicas', nome: 'Físicas', membros: ['briga', 'furtividade', 'sobrevivencia'] },
+  { id: 'sociais', nome: 'Sociais', membros: ['etiqueta', 'intimidacao', 'manha'] },
+  { id: 'mentais', nome: 'Mentais', membros: ['investigacao', 'ocultismo', 'academicos'] },
+]
+const ETAPA_LINHAS = { id: 'e3', nome: 'Disciplinas', tipo: 'pontos_livres', alvo: 'linha_poder', pontos: 3, apenas_nativas: true, maximo_por_item: 2 }
+const DOMINACAO = { id: 'dominacao', nome: 'Dominação', maximo: 5 }
+const OFUSCACAO = { id: 'ofuscacao', nome: 'Ofuscação', maximo: 5 }
+const PODERES_DOMINACAO = [
+  { id: 'p1', nome: 'Comando', linha_id: 'dominacao', nivel_linha: 1 },
+  { id: 'p2', nome: 'Ordálio', linha_id: 'dominacao', nivel_linha: 2 },
+]
+const CATEGORIA_ATRIBUTO = { id: 'atributo', nome: 'Atributos', alvo: 'atributo', custo_formula: 'novo_valor * 5', maximo: 5 }
+const CATEGORIA_PERICIA = { id: 'pericia', nome: 'Perícias', alvo: 'pericia', custo_formula: 'novo_valor * 3', maximo: 5 }
+const CATEGORIA_LINHA = { id: 'linha_poder', nome: 'Disciplinas', alvo: 'linha_poder', custo_formula: 'novo_valor * 5', maximo: 5, custo_formula_fora: 'novo_valor * 7' }
+
+describe('Aceitação 25 · criação por prioridades — 7/5/3, 13/9/5, 3 pontos em linha nativa', () => {
+  it('ordem de prioridade precisa cobrir todos os 3 grupos', () => {
+    expect(validarOrdemGrupos(GRUPOS_ATRIBUTOS, ['fisico', 'social', 'mental']).valido).toBe(true)
+    expect(validarOrdemGrupos(GRUPOS_ATRIBUTOS, ['fisico', 'social']).valido).toBe(false)
+  })
+
+  it('Físico (1º na ordem) recebe 7; distribuir exatamente 7 entre forca/destreza/vigor', () => {
+    const ordem = ['fisico', 'social', 'mental']
+    const prioridade = prioridadeDoGrupo(ordem, [7, 5, 3], 'fisico')
+    expect(prioridade).toBe(7)
+    const r = validarDistribuicaoGrupo({
+      membros: GRUPOS_ATRIBUTOS[0].membros, prioridade,
+      alocacao: { forca: 3, destreza: 2, vigor: 2 },
+      basePorMembro: 1, maximoPorMembro: 5,
+    })
+    expect(r).toEqual({ valido: true, gasto: 7, restante: 0 })
+    expect(valorFinalMembro(1, 3)).toBe(4)
+  })
+
+  it('Perícias 13/9/5: grupo com prioridade 13 distribuído exatamente', () => {
+    const r = validarDistribuicaoGrupo({
+      membros: GRUPOS_PERICIAS[0].membros, prioridade: 13,
+      alocacao: { briga: 5, furtividade: 5, sobrevivencia: 3 },
+      basePorMembro: 0, maximoPorMembro: 5,
+    })
+    expect(r).toEqual({ valido: true, gasto: 13, restante: 0 })
+  })
+
+  it('3 pontos em duas linhas nativas (Dominação + Ofuscação): apenas_nativas exclui a terceira, e a distribuição respeita o máximo por item', () => {
+    const OBLIVION = { id: 'oblivion', nome: 'Obtenebração', maximo: 5 }
+    const nativas = new Set(['dominacao', 'ofuscacao'])
+    const itens = [DOMINACAO, OFUSCACAO, OBLIVION].filter(l => nativas.has(l.id)).map(l => l.id)
+    expect(itens).toEqual(['dominacao', 'ofuscacao'])
+    const r = validarPontosLivres({ itens, pontos: ETAPA_LINHAS.pontos, alocacao: { dominacao: 2, ofuscacao: 1 }, maximoPorItem: ETAPA_LINHAS.maximo_por_item })
+    expect(r).toEqual({ valido: true, gasto: 3, restante: 0 })
+  })
+
+  it('distribuição incompleta (sobra ou falta) é rejeitada — nasce só quando exata', () => {
+    expect(validarDistribuicaoGrupo({ membros: ['a', 'b'], prioridade: 7, alocacao: { a: 3, b: 3 }, basePorMembro: 1, maximoPorMembro: 5 }).valido).toBe(false)
+  })
+})
+
+describe('Aceitação 25 · XP direto — ganhar do mestre e comprar atributo/perícia/linha', () => {
+  it('ganhar 30 XP e comprar atributo 2→3 (15) e perícia 2→3 (9): saldo 6', () => {
+    const log = [
+      { tipo: 'ganho', quantidade: 30, detalhe: { motivo: 'Sessão 1' } },
+      registroDeCompra(CATEGORIA_ATRIBUTO, 'forca', 2, custoCompra(CATEGORIA_ATRIBUTO, 2)),
+      registroDeCompra(CATEGORIA_PERICIA, 'briga', 2, custoCompra(CATEGORIA_PERICIA, 2)),
+    ]
+    expect(custoCompra(CATEGORIA_ATRIBUTO, 2)).toBe(15)
+    expect(custoCompra(CATEGORIA_PERICIA, 2)).toBe(9)
+    expect(saldoDoLog(log)).toBe(6)
+  })
+
+  it('rating 1→2 de Dominação (nativa): custa 10 (novo_valor 2 × 5), desbloqueia os poderes do nível 2', () => {
+    const saldo = 20
+    const v = validarCompra(CATEGORIA_LINHA, 1, saldo, {}, { fora: false })
+    expect(v).toEqual({ permitida: true, custo: 10, novoValor: 2 })
+    const rating = v.novoValor
+    const desbloqueados = PODERES_DOMINACAO.filter(p => rating >= p.nivel_linha)
+    expect(desbloqueados.map(p => p.nome)).toEqual(['Comando', 'Ordálio'])
+  })
+
+  it('mesma compra em linha NÃO-nativa custa pela fórmula "fora" (×7): 14', () => {
+    expect(custoCompra(CATEGORIA_LINHA, 1, {}, { fora: true })).toBe(14)
+  })
+
+  it('saldo insuficiente bloqueia a compra com o motivo', () => {
+    const v = validarCompra(CATEGORIA_LINHA, 4, 10)
+    expect(v.permitida).toBe(false)
+    expect(v.motivoBloqueio).toContain('XP insuficiente')
+  })
+})
+
+describe('Aceitação 25 · retrocompatibilidade — a régua não muda', () => {
+  it('sistema sem config nova = modo nivel (F19), sem criação por prioridades', () => {
+    const cfg = mergeConfigLayout(null)
+    expect(cfg.progressao.modo).toBe('nivel')
+    expect(cfg.progressao.categorias_compra).toEqual([])
+    expect(cfg.criacao_prioridades.ativo).toBe(false)
+  })
+
+  it('defaults novos existem no CONFIG_LAYOUT_DEFAULT (guarda contra regressão de merge)', () => {
+    expect(CONFIG_LAYOUT_DEFAULT.progressao.modo).toBe('nivel')
+    expect(CONFIG_LAYOUT_DEFAULT.criacao_prioridades).toEqual({ ativo: false, etapas: [] })
+  })
+
+  it('Fase 24 continua intocada com a Fase 25 configurada junto (mesmo sistema)', () => {
+    const r = resolverRolagem({ config: RESOLUCAO, dados: [10, 10, 8, 6, 4, 2, 1], especiais_idx: [0, 1] })
+    expect(r.sucessos).toBe(6)
+    expect(especiaisDeEstados([FOME], { fome: 3 })).toBe(3)
   })
 })
