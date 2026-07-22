@@ -263,3 +263,13 @@ export function tocarSomDado(skinId, opts = {}) {
     // Silencia se o áudio não for suportado ou estiver bloqueado
   }
 }
+
+/**
+ * Expõe o AudioContext compartilhado (lazy, singleton) para outros módulos
+ * de áudio sintetizado (ex: FV.4 — src/audio/actionSynth.js) reutilizarem em
+ * vez de criar um segundo contexto.
+ * @returns {AudioContext}
+ */
+export function getAudioContext() {
+  return getCtx()
+}

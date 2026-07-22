@@ -33,6 +33,10 @@ export const CONFIG_LAYOUT_DEFAULT = {
   poderes_rotulo: 'Poderes',
   // Fase 21.6 — moedas / economia. Desativada = sem carteira na ficha.
   moedas: { ativo: false, denominacoes: [] }, // [{ id, nome, sigla, valor }]
+  // FV.4/5 — sons de ação (combate). Vazio = silêncio (retrocompat; os sons
+  // de dado da F11 ficam intocados). mapa: origemId (arma/habilidade) →
+  // presetId. padroes: tipo de evento → presetId (fallback do mapa).
+  sons: { mapa: {}, padroes: {} },
   // Fase 24.3 — dots: modo de EXIBIÇÃO de atributos/perícias (o valor continua
   // número em banco/motores/paradas). Override por atributo em atributos.exibicao.
   exibicao_atributos: 'numero', // 'numero' | 'dots'
@@ -155,6 +159,10 @@ export function mergeConfigLayout(raw) {
     },
     poderes_rotulo: (raw || {}).poderes_rotulo || 'Poderes',
     moedas: { ...CONFIG_LAYOUT_DEFAULT.moedas, ...((raw || {}).moedas || {}) },
+    sons: {
+      mapa: { ...((raw || {}).sons?.mapa || {}) },
+      padroes: { ...((raw || {}).sons?.padroes || {}) },
+    },
     pontos_status: { ...CONFIG_LAYOUT_DEFAULT.pontos_status, ...((raw || {}).pontos_status || {}) },
     critico: { ...CONFIG_LAYOUT_DEFAULT.critico, ...((raw || {}).critico || {}) },
     trilhas: (raw || {}).trilhas || [],

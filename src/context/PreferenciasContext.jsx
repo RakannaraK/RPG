@@ -3,7 +3,11 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 
 // Preferências visuais/sonoras do usuário, persistidas em profiles.preferencias (JSONB).
-const PADRAO = { dado_skin: 'padrao', som_ativo: true, som_volume: 0.6 }
+const PADRAO = {
+  dado_skin: 'padrao', som_ativo: true, som_volume: 0.6,
+  // FV.4c — sons de ação (combate), independentes do som de dado acima
+  som_acao_ativo: true, som_acao_volume: 0.6,
+}
 
 const PreferenciasContext = createContext(null)
 

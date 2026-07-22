@@ -7,7 +7,7 @@ const SKINS = listarSkins()
 
 export default function PreferenciasModal({ onFechar }) {
   const { preferencias, salvarPreferencias } = usePreferencias()
-  const { dado_skin, som_ativo, som_volume } = preferencias
+  const { dado_skin, som_ativo, som_volume, som_acao_ativo, som_acao_volume } = preferencias
 
   function escolher(id) {
     salvarPreferencias({ dado_skin: id })
@@ -99,6 +99,35 @@ export default function PreferenciasModal({ onFechar }) {
                 value={som_volume}
                 onChange={e => salvarPreferencias({ som_volume: Number(e.target.value) })}
                 disabled={!som_ativo}
+                className="w-full accent-purple-500 disabled:opacity-40"
+              />
+            </div>
+          </div>
+
+          {/* FV.4c — sons de ação (combate), independentes do som de dado acima */}
+          <div className="space-y-3 border-t border-purple-900 pt-5">
+            <label className="flex items-center justify-between cursor-pointer">
+              <span className="text-sm font-medium text-purple-200">Sons de ação</span>
+              <input
+                type="checkbox"
+                checked={som_acao_ativo}
+                onChange={e => salvarPreferencias({ som_acao_ativo: e.target.checked })}
+                className="w-5 h-5 accent-purple-500"
+              />
+            </label>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium text-purple-200">Volume</span>
+                <span className="text-purple-400 text-xs tabular-nums">{Math.round(som_acao_volume * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={som_acao_volume}
+                onChange={e => salvarPreferencias({ som_acao_volume: Number(e.target.value) })}
+                disabled={!som_acao_ativo}
                 className="w-full accent-purple-500 disabled:opacity-40"
               />
             </div>

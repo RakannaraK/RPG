@@ -2,6 +2,8 @@ import { useState } from 'react'
 import Dice3D from '../components/dados/Dice3D'
 import { listarSkins } from '../lib/diceSkins'
 import { tocarSomDado } from '../lib/diceSounds'
+import { PRESET_IDS } from '../engines/actionSoundEngine'
+import { tocarPresetAcao } from '../audio/actionSynth'
 
 const TIPOS = [4, 6, 8, 10, 12, 20, 100]
 const SKINS = listarSkins()
@@ -139,6 +141,22 @@ export default function DadosTestePage() {
       >
         {rolando ? '🎲 Rolando...' : '🎲 Rolar tudo'}
       </button>
+
+      {/* FV.4 — preview dos presets de som de ação (dev only; nenhum som dispara no jogo ainda) */}
+      <div className="border-t border-purple-900 pt-8 flex flex-col items-center gap-3">
+        <h2 className="text-white text-lg font-bold">Preview — Sons de ação (FV.4)</h2>
+        <div className="flex flex-wrap gap-2 justify-center max-w-lg">
+          {PRESET_IDS.map(id => (
+            <button
+              key={id}
+              onClick={() => tocarPresetAcao(id, { ativo: somAtivo, volume })}
+              className="px-3 py-1.5 rounded-lg border border-purple-800 bg-purple-950/50 hover:border-purple-600 text-purple-200 text-sm transition-colors"
+            >
+              ▶ {id}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
