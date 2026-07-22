@@ -4,6 +4,8 @@ import { useCreateFicha } from '../../hooks/useFicha'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import DiceRoller from './DiceRoller'
+import FichaCreatePrioridades from './FichaCreatePrioridades'
+import { mergeConfigLayout } from '../../lib/sistemaDefaults'
 
 export default function FichaCreate({ mesaId, onCriada, onFechar }) {
   const { session } = useAuth()
@@ -121,6 +123,13 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
     } catch (err) {
       setErro(err.message || 'Erro ao criar ficha.')
     }
+  }
+
+  // 25.4c — modo prioridades substitui a UI por completo (os hooks acima já
+  // rodaram nesta renderização — isto só troca o QUE é renderizado, não pula
+  // hooks; Rules of Hooks preservadas).
+  if (!loadingSistema && mergeConfigLayout(sistema?.config_layout).criacao_prioridades?.ativo) {
+    return <FichaCreatePrioridades mesaId={mesaId} onCriada={onCriada} onFechar={onFechar} />
   }
 
   return (
