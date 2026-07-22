@@ -153,6 +153,7 @@ function AdicionarPoder({ catalogo, jaTem, estado, classesIds, onAprender }) {
   const elegiveis = useMemo(() => {
     const base = catalogo.filter(p => {
       if (jaTem.has(p.id)) return false
+      if (p.linha_id) return false // 25.3c — poder de linha só se aprende pelo painel Linhas (gate por rating)
       if (p.classe_id && !classesIds.has(p.classe_id)) return false // poder de outra classe
       return atendeNivelMinimo(p, estado.contexto)
     })

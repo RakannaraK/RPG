@@ -39,6 +39,7 @@ import { usePoderes } from '../hooks/usePoderes'
 import { usePoderesFicha } from '../hooks/usePoderesFicha'
 import { useLinhasPoder, useLinhasFicha } from '../hooks/useLinhasPoder'
 import PainelPoderes from '../components/ficha/PainelPoderes'
+import PainelLinhas from '../components/ficha/PainelLinhas'
 import { podeAtivarHabilidade, planejarTurno } from '../lib/custoHabilidade'
 import { useCategorias } from '../hooks/useCategorias'
 import { useMaestrias } from '../hooks/useMaestrias'
@@ -712,6 +713,21 @@ export default function FichaPage() {
 
   // Compra (contrato 25.1): +1 no alvo, débito via RPC, log e feed — nessa ordem
   // de segurança: só debita depois de aplicar o +1 com sucesso.
+  // 25.3c — muda o rating de uma linha; se auto_conceder, aprende automaticamente
+  // os poderes dos níveis alcançados que a ficha ainda não conhece.
+  async function handleDefinirRatingLinha(linhaId, novoValor) {
+    await definirRating(linhaId, novoValor)
+    const linha = linhasPoderSistema.find(l => l.id === linhaId)
+    if (!linha?.auto_conceder) return
+    const jaTem = new Set(poderesFicha.map(l => l.poder_id))
+    const paraAprender = catalogoPoderes.filter(p =>
+      p.linha_id === linhaId && (p.nivel_linha ?? 0) <= novoValor && !jaTem.has(p.id)
+    )
+    for (const p of paraAprender) {
+      try { await aprenderPoder(p.id, 'linha') } catch { /* segue */ }
+    }
+  }
+
   async function handleComprarXp(categoria, alvo, validacao) {
     const { custo, novoValor } = validacao
     if (categoria.alvo === 'atributo') {
@@ -723,7 +739,7 @@ export default function FichaPage() {
     } else if (categoria.alvo === 'trilha_tamanho_bonus') {
       await salvarBonus(alvo.id, novoValor)
     } else if (categoria.alvo === 'linha_poder') {
-      await definirRating(alvo.id, novoValor)
+      await handleDefinirRatingLinha(alvo.id, novoValor)
     } else {
       throw new Error('Categoria de compra desconhecida: ' + categoria.alvo)
     }
@@ -1050,6 +1066,17 @@ export default function FichaPage() {
             onDefinirUsados={definirUsados}
           />
         )}
+
+        {/* Linhas de poder (25.3c) — adaptativo: some se o sistema não tem linhas */}
+        <PainelLinhas
+          linhas={linhasPoderSistema}
+          catalogoPoderes={catalogoPoderes}
+          poderesFicha={poderesFicha}
+          ratingDe={ratingDe}
+          onDefinirRating={handleDefinirRatingLinha}
+          isDono={isDono}
+          onAprender={aprenderPoder}
+        />
 
         {/* Poderes (20.4) — adaptativo: some se o sistema não tem catálogo */}
         <PainelPoderes
