@@ -18,6 +18,7 @@ import PresencaBar from '../components/sessao/PresencaBar'
 import PainelFichas from '../components/sessao/PainelFichas'
 import CombatePanel from '../components/sessao/CombatePanel'
 import DescansoGrupo from '../components/sessao/DescansoGrupo'
+import ConcederXpGrupo from '../components/sessao/ConcederXpGrupo'
 import FeedRolagens from '../components/dados/FeedRolagens'
 import Sininho from '../components/notificacoes/Sininho'
 
@@ -64,6 +65,7 @@ export default function SessaoPage() {
   )
   const descansos = sistema?.config_layout?.descansos || []
   const defesaAtiva = sistema?.config_layout?.defesa_ativa || null // 22.6
+  const progressaoModo = sistema?.config_layout?.progressao?.modo || 'nivel' // 25.5
   const { cards, loading: loadingCards, error: erroCards, conectado } = useSessaoFichas(mesaId, sistemaBundle)
 
   // Encontro de combate (Fase 14)
@@ -344,6 +346,26 @@ export default function SessaoPage() {
     return itens
   }
 
+  // 25.5 — conceder XP a todos os personagens da sessão (mestre; modo
+  // xp_direto). Ganho de XP NÃO vai ao feed (decisão F19.3, mantida).
+  // Best-effort por ficha: uma falha (RLS/rede) não impede as demais.
+  async function handleConcederXpGrupo(quantidade, motivo) {
+    const itens = []
+    for (const card of cards) {
+      try {
+        const { error: err } = await supabase.rpc('adicionar_xp', { p_ficha_id: card.id, p_delta: quantidade })
+        if (err) throw err
+        try {
+          await supabase.from('xp_log').insert({ ficha_id: card.id, tipo: 'ganho', quantidade, detalhe: { motivo: motivo || null } })
+        } catch { /* RLS de ficha alheia — best-effort, mesma ressalva da 25.2 */ }
+        itens.push({ nome: card.nome })
+      } catch {
+        itens.push({ nome: card.nome, erro: true })
+      }
+    }
+    return itens
+  }
+
   // Avança turno e avisa no feed as condições que expiraram na virada de rodada (14.4)
   async function handleProximoTurno() {
     const res = await encontroApi.proximoTurno()
@@ -575,6 +597,11 @@ export default function SessaoPage() {
         {/* Descanso do grupo (Fase 15.4) — só mestre, sessão ativa, se houver descansos */}
         {sessao.ativa && isMestre && descansos.length > 0 && (
           <DescansoGrupo descansos={descansos} onDescansar={handleDescansoGrupo} />
+        )}
+
+        {/* Conceder XP ao grupo (25.5) — só mestre, sessão ativa, modo xp_direto */}
+        {sessao.ativa && isMestre && progressaoModo === 'xp_direto' && (
+          <ConcederXpGrupo onConceder={handleConcederXpGrupo} />
         )}
 
         {/* Abas — só no mobile */}
