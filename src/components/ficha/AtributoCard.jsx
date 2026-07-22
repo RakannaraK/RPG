@@ -13,9 +13,9 @@ import { usePreferencias } from '../../context/PreferenciasContext'
 function AvisoVantagem({ estado }) {
   if (!estado || estado === 'normal') return null
   const cfg = {
-    vantagem:    { txt: '⬆ Vantagem',    cls: 'bg-green-900/70 text-green-300 border-green-700' },
-    desvantagem: { txt: '⬇ Desvantagem', cls: 'bg-red-900/70 text-red-300 border-red-700' },
-    anulada:     { txt: 'Vant./Desv. anuladas', cls: 'bg-slate-700 text-slate-300 border-slate-600' },
+    vantagem:    { txt: '⬆ Vantagem',    cls: 'bg-ok/15 text-ok border-ok/60' },
+    desvantagem: { txt: '⬇ Desvantagem', cls: 'bg-harm/15 text-harm border-harm/60' },
+    anulada:     { txt: 'Vant./Desv. anuladas', cls: 'bg-hover text-ink-dim border-border' },
   }[estado]
   return (
     <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${cfg.cls}`}>
@@ -228,11 +228,11 @@ export default function AtributoCard({
 
   if (compact) {
     return (
-      <div className={`bg-slate-800 border rounded-xl p-3 flex flex-col items-center transition-all duration-300 ${
-        pulsando ? 'border-amber-400/80 ring-2 ring-amber-400/25' : 'border-purple-800'
+      <div className={`bg-raised border rounded-xl p-3 flex flex-col items-center transition-all duration-300 ${
+        pulsando ? 'border-dice-500 ring-2 ring-dice-500/25' : 'border-border'
       }`}>
         {/* Nome */}
-        <p className="text-purple-400 text-[11px] font-medium uppercase tracking-wider truncate w-full text-center mb-1">
+        <p className="text-ink-dim text-[11px] font-medium uppercase tracking-[.12em] truncate w-full text-center mb-1">
           {atributo.nome}
         </p>
 
@@ -248,33 +248,33 @@ export default function AtributoCard({
               size="sm"
             />
           ) : (
-            <p className={`font-bold text-4xl leading-none transition-colors duration-300 ${buffado ? 'text-green-300' : 'text-white'}`}>
+            <p className={`font-mono font-bold text-4xl leading-none transition-colors duration-300 ${buffado ? 'text-ok' : 'text-ink'}`}>
               {temMod ? fmtMod(modAtributo) : (display !== undefined && display !== null ? display : '—')}
             </p>
           )}
           {!usaDots && (temMod ? (
-            <p className="text-purple-400 text-[10px] leading-none mt-0.5">valor {display}</p>
+            <p className="text-ink-dim text-[10px] leading-none mt-0.5">valor {display}</p>
           ) : fontesMod && fontesMod.length > 0 && (
-            <p className="text-purple-500 text-[9px] leading-none mt-0.5">base {valor}</p>
+            <p className="text-ink-dim text-[9px] leading-none mt-0.5">base {valor}</p>
           ))}
           {/* Tooltip de rastreabilidade */}
           {fontesMod && fontesMod.length > 0 && (
             <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 z-50
                             pointer-events-none opacity-0 group-hover/val:opacity-100
                             transition-opacity duration-150
-                            bg-slate-900 border border-purple-600/80 rounded-lg px-3 py-2
+                            bg-void border border-accent-700/60 rounded-lg px-3 py-2
                             shadow-2xl w-max">
-              <p className="text-purple-300 text-[11px] font-semibold mb-1">{atributo.nome}</p>
-              <p className="text-slate-400 text-[10px]">Base: {valor ?? '—'}</p>
+              <p className="text-accent-300 text-[11px] font-semibold mb-1">{atributo.nome}</p>
+              <p className="text-ink-dim text-[10px]">Base: {valor ?? '—'}</p>
               {fontesMod.map((f, i) => {
                 const sinal = sinalFonte(f)
                 return (
-                  <p key={i} className="text-white text-[10px]">
-                    {sinal} <span className="text-purple-400">{f.fonte}</span>
+                  <p key={i} className="text-ink text-[10px]">
+                    {sinal} <span className="text-ink-dim">{f.fonte}</span>
                   </p>
                 )
               })}
-              <p className="text-green-300 text-[10px] font-semibold border-t border-purple-800 mt-1 pt-1">
+              <p className="text-ok text-[10px] font-semibold border-t border-border mt-1 pt-1">
                 = {display}
               </p>
             </div>
@@ -282,7 +282,7 @@ export default function AtributoCard({
         </div>
 
         {/* Fórmula */}
-        <p className="text-amber-500 text-[10px] font-mono mt-1 opacity-70">
+        <p className="text-dice-500 text-[10px] font-mono mt-1 opacity-70">
           {formulaTexto(regra)}
         </p>
 
@@ -294,7 +294,7 @@ export default function AtributoCard({
               onClick={handleTestar}
               disabled={testando}
               title={`Teste de ${atributo.nome}`}
-              className="text-xs text-amber-500 hover:text-amber-300 disabled:opacity-40 transition-colors px-1.5 py-0.5 rounded hover:bg-amber-900/30"
+              className="text-xs text-dice-500 hover:text-dice-400 disabled:opacity-40 transition-colors px-1.5 py-0.5 rounded hover:bg-dice-700/20"
             >
               🎲 Testar
             </button>
@@ -303,7 +303,7 @@ export default function AtributoCard({
             <button
               type="button"
               onClick={() => { setEditando(true); setValorManual(valor !== undefined ? String(valor) : '') }}
-              className="text-[11px] text-purple-500 hover:text-purple-300 transition-colors"
+              className="text-[11px] text-ink-dim hover:text-accent-300 transition-colors"
               title="Editar valor"
             >
               ✎
@@ -313,15 +313,15 @@ export default function AtributoCard({
 
         {/* Resultado do teste inline (compacto) */}
         {testeResultado && (
-          <div className="w-full mt-2 border-t border-purple-800 pt-2 space-y-1.5">
+          <div className="w-full mt-2 border-t border-border pt-2 space-y-1.5">
             <div className="flex items-center justify-between gap-1">
-              <span className="text-purple-400 font-mono text-[10px]">{testeResultado.notacao}</span>
+              <span className="text-ink-dim font-mono text-[10px]">{testeResultado.notacao}</span>
               <div className="flex items-center gap-1">
                 <AvisoVantagem estado={testeVantagem} />
                 <button
                   type="button"
                   onClick={() => setTesteResultado(null)}
-                  className="text-purple-600 hover:text-purple-400 text-[10px] transition-colors"
+                  className="text-ink-dim hover:text-ink text-[10px] transition-colors"
                 >
                   ✕
                 </button>
@@ -329,32 +329,32 @@ export default function AtributoCard({
             </div>
             <div className="flex flex-wrap gap-1 items-center justify-center">
               {testeResultado.dados.map((d, i) => (
-                <div key={i} className={`rounded-lg ${d.sucesso ? 'ring-1 ring-green-500/70' : ''} ${d.especial ? 'ring-1 ring-red-500/80' : ''}`}>
+                <div key={i} className={`rounded-lg ${d.sucesso ? 'ring-1 ring-ok/70' : ''} ${d.especial ? 'ring-1 ring-harm/80' : ''}`}>
                   <Dice3D lados={d.lados} resultado={d.valor} rolando={testeRolando} descartado={d.descartado} skin={preferencias.dado_skin} />
                 </div>
               ))}
               {!descTeste && (
-                <span className="text-white font-bold text-xl leading-none ml-1">{testeResultado.total}</span>
+                <span className="text-dice-400 font-mono font-bold text-xl leading-none ml-1">{testeResultado.total}</span>
               )}
             </div>
-            {descTeste && <p className="text-center text-sm font-bold text-purple-100">{descTeste.texto}</p>}
-            {descTeste?.textoFaixa && <p className="text-purple-300 text-[10px] text-center italic">"{descTeste.textoFaixa}"</p>}
+            {descTeste && <p className="text-center text-sm font-bold text-accent-300">{descTeste.texto}</p>}
+            {descTeste?.textoFaixa && <p className="text-accent-300 text-[10px] text-center italic">"{descTeste.textoFaixa}"</p>}
             {descTeste?.marcacao && (
-              <p className="text-center text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-red-950/60 border-red-600/70 text-red-200">⚡ {descTeste.marcacao.rotulo}</p>
+              <p className="text-center text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-harm/10 border-harm/60 text-harm">⚡ {descTeste.marcacao.rotulo}</p>
             )}
             <RerolagemBox resultado={testeResultado} rerolagem={rerolagem} mesaId={mesaId} fichaId={fichaId} rotulo={`Teste de ${atributo.nome}`} onRerolado={setTesteResultado} />
-            {erroTeste && <p className="text-red-400 text-[10px] text-center">{erroTeste}</p>}
+            {erroTeste && <p className="text-harm text-[10px] text-center">{erroTeste}</p>}
           </div>
         )}
 
         {/* Rolar para definir valor */}
         {rolando && (
-          <div className="w-full mt-2 border-t border-purple-800 pt-2">
+          <div className="w-full mt-2 border-t border-border pt-2">
             <DiceRoller regra={regra} onConfirmar={handleConfirmar} />
             <button
               type="button"
               onClick={() => setRolando(false)}
-              className="mt-1 text-[11px] text-purple-500 hover:text-purple-300 transition-colors w-full text-center"
+              className="mt-1 text-[11px] text-ink-dim hover:text-accent-300 transition-colors w-full text-center"
             >
               Cancelar
             </button>
@@ -363,7 +363,7 @@ export default function AtributoCard({
 
         {/* Edição manual */}
         {editando && !rolando && (
-          <div className="w-full mt-2 border-t border-purple-800 pt-2">
+          <div className="w-full mt-2 border-t border-border pt-2">
             <div className="flex gap-1.5">
               <input
                 type="number"
@@ -371,20 +371,20 @@ export default function AtributoCard({
                 onChange={e => setValorManual(e.target.value)}
                 placeholder={valor !== undefined ? String(valor) : '0'}
                 autoFocus
-                className="flex-1 px-2 py-1 bg-purple-950 border border-purple-700 text-white rounded text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="flex-1 px-2 py-1 bg-void border border-border text-ink rounded text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500"
               />
               <button
                 type="button"
                 onClick={handleSalvarManual}
                 disabled={salvando}
-                className="px-2 py-1 bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-sm rounded transition-colors"
+                className="px-2 py-1 bg-ok/80 hover:bg-ok disabled:opacity-50 text-ink text-sm rounded transition-colors"
               >
                 ✓
               </button>
               <button
                 type="button"
                 onClick={() => { setEditando(false); setValorManual('') }}
-                className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded transition-colors"
+                className="px-2 py-1 bg-hover hover:bg-border text-ink text-sm rounded transition-colors"
               >
                 ✕
               </button>
@@ -393,7 +393,7 @@ export default function AtributoCard({
               <button
                 type="button"
                 onClick={() => { setEditando(false); setRolando(true) }}
-                className="mt-1.5 w-full py-1 text-[11px] bg-amber-800 hover:bg-amber-700 text-white rounded transition-colors"
+                className="mt-1.5 w-full py-1 text-[11px] bg-dice-700 hover:bg-dice-500 text-ink rounded transition-colors"
               >
                 🎲 Rolar dados
               </button>
@@ -401,23 +401,23 @@ export default function AtributoCard({
           </div>
         )}
 
-        {erro && <p className="mt-1 text-red-400 text-[10px] text-center">{erro}</p>}
+        {erro && <p className="mt-1 text-harm text-[10px] text-center">{erro}</p>}
       </div>
     )
   }
 
   // ── Modo normal (sem compact) ────────────────────────────────────────────────
   return (
-    <div className={`bg-slate-800 border rounded-xl p-4 transition-all duration-300 ${
-      pulsando ? 'border-amber-400/80 ring-2 ring-amber-400/25' : 'border-purple-800'
+    <div className={`bg-raised border rounded-xl p-4 transition-all duration-300 ${
+      pulsando ? 'border-dice-500 ring-2 ring-dice-500/25' : 'border-border'
     }`}>
       <div className="flex items-start justify-between mb-3">
         <div>
-          <p className="text-white font-semibold">{atributo.nome}</p>
+          <p className="text-ink font-semibold">{atributo.nome}</p>
           {atributo.descricao && (
-            <p className="text-purple-400 text-xs mt-0.5">{atributo.descricao}</p>
+            <p className="text-ink-dim text-xs mt-0.5">{atributo.descricao}</p>
           )}
-          <p className="text-amber-500 text-xs font-mono mt-1">{formulaTexto(regra)}</p>
+          <p className="text-dice-500 text-xs font-mono mt-1">{formulaTexto(regra)}</p>
         </div>
         <div className="flex flex-col items-end gap-1 ml-4 shrink-0">
           <div className="relative group/val flex flex-col items-end">
@@ -430,32 +430,32 @@ export default function AtributoCard({
                 onSet={setDots}
               />
             ) : (
-              <p className={`font-bold text-3xl leading-none transition-colors duration-300 ${buffado ? 'text-green-300' : 'text-white'}`}>
+              <p className={`font-mono font-bold text-3xl leading-none transition-colors duration-300 ${buffado ? 'text-ok' : 'text-ink'}`}>
                 {temMod ? fmtMod(modAtributo) : (display !== undefined && display !== null ? display : '—')}
               </p>
             )}
             {!usaDots && (temMod ? (
-              <p className="text-purple-400 text-[10px] leading-none">valor {display}</p>
+              <p className="text-ink-dim text-[10px] leading-none">valor {display}</p>
             ) : fontesMod && fontesMod.length > 0 && (
-              <p className="text-purple-500 text-[10px] leading-none">base {valor}</p>
+              <p className="text-ink-dim text-[10px] leading-none">base {valor}</p>
             ))}
             {fontesMod && fontesMod.length > 0 && (
               <div className="absolute right-0 bottom-full mb-1.5 z-50
                               pointer-events-none opacity-0 group-hover/val:opacity-100
                               transition-opacity duration-150
-                              bg-slate-900 border border-purple-600/80 rounded-lg px-3 py-2
+                              bg-void border border-accent-700/60 rounded-lg px-3 py-2
                               shadow-2xl w-max">
-                <p className="text-purple-300 text-[11px] font-semibold mb-1">{atributo.nome}</p>
-                <p className="text-slate-400 text-[10px]">Base: {valor ?? '—'}</p>
+                <p className="text-accent-300 text-[11px] font-semibold mb-1">{atributo.nome}</p>
+                <p className="text-ink-dim text-[10px]">Base: {valor ?? '—'}</p>
                 {fontesMod.map((f, i) => {
                   const sinal = sinalFonte(f)
                   return (
-                    <p key={i} className="text-white text-[10px]">
-                      {sinal} <span className="text-purple-400">{f.fonte}</span>
+                    <p key={i} className="text-ink text-[10px]">
+                      {sinal} <span className="text-ink-dim">{f.fonte}</span>
                     </p>
                   )
                 })}
-                <p className="text-green-300 text-[10px] font-semibold border-t border-purple-800 mt-1 pt-1">
+                <p className="text-ok text-[10px] font-semibold border-t border-border mt-1 pt-1">
                   = {display}
                 </p>
               </div>
@@ -467,7 +467,7 @@ export default function AtributoCard({
               onClick={handleTestar}
               disabled={testando}
               title={`Teste de ${atributo.nome}`}
-              className="text-xs text-amber-500 hover:text-amber-300 disabled:opacity-40 transition-colors px-2 py-0.5 rounded hover:bg-amber-900/30"
+              className="text-xs text-dice-500 hover:text-dice-400 disabled:opacity-40 transition-colors px-2 py-0.5 rounded hover:bg-dice-700/20"
             >
               🎲 Testar
             </button>
@@ -476,15 +476,15 @@ export default function AtributoCard({
       </div>
 
       {testeResultado && (
-        <div className="border-t border-purple-800 pt-3 mb-3 space-y-2">
+        <div className="border-t border-border pt-3 mb-3 space-y-2">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-purple-400 font-mono text-xs">{testeResultado.notacao}</span>
+            <span className="text-ink-dim font-mono text-xs">{testeResultado.notacao}</span>
             <div className="flex items-center gap-2">
               <AvisoVantagem estado={testeVantagem} />
               <button
                 type="button"
                 onClick={() => setTesteResultado(null)}
-                className="text-purple-600 hover:text-purple-400 text-xs transition-colors"
+                className="text-ink-dim hover:text-ink text-xs transition-colors"
               >
                 ✕
               </button>
@@ -500,39 +500,39 @@ export default function AtributoCard({
                   descartado={d.descartado}
                   skin={preferencias.dado_skin}
                 />
-                {d.descartado && <span className="text-red-500 text-[9px]">desc.</span>}
+                {d.descartado && <span className="text-harm text-[9px]">desc.</span>}
               </div>
             ))}
             <div className="flex items-baseline gap-1.5 ml-1">
-              <span className="text-purple-400 text-xs">{descTeste ? '' : 'Total:'}</span>
+              <span className="text-ink-dim text-xs">{descTeste ? '' : 'Total:'}</span>
               {descTeste
-                ? <span className="text-xl font-bold text-purple-100 leading-none">{descTeste.texto}</span>
-                : <span className="text-2xl font-bold text-white leading-none">{testeResultado.total}</span>}
+                ? <span className="text-xl font-bold text-accent-300 leading-none">{descTeste.texto}</span>
+                : <span className="text-2xl font-mono font-bold text-dice-400 leading-none">{testeResultado.total}</span>}
             </div>
           </div>
-          {descTeste?.textoFaixa && <p className="text-purple-300 text-xs italic">"{descTeste.textoFaixa}"</p>}
+          {descTeste?.textoFaixa && <p className="text-accent-300 text-xs italic">"{descTeste.textoFaixa}"</p>}
           {descTeste?.marcacao && (
-            <span className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-red-950/60 border-red-600/70 text-red-200">⚡ {descTeste.marcacao.rotulo}{descTeste.marcacao.texto ? ` — ${descTeste.marcacao.texto}` : ''}</span>
+            <span className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-harm/10 border-harm/60 text-harm">⚡ {descTeste.marcacao.rotulo}{descTeste.marcacao.texto ? ` — ${descTeste.marcacao.texto}` : ''}</span>
           )}
           <RerolagemBox resultado={testeResultado} rerolagem={rerolagem} mesaId={mesaId} fichaId={fichaId} rotulo={`Teste de ${atributo.nome}`} onRerolado={setTesteResultado} />
           {!descTeste && (testeResultado.mantidos.length > 1 || testeResultado.modificador !== 0) && (
-            <p className="text-purple-500 text-xs">
+            <p className="text-ink-dim text-xs">
               ({testeResultado.mantidos.join(' + ')}
               {testeResultado.modificador > 0 && ` + ${testeResultado.modificador}`}
               {testeResultado.modificador < 0 && ` − ${Math.abs(testeResultado.modificador)}`})
             </p>
           )}
-          {erroTeste && <p className="text-red-400 text-xs">{erroTeste}</p>}
+          {erroTeste && <p className="text-harm text-xs">{erroTeste}</p>}
         </div>
       )}
 
       {rolando && (
-        <div className="border-t border-purple-800 pt-3">
+        <div className="border-t border-border pt-3">
           <DiceRoller regra={regra} onConfirmar={handleConfirmar} />
           <button
             type="button"
             onClick={() => setRolando(false)}
-            className="mt-2 text-xs text-purple-500 hover:text-purple-300 transition-colors"
+            className="mt-2 text-xs text-ink-dim hover:text-accent-300 transition-colors"
           >
             Cancelar
           </button>
@@ -540,7 +540,7 @@ export default function AtributoCard({
       )}
 
       {editando && !rolando && (
-        <div className="border-t border-purple-800 pt-3">
+        <div className="border-t border-border pt-3">
           <div className="flex gap-2">
             <input
               type="number"
@@ -548,20 +548,20 @@ export default function AtributoCard({
               onChange={e => setValorManual(e.target.value)}
               placeholder={valor !== undefined ? String(valor) : '0'}
               autoFocus
-              className="flex-1 px-3 py-1.5 bg-purple-950 border border-purple-700 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="flex-1 px-3 py-1.5 bg-void border border-border text-ink rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
             />
             <button
               type="button"
               onClick={handleSalvarManual}
               disabled={salvando}
-              className="px-3 py-1.5 bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
+              className="px-3 py-1.5 bg-ok/80 hover:bg-ok disabled:opacity-50 text-ink text-sm rounded-lg transition-colors"
             >
               ✓
             </button>
             <button
               type="button"
               onClick={() => { setEditando(false); setValorManual('') }}
-              className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg transition-colors"
+              className="px-3 py-1.5 bg-hover hover:bg-border text-ink text-sm rounded-lg transition-colors"
             >
               ✕
             </button>
@@ -575,7 +575,7 @@ export default function AtributoCard({
             <button
               type="button"
               onClick={() => setRolando(true)}
-              className="flex-1 py-1.5 text-xs bg-amber-700 hover:bg-amber-600 text-white rounded-lg transition-colors"
+              className="flex-1 py-1.5 text-xs bg-dice-700 hover:bg-dice-500 text-ink rounded-lg transition-colors"
             >
               🎲 {valor !== undefined ? 'Rolar novamente' : 'Rolar'}
             </button>
@@ -586,14 +586,14 @@ export default function AtributoCard({
               setEditando(true)
               setValorManual(valor !== undefined ? String(valor) : '')
             }}
-            className="flex-1 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+            className="flex-1 py-1.5 text-xs bg-hover hover:bg-border text-ink rounded-lg transition-colors"
           >
             ✎ Editar
           </button>
         </div>
       )}
 
-      {erro && <p className="mt-2 text-red-400 text-xs">{erro}</p>}
+      {erro && <p className="mt-2 text-harm text-xs">{erro}</p>}
     </div>
   )
 }

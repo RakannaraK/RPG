@@ -68,17 +68,17 @@ export default function DiceRoller({ regra, onConfirmar }) {
               key={i}
               className={`w-10 h-10 flex items-center justify-center rounded-lg font-bold text-sm border-2 transition-all ${
                 d.tipo === 'animando'
-                  ? 'bg-purple-800 border-purple-500 text-white'
+                  ? 'bg-hover border-accent-500 text-ink'
                   : d.tipo === 'mantido'
-                  ? 'bg-purple-700 border-purple-400 text-white'
-                  : 'bg-slate-800 border-slate-600 text-slate-400 line-through opacity-40'
+                  ? 'bg-accent-700 border-accent-400 text-ink'
+                  : 'bg-raised border-border text-ink-dim line-through opacity-40'
               }`}
             >
               {d.valor}
             </span>
           ))}
           {resultado && resultado.bonus !== 0 && (
-            <span className="px-2 h-10 flex items-center rounded-lg bg-amber-900 border-2 border-amber-500 text-amber-300 text-sm font-bold">
+            <span className="px-2 h-10 flex items-center rounded-lg bg-dice-700 border-2 border-dice-500 text-dice-400 text-sm font-bold">
               {resultado.bonus > 0 ? '+' : ''}{resultado.bonus}
             </span>
           )}
@@ -87,10 +87,10 @@ export default function DiceRoller({ regra, onConfirmar }) {
 
       {resultado && (
         <div>
-          <p className="text-xs text-purple-400 font-mono">{resultado.formula}</p>
-          <p className="text-purple-200 mt-1">
+          <p className="text-xs text-ink-dim font-mono">{resultado.formula}</p>
+          <p className="text-ink mt-1">
             Total:{' '}
-            <span className="text-white font-bold text-2xl ml-1">{resultado.valor}</span>
+            <span className="text-ink font-bold text-2xl ml-1">{resultado.valor}</span>
           </p>
         </div>
       )}
@@ -100,7 +100,7 @@ export default function DiceRoller({ regra, onConfirmar }) {
           type="button"
           onClick={rolar}
           disabled={animando}
-          className="flex-1 py-2.5 text-sm bg-amber-600 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
+          className="flex-1 py-2.5 text-sm bg-dice-500 hover:bg-dice-700 disabled:opacity-50 disabled:cursor-not-allowed text-ink font-semibold rounded-lg transition-colors"
         >
           {animando ? '🎲 Rolando...' : resultado ? '🎲 Rolar novamente' : '🎲 Rolar'}
         </button>
@@ -108,7 +108,7 @@ export default function DiceRoller({ regra, onConfirmar }) {
           <button
             type="button"
             onClick={() => onConfirmar(resultado)}
-            className="px-4 py-2.5 text-sm bg-green-700 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors"
+            className="px-4 py-2.5 text-sm bg-ok/80 hover:bg-ok text-ink font-semibold rounded-lg transition-colors"
           >
             ✓ Confirmar
           </button>

@@ -30,8 +30,8 @@ function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, on
             onClick={handleSalvar}
             className={`text-xs px-3 py-1 rounded-lg transition-colors ${
               salvo
-                ? 'bg-green-700 text-green-100'
-                : 'bg-purple-800 hover:bg-purple-700 text-white'
+                ? 'bg-ok text-green-100'
+                : 'bg-hover hover:bg-accent-700 text-ink'
             }`}
           >
             {salvo ? '✓ Salvo' : 'Salvar'}
@@ -44,18 +44,18 @@ function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, on
           onChange={e => setValor(e.target.value)}
           placeholder={placeholder}
           rows={10}
-          className="w-full px-3 py-2.5 rounded-lg bg-slate-700 border border-purple-800 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none"
+          className="w-full px-3 py-2.5 rounded-lg bg-hover border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-1 focus:ring-accent-500 resize-none"
         />
       ) : valor ? (
-        <p className="text-white text-sm whitespace-pre-wrap min-h-[6rem] px-3 py-2.5 bg-slate-700 rounded-lg border border-purple-800">
+        <p className="text-ink text-sm whitespace-pre-wrap min-h-[6rem] px-3 py-2.5 bg-hover rounded-lg border border-border">
           {valor}
         </p>
       ) : (
-        <p className="text-purple-500 text-sm italic px-3 py-2.5 bg-slate-700 rounded-lg border border-purple-800 min-h-[6rem]">
+        <p className="text-ink-dim text-sm italic px-3 py-2.5 bg-hover rounded-lg border border-border min-h-[6rem]">
           Sem conteúdo.
         </p>
       )}
-      {erro && <p className="text-red-400 text-xs">{erro}</p>}
+      {erro && <p className="text-harm text-xs">{erro}</p>}
     </div>
   )
 }
@@ -91,16 +91,16 @@ export default function AbasCentrais({
   const currentTab = tabsList.find(t => t.id === activeTab) ? activeTab : tabsList[0].id
 
   return (
-    <div className="bg-slate-800 border border-purple-800 rounded-xl overflow-hidden">
-      <div className="flex border-b border-purple-900 overflow-x-auto">
+    <div className="bg-raised border border-border rounded-xl overflow-hidden">
+      <div className="flex border-b border-border overflow-x-auto">
         {tabsList.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px shrink-0 ${
               currentTab === tab.id
-                ? 'text-white border-purple-500'
-                : 'text-purple-400 border-transparent hover:text-purple-200'
+                ? 'text-ink border-accent-500'
+                : 'text-ink-dim border-transparent hover:text-ink'
             }`}
           >
             {tab.label}

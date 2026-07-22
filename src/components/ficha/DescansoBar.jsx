@@ -40,62 +40,62 @@ export default function DescansoBar({
   }
 
   return (
-    <div className="bg-slate-800 border border-purple-800 rounded-2xl p-4">
+    <div className="bg-raised border border-border rounded-2xl p-4">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-purple-300 text-sm font-medium mr-1">🏕️ Descanso:</span>
+        <span className="text-accent-300 text-sm font-medium mr-1">🏕️ Descanso:</span>
         {descansos.map(d => (
           <button
             key={d.id}
             onClick={() => abrir(d)}
-            className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-purple-100 text-sm rounded-lg transition-colors"
+            className="px-3 py-1.5 bg-hover hover:bg-border text-accent-300 text-sm rounded-lg transition-colors"
           >
             {d.nome || 'Descanso'}
           </button>
         ))}
       </div>
-      {feito && <p className="text-green-400 text-xs mt-2">✓ {feito}</p>}
+      {feito && <p className="text-ok text-xs mt-2">✓ {feito}</p>}
 
       {/* Modal de confirmação com preview */}
       {preview && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-purple-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-white font-bold text-lg mb-1">{preview.tipo.nome}</h3>
-            <p className="text-purple-300 text-sm mb-4">{preview.resultado.resumo}</p>
+          <div className="bg-void border border-border rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-ink font-bold text-lg mb-1">{preview.tipo.nome}</h3>
+            <p className="text-accent-300 text-sm mb-4">{preview.resultado.resumo}</p>
 
             <div className="space-y-1.5 mb-5 text-sm">
               {preview.resultado.vida.recuperado !== 0 && (
                 <div className="flex justify-between">
-                  <span className="text-purple-400">Vida{preview.resultado.vida.notacao ? ` (${preview.resultado.vida.notacao})` : ''}</span>
-                  <span className="text-white font-medium">
+                  <span className="text-ink-dim">Vida{preview.resultado.vida.notacao ? ` (${preview.resultado.vida.notacao})` : ''}</span>
+                  <span className="text-ink font-medium">
                     {preview.resultado.vida.de} → {preview.resultado.vida.para}
-                    <span className="text-green-400 ml-1">(+{preview.resultado.vida.recuperado})</span>
+                    <span className="text-ok ml-1">(+{preview.resultado.vida.recuperado})</span>
                   </span>
                 </div>
               )}
               {preview.resultado.vida_temp.para !== preview.resultado.vida_temp.de && (
                 <div className="flex justify-between">
-                  <span className="text-purple-400">Vida temporária</span>
-                  <span className="text-white font-medium">{preview.resultado.vida_temp.de} → {preview.resultado.vida_temp.para}</span>
+                  <span className="text-ink-dim">Vida temporária</span>
+                  <span className="text-ink font-medium">{preview.resultado.vida_temp.de} → {preview.resultado.vida_temp.para}</span>
                 </div>
               )}
               {preview.resultado.recursos.map(r => (
                 <div key={r.habilidadeFichaId} className="flex justify-between">
-                  <span className="text-purple-400">{r.nome}</span>
-                  <span className="text-white font-medium">{r.de} → {r.para}</span>
+                  <span className="text-ink-dim">{r.nome}</span>
+                  <span className="text-ink font-medium">{r.de} → {r.para}</span>
                 </div>
               ))}
               {/* 20.1 — pools recuperados */}
               {(preview.resultado.pools || []).map(p => (
                 <div key={p.poolId} className="flex justify-between">
-                  <span className="text-sky-400">{p.nome}</span>
-                  <span className="text-white font-medium">{p.de} → {p.para}</span>
+                  <span className="text-temp">{p.nome}</span>
+                  <span className="text-ink font-medium">{p.de} → {p.para}</span>
                 </div>
               ))}
               {/* 20.3 — slots devolvidos */}
               {(preview.resultado.slots || []).map(s => (
                 <div key={s.circulo} className="flex justify-between">
-                  <span className="text-amber-400">Slots {s.circulo}º círculo</span>
-                  <span className="text-white font-medium">{s.de} → {s.para} usados</span>
+                  <span className="text-dice-400">Slots {s.circulo}º círculo</span>
+                  <span className="text-ink font-medium">{s.de} → {s.para} usados</span>
                 </div>
               ))}
               {preview.resultado.vida.recuperado === 0
@@ -103,7 +103,7 @@ export default function DescansoBar({
                 && preview.resultado.recursos.length === 0
                 && (preview.resultado.pools || []).length === 0
                 && (preview.resultado.slots || []).length === 0 && (
-                <p className="text-purple-500">Nada seria recuperado.</p>
+                <p className="text-ink-dim">Nada seria recuperado.</p>
               )}
             </div>
 
@@ -111,14 +111,14 @@ export default function DescansoBar({
               <button
                 onClick={() => setPreview(null)}
                 disabled={aplicando}
-                className="flex-1 py-2.5 text-purple-300 hover:text-white border border-purple-700 hover:border-purple-500 rounded-xl text-sm transition-colors disabled:opacity-50"
+                className="flex-1 py-2.5 text-accent-300 hover:text-ink border border-border hover:border-accent-500 rounded-xl text-sm transition-colors disabled:opacity-50"
               >
                 Cancelar
               </button>
               <button
                 onClick={confirmar}
                 disabled={aplicando}
-                className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors"
+                className="flex-1 py-2.5 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 text-ink font-semibold rounded-xl text-sm transition-colors"
               >
                 {aplicando ? 'Aplicando...' : 'Confirmar descanso'}
               </button>

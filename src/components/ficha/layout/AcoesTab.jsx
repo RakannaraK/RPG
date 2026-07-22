@@ -12,7 +12,7 @@ function DetalheModificadores({ detalhamento }) {
   const extras = (detalhamento || []).filter(d => d.fonte)
   if (extras.length === 0) return null
   return (
-    <p className="text-purple-500 text-[10px] leading-tight">
+    <p className="text-ink-dim text-[10px] leading-tight">
       {extras.map((d, i) => (
         <span key={i}>
           {i > 0 && ' · '}
@@ -26,17 +26,17 @@ function DetalheModificadores({ detalhamento }) {
 
 function RollCompact({ label, resultado, rolando, onClose, skin, detalhamento }) {
   return (
-    <div className="bg-slate-800 rounded-lg px-2 py-1.5 space-y-1">
+    <div className="bg-raised rounded-lg px-2 py-1.5 space-y-1">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-purple-400 text-xs">{label}:</span>
-        <span className="text-purple-300 font-mono text-xs">{resultado.notacao}</span>
+        <span className="text-ink-dim text-xs">{label}:</span>
+        <span className="text-accent-300 font-mono text-xs">{resultado.notacao}</span>
         {resultado.dados.map((d, i) => (
           <Dice3D key={i} lados={d.lados} resultado={d.valor} rolando={rolando} descartado={d.descartado} skin={skin} />
         ))}
-        <span className="text-white font-bold text-sm">{resultado.total}</span>
+        <span className="text-ink font-bold text-sm">{resultado.total}</span>
         <button
           onClick={onClose}
-          className="text-purple-600 hover:text-purple-400 text-xs ml-auto transition-colors"
+          className="text-ink-dim hover:text-ink text-xs ml-auto transition-colors"
         >
           ✕
         </button>
@@ -111,9 +111,9 @@ export default function AcoesTab({ fichaId, isDono, mesaId, valoresFinais = {}, 
 
   if (armas.length === 0) {
     return (
-      <div className="text-center py-10 text-purple-500 text-sm">
+      <div className="text-center py-10 text-ink-dim text-sm">
         Nenhuma arma ou ação disponível.
-        <p className="text-xs mt-1 text-purple-600">
+        <p className="text-xs mt-1 text-ink-dim">
           Em Inventário, adicione itens com as chaves <span className="font-mono">ataque</span> ou{' '}
           <span className="font-mono">dano</span> em atributos extras.
         </p>
@@ -141,13 +141,13 @@ export default function AcoesTab({ fichaId, isDono, mesaId, valoresFinais = {}, 
         return (
           <div
             key={item.id}
-            className="bg-slate-700/60 border border-purple-800/50 rounded-xl p-3 space-y-2"
+            className="bg-hover/60 border border-border/50 rounded-xl p-3 space-y-2"
           >
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-white font-medium text-sm">{item.nome}</p>
+                <p className="text-ink font-medium text-sm">{item.nome}</p>
                 {item.descricao && (
-                  <p className="text-purple-400 text-xs truncate">{item.descricao}</p>
+                  <p className="text-ink-dim text-xs truncate">{item.descricao}</p>
                 )}
               </div>
               {mesaId && (temAtaque || temDano) && (
@@ -156,7 +156,7 @@ export default function AcoesTab({ fichaId, isDono, mesaId, valoresFinais = {}, 
                     <button
                       onClick={() => handleRolar(item, 'ataque')}
                       disabled={ataqueState?.rolando}
-                      className="px-2 py-1 text-xs bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white rounded-lg transition-colors"
+                      className="px-2 py-1 text-xs bg-dice-700 hover:bg-dice-500 disabled:opacity-50 text-ink rounded-lg transition-colors"
                     >
                       🎲 {ataqueLabel}
                     </button>
@@ -165,7 +165,7 @@ export default function AcoesTab({ fichaId, isDono, mesaId, valoresFinais = {}, 
                     <button
                       onClick={() => handleRolar(item, 'dano')}
                       disabled={danoState?.rolando}
-                      className="px-2 py-1 text-xs bg-red-800 hover:bg-red-700 disabled:opacity-50 text-white rounded-lg transition-colors"
+                      className="px-2 py-1 text-xs bg-harm hover:bg-harm disabled:opacity-50 text-ink rounded-lg transition-colors"
                     >
                       💥 {danoLabel}
                     </button>

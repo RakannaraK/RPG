@@ -42,15 +42,15 @@ export default function Dots({
             title={canEdit ? `Definir ${n === base ? n - 1 : n}` : `${v}`}
           >
             <span className={`block ${dim} rounded-full border-2 transition-all duration-150 ${
-              buffada ? 'bg-green-400 border-green-300'
-                : cheia ? 'bg-purple-200 border-purple-100'
-                : 'bg-transparent border-purple-700'
-            } ${canEdit ? 'group-hover/dot:scale-125 group-hover/dot:border-purple-300' : ''}`} />
+              buffada ? 'bg-ok border-ok'
+                : cheia ? 'bg-ink border-accent-300'
+                : 'bg-transparent border-border'
+            } ${canEdit ? 'group-hover/dot:scale-125 group-hover/dot:border-accent-300' : ''}`} />
           </button>
         )
       })}
       {extras > 0 && (
-        <span className="text-green-400 text-xs font-bold ml-0.5" title={`+${extras} acima do máximo (modificadores)`}>
+        <span className="text-ok text-xs font-bold ml-0.5" title={`+${extras} acima do máximo (modificadores)`}>
           +{extras}
         </span>
       )}

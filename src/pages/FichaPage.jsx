@@ -330,10 +330,10 @@ export default function FichaPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-slate-900 to-black">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-void via-void to-black">
         <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-purple-400 text-sm">Carregando ficha...</p>
+          <div className="w-10 h-10 border-4 border-accent-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-ink-dim text-sm">Carregando ficha...</p>
         </div>
       </div>
     )
@@ -341,12 +341,12 @@ export default function FichaPage() {
 
   if (error || !ficha) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-slate-900 to-black">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-void via-void to-black">
         <div className="text-center">
-          <p className="text-red-400 mb-4">{error || 'Ficha não encontrada.'}</p>
+          <p className="text-harm mb-4">{error || 'Ficha não encontrada.'}</p>
           <button
             onClick={() => navigate(`/mesa/${mesaId}`)}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+            className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-ink rounded-lg transition-colors"
           >
             Voltar à mesa
           </button>
@@ -935,31 +935,31 @@ export default function FichaPage() {
   const hasRight = secoes.combate || secoes.defesas || secoes.imagens
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
+    <div className="min-h-screen bg-gradient-to-br from-void via-void to-black">
       {/* Barra de navegação */}
-      <header className="border-b border-purple-800 px-4 sm:px-6 py-4">
+      <header className="border-b border-border px-4 sm:px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate(`/mesa/${mesaId}`)}
-            className="text-purple-400 hover:text-white transition-colors text-sm shrink-0"
+            className="text-ink-dim hover:text-ink transition-colors text-sm shrink-0"
           >
             ← Voltar
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-white font-bold text-xl leading-tight truncate">
+            <h1 className="text-ink font-bold text-xl leading-tight truncate">
               {ficha.nome_personagem}
             </h1>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {!isDono && (
-              <span className="text-xs text-purple-400 bg-purple-900/60 border border-purple-700 px-2 py-1 rounded-full">
+              <span className="text-xs text-ink-dim bg-void/60 border border-border px-2 py-1 rounded-full">
                 Visualizando
               </span>
             )}
             {isDono && (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="p-2 text-red-500 hover:text-red-400 hover:bg-red-950/50 rounded-lg transition-colors"
+                className="p-2 text-harm hover:text-harm hover:bg-harm/50 rounded-lg transition-colors"
                 title="Deletar ficha"
               >
                 🗑
@@ -1291,27 +1291,27 @@ export default function FichaPage() {
       {/* Modal de confirmação de deleção */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-red-800/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-white font-bold text-lg mb-2">Deletar ficha?</h3>
-            <p className="text-purple-300 text-sm mb-5">
+          <div className="bg-void border border-harm/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-ink font-bold text-lg mb-2">Deletar ficha?</h3>
+            <p className="text-accent-300 text-sm mb-5">
               Tem certeza? Esta ação não pode ser desfeita. Todos os atributos,
               equipamentos e imagens desta ficha serão apagados permanentemente.
             </p>
             {deleteError && (
-              <p className="text-red-400 text-sm mb-3">{deleteError}</p>
+              <p className="text-harm text-sm mb-3">{deleteError}</p>
             )}
             <div className="flex gap-3">
               <button
                 onClick={() => { setShowDeleteConfirm(false); setDeleteError('') }}
                 disabled={deleting}
-                className="flex-1 py-2.5 text-purple-300 hover:text-white border border-purple-700 hover:border-purple-500 rounded-xl text-sm transition-colors disabled:opacity-50"
+                className="flex-1 py-2.5 text-accent-300 hover:text-ink border border-border hover:border-accent-500 rounded-xl text-sm transition-colors disabled:opacity-50"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDeleteFicha}
                 disabled={deleting}
-                className="flex-1 py-2.5 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors"
+                className="flex-1 py-2.5 bg-harm hover:bg-harm disabled:opacity-50 text-ink font-semibold rounded-xl text-sm transition-colors"
               >
                 {deleting ? 'Deletando...' : 'Deletar'}
               </button>

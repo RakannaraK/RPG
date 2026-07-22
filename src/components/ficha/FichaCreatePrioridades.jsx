@@ -11,7 +11,7 @@ import {
   validarDistribuicaoGrupo, validarPontosLivres,
 } from '../../lib/prioridadesEngine'
 
-const INP = 'w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500'
+const INP = 'w-full px-3 py-2 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500'
 
 /**
  * Fase 25.4c — assistente de criação por PRIORIDADES (WoD-like). Substitui o
@@ -190,40 +190,40 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
   if (loadingSistema) {
     return (
       <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="text-purple-300">Carregando sistema...</div>
+        <div className="text-accent-300">Carregando sistema...</div>
       </div>
     )
   }
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-purple-800 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-purple-900 shrink-0">
+      <div className="bg-void border border-border rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
           <div>
-            <h2 className="text-white font-bold text-lg">Nova ficha — criação por prioridades</h2>
-            <p className="text-purple-400 text-xs mt-0.5">Passo {fase + 1} de {totalFases}</p>
+            <h2 className="text-ink font-bold text-lg">Nova ficha — criação por prioridades</h2>
+            <p className="text-ink-dim text-xs mt-0.5">Passo {fase + 1} de {totalFases}</p>
           </div>
-          <button onClick={onFechar} className="text-purple-400 hover:text-white text-xl leading-none transition-colors">✕</button>
+          <button onClick={onFechar} className="text-ink-dim hover:text-ink text-xl leading-none transition-colors">✕</button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           {fase === 0 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-1">Nome do personagem *</label>
+                <label className="block text-sm font-medium text-ink mb-1">Nome do personagem *</label>
                 <input type="text" placeholder="Ex: Aldric, o Valoroso" value={info.nome_personagem} autoFocus
                   onChange={e => setInfo(prev => ({ ...prev, nome_personagem: e.target.value }))} className={INP} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-purple-200 mb-1">Raça</label>
+                  <label className="block text-sm font-medium text-ink mb-1">Raça</label>
                   <select value={info.raca_id ?? ''} onChange={e => setInfo(prev => ({ ...prev, raca_id: e.target.value || null }))} className={INP}>
                     <option value="">Nenhuma</option>
                     {racas.map(r => <option key={r.id} value={r.id}>{r.nome}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-purple-200 mb-1">Classe</label>
+                  <label className="block text-sm font-medium text-ink mb-1">Classe</label>
                   <select value={info.classe_id ?? ''} onChange={e => setInfo(prev => ({ ...prev, classe_id: e.target.value || null }))} className={INP}>
                     <option value="">Nenhuma</option>
                     {classes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
@@ -232,11 +232,11 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-purple-200 mb-1">Nível</label>
+                  <label className="block text-sm font-medium text-ink mb-1">Nível</label>
                   <input type="number" min={1} value={info.nivel} onChange={e => setInfo(prev => ({ ...prev, nivel: e.target.value }))} className={INP} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-purple-200 mb-1">HP máximo</label>
+                  <label className="block text-sm font-medium text-ink mb-1">HP máximo</label>
                   <input type="number" min={1} placeholder="Ex: 45" value={info.hp_maximo} onChange={e => setInfo(prev => ({ ...prev, hp_maximo: e.target.value }))} className={INP} />
                 </div>
               </div>
@@ -250,9 +250,9 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
             const nomePorId = Object.fromEntries(catalogo.map(x => [x.id, x.nome]))
             return (
               <div className="space-y-4">
-                <p className="text-white font-semibold">{etapaAtual.nome || 'Prioridades'}</p>
+                <p className="text-ink font-semibold">{etapaAtual.nome || 'Prioridades'}</p>
                 <div>
-                  <p className="text-purple-400 text-xs mb-1.5">Clique nos grupos na ordem de prioridade (1º = maior valor):</p>
+                  <p className="text-ink-dim text-xs mb-1.5">Clique nos grupos na ordem de prioridade (1º = maior valor):</p>
                   <div className="flex flex-wrap gap-2">
                     {etapaAtual.grupos.map(g => {
                       const pos = ordem.indexOf(g.id)
@@ -260,7 +260,7 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
                         <button key={g.id} type="button"
                           onClick={() => setEstadoDe(etapaAtual.id, { ordem: pos === -1 ? [...ordem, g.id] : ordem.filter(x => x !== g.id) })}
                           className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
-                            pos !== -1 ? 'bg-purple-700 border-purple-500 text-white' : 'bg-purple-950 border-purple-800 text-purple-300 hover:border-purple-600'
+                            pos !== -1 ? 'bg-accent-700 border-accent-500 text-ink' : 'bg-void border-border text-accent-300 hover:border-accent-500'
                           }`}>
                           {pos !== -1 && <span className="font-mono mr-1">{pos + 1}º</span>}{g.nome}
                         </button>
@@ -278,18 +278,18 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
                     })
                   }
                   return (
-                    <div key={grupo.id} className="rounded-xl border border-purple-800 bg-slate-800 p-3 space-y-2">
+                    <div key={grupo.id} className="rounded-xl border border-border bg-raised p-3 space-y-2">
                       <div className="flex items-center justify-between">
-                        <p className="text-white text-sm font-medium">{grupo.nome}</p>
-                        <p className={`text-xs font-mono ${gasto === prioridade ? 'text-green-400' : 'text-amber-400'}`}>{gasto} / {prioridade}</p>
+                        <p className="text-ink text-sm font-medium">{grupo.nome}</p>
+                        <p className={`text-xs font-mono ${gasto === prioridade ? 'text-ok' : 'text-dice-400'}`}>{gasto} / {prioridade}</p>
                       </div>
                       <div className="space-y-1.5">
                         {grupo.membros.map(m => (
                           <div key={m} className="flex items-center gap-2">
-                            <span className="text-purple-300 text-xs flex-1">{nomePorId[m] || m}</span>
-                            <span className="text-purple-600 text-[11px]">{valorFinalMembro(etapaAtual.base_por_membro, alocacao[m])}</span>
+                            <span className="text-accent-300 text-xs flex-1">{nomePorId[m] || m}</span>
+                            <span className="text-ink-dim text-[11px]">{valorFinalMembro(etapaAtual.base_por_membro, alocacao[m])}</span>
                             <input type="number" min={0} value={alocacao[m] ?? 0} onChange={e => setPonto(m, e.target.value)}
-                              className="w-16 px-2 py-1 bg-purple-950 border border-purple-700 text-white text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                              className="w-16 px-2 py-1 bg-void border border-border text-ink text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-accent-500" />
                           </div>
                         ))}
                       </div>
@@ -311,15 +311,15 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
             }
             return (
               <div className="space-y-3">
-                <p className="text-white font-semibold">{etapaAtual.nome || 'Pontos livres'}</p>
-                <p className={`text-xs font-mono ${gasto === etapaAtual.pontos ? 'text-green-400' : 'text-amber-400'}`}>{gasto} / {etapaAtual.pontos} pontos</p>
+                <p className="text-ink font-semibold">{etapaAtual.nome || 'Pontos livres'}</p>
+                <p className={`text-xs font-mono ${gasto === etapaAtual.pontos ? 'text-ok' : 'text-dice-400'}`}>{gasto} / {etapaAtual.pontos} pontos</p>
                 {itensIds.length === 0 ? (
-                  <p className="text-purple-600 text-xs">Nenhum item disponível (confira as linhas nativas da raça/classe escolhida).</p>
+                  <p className="text-ink-dim text-xs">Nenhum item disponível (confira as linhas nativas da raça/classe escolhida).</p>
                 ) : itensIds.map(id => (
                   <div key={id} className="flex items-center gap-2">
-                    <span className="text-purple-300 text-sm flex-1">{nomePorId[id] || id}</span>
+                    <span className="text-accent-300 text-sm flex-1">{nomePorId[id] || id}</span>
                     <input type="number" min={0} value={alocacao[id] ?? 0} onChange={e => setPonto(id, e.target.value)}
-                      className="w-16 px-2 py-1 bg-purple-950 border border-purple-700 text-white text-center rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                      className="w-16 px-2 py-1 bg-void border border-border text-ink text-center rounded text-sm focus:outline-none focus:ring-1 focus:ring-accent-500" />
                   </div>
                 ))}
               </div>
@@ -328,63 +328,63 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
 
           {etapaAtual?.tipo === 'texto_guia' && (
             <div className="space-y-2">
-              <p className="text-white font-semibold">{etapaAtual.nome || 'Toques finais'}</p>
-              <p className="text-purple-300 text-sm whitespace-pre-wrap">{etapaAtual.descricao}</p>
+              <p className="text-ink font-semibold">{etapaAtual.nome || 'Toques finais'}</p>
+              <p className="text-accent-300 text-sm whitespace-pre-wrap">{etapaAtual.descricao}</p>
             </div>
           )}
 
           {fase === totalFases - 1 && (
             <div className="space-y-3">
-              <p className="text-white font-semibold">Revisão</p>
-              <div className="rounded-xl border border-purple-800 bg-slate-800 p-3 space-y-1">
-                <p className="text-purple-300 text-sm"><span className="text-purple-500">Nome:</span> {info.nome_personagem}</p>
-                {racaEscolhida && <p className="text-purple-300 text-sm"><span className="text-purple-500">Raça:</span> {racaEscolhida.nome}</p>}
-                {classeEscolhida && <p className="text-purple-300 text-sm"><span className="text-purple-500">Classe:</span> {classeEscolhida.nome}</p>}
+              <p className="text-ink font-semibold">Revisão</p>
+              <div className="rounded-xl border border-border bg-raised p-3 space-y-1">
+                <p className="text-accent-300 text-sm"><span className="text-ink-dim">Nome:</span> {info.nome_personagem}</p>
+                {racaEscolhida && <p className="text-accent-300 text-sm"><span className="text-ink-dim">Raça:</span> {racaEscolhida.nome}</p>}
+                {classeEscolhida && <p className="text-accent-300 text-sm"><span className="text-ink-dim">Classe:</span> {classeEscolhida.nome}</p>}
               </div>
               {Object.keys(valoresAtributosFinais()).length > 0 && (
-                <div className="rounded-xl border border-purple-800 bg-slate-800 p-3">
-                  <p className="text-purple-400 text-xs mb-1">Atributos</p>
+                <div className="rounded-xl border border-border bg-raised p-3">
+                  <p className="text-ink-dim text-xs mb-1">Atributos</p>
                   {Object.entries(valoresAtributosFinais()).map(([id, v]) => (
-                    <p key={id} className="text-purple-200 text-xs">{(atributos.find(a => a.id === id)?.nome) || id}: <span className="text-white font-bold">{v}</span></p>
+                    <p key={id} className="text-ink text-xs">{(atributos.find(a => a.id === id)?.nome) || id}: <span className="text-ink font-bold">{v}</span></p>
                   ))}
                 </div>
               )}
               {Object.keys(periciasFinais()).length > 0 && (
-                <div className="rounded-xl border border-purple-800 bg-slate-800 p-3">
-                  <p className="text-purple-400 text-xs mb-1">Perícias</p>
+                <div className="rounded-xl border border-border bg-raised p-3">
+                  <p className="text-ink-dim text-xs mb-1">Perícias</p>
                   {Object.entries(periciasFinais()).map(([id, v]) => (
-                    <p key={id} className="text-purple-200 text-xs">{(pericias.find(p => p.id === id)?.nome) || id}: <span className="text-white font-bold">{v}</span></p>
+                    <p key={id} className="text-ink text-xs">{(pericias.find(p => p.id === id)?.nome) || id}: <span className="text-ink font-bold">{v}</span></p>
                   ))}
                 </div>
               )}
               {Object.keys(linhasFinais()).length > 0 && (
-                <div className="rounded-xl border border-purple-800 bg-slate-800 p-3">
-                  <p className="text-purple-400 text-xs mb-1">Linhas de poder</p>
+                <div className="rounded-xl border border-border bg-raised p-3">
+                  <p className="text-ink-dim text-xs mb-1">Linhas de poder</p>
                   {Object.entries(linhasFinais()).map(([id, v]) => (
-                    <p key={id} className="text-purple-200 text-xs">{(linhasPoder.find(l => l.id === id)?.nome) || id}: <span className="text-white font-bold">{v}</span></p>
+                    <p key={id} className="text-ink text-xs">{(linhasPoder.find(l => l.id === id)?.nome) || id}: <span className="text-ink font-bold">{v}</span></p>
                   ))}
                 </div>
               )}
             </div>
           )}
 
-          {erro && <p className="text-red-400 text-sm">{erro}</p>}
+          {erro && <p className="text-harm text-sm">{erro}</p>}
         </div>
 
-        <div className="px-6 py-4 border-t border-purple-900 flex justify-between gap-3 shrink-0">
+        <div className="px-6 py-4 border-t border-border flex justify-between gap-3 shrink-0">
           {fase === 0 ? (
-            <button type="button" onClick={onFechar} className="px-4 py-2 text-purple-400 hover:text-white text-sm transition-colors">Cancelar</button>
+            <button type="button" onClick={onFechar} className="px-4 py-2 text-ink-dim hover:text-ink text-sm transition-colors">Cancelar</button>
           ) : (
-            <button type="button" onClick={irAnterior} className="px-4 py-2 text-purple-400 hover:text-white text-sm transition-colors">← Voltar</button>
+            <button type="button" onClick={irAnterior} className="px-4 py-2 text-ink-dim hover:text-ink text-sm transition-colors">← Voltar</button>
           )}
           {fase === totalFases - 1 ? (
             <button type="button" onClick={finalizar} disabled={criando}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold rounded-lg text-sm transition-colors">
+              className="px-6 py-2 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 text-ink font-semibold rounded-lg text-sm transition-colors">
               {criando ? 'Salvando...' : 'Finalizar'}
             </button>
           ) : (
             <button type="button" onClick={irProxima}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg text-sm transition-colors">
+              className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-ink font-semibold rounded-lg text-sm transition-colors">
               Próximo →
             </button>
           )}

@@ -22,26 +22,26 @@ function MaestriaCard({ nome, sub, xp, curva, ganhos, propriedades = [], isDono,
   }
 
   return (
-    <div className="bg-purple-950/40 border border-purple-800 rounded-xl p-3 space-y-2">
+    <div className="bg-void/40 border border-border rounded-xl p-3 space-y-2">
       <div className="flex items-baseline justify-between gap-2 flex-wrap">
         <span className="min-w-0">
-          <span className="text-white text-sm font-medium">{nome}</span>
-          {sub && <span className="text-purple-500 text-[11px] ml-1.5">{sub}</span>}
+          <span className="text-ink text-sm font-medium">{nome}</span>
+          {sub && <span className="text-ink-dim text-[11px] ml-1.5">{sub}</span>}
         </span>
-        <span className="text-amber-300 text-sm font-mono shrink-0">Maestria {nivel}</span>
+        <span className="text-dice-400 text-sm font-mono shrink-0">Maestria {nivel}</span>
       </div>
 
-      <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-        <div className="h-full rounded-full bg-amber-500 transition-all duration-500" style={{ width: `${pct}%` }} />
+      <div className="h-2 bg-hover rounded-full overflow-hidden">
+        <div className="h-full rounded-full bg-dice-500 transition-all duration-500" style={{ width: `${pct}%` }} />
       </div>
-      <p className="text-purple-600 text-[11px]">
+      <p className="text-ink-dim text-[11px]">
         {xpParaProximo > 0
-          ? <>XP {xp} · faltam <span className="text-purple-400">{faltam}</span> para a maestria {nivel + 1}</>
+          ? <>XP {xp} · faltam <span className="text-ink-dim">{faltam}</span> para a maestria {nivel + 1}</>
           : <>XP {xp} · nível máximo da curva</>}
       </p>
       {prox && (
-        <p className="text-amber-500/70 text-[11px]">
-          🔒 Próximo: <span className="text-amber-400">{prox.nome}</span> na maestria {prox.maestria_minima}
+        <p className="text-dice-500/70 text-[11px]">
+          🔒 Próximo: <span className="text-dice-400">{prox.nome}</span> na maestria {prox.maestria_minima}
           {faltamProx > 0 && <> — faltam {faltamProx} XP</>}
         </p>
       )}
@@ -53,10 +53,10 @@ function MaestriaCard({ nome, sub, xp, curva, ganhos, propriedades = [], isDono,
               key={i}
               onClick={() => ganhar(Number(g.xp) || 0)}
               disabled={ocupado}
-              className="text-[11px] px-2 py-1 rounded-lg bg-purple-900/60 hover:bg-purple-800 text-purple-200 hover:text-white transition-colors disabled:opacity-40"
+              className="text-[11px] px-2 py-1 rounded-lg bg-void/60 hover:bg-hover text-ink hover:text-ink transition-colors disabled:opacity-40"
               title={`+${g.xp} XP`}
             >
-              {g.rotulo || `+${g.xp}`} <span className="text-amber-400/80">+{g.xp}</span>
+              {g.rotulo || `+${g.xp}`} <span className="text-dice-400/80">+{g.xp}</span>
             </button>
           ))}
           <span className="flex items-center gap-1">
@@ -67,12 +67,12 @@ function MaestriaCard({ nome, sub, xp, curva, ganhos, propriedades = [], isDono,
               onKeyDown={e => { if (e.key === 'Enter' && manual) { ganhar(Number(manual)); setManual('') } }}
               placeholder="XP"
               disabled={ocupado}
-              className="w-14 px-1.5 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-[11px] text-center placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
+              className="w-14 px-1.5 py-1 rounded-lg bg-void border border-border text-ink text-[11px] text-center placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500"
             />
             <button
               onClick={() => { ganhar(Number(manual)); setManual('') }}
               disabled={ocupado || !manual}
-              className="text-[11px] px-2 py-1 rounded-lg bg-purple-700 hover:bg-purple-600 text-white transition-colors disabled:opacity-40"
+              className="text-[11px] px-2 py-1 rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors disabled:opacity-40"
             >
               +XP
             </button>
@@ -131,11 +131,11 @@ export default function PainelMaestrias({
   }
 
   return (
-    <div className="bg-slate-800 border border-purple-800 rounded-2xl p-4 space-y-2.5">
-      <p className="text-purple-200 text-sm font-semibold">Maestrias</p>
+    <div className="bg-raised border border-border rounded-2xl p-4 space-y-2.5">
+      <p className="text-ink text-sm font-semibold">Maestrias</p>
 
       {emTreino.length === 0 && (
-        <p className="text-purple-600 text-xs">
+        <p className="text-ink-dim text-xs">
           Nenhuma maestria em treino. {isDono && `Escolha ${escopo === 'categoria' ? 'uma categoria' : 'um item'} para começar.`}
         </p>
       )}
@@ -161,7 +161,7 @@ export default function PainelMaestrias({
           <select
             value={treinar}
             onChange={e => setTreinar(e.target.value)}
-            className="px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+            className="px-2 py-1 rounded-lg bg-void border border-border text-ink text-xs focus:outline-none focus:ring-1 focus:ring-accent-500"
           >
             <option value="">Treinar {escopo === 'categoria' ? 'categoria' : 'item'}…</option>
             {disponiveis.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
@@ -172,7 +172,7 @@ export default function PainelMaestrias({
               if (alvoObj) { onGanhar(alvoObj.alvo, 0, alvoObj.nome); setTreinar('') }
             }}
             disabled={!treinar}
-            className="text-xs px-2.5 py-1 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors disabled:opacity-40"
+            className="text-xs px-2.5 py-1 rounded-lg border border-dashed border-border text-accent-300 hover:text-ink hover:border-accent-500 transition-colors disabled:opacity-40"
           >
             + começar
           </button>

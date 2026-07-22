@@ -195,7 +195,7 @@ export default function Dice3DWebGL({ lados, resultado, rolando, descartado, ski
       {/* Número visível para usuários com visão; o nome acessível vem do wrapper */}
       <span
         aria-hidden="true"
-        className="absolute inset-0 flex items-center justify-center text-white font-bold pointer-events-none select-none"
+        className="absolute inset-0 flex items-center justify-center text-ink font-bold pointer-events-none select-none"
         style={{
           fontSize,
           opacity: showNum ? 1 : 0,

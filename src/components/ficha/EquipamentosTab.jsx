@@ -24,11 +24,11 @@ const TIPO_LABELS = {
 }
 
 const TIPO_COLORS = {
-  item: 'bg-slate-700 text-slate-200',
-  arma: 'bg-red-900 text-red-200',
-  armadura: 'bg-blue-900 text-blue-200',
-  magico: 'bg-purple-800 text-purple-200',
-  outro: 'bg-gray-700 text-gray-200',
+  item: 'bg-hover text-ink',
+  arma: 'bg-harm/15 text-harm',
+  armadura: 'bg-temp/15 text-temp',
+  magico: 'bg-accent-600/15 text-accent-300',
+  outro: 'bg-hover text-ink-dim',
 }
 
 function pairsToObject(pairs) {
@@ -47,16 +47,16 @@ function RollResultCompact({ resultado, rotulo, rolando, onClose, skin, detalham
   const { notacao, dados, mantidos, descartados, modificador, total } = resultado
   const extras = (detalhamento || []).filter(d => d.fonte)
   return (
-    <div className="bg-slate-700/60 border border-purple-700/50 rounded-xl p-3 space-y-2">
+    <div className="bg-hover/60 border border-border/50 rounded-xl p-3 space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-baseline gap-2 flex-wrap">
-          {rotulo && <span className="text-white text-xs font-semibold">{rotulo}</span>}
-          <span className="text-purple-400 font-mono text-xs">{notacao}</span>
+          {rotulo && <span className="text-ink text-xs font-semibold">{rotulo}</span>}
+          <span className="text-ink-dim font-mono text-xs">{notacao}</span>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="text-purple-600 hover:text-purple-400 text-xs ml-2 transition-colors"
+          className="text-ink-dim hover:text-ink text-xs ml-2 transition-colors"
         >
           ✕
         </button>
@@ -71,26 +71,26 @@ function RollResultCompact({ resultado, rotulo, rolando, onClose, skin, detalham
               descartado={d.descartado}
               skin={skin}
             />
-            {d.descartado && <span className="text-red-500 text-[9px]">desc.</span>}
+            {d.descartado && <span className="text-harm text-[9px]">desc.</span>}
           </div>
         ))}
         <div className="flex items-baseline gap-1.5 ml-1">
-          <span className="text-purple-400 text-xs">Total:</span>
-          <span className="text-2xl font-bold text-white leading-none">{total}</span>
+          <span className="text-ink-dim text-xs">Total:</span>
+          <span className="text-2xl font-bold text-ink leading-none">{total}</span>
         </div>
       </div>
       {(mantidos.length > 1 || modificador !== 0) && (
-        <p className="text-purple-500 text-xs">
+        <p className="text-ink-dim text-xs">
           ({mantidos.join(' + ')}
           {modificador > 0 && ` + ${modificador}`}
           {modificador < 0 && ` − ${Math.abs(modificador)}`})
         </p>
       )}
       {descartados.length > 0 && (
-        <p className="text-red-500 text-xs">descartados: {descartados.join(', ')}</p>
+        <p className="text-harm text-xs">descartados: {descartados.join(', ')}</p>
       )}
       {extras.length > 0 && (
-        <p className="text-purple-500 text-[10px] leading-tight">
+        <p className="text-ink-dim text-[10px] leading-tight">
           {extras.map((d, i) => (
             <span key={i}>
               {i > 0 && ' · '}
@@ -191,14 +191,14 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-purple-800 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-purple-900 shrink-0">
-          <h2 className="text-white font-bold text-lg">
+      <div className="bg-void border border-border rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+          <h2 className="text-ink font-bold text-lg">
             {item ? 'Editar item' : 'Novo item'}
           </h2>
           <button
             onClick={onFechar}
-            className="text-purple-400 hover:text-white text-xl transition-colors"
+            className="text-ink-dim hover:text-ink text-xl transition-colors"
           >
             ✕
           </button>
@@ -207,22 +207,22 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-purple-200 mb-1">Nome *</label>
+              <label className="block text-sm font-medium text-ink mb-1">Nome *</label>
               <input
                 type="text"
                 placeholder="Ex: Espada Longa +1"
                 value={nome}
                 onChange={e => setNome(e.target.value)}
                 autoFocus
-                className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-purple-200 mb-1">Tipo</label>
+              <label className="block text-sm font-medium text-ink mb-1">Tipo</label>
               <select
                 value={tipo}
                 onChange={e => setTipo(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
               >
                 {TIPOS_ITEM.map(t => (
                   <option key={t} value={t}>{TIPO_LABELS[t]}</option>
@@ -234,11 +234,11 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
           {/* 21.1 — categoria do item (para maestria por categoria) */}
           {categorias.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-purple-200 mb-1">Categoria</label>
+              <label className="block text-sm font-medium text-ink mb-1">Categoria</label>
               <select
                 value={categoriaId}
                 onChange={e => setCategoriaId(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
               >
                 <option value="">Sem categoria</option>
                 {categorias.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
@@ -247,53 +247,53 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
           )}
 
           <div>
-            <label className="block text-sm font-medium text-purple-200 mb-1">Descrição</label>
+            <label className="block text-sm font-medium text-ink mb-1">Descrição</label>
             <textarea
               value={descricao}
               onChange={e => setDescricao(e.target.value)}
               placeholder="Descrição, história ou efeito do item..."
               rows={3}
-              className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+              className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 resize-none"
             />
           </div>
 
           {/* 21.5 — tipo de dano (base para conversões) */}
           <div>
-            <label className="block text-sm font-medium text-purple-200 mb-1">Tipo de dano</label>
+            <label className="block text-sm font-medium text-ink mb-1">Tipo de dano</label>
             <input
               type="text"
               value={tipoDano}
               onChange={e => setTipoDano(e.target.value)}
               placeholder="ex: físico, fogo, elétrico (opcional)"
-              className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
             />
-            <p className="text-purple-600 text-xs mt-1">Usado pelas conversões (manoplas físico → elétrico) e resistências do alvo.</p>
+            <p className="text-ink-dim text-xs mt-1">Usado pelas conversões (manoplas físico → elétrico) e resistências do alvo.</p>
           </div>
 
           {/* 21.5 — recurso (contador) */}
-          <div className="border border-purple-900/60 rounded-lg p-3">
-            <label className="flex items-center gap-2 text-sm font-medium text-purple-200 cursor-pointer">
+          <div className="border border-border/60 rounded-lg p-3">
+            <label className="flex items-center gap-2 text-sm font-medium text-ink cursor-pointer">
               <input type="checkbox" checked={!!rec}
                 onChange={e => setRec(e.target.checked ? { nome: '', atual: 0, maximo: 10, ao_completar: '', reinicia_ao_completar: false } : null)}
-                className="accent-purple-500" />
+                className="accent-accent-500" />
               Recurso / contador (ex: Almas 29/50)
             </label>
             {rec && (
               <div className="mt-2 space-y-2">
                 <div className="flex flex-wrap gap-2">
                   <input type="text" value={rec.nome} onChange={e => setRec({ ...rec, nome: e.target.value })}
-                    placeholder="Nome (Almas)" className="flex-1 min-w-[8rem] px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                    placeholder="Nome (Almas)" className="flex-1 min-w-[8rem] px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm placeholder-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500" />
                   <input type="number" value={rec.atual} onChange={e => setRec({ ...rec, atual: e.target.value })}
-                    placeholder="atual" className="w-20 px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500" />
-                  <span className="text-purple-500 self-center">/</span>
+                    placeholder="atual" className="w-20 px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                  <span className="text-ink-dim self-center">/</span>
                   <input type="number" value={rec.maximo} onChange={e => setRec({ ...rec, maximo: e.target.value })}
-                    placeholder="máx" className="w-20 px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                    placeholder="máx" className="w-20 px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500" />
                 </div>
                 <input type="text" value={rec.ao_completar || ''} onChange={e => setRec({ ...rec, ao_completar: e.target.value })}
-                  placeholder="Ao completar (texto do efeito)" className="w-full px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500" />
-                <label className="text-purple-400 text-xs flex items-center gap-1.5 cursor-pointer">
+                  placeholder="Ao completar (texto do efeito)" className="w-full px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm placeholder-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                <label className="text-ink-dim text-xs flex items-center gap-1.5 cursor-pointer">
                   <input type="checkbox" checked={!!rec.reinicia_ao_completar}
-                    onChange={e => setRec({ ...rec, reinicia_ao_completar: e.target.checked })} className="accent-purple-500" />
+                    onChange={e => setRec({ ...rec, reinicia_ao_completar: e.target.checked })} className="accent-accent-500" />
                   reinicia ao completar (volta a 0)
                 </label>
               </div>
@@ -301,45 +301,45 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
           </div>
 
           {/* 21.5 — durabilidade */}
-          <div className="border border-purple-900/60 rounded-lg p-3">
-            <label className="flex items-center gap-2 text-sm font-medium text-purple-200 cursor-pointer">
+          <div className="border border-border/60 rounded-lg p-3">
+            <label className="flex items-center gap-2 text-sm font-medium text-ink cursor-pointer">
               <input type="checkbox" checked={!!durab}
                 onChange={e => setDurab(e.target.checked ? { atual: 100, maximo: 100 } : null)}
-                className="accent-purple-500" />
+                className="accent-accent-500" />
               Durabilidade
             </label>
             {durab && (
               <div className="mt-2 flex items-center gap-2">
                 <input type="number" value={durab.atual} onChange={e => setDurab({ ...durab, atual: e.target.value })}
-                  placeholder="atual" className="w-20 px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500" />
-                <span className="text-purple-500">/</span>
+                  placeholder="atual" className="w-20 px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                <span className="text-ink-dim">/</span>
                 <input type="number" value={durab.maximo} onChange={e => setDurab({ ...durab, maximo: e.target.value })}
-                  placeholder="máx" className="w-20 px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500" />
-                <span className="text-purple-600 text-xs">em 0 = danificado (efeitos desativados)</span>
+                  placeholder="máx" className="w-20 px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                <span className="text-ink-dim text-xs">em 0 = danificado (efeitos desativados)</span>
               </div>
             )}
           </div>
 
           {/* 21 — item como fonte de modificador (efeitos ao equipar) */}
-          <div className="border border-purple-900/60 rounded-lg p-3 space-y-2">
+          <div className="border border-border/60 rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <label className="text-sm font-medium text-purple-200">Efeitos do item</label>
-              <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer" title="Só o item equipado aplica seus efeitos">
-                <input type="checkbox" checked={equipado} onChange={e => setEquipado(e.target.checked)} className="accent-purple-500" />
+              <label className="text-sm font-medium text-ink">Efeitos do item</label>
+              <label className="text-accent-300 text-xs flex items-center gap-1.5 cursor-pointer" title="Só o item equipado aplica seus efeitos">
+                <input type="checkbox" checked={equipado} onChange={e => setEquipado(e.target.checked)} className="accent-accent-500" />
                 equipado
               </label>
             </div>
-            <p className="text-purple-600 text-xs">
+            <p className="text-ink-dim text-xs">
               Modificadores que entram no motor quando o item está equipado (ex: manoplas convertendo
               físico → elétrico). Item danificado (durabilidade 0) desliga os efeitos.
             </p>
             {mods.length > 0 && (
               <div className="space-y-1">
                 {mods.map((m, i) => (
-                  <div key={i} className="flex items-center gap-2 bg-purple-950/40 border border-purple-800 rounded-lg px-2 py-1">
-                    <span className="text-purple-200 text-xs flex-1 min-w-0 truncate">{labelModificador(m, atributos, camposCombate, pericias)}</span>
+                  <div key={i} className="flex items-center gap-2 bg-void/40 border border-border rounded-lg px-2 py-1">
+                    <span className="text-ink text-xs flex-1 min-w-0 truncate">{labelModificador(m, atributos, camposCombate, pericias)}</span>
                     <button type="button" onClick={() => setMods(mods.filter((_, j) => j !== i))}
-                      className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors">×</button>
+                      className="w-5 h-5 flex items-center justify-center text-ink-dim hover:text-harm transition-colors">×</button>
                   </div>
                 ))}
               </div>
@@ -356,17 +356,17 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-purple-200">Propriedades extras</label>
+              <label className="text-sm font-medium text-ink">Propriedades extras</label>
               <button
                 type="button"
                 onClick={addPair}
-                className="text-xs text-purple-400 hover:text-purple-200 transition-colors"
+                className="text-xs text-ink-dim hover:text-ink transition-colors"
               >
                 + Adicionar
               </button>
             </div>
             {pairs.length === 0 ? (
-              <p className="text-purple-600 text-xs">
+              <p className="text-ink-dim text-xs">
                 Nenhuma propriedade. Ex: dano, ataque, CA, Alcance, Peso...
               </p>
             ) : (
@@ -378,19 +378,19 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
                       placeholder="Propriedade"
                       value={p.chave}
                       onChange={e => updatePair(i, 'chave', e.target.value)}
-                      className="flex-1 px-2 py-1.5 rounded bg-purple-950 border border-purple-700 text-white placeholder-purple-600 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+                      className="flex-1 px-2 py-1.5 rounded bg-void border border-border text-ink placeholder-accent-600 text-xs focus:outline-none focus:ring-1 focus:ring-accent-500"
                     />
                     <input
                       type="text"
                       placeholder="Valor"
                       value={p.valor}
                       onChange={e => updatePair(i, 'valor', e.target.value)}
-                      className="flex-1 px-2 py-1.5 rounded bg-purple-950 border border-purple-700 text-white placeholder-purple-600 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+                      className="flex-1 px-2 py-1.5 rounded bg-void border border-border text-ink placeholder-accent-600 text-xs focus:outline-none focus:ring-1 focus:ring-accent-500"
                     />
                     <button
                       type="button"
                       onClick={() => removePair(i)}
-                      className="text-red-500 hover:text-red-400 text-xs px-2 rounded transition-colors"
+                      className="text-harm hover:text-harm text-xs px-2 rounded transition-colors"
                     >
                       ✕
                     </button>
@@ -401,7 +401,7 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-purple-200 mb-2">Imagem</label>
+            <label className="block text-sm font-medium text-ink mb-2">Imagem</label>
             <ImageUpload
               currentUrl={item?.imagem_url}
               onSelect={setSelectedFile}
@@ -409,20 +409,20 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
             />
           </div>
 
-          {erro && <p className="text-red-400 text-sm">{erro}</p>}
+          {erro && <p className="text-harm text-sm">{erro}</p>}
         </div>
 
-        <div className="px-6 py-4 border-t border-purple-900 flex justify-between shrink-0">
+        <div className="px-6 py-4 border-t border-border flex justify-between shrink-0">
           <button
             onClick={onFechar}
-            className="px-4 py-2 text-purple-400 hover:text-white text-sm transition-colors"
+            className="px-4 py-2 text-ink-dim hover:text-ink text-sm transition-colors"
           >
             Cancelar
           </button>
           <button
             onClick={handleSalvar}
             disabled={salvando}
-            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-sm transition-colors"
+            className="px-6 py-2 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed text-ink font-semibold rounded-lg text-sm transition-colors"
           >
             {salvando ? 'Salvando...' : 'Salvar'}
           </button>
@@ -444,16 +444,16 @@ function MaestriaGanhoInline({ item, maestria, categorias, onGanhar }) {
   const nome = escopo === 'item' ? item.nome : (categorias.find(c => c.id === item.categoria_id)?.nome || 'categoria')
 
   return (
-    <div className="flex items-center gap-1.5 flex-wrap mt-1.5 pt-1.5 border-t border-purple-900/40">
-      <span className="text-amber-400/80 text-[11px]">Maestria ({nome}):</span>
+    <div className="flex items-center gap-1.5 flex-wrap mt-1.5 pt-1.5 border-t border-border/40">
+      <span className="text-dice-400/80 text-[11px]">Maestria ({nome}):</span>
       {ganhos.map((g, i) => (
         <button
           key={i}
           onClick={() => onGanhar(alvo, Number(g.xp) || 0, nome)}
-          className="text-[11px] px-2 py-0.5 rounded-lg bg-amber-900/40 hover:bg-amber-800/60 text-amber-200 transition-colors"
+          className="text-[11px] px-2 py-0.5 rounded-lg bg-dice-700/40 hover:bg-dice-700/60 text-dice-200 transition-colors"
           title={`+${g.xp} XP de maestria`}
         >
-          {g.rotulo || `+${g.xp}`} <span className="text-amber-400/70">+{g.xp}</span>
+          {g.rotulo || `+${g.xp}`} <span className="text-dice-400/70">+{g.xp}</span>
         </button>
       ))}
     </div>
@@ -469,14 +469,14 @@ function MaestriaChips({ info }) {
     <div className="flex flex-wrap gap-1 mt-1.5">
       {desbloqueadas.map(p => (
         <span key={p.id} title={p.descricao}
-          className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/50 border border-amber-700/60 text-amber-200 cursor-help">
+          className="text-[10px] px-1.5 py-0.5 rounded bg-dice-700/50 border border-dice-500/60 text-dice-200 cursor-help">
           {p.sigla || p.nome}
         </span>
       ))}
       {bloqueadas.map(p => (
         <span key={p.id} title={`${p.descricao} (requer maestria ${p.maestria_minima})`}
-          className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 border border-purple-900/60 text-purple-600 cursor-help">
-          🔒 {p.sigla || p.nome} <span className="text-purple-700">nv {p.maestria_minima}</span>
+          className="text-[10px] px-1.5 py-0.5 rounded bg-raised border border-border/60 text-ink-dim cursor-help">
+          🔒 {p.sigla || p.nome} <span className="text-ink-dim">nv {p.maestria_minima}</span>
         </span>
       ))}
     </div>
@@ -489,12 +489,12 @@ function RecursoDurabilidade({ item, isDono, onRecurso, onDurab }) {
   const d = item.durabilidade
   const danificado = d && Number(d.atual) <= 0
   if (!r && !d) return null
-  const btn = 'w-6 h-6 flex items-center justify-center rounded-lg border border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors disabled:opacity-30'
+  const btn = 'w-6 h-6 flex items-center justify-center rounded-lg border border-border text-accent-300 hover:text-ink hover:border-accent-500 transition-colors disabled:opacity-30'
 
   return (
     <div className="mt-2 space-y-1.5">
       {danificado && (
-        <span className="inline-block text-[11px] px-2 py-0.5 rounded-full bg-red-950/60 border border-red-800 text-red-300">
+        <span className="inline-block text-[11px] px-2 py-0.5 rounded-full bg-harm/60 border border-harm/50 text-harm">
           ⚠ Danificado — efeitos desativados até reparo
         </span>
       )}
@@ -506,11 +506,11 @@ function RecursoDurabilidade({ item, isDono, onRecurso, onDurab }) {
         const cheio = atual >= max
         return (
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-purple-300 text-xs">{r.nome}</span>
-            <div className="flex-1 min-w-[6rem] h-2 bg-slate-700 rounded-full overflow-hidden">
-              <div className={`h-full rounded-full transition-all ${cheio ? 'bg-amber-400' : 'bg-purple-500'}`} style={{ width: `${pct}%` }} />
+            <span className="text-accent-300 text-xs">{r.nome}</span>
+            <div className="flex-1 min-w-[6rem] h-2 bg-hover rounded-full overflow-hidden">
+              <div className={`h-full rounded-full transition-all ${cheio ? 'bg-dice-400' : 'bg-accent-500'}`} style={{ width: `${pct}%` }} />
             </div>
-            <span className={`text-xs font-mono ${cheio ? 'text-amber-300' : 'text-purple-400'}`}>{atual}/{max}</span>
+            <span className={`text-xs font-mono ${cheio ? 'text-dice-400' : 'text-ink-dim'}`}>{atual}/{max}</span>
             {isDono && (
               <span className="flex items-center gap-1">
                 <button onClick={() => onRecurso(-1)} disabled={atual <= 0} className={btn} title="−1">−</button>
@@ -525,14 +525,14 @@ function RecursoDurabilidade({ item, isDono, onRecurso, onDurab }) {
         const max = Number(d.maximo) || 0
         const atual = Number(d.atual) || 0
         const pct = max > 0 ? Math.max(0, Math.min(100, (atual / max) * 100)) : 0
-        const cor = pct > 50 ? 'bg-emerald-500' : pct > 20 ? 'bg-amber-500' : 'bg-red-500'
+        const cor = pct > 50 ? 'bg-ok' : pct > 20 ? 'bg-dice-500' : 'bg-harm'
         return (
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-purple-300 text-xs">Durabilidade</span>
-            <div className="flex-1 min-w-[6rem] h-2 bg-slate-700 rounded-full overflow-hidden">
+            <span className="text-accent-300 text-xs">Durabilidade</span>
+            <div className="flex-1 min-w-[6rem] h-2 bg-hover rounded-full overflow-hidden">
               <div className={`h-full rounded-full transition-all ${cor}`} style={{ width: `${pct}%` }} />
             </div>
-            <span className="text-xs font-mono text-purple-400">{atual}/{max}</span>
+            <span className="text-xs font-mono text-ink-dim">{atual}/{max}</span>
             {isDono && (
               <span className="flex items-center gap-1">
                 <button onClick={() => onDurab(-1)} disabled={atual <= 0} className={btn} title="Consumir 1">−</button>
@@ -714,23 +714,23 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
   }
 
   if (loading) {
-    return <div className="py-8 text-center text-purple-400">Carregando itens...</div>
+    return <div className="py-8 text-center text-ink-dim">Carregando itens...</div>
   }
 
   if (error) {
-    return <div className="py-8 text-center text-red-400">{error}</div>
+    return <div className="py-8 text-center text-harm">{error}</div>
   }
 
   return (
     <div className="space-y-4">
       {deleteErro && (
-        <div className="p-3 bg-red-950 border border-red-800 rounded-lg text-red-400 text-sm">
+        <div className="p-3 bg-harm/10 border border-harm/50 rounded-lg text-harm text-sm">
           {deleteErro}
         </div>
       )}
 
       <div className="flex items-center justify-between">
-        <p className="text-purple-300 text-sm">
+        <p className="text-accent-300 text-sm">
           {itens.length > 0
             ? `${itens.length} item${itens.length > 1 ? 'ns' : ''}`
             : 'Nenhum item'}
@@ -738,7 +738,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
         {isDono && (
           <button
             onClick={() => { setEditingItem(null); setShowForm(true) }}
-            className="text-sm px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-lg transition-colors"
+            className="text-sm px-4 py-2 bg-accent-700 hover:bg-accent-600 text-ink rounded-lg transition-colors"
           >
             + Adicionar item
           </button>
@@ -746,18 +746,18 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
       </div>
 
       {itens.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-purple-800 rounded-2xl">
+        <div className="text-center py-16 border border-dashed border-border rounded-2xl">
           <div className="text-4xl mb-4">⚔️</div>
-          <p className="text-purple-300 text-lg font-medium mb-2">Nenhum item ainda</p>
+          <p className="text-accent-300 text-lg font-medium mb-2">Nenhum item ainda</p>
           {isDono ? (
             <button
               onClick={() => setShowForm(true)}
-              className="mt-2 px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors"
+              className="mt-2 px-5 py-2 bg-accent-600 hover:bg-accent-700 text-ink rounded-lg text-sm transition-colors"
             >
               + Adicionar item
             </button>
           ) : (
-            <p className="text-purple-500 text-sm">
+            <p className="text-ink-dim text-sm">
               O dono do personagem ainda não adicionou itens.
             </p>
           )}
@@ -773,7 +773,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
             return (
               <div
                 key={item.id}
-                className="bg-slate-800 border border-purple-800 rounded-xl overflow-hidden"
+                className="bg-raised border border-border rounded-xl overflow-hidden"
               >
                 <div className="flex gap-4 p-4">
                   {item.imagem_url && (
@@ -786,7 +786,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="text-white font-semibold">{item.nome}</p>
+                        <p className="text-ink font-semibold">{item.nome}</p>
                         <span
                           className={`inline-block text-xs px-2 py-0.5 rounded-full mt-1 ${
                             TIPO_COLORS[item.tipo] || TIPO_COLORS.outro
@@ -801,15 +801,15 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                               onClick={() => toggleEquipado(item)}
                               className={`ml-1.5 inline-block text-xs px-2 py-0.5 rounded-full transition-colors ${
                                 (item.equipado ?? true)
-                                  ? 'bg-emerald-900/50 border border-emerald-700 text-emerald-300 hover:bg-emerald-800/60'
-                                  : 'bg-slate-800 border border-purple-900 text-purple-500 hover:text-white'
+                                  ? 'bg-ok/50 border border-ok text-ok hover:bg-ok/60'
+                                  : 'bg-raised border border-border text-ink-dim hover:text-ink'
                               }`}
                               title="Equipar / desequipar"
                             >
                               {(item.equipado ?? true) ? '✓ equipado' : 'desequipado'}
                             </button>
                           ) : (
-                            (item.equipado ?? true) && <span className="ml-1.5 inline-block text-xs px-2 py-0.5 rounded-full bg-emerald-900/50 border border-emerald-700 text-emerald-300">✓ equipado</span>
+                            (item.equipado ?? true) && <span className="ml-1.5 inline-block text-xs px-2 py-0.5 rounded-full bg-ok/50 border border-ok text-ok">✓ equipado</span>
                           )
                         )}
                         <MaestriaChips info={maestriaDoItem?.(item)} />
@@ -818,7 +818,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                         <div className="flex gap-1 shrink-0">
                           <button
                             onClick={() => { setEditingItem(item); setShowForm(true) }}
-                            className="p-1.5 text-purple-400 hover:text-white hover:bg-purple-800 rounded-lg transition-colors text-sm"
+                            className="p-1.5 text-ink-dim hover:text-ink hover:bg-hover rounded-lg transition-colors text-sm"
                             title="Editar"
                           >
                             ✎
@@ -826,7 +826,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                           <button
                             onClick={() => handleDelete(item)}
                             disabled={deletingId === item.id}
-                            className="p-1.5 text-red-500 hover:text-red-400 hover:bg-red-950 rounded-lg transition-colors text-sm disabled:opacity-40"
+                            className="p-1.5 text-harm hover:text-harm hover:bg-harm/10 rounded-lg transition-colors text-sm disabled:opacity-40"
                             title="Remover"
                           >
                             {deletingId === item.id ? '…' : '🗑'}
@@ -836,7 +836,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                     </div>
 
                     {item.descricao && (
-                      <p className="text-purple-400 text-sm mt-2">{item.descricao}</p>
+                      <p className="text-ink-dim text-sm mt-2">{item.descricao}</p>
                     )}
 
                     {/* 21.5 — recurso, durabilidade e badge de danificado */}
@@ -852,7 +852,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                         {Object.entries(extras).map(([k, v]) => (
                           <span
                             key={k}
-                            className="text-xs bg-amber-900/50 border border-amber-700 text-amber-300 px-2 py-0.5 rounded-full"
+                            className="text-xs bg-dice-700/50 border border-dice-500 text-dice-400 px-2 py-0.5 rounded-full"
                           >
                             {k}: {v}
                           </span>
@@ -869,7 +869,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                               type="button"
                               onClick={() => handleRolarItem(item, 'ataque')}
                               disabled={rollProcessing}
-                              className="px-3 py-1.5 text-xs bg-amber-800 hover:bg-amber-700 disabled:opacity-40 text-white rounded-lg transition-colors"
+                              className="px-3 py-1.5 text-xs bg-dice-700 hover:bg-dice-500 disabled:opacity-40 text-ink rounded-lg transition-colors"
                             >
                               🎲 Rolar ataque
                             </button>
@@ -881,8 +881,8 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                                 type="button"
                                 onClick={() => handleRolarItem(item, 'dano')}
                                 disabled={rollProcessing}
-                                className={`px-3 py-1.5 text-xs disabled:opacity-40 text-white rounded-lg transition-colors ${
-                                  critPronto ? 'bg-amber-700 hover:bg-amber-600 font-semibold animate-pulse' : 'bg-red-900 hover:bg-red-800'
+                                className={`px-3 py-1.5 text-xs disabled:opacity-40 text-ink rounded-lg transition-colors ${
+                                  critPronto ? 'bg-dice-700 hover:bg-dice-500 font-semibold animate-pulse' : 'bg-harm/15 hover:bg-harm'
                                 }`}
                                 title={critPronto ? `Dano crítico ×${rollCritico.multiplicador} (${rollCritico.modo})` : undefined}
                               >
@@ -893,7 +893,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                         </div>
 
                         {rollItemId === item.id && rollErro && (
-                          <p className="text-red-400 text-xs">{rollErro}</p>
+                          <p className="text-harm text-xs">{rollErro}</p>
                         )}
 
                         {rollItemId === item.id && rollResultado && !rollErro && (
@@ -908,9 +908,9 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                             />
                             {/* 22.3 — crítico detectado no acerto */}
                             {rollCritico?.itemId === item.id && !rollRolando && (
-                              <div className="mt-1.5 flex items-center gap-2 flex-wrap bg-amber-950/50 border border-amber-600/60 rounded-lg px-2.5 py-1.5">
-                                <span className="text-amber-300 text-sm font-bold animate-pulse">🎯 CRÍTICO!</span>
-                                <span className="text-amber-500/80 text-[11px]">
+                              <div className="mt-1.5 flex items-center gap-2 flex-wrap bg-dice-700/50 border border-dice-500/60 rounded-lg px-2.5 py-1.5">
+                                <span className="text-dice-400 text-sm font-bold animate-pulse">🎯 CRÍTICO!</span>
+                                <span className="text-dice-500/80 text-[11px]">
                                   rolou {rollCritico.natural}, limiar {rollCritico.limiar} · dano ×{rollCritico.multiplicador} ({rollCritico.modo})
                                 </span>
                               </div>

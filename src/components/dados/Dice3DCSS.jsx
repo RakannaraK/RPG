@@ -74,7 +74,7 @@ const DICE_STYLE = {
   8:   'bg-sky-950    border-sky-500    text-sky-100',
   10:  'bg-teal-950   border-teal-500   text-teal-100',
   12:  'bg-violet-950 border-violet-500 text-violet-100',
-  20:  'bg-amber-950  border-amber-500  text-amber-100',
+  20:  'bg-dice-700  border-dice-500  text-dice-200',
   100: 'bg-slate-800  border-slate-500  text-slate-100',
 }
 

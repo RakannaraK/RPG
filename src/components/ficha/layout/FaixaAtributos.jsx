@@ -22,10 +22,10 @@ export default function FaixaAtributos({
 }) {
   if (!valoresAtributos || valoresAtributos.length === 0) {
     return (
-      <div className="border border-dashed border-purple-800 rounded-xl py-6 text-center">
-        <p className="text-purple-500 text-sm">Nenhum atributo definido no sistema.</p>
+      <div className="border border-dashed border-border rounded-xl py-6 text-center">
+        <p className="text-ink-dim text-sm">Nenhum atributo definido no sistema.</p>
         {isDono && (
-          <p className="text-purple-600 text-xs mt-1">
+          <p className="text-ink-dim text-xs mt-1">
             Configure os atributos em Sistema → Atributos.
           </p>
         )}
@@ -35,7 +35,7 @@ export default function FaixaAtributos({
 
   return (
     <div>
-      <p className="text-purple-400 text-xs font-medium uppercase tracking-wider mb-3">
+      <p className="text-ink-dim text-xs font-medium uppercase tracking-[.12em] mb-3 pb-1.5 border-b border-border">
         Atributos
       </p>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-2">

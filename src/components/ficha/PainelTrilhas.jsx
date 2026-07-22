@@ -69,20 +69,20 @@ function Trilha({ t, marcasRaw, salvar, contextoFormula, isDono, onEventos, bonu
   }
 
   const corCaixa = m => {
-    if (m == null) return 'bg-slate-900/70 border-purple-800/60 text-purple-700 hover:border-purple-500'
+    if (m == null) return 'bg-void/70 border-border/60 text-ink-dim hover:border-accent-500'
     const sev = Number(porId[m]?.severidade) || 0
     return sev >= sevMax
-      ? 'bg-red-950/80 border-red-500 text-red-200'
-      : 'bg-amber-950/70 border-amber-500 text-amber-200'
+      ? 'bg-harm/80 border-harm text-harm'
+      : 'bg-dice-700/70 border-dice-500 text-dice-200'
   }
 
   return (
-    <div className={`rounded-xl border p-3 space-y-2 ${cheiaDoMaior ? 'border-red-600/70 bg-red-950/20' : 'border-purple-800 bg-slate-800'}`}>
+    <div className={`rounded-xl border p-3 space-y-2 ${cheiaDoMaior ? 'border-harm/70 bg-harm/20' : 'border-border bg-raised'}`}>
       <div className="flex items-center gap-2 flex-wrap">
-        <p className="text-purple-200 text-sm font-semibold">{t.nome || 'Trilha'}</p>
-        <span className="text-purple-500 text-xs font-mono">{cont.marcadas}/{cont.total}</span>
+        <p className="text-ink text-sm font-semibold">{t.nome || 'Trilha'}</p>
+        <span className="text-ink-dim text-xs font-mono">{cont.marcadas}/{cont.total}</span>
         {cheiaDoMaior && t.ao_encher_do_maior?.rotulo && (
-          <span className="text-[11px] font-bold px-2 py-0.5 rounded-md border bg-red-950/80 border-red-500 text-red-200 animate-pulse"
+          <span className="text-[11px] font-bold px-2 py-0.5 rounded-md border bg-harm/80 border-harm text-harm animate-pulse"
             title={t.ao_encher_do_maior.descricao || ''}>
             ☠ {t.ao_encher_do_maior.rotulo}
           </span>
@@ -93,7 +93,7 @@ function Trilha({ t, marcasRaw, salvar, contextoFormula, isDono, onEventos, bonu
             {tipos.map(tm => (
               <button key={tm.id} onClick={() => setTipoSel(tm.id)}
                 className={`text-[11px] px-1.5 py-0.5 rounded border font-mono transition-colors ${
-                  tipoSel === tm.id ? 'bg-purple-700 border-purple-400 text-white' : 'bg-purple-950 border-purple-800 text-purple-400 hover:border-purple-600'
+                  tipoSel === tm.id ? 'bg-accent-700 border-accent-400 text-ink' : 'bg-void border-border text-ink-dim hover:border-accent-500'
                 }`}
                 title={`Marcar ${tm.nome}`}>
                 {tm.simbolo || tm.nome}
@@ -115,7 +115,7 @@ function Trilha({ t, marcasRaw, salvar, contextoFormula, isDono, onEventos, bonu
         {/* Trilha cheia: marcar aplica o transbordo */}
         {isDono && cont.livres === 0 && marcas.length > 0 && !cheiaDoMaior && (
           <button onClick={marcarTransbordo}
-            className="h-7 px-2 rounded border border-dashed border-red-700 text-red-300 text-[11px] hover:bg-red-950/50 transition-colors"
+            className="h-7 px-2 rounded border border-dashed border-harm/50 text-harm text-[11px] hover:bg-harm/50 transition-colors"
             title={t.regra_transbordo === 'ignorar' ? 'Trilha cheia (transbordo ignorado)' : 'Trilha cheia — marcar converte a marca mais antiga'}>
             +{porId[tipoSel]?.simbolo || ''}
           </button>
@@ -124,18 +124,18 @@ function Trilha({ t, marcasRaw, salvar, contextoFormula, isDono, onEventos, bonu
 
       {/* Encolher perderia marcas: confirmação explícita */}
       {perderia && isDono && (
-        <div className="flex items-center gap-2 flex-wrap rounded-lg border border-amber-700/70 bg-amber-950/40 px-2 py-1.5">
-          <span className="text-amber-200 text-[11px]">
+        <div className="flex items-center gap-2 flex-wrap rounded-lg border border-dice-500/70 bg-dice-700/40 px-2 py-1.5">
+          <span className="text-dice-200 text-[11px]">
             A fórmula reduziu a trilha para {tamanho} caixinhas — ajustar removeria {ajuste.removidas.length} marca(s).
           </span>
           <button onClick={() => persistir(ajuste.marcas)}
-            className="px-2 py-0.5 text-[11px] bg-amber-700 hover:bg-amber-600 text-white rounded transition-colors">
+            className="px-2 py-0.5 text-[11px] bg-dice-700 hover:bg-dice-500 text-ink rounded transition-colors">
             Ajustar mesmo assim
           </button>
         </div>
       )}
 
-      {erro && <p className="text-red-400 text-[11px]">{erro}</p>}
+      {erro && <p className="text-harm text-[11px]">{erro}</p>}
     </div>
   )
 }

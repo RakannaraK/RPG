@@ -6,8 +6,8 @@ import { playDiceNotify } from '../../lib/diceSound'
 import { descreverResultado } from '../../lib/resolutionEngine'
 import Dice3D from './Dice3D'
 
-const COR_TXT = { verde: 'text-green-300', ambar: 'text-amber-300', vermelho: 'text-red-300', roxo: 'text-purple-200' }
-const COR_CARD = { verde: 'border-green-700/50', ambar: 'border-amber-700/50', vermelho: 'border-red-800/50', roxo: 'border-purple-800/40' }
+const COR_TXT = { verde: 'text-ok', ambar: 'text-dice-400', vermelho: 'text-harm', roxo: 'text-accent-300' }
+const COR_CARD = { verde: 'border-ok/50', ambar: 'border-dice-500/50', vermelho: 'border-harm/50', roxo: 'border-border' }
 
 // 23.3 — resultado nos MODOS de resolução (sucessos/roll_under/faixas)
 function ResultadoModo({ rolagem, animando, ehMeu, minhaSkin }) {
@@ -15,16 +15,17 @@ function ResultadoModo({ rolagem, animando, ehMeu, minhaSkin }) {
   const desc = descreverResultado(resultado_estruturado)
   const dados = rolagem.resultados?.dados || []
   const corTxt = COR_TXT[desc?.cor] || COR_TXT.roxo
+  const critico = desc?.cor === 'ambar'
 
   return (
-    <div className={`bg-slate-800/60 border rounded-xl p-3 space-y-2 ${COR_CARD[desc?.cor] || COR_CARD.roxo}`}>
+    <div className={`bg-raised/60 border rounded-xl p-3 space-y-2 ${COR_CARD[desc?.cor] || COR_CARD.roxo} ${critico ? 'crit-glow' : ''}`}>
       <div className="flex items-baseline justify-between gap-2 flex-wrap">
         <div className="flex items-baseline gap-2 flex-wrap min-w-0">
-          <span className="text-purple-300 text-xs font-semibold shrink-0">{rolagem._nome}</span>
-          {rotulo && <span className="text-white text-sm font-medium">{rotulo}</span>}
-          <span className="text-purple-600 font-mono text-xs shrink-0">{notacao}</span>
+          <span className="text-accent-300 text-xs font-semibold shrink-0">{rolagem._nome}</span>
+          {rotulo && <span className="text-ink text-sm font-medium">{rotulo}</span>}
+          <span className="text-ink-dim font-mono text-xs shrink-0">{notacao}</span>
         </div>
-        <span className="text-purple-700 text-xs shrink-0">{tempoRelativo(created_at)}</span>
+        <span className="text-ink-dim text-xs shrink-0">{tempoRelativo(created_at)}</span>
       </div>
 
       {/* Dados: pontuados destacados (sucessos); especiais em cor distinta */}
@@ -34,15 +35,15 @@ function ResultadoModo({ rolagem, animando, ehMeu, minhaSkin }) {
             ? <Dice3D lados={d.lados} resultado={d.valor} rolando={animando} descartado={d.descartado} skin={minhaSkin} />
             : (
               <span className={`px-2 h-8 min-w-8 flex items-center justify-center rounded-lg border text-sm font-bold ${
-                d.especial ? 'bg-red-950/70 border-red-600 text-red-200'
-                  : d.sucesso ? 'bg-green-950/60 border-green-600 text-green-200'
-                  : 'bg-slate-800 border-slate-700 text-slate-400'
+                d.especial ? 'bg-harm/15 border-harm text-harm'
+                  : d.sucesso ? 'bg-ok/15 border-ok text-ok'
+                  : 'bg-void border-border text-ink-dim'
               }`}>{d.valor}</span>
             )
           return (
-            <div key={i} className={`flex flex-col items-center gap-0.5 rounded-lg ${d.sucesso ? 'ring-1 ring-green-500/70' : ''} ${d.especial ? 'ring-1 ring-red-500/80' : ''}`}>
+            <div key={i} className={`flex flex-col items-center gap-0.5 rounded-lg ${d.sucesso ? 'ring-1 ring-ok/70' : ''} ${d.especial ? 'ring-1 ring-harm/80' : ''}`}>
               {base}
-              {d.especial && <span className="text-red-400 text-[8px] leading-none">esp.</span>}
+              {d.especial && <span className="text-harm text-[8px] leading-none">esp.</span>}
             </div>
           )
         })}
@@ -53,10 +54,10 @@ function ResultadoModo({ rolagem, animando, ehMeu, minhaSkin }) {
         <p className={`text-sm font-bold ${corTxt}`}>{desc.texto}</p>
       )}
       {desc?.textoFaixa && (
-        <p className="text-purple-300 text-xs italic">"{desc.textoFaixa}"</p>
+        <p className="text-accent-300 text-xs italic">"{desc.textoFaixa}"</p>
       )}
       {desc?.marcacao && (
-        <span className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-red-950/60 border-red-600/70 text-red-200">
+        <span className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-harm/10 border-harm/60 text-harm">
           ⚡ {desc.marcacao.rotulo}{desc.marcacao.texto ? ` — ${desc.marcacao.texto}` : ''}
         </span>
       )}
@@ -91,18 +92,19 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
   const modificador = resultados?.modificador || 0
   const percentual = resultados?.percentual // Fase 18.3
   const totalBase = resultados?.total_base
+  const critico = !!rolagem.critico // F22.3 — crítico configurável
 
   return (
-    <div className="bg-slate-800/60 border border-purple-800/40 rounded-xl p-3 space-y-2">
+    <div className={`bg-raised/60 border border-border rounded-xl p-3 space-y-2 ${critico ? 'crit-glow' : ''}`}>
       <div className="flex items-baseline justify-between gap-2 flex-wrap">
         <div className="flex items-baseline gap-2 flex-wrap min-w-0">
-          <span className="text-purple-300 text-xs font-semibold shrink-0">{nome}</span>
+          <span className="text-accent-300 text-xs font-semibold shrink-0">{nome}</span>
           {rotulo && (
-            <span className="text-white text-sm font-medium">{rotulo}</span>
+            <span className="text-ink text-sm font-medium">{rotulo}</span>
           )}
-          <span className="text-purple-600 font-mono text-xs shrink-0">{notacao}</span>
+          <span className="text-ink-dim font-mono text-xs shrink-0">{notacao}</span>
         </div>
-        <span className="text-purple-700 text-xs shrink-0">{tempoRelativo(created_at)}</span>
+        <span className="text-ink-dim text-xs shrink-0">{tempoRelativo(created_at)}</span>
       </div>
 
       <div className="flex flex-wrap gap-2 items-center">
@@ -117,7 +119,7 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
                 descartado={d.descartado}
                 skin={minhaSkin}
               />
-              {d.descartado && <span className="text-red-500 text-[9px]">desc.</span>}
+              {d.descartado && <span className="text-harm text-[9px]">desc.</span>}
             </div>
           ))
         ) : (
@@ -127,8 +129,8 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
               key={i}
               className={`px-2 h-8 flex items-center justify-center rounded-lg border text-sm font-bold ${
                 d.descartado
-                  ? 'bg-slate-800 border-slate-700 text-slate-500 line-through opacity-50'
-                  : 'bg-purple-950/60 border-purple-800 text-purple-100'
+                  ? 'bg-void border-border text-ink-dim line-through opacity-50'
+                  : 'bg-void border-border text-ink'
               }`}
               title={`d${d.lados}`}
             >
@@ -137,13 +139,13 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
           ))
         )}
         <div className="flex items-baseline gap-1.5 ml-1">
-          <span className="text-purple-400 text-xs">Total:</span>
-          <span className="text-2xl font-bold text-white leading-none">{total}</span>
+          <span className="text-ink-dim text-xs">Total:</span>
+          <span className="text-2xl font-mono font-bold text-dice-400 leading-none">{total}</span>
         </div>
       </div>
 
       {(mantidos.length > 1 || modificador !== 0) && (
-        <p className="text-purple-600 text-xs">
+        <p className="text-ink-dim text-xs">
           ({mantidos.join(' + ')}
           {modificador > 0 && ` + ${modificador}`}
           {modificador < 0 && ` − ${Math.abs(modificador)}`})
@@ -151,13 +153,13 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
       )}
 
       {percentual != null && percentual !== 0 && (
-        <p className="text-amber-400 text-xs">
+        <p className="text-dice-400 text-xs">
           {totalBase} → {percentual > 0 ? '+' : ''}{percentual}% → <span className="font-bold">{total}</span>
         </p>
       )}
 
       {descartados.length > 0 && (
-        <p className="text-red-700 text-xs">descartados: {descartados.join(', ')}</p>
+        <p className="text-harm text-xs">descartados: {descartados.join(', ')}</p>
       )}
     </div>
   )
@@ -240,7 +242,7 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
 
   if (loading) {
     return (
-      <div className="py-6 text-center text-purple-500 text-sm">
+      <div className="py-6 text-center text-ink-dim text-sm">
         Carregando histórico...
       </div>
     )
@@ -248,7 +250,7 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
 
   if (erro) {
     return (
-      <div className="py-4 px-3 bg-red-950/50 border border-red-800/50 rounded-xl text-red-400 text-sm">
+      <div className="py-4 px-3 bg-harm/10 border border-harm/50 rounded-xl text-harm text-sm">
         {erro}
       </div>
     )
@@ -256,10 +258,10 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
 
   if (rolagens.length === 0) {
     return (
-      <div className="py-10 text-center border border-dashed border-purple-800/50 rounded-2xl">
+      <div className="py-10 text-center border border-dashed border-border rounded-2xl">
         <div className="text-3xl mb-2">🎲</div>
-        <p className="text-purple-500 text-sm">Nenhuma rolagem ainda.</p>
-        <p className="text-purple-600 text-xs mt-1">
+        <p className="text-ink-dim text-sm">Nenhuma rolagem ainda.</p>
+        <p className="text-ink-dim text-xs mt-1">
           As rolagens aparecem aqui em tempo real para todos na mesa.
         </p>
       </div>
@@ -269,11 +271,11 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-purple-500 text-xs">{rolagens.length} rolagem{rolagens.length > 1 ? 'ns' : ''}</span>
+        <span className="text-ink-dim text-xs">{rolagens.length} rolagem{rolagens.length > 1 ? 'ns' : ''}</span>
         <button
           type="button"
           onClick={() => setRolagens([])}
-          className="text-xs text-purple-600 hover:text-purple-400 transition-colors"
+          className="text-xs text-ink-dim hover:text-ink transition-colors"
         >
           Limpar visualização
         </button>

@@ -26,8 +26,8 @@ export default function PainelLinhas({
   const jaTem = new Set(poderesFicha.map(l => l.poder_id))
 
   return (
-    <div className="bg-slate-800 border border-purple-800 rounded-2xl p-4 space-y-3">
-      <p className="text-purple-200 text-sm font-semibold">Linhas de poder</p>
+    <div className="bg-raised border border-border rounded-2xl p-4 space-y-3">
+      <p className="text-ink text-sm font-semibold">Linhas de poder</p>
       {linhas.map(linha => {
         const rating = ratingDe(linha.id)
         const poderesDaLinha = catalogoPoderes.filter(p => p.linha_id === linha.id)
@@ -40,9 +40,9 @@ export default function PainelLinhas({
         const niveis = Object.keys(porNivel).map(Number).sort((a, b) => a - b)
 
         return (
-          <div key={linha.id} className="border-t border-purple-900/60 pt-2.5 first:border-t-0 first:pt-0 space-y-1.5">
+          <div key={linha.id} className="border-t border-border/60 pt-2.5 first:border-t-0 first:pt-0 space-y-1.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-white text-sm font-medium">{linha.nome}</span>
+              <span className="text-ink text-sm font-medium">{linha.nome}</span>
               <Dots
                 valor={rating}
                 max={linha.maximo || 5}
@@ -51,39 +51,39 @@ export default function PainelLinhas({
                 size="sm"
               />
             </div>
-            {linha.descricao && <p className="text-purple-600 text-[11px]">{linha.descricao}</p>}
+            {linha.descricao && <p className="text-ink-dim text-[11px]">{linha.descricao}</p>}
 
             {niveis.length === 0 ? (
-              <p className="text-purple-700 text-[11px]">Nenhum poder cadastrado nesta linha.</p>
+              <p className="text-ink-dim text-[11px]">Nenhum poder cadastrado nesta linha.</p>
             ) : (
               <div className="space-y-1.5 pl-1">
                 {niveis.map(n => (
                   <div key={n}>
-                    <p className="text-purple-500 text-[11px] uppercase tracking-wide">{NIVEL_LABEL(n)}</p>
+                    <p className="text-ink-dim text-[11px] uppercase tracking-wide">{NIVEL_LABEL(n)}</p>
                     <div className="space-y-1">
                       {porNivel[n].map(poder => {
                         const desbloqueado = rating >= n
                         const aprendido = jaTem.has(poder.id)
                         return (
                           <div key={poder.id} className={`flex items-center gap-2 rounded-lg px-2 py-1 ${
-                            desbloqueado ? 'bg-purple-950/40' : 'bg-slate-900/40 opacity-60'
+                            desbloqueado ? 'bg-void/40' : 'bg-void/40 opacity-60'
                           }`}>
-                            <span className={`text-xs flex-1 truncate ${desbloqueado ? 'text-white' : 'text-purple-600'}`}>
+                            <span className={`text-xs flex-1 truncate ${desbloqueado ? 'text-ink' : 'text-ink-dim'}`}>
                               {poder.nome}
                             </span>
                             {aprendido ? (
-                              <span className="text-green-400 text-[11px] shrink-0">✓ aprendido</span>
+                              <span className="text-ok text-[11px] shrink-0">✓ aprendido</span>
                             ) : desbloqueado ? (
                               isDono && (
                                 <button
                                   onClick={() => onAprender(poder.id, 'linha').catch(e => setErro(e.message || 'Erro ao aprender.'))}
-                                  className="text-[11px] px-2 py-0.5 rounded-lg bg-purple-700 hover:bg-purple-600 text-white transition-colors shrink-0"
+                                  className="text-[11px] px-2 py-0.5 rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors shrink-0"
                                 >
                                   Aprender
                                 </button>
                               )
                             ) : (
-                              <span className="text-purple-700 text-[11px] shrink-0" title={`Requer ${linha.nome} ${n}`}>
+                              <span className="text-ink-dim text-[11px] shrink-0" title={`Requer ${linha.nome} ${n}`}>
                                 req. {linha.nome} {n}
                               </span>
                             )}
@@ -98,7 +98,7 @@ export default function PainelLinhas({
           </div>
         )
       })}
-      {erro && <p className="text-red-400 text-[11px]">{erro}</p>}
+      {erro && <p className="text-harm text-[11px]">{erro}</p>}
     </div>
   )
 }

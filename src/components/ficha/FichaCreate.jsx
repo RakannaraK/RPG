@@ -134,18 +134,18 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-purple-800 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+      <div className="bg-void border border-border rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
         {/* Cabeçalho */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-purple-900 shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
           <div>
-            <h2 className="text-white font-bold text-lg">Nova ficha de personagem</h2>
-            <p className="text-purple-400 text-xs mt-0.5">
+            <h2 className="text-ink font-bold text-lg">Nova ficha de personagem</h2>
+            <p className="text-ink-dim text-xs mt-0.5">
               {step === 0 ? 'Passo 1 de 2 — Informações básicas' : 'Passo 2 de 2 — Atributos'}
             </p>
           </div>
           <button
             onClick={onFechar}
-            className="text-purple-400 hover:text-white text-xl leading-none transition-colors"
+            className="text-ink-dim hover:text-ink text-xl leading-none transition-colors"
           >
             ✕
           </button>
@@ -156,7 +156,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
           {step === 0 ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-1">
+                <label className="block text-sm font-medium text-ink mb-1">
                   Nome do personagem *
                 </label>
                 <input
@@ -165,12 +165,12 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                   value={info.nome_personagem}
                   onChange={e => setInfoField('nome_personagem', e.target.value)}
                   autoFocus
-                  className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 rounded-lg bg-void border border-border text-ink placeholder-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-purple-200 mb-1">Raça</label>
+                  <label className="block text-sm font-medium text-ink mb-1">Raça</label>
                   {racas.length > 0 ? (
                     <select
                       value={info.raca_id ?? ''}
@@ -179,7 +179,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                         const obj = racas.find(r => r.id === id)
                         setInfo(prev => ({ ...prev, raca_id: id, raca: obj?.nome || '' }))
                       }}
-                      className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                     >
                       <option value="">Nenhuma</option>
                       {racas.map(r => (
@@ -192,12 +192,12 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                       placeholder="Ex: Elfo, Humano"
                       value={info.raca}
                       onChange={e => setInfoField('raca', e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                     />
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-purple-200 mb-1">Classe</label>
+                  <label className="block text-sm font-medium text-ink mb-1">Classe</label>
                   {classes.length > 0 ? (
                     <select
                       value={info.classe_id ?? ''}
@@ -206,7 +206,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                         const obj = classes.find(c => c.id === id)
                         setInfo(prev => ({ ...prev, classe_id: id, classe: obj?.nome || '' }))
                       }}
-                      className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                     >
                       <option value="">Nenhuma</option>
                       {classes.map(c => (
@@ -219,25 +219,25 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                       placeholder="Ex: Guerreiro, Mago"
                       value={info.classe}
                       onChange={e => setInfoField('classe', e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                     />
                   )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-purple-200 mb-1">Nível</label>
+                  <label className="block text-sm font-medium text-ink mb-1">Nível</label>
                   <input
                     type="number"
                     min={1}
                     max={30}
                     value={info.nivel}
                     onChange={e => setInfoField('nivel', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-purple-200 mb-1">
+                  <label className="block text-sm font-medium text-ink mb-1">
                     HP máximo
                   </label>
                   <input
@@ -246,7 +246,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                     placeholder="Ex: 45"
                     value={info.hp_maximo}
                     onChange={e => setInfoField('hp_maximo', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                   />
                 </div>
               </div>
@@ -254,15 +254,15 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
           ) : (
             <div className="space-y-5">
               {loadingSistema ? (
-                <div className="py-8 text-center text-purple-400">Carregando sistema...</div>
+                <div className="py-8 text-center text-ink-dim">Carregando sistema...</div>
               ) : atributos.length === 0 ? (
-                <div className="py-8 text-center border border-dashed border-purple-800 rounded-xl">
-                  <p className="text-purple-300 text-sm">
+                <div className="py-8 text-center border border-dashed border-border rounded-xl">
+                  <p className="text-accent-300 text-sm">
                     {sistema
                       ? 'O sistema desta mesa não tem atributos definidos.'
                       : 'Esta mesa não tem sistema configurado.'}
                   </p>
-                  <p className="text-purple-500 text-xs mt-1">
+                  <p className="text-ink-dim text-xs mt-1">
                     A ficha será criada sem atributos.
                   </p>
                 </div>
@@ -276,21 +276,21 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                       key={a.id}
                       className={`rounded-xl border p-4 space-y-3 transition-colors ${
                         confirmado
-                          ? 'border-green-800 bg-green-950/20'
-                          : 'border-purple-800 bg-slate-800'
+                          ? 'border-ok bg-ok/20'
+                          : 'border-border bg-raised'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="text-white font-semibold">{a.nome}</p>
+                          <p className="text-ink font-semibold">{a.nome}</p>
                           {a.descricao && (
-                            <p className="text-purple-400 text-xs mt-0.5">{a.descricao}</p>
+                            <p className="text-ink-dim text-xs mt-0.5">{a.descricao}</p>
                           )}
                         </div>
                         {confirmado && (
                           <div className="text-right shrink-0">
-                            <p className="text-green-400 text-xs">✓ confirmado</p>
-                            <p className="text-white font-bold text-xl">
+                            <p className="text-ok text-xs">✓ confirmado</p>
+                            <p className="text-ink font-bold text-xl">
                               {valores[a.id]?.valor}
                             </p>
                           </div>
@@ -299,9 +299,9 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
 
                       {!confirmado && isPontos && (
                         <div className="space-y-2">
-                          <p className="text-purple-400 text-xs">
+                          <p className="text-ink-dim text-xs">
                             Sistema de pontos — pool:{' '}
-                            <span className="text-amber-400 font-bold">
+                            <span className="text-dice-400 font-bold">
                               {a.regra_rolagem.pool_total || 27}
                             </span>{' '}
                             pts
@@ -315,12 +315,12 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                               onChange={e =>
                                 setPontosValues(prev => ({ ...prev, [a.id]: e.target.value }))
                               }
-                              className="flex-1 px-3 py-2 bg-purple-950 border border-purple-700 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              className="flex-1 px-3 py-2 bg-void border border-border text-ink rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                             />
                             <button
                               type="button"
                               onClick={() => confirmarPontos(a.id)}
-                              className="px-4 py-2 text-sm bg-green-700 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors"
+                              className="px-4 py-2 text-sm bg-ok/80 hover:bg-ok text-ink font-semibold rounded-lg transition-colors"
                             >
                               ✓ Confirmar
                             </button>
@@ -344,7 +344,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                               [a.id]: { ...prev[a.id], confirmado: false },
                             }))
                           }
-                          className="text-xs text-purple-400 hover:text-purple-200 transition-colors"
+                          className="text-xs text-ink-dim hover:text-ink transition-colors"
                         >
                           Rolar novamente
                         </button>
@@ -356,24 +356,24 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
             </div>
           )}
 
-          {erro && <p className="mt-4 text-red-400 text-sm">{erro}</p>}
+          {erro && <p className="mt-4 text-harm text-sm">{erro}</p>}
         </div>
 
         {/* Rodapé */}
-        <div className="px-6 py-4 border-t border-purple-900 flex justify-between gap-3 shrink-0">
+        <div className="px-6 py-4 border-t border-border flex justify-between gap-3 shrink-0">
           {step === 0 ? (
             <>
               <button
                 type="button"
                 onClick={onFechar}
-                className="px-4 py-2 text-purple-400 hover:text-white text-sm transition-colors"
+                className="px-4 py-2 text-ink-dim hover:text-ink text-sm transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="button"
                 onClick={irParaStep1}
-                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg text-sm transition-colors"
+                className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-ink font-semibold rounded-lg text-sm transition-colors"
               >
                 Próximo →
               </button>
@@ -383,7 +383,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
               <button
                 type="button"
                 onClick={() => { setErro(''); setStep(0) }}
-                className="px-4 py-2 text-purple-400 hover:text-white text-sm transition-colors"
+                className="px-4 py-2 text-ink-dim hover:text-ink text-sm transition-colors"
               >
                 ← Voltar
               </button>
@@ -391,7 +391,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                 type="button"
                 onClick={handleSalvar}
                 disabled={criando}
-                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-sm transition-colors"
+                className="px-6 py-2 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed text-ink font-semibold rounded-lg text-sm transition-colors"
               >
                 {criando ? 'Salvando...' : 'Salvar ficha'}
               </button>

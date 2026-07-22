@@ -12,9 +12,9 @@ import Dots from '../Dots'
 function AvisoVantagem({ estado }) {
   if (!estado || estado === 'normal') return null
   const cfg = {
-    vantagem:    { txt: '⬆ Vantagem',    cls: 'bg-green-900/70 text-green-300 border-green-700' },
-    desvantagem: { txt: '⬇ Desvantagem', cls: 'bg-red-900/70 text-red-300 border-red-700' },
-    anulada:     { txt: 'anuladas',      cls: 'bg-slate-700 text-slate-300 border-slate-600' },
+    vantagem:    { txt: '⬆ Vantagem',    cls: 'bg-ok/70 text-ok border-ok/50' },
+    desvantagem: { txt: '⬇ Desvantagem', cls: 'bg-harm/70 text-harm border-harm/50' },
+    anulada:     { txt: 'anuladas',      cls: 'bg-hover text-ink-dim border-border' },
   }[estado]
   return (
     <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${cfg.cls}`}>
@@ -136,15 +136,15 @@ export default function PainelPericias({
   }
 
   return (
-    <div className="bg-slate-800 border border-purple-800 rounded-xl overflow-hidden">
-      <div className="px-4 py-3 border-b border-purple-900">
-        <p className="text-purple-200 text-sm font-semibold">Perícias</p>
+    <div className="bg-raised border border-border rounded-xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-border">
+        <p className="text-ink text-sm font-semibold">Perícias</p>
       </div>
 
       {pericias.length === 0 ? (
-        <p className="px-4 py-4 text-purple-500 text-xs">Nenhuma perícia definida no sistema.</p>
+        <p className="px-4 py-4 text-ink-dim text-xs">Nenhuma perícia definida no sistema.</p>
       ) : (
-        <div className="divide-y divide-purple-900/40 max-h-[28rem] overflow-y-auto">
+        <div className="divide-y divide-void/40 max-h-[28rem] overflow-y-auto">
           {pericias.map(pericia => {
             const pf = getPericiaFicha(pericia.id)
             const atributoVal = getAtributoValor(pericia.atributo_base_id)
@@ -161,8 +161,8 @@ export default function PainelPericias({
                       onClick={() => toggleProficiente(pericia.id)}
                       className={`w-4 h-4 rounded-full shrink-0 border-2 transition-colors ${
                         pf.proficiente
-                          ? 'bg-amber-500 border-amber-400'
-                          : 'bg-transparent border-slate-500 hover:border-purple-400'
+                          ? 'bg-dice-500 border-dice-400'
+                          : 'bg-transparent border-ink-dim hover:border-accent-400'
                       }`}
                       title={pf.proficiente ? 'Proficiente' : 'Não proficiente'}
                     />
@@ -170,18 +170,18 @@ export default function PainelPericias({
                     <div
                       className={`w-4 h-4 rounded-full shrink-0 border-2 ${
                         pf.proficiente
-                          ? 'bg-amber-500 border-amber-400'
-                          : 'bg-transparent border-slate-600'
+                          ? 'bg-dice-500 border-dice-400'
+                          : 'bg-transparent border-border'
                       }`}
                     />
                   )}
 
                   {/* Nome */}
-                  <span className="text-white text-sm flex-1 truncate">{pericia.nome}</span>
+                  <span className="text-ink text-sm flex-1 truncate">{pericia.nome}</span>
 
                   {/* Valor do atributo base */}
                   {atributoVal !== null && (
-                    <span className="text-purple-500 text-xs shrink-0">({atributoVal})</span>
+                    <span className="text-ink-dim text-xs shrink-0">({atributoVal})</span>
                   )}
 
                   {/* Bônus — dots (24.3) ou número */}
@@ -203,10 +203,10 @@ export default function PainelPericias({
                         setLocalBonus(prev => ({ ...prev, [pericia.id]: e.target.value }))
                       }
                       onBlur={e => handleBonusBlur(pericia.id, e.target.value)}
-                      className="w-12 px-1 py-0.5 bg-purple-950 border border-purple-700 text-white text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500 shrink-0"
+                      className="w-12 px-1 py-0.5 bg-void border border-border text-ink text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-accent-500 shrink-0"
                     />
                   ) : (
-                    <span className="text-white text-sm font-semibold w-8 text-right shrink-0">
+                    <span className="text-ink text-sm font-semibold w-8 text-right shrink-0">
                       {bonusDisplay}
                     </span>
                   )}
@@ -217,7 +217,7 @@ export default function PainelPericias({
                       onClick={() => handleRolar(pericia)}
                       disabled={rolando}
                       title={`Teste de ${pericia.nome}`}
-                      className="text-amber-500 hover:text-amber-300 disabled:opacity-40 transition-colors shrink-0 text-base leading-none"
+                      className="text-dice-500 hover:text-dice-400 disabled:opacity-40 transition-colors shrink-0 text-base leading-none"
                     >
                       🎲
                     </button>
@@ -226,16 +226,16 @@ export default function PainelPericias({
 
                 {/* Resultado inline */}
                 {esteRoll && rollAtivo?.resultado && (
-                  <div className="mx-3 mb-2 bg-slate-700/70 border border-purple-700/50 rounded-lg px-2 py-1.5">
+                  <div className="mx-3 mb-2 bg-hover/70 border border-border/50 rounded-lg px-2 py-1.5">
                     <div className="flex items-center justify-between gap-1 mb-1">
-                      <span className="text-purple-400 font-mono text-xs">
+                      <span className="text-ink-dim font-mono text-xs">
                         {rollAtivo.resultado.notacao}
                       </span>
                       <div className="flex items-center gap-1">
                         <AvisoVantagem estado={rollAtivo.estado} />
                         <button
                           onClick={() => setRollAtivo(null)}
-                          className="text-purple-600 hover:text-purple-400 text-xs transition-colors"
+                          className="text-ink-dim hover:text-ink text-xs transition-colors"
                         >
                           ✕
                         </button>
@@ -243,7 +243,7 @@ export default function PainelPericias({
                     </div>
                     <div className="flex flex-wrap gap-1.5 items-center">
                       {rollAtivo.resultado.dados.map((d, i) => (
-                        <div key={i} className={`rounded-lg ${d.sucesso ? 'ring-1 ring-green-500/70' : ''} ${d.especial ? 'ring-1 ring-red-500/80' : ''}`}>
+                        <div key={i} className={`rounded-lg ${d.sucesso ? 'ring-1 ring-ok/70' : ''} ${d.especial ? 'ring-1 ring-harm/80' : ''}`}>
                           <Dice3D
                             lados={d.lados}
                             resultado={d.valor}
@@ -257,20 +257,20 @@ export default function PainelPericias({
                         const desc = rollAtivo.resultado.modo && rollAtivo.resultado.modo !== 'soma'
                           ? descreverResultado(rollAtivo.resultado.estruturado) : null
                         return desc
-                          ? <span className="text-purple-100 font-bold text-base leading-none ml-1">{desc.texto}</span>
-                          : <span className="text-white font-bold text-lg leading-none ml-1">{rollAtivo.resultado.total}</span>
+                          ? <span className="text-accent-300 font-bold text-base leading-none ml-1">{desc.texto}</span>
+                          : <span className="text-ink font-bold text-lg leading-none ml-1">{rollAtivo.resultado.total}</span>
                       })()}
                     </div>
                     {(() => {
                       const desc = rollAtivo.resultado.modo && rollAtivo.resultado.modo !== 'soma'
                         ? descreverResultado(rollAtivo.resultado.estruturado) : null
-                      return desc?.textoFaixa ? <p className="text-purple-300 text-[10px] italic mt-1">"{desc.textoFaixa}"</p> : null
+                      return desc?.textoFaixa ? <p className="text-accent-300 text-[10px] italic mt-1">"{desc.textoFaixa}"</p> : null
                     })()}
                     {(() => {
                       const desc = rollAtivo.resultado.modo && rollAtivo.resultado.modo !== 'soma'
                         ? descreverResultado(rollAtivo.resultado.estruturado) : null
                       return desc?.marcacao ? (
-                        <span className="inline-block mt-1 text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-red-950/60 border-red-600/70 text-red-200">⚡ {desc.marcacao.rotulo}</span>
+                        <span className="inline-block mt-1 text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-harm/10 border-harm/60 text-harm">⚡ {desc.marcacao.rotulo}</span>
                       ) : null
                     })()}
                     <RerolagemBox

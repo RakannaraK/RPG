@@ -58,10 +58,10 @@ export default function RerolagemBox({ resultado, rerolagem, mesaId, fichaId, se
   const dif = params.dificuldade
 
   return (
-    <div className="mt-2 rounded-lg border border-sky-700/50 bg-sky-950/30 p-2 space-y-2">
-      <p className="text-sky-300 text-[11px]">
+    <div className="mt-2 rounded-lg border border-temp/50 bg-temp/30 p-2 space-y-2">
+      <p className="text-temp text-[11px]">
         Rerolar até {maxDados} dado(s) gastando <span className="font-semibold">{custo} {nomePool}</span>
-        {rerolagem.atual != null && <span className="text-sky-500"> (tem {rerolagem.atual})</span>} — clique nos dados:
+        {rerolagem.atual != null && <span className="text-temp"> (tem {rerolagem.atual})</span>} — clique nos dados:
       </p>
       <div className="flex flex-wrap gap-1.5">
         {parada.map((v, i) => {
@@ -70,9 +70,9 @@ export default function RerolagemBox({ resultado, rerolagem, mesaId, fichaId, se
           return (
             <button key={i} onClick={() => toggle(i)}
               className={`w-8 h-8 rounded-lg border text-sm font-bold transition-colors ${
-                escolhido ? 'bg-sky-600 border-sky-400 text-white ring-2 ring-sky-400/50'
-                  : pontuou ? 'bg-green-950/60 border-green-700 text-green-200'
-                  : 'bg-slate-800 border-slate-600 text-slate-300 hover:border-sky-500'
+                escolhido ? 'bg-temp border-temp text-ink ring-2 ring-temp/50'
+                  : pontuou ? 'bg-ok/60 border-ok/50 text-green-200'
+                  : 'bg-raised border-border text-ink-dim hover:border-temp'
               }`}
               title={pontuou ? 'sucesso' : 'falha'}>
               {v}
@@ -82,11 +82,11 @@ export default function RerolagemBox({ resultado, rerolagem, mesaId, fichaId, se
       </div>
       <div className="flex items-center gap-2">
         <button onClick={confirmar} disabled={sel.size === 0 || semSaldo || rolando}
-          className="px-2.5 py-1 text-xs bg-sky-700 hover:bg-sky-600 disabled:opacity-40 text-white rounded-lg transition-colors">
+          className="px-2.5 py-1 text-xs bg-temp/80 hover:bg-temp disabled:opacity-40 text-ink rounded-lg transition-colors">
           {rolando ? '🎲…' : `Rerolar ${sel.size || ''}`}
         </button>
-        {semSaldo && <span className="text-amber-400 text-[11px]">Sem {nomePool} suficiente.</span>}
-        {erro && <span className="text-red-400 text-[11px]">{erro}</span>}
+        {semSaldo && <span className="text-dice-400 text-[11px]">Sem {nomePool} suficiente.</span>}
+        {erro && <span className="text-harm text-[11px]">{erro}</span>}
       </div>
     </div>
   )
@@ -96,5 +96,5 @@ export default function RerolagemBox({ resultado, rerolagem, mesaId, fichaId, se
 export function ResumoRerolado({ resultado }) {
   const desc = descreverResultado(resultado?.estruturado)
   if (!desc) return null
-  return <p className="text-sky-300 text-xs mt-1">↻ {desc.texto}</p>
+  return <p className="text-temp text-xs mt-1">↻ {desc.texto}</p>
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useUpdateFicha } from '../../../hooks/useFicha'
 import ClassesFicha, { resumoClasses } from './ClassesFicha'
 
@@ -81,8 +81,23 @@ export default function CabecalhoPersonagem({
   const hpMaxBase = Number(hpMaximo || 0)
   const hpMaxDisplay = vidaMaxFinal !== undefined ? vidaMaxFinal : hpMaxBase
   const hpPercent = hpMaxDisplay > 0 ? Math.min(100, Math.max(0, (hpNum / hpMaxDisplay) * 100)) : 0
-  const hpColor = hpPercent > 50 ? 'bg-green-500' : hpPercent > 25 ? 'bg-yellow-500' : 'bg-red-500'
+  const hpBaixo = hpPercent > 0 && hpPercent <= 25
   const temModVida = vidaMaxFinal !== undefined && vidaMaxFinal !== hpMaxBase
+
+  // FV.3 — flash âmbar-esmeralda (--ok) de 300ms ao subir o HP exibido (cura)
+  const prevHpAtualRef = useRef(ficha.hp_atual)
+  const [curando, setCurando] = useState(false)
+  useEffect(() => {
+    const prev = Number(prevHpAtualRef.current ?? 0)
+    const atual = Number(ficha.hp_atual ?? 0)
+    if (atual > prev) {
+      setCurando(true)
+      const t = setTimeout(() => setCurando(false), 300)
+      prevHpAtualRef.current = ficha.hp_atual
+      return () => clearTimeout(t)
+    }
+    prevHpAtualRef.current = ficha.hp_atual
+  }, [ficha.hp_atual])
 
   const temSistemaRacas = racas.length > 0
   const temSistemaClasses = classes.length > 0
@@ -101,15 +116,14 @@ export default function CabecalhoPersonagem({
       ? (classesFicha[0].classe?.nome || null)
       : (classeFallbackNome || ficha.classe || null)
   const nivelLabel = temClasses ? nivelTotal : ficha.nivel
-  const subtitulo = [racaNome, classeLabel, nivelLabel ? `Nível ${nivelLabel}` : null]
+  const subtituloPartes = [racaNome, classeLabel, nivelLabel ? `Nível ${nivelLabel}` : null]
     .filter(Boolean)
-    .join(' · ')
 
-  const selectCls = 'px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
-  const inputCls  = 'px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
+  const selectCls = 'px-2 py-1 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-1 focus:ring-accent-500'
+  const inputCls  = 'px-2 py-1 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-1 focus:ring-accent-500'
 
   return (
-    <div className="bg-slate-800 border border-purple-800 rounded-2xl p-5">
+    <div className="bg-raised border border-border rounded-2xl p-5">
       <div className="flex gap-5 items-start">
 
         {/* Avatar */}
@@ -117,10 +131,10 @@ export default function CabecalhoPersonagem({
           <img
             src={ficha.imagem_url}
             alt={ficha.nome_personagem}
-            className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl shrink-0 border-2 border-purple-700"
+            className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl shrink-0 ring-2 ring-accent-500"
           />
         ) : (
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl shrink-0 border-2 border-purple-800 bg-purple-950 flex items-center justify-center">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl shrink-0 ring-2 ring-accent-500 bg-void flex items-center justify-center">
             <span className="text-3xl sm:text-4xl select-none">🧙</span>
           </div>
         )}
@@ -128,11 +142,19 @@ export default function CabecalhoPersonagem({
         <div className="flex-1 min-w-0 space-y-3">
           {/* Nome */}
           <div>
-            <h2 className="text-2xl font-bold text-white leading-tight">{ficha.nome_personagem}</h2>
+            <h2 className="text-2xl font-bold font-sora text-ink leading-tight">{ficha.nome_personagem}</h2>
             {!isDono && (
-              subtitulo
-                ? <p className="text-purple-400 text-sm mt-0.5">{subtitulo}</p>
-                : <p className="text-purple-600 text-sm mt-0.5 italic">Sem raça ou classe definida</p>
+              subtituloPartes.length > 0
+                ? (
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    {subtituloPartes.map((parte, i) => (
+                      <span key={i} className="px-2.5 py-0.5 rounded-full bg-hover border border-border text-ink-dim text-xs">
+                        {parte}
+                      </span>
+                    ))}
+                  </div>
+                )
+                : <p className="text-ink-dim text-sm mt-0.5 italic">Sem raça ou classe definida</p>
             )}
           </div>
 
@@ -190,11 +212,11 @@ export default function CabecalhoPersonagem({
           {/* HP — escondido quando uma trilha substitui a vida (24.2) */}
           <div className={esconderVida ? 'hidden' : ''}>
             <div className="flex items-center gap-2 mb-1.5">
-              <p className="text-purple-400 text-xs font-medium uppercase tracking-wider">
+              <p className="text-ink-dim text-xs font-medium uppercase tracking-[.12em]">
                 {rotuloVida}
               </p>
               {temModVida && (
-                <span className="text-green-400 text-[10px] font-mono">
+                <span className="text-ok text-[10px] font-mono">
                   (base {hpMaxBase}{vidaMaxFinal > hpMaxBase ? ` +${vidaMaxFinal - hpMaxBase}` : ` ${vidaMaxFinal - hpMaxBase}`})
                 </span>
               )}
@@ -202,15 +224,15 @@ export default function CabecalhoPersonagem({
 
             {isDono ? (
               <div className="flex items-center gap-2 flex-wrap">
-                <div className="flex items-center gap-1.5 bg-purple-950 border border-purple-700 rounded-lg px-2 py-1">
+                <div className="flex items-center gap-1.5 bg-void border border-border rounded-lg px-2 py-1">
                   <input
                     type="number"
                     value={hpAtual}
                     onChange={e => setHpAtual(e.target.value)}
-                    className="w-14 bg-transparent text-white text-center text-sm font-semibold focus:outline-none"
+                    className="w-14 bg-transparent text-ink text-center text-sm font-mono font-semibold focus:outline-none"
                     placeholder="0"
                   />
-                  <span className="text-purple-600 text-sm">/</span>
+                  <span className="text-ink-dim text-sm">/</span>
                   {/* Exibe o max final; clique para editar o base */}
                   {editandoHpBase ? (
                     <input
@@ -220,12 +242,12 @@ export default function CabecalhoPersonagem({
                       onBlur={salvarHpBase}
                       onKeyDown={e => e.key === 'Enter' && salvarHpBase()}
                       autoFocus
-                      className="w-14 bg-transparent text-amber-400 text-center text-sm font-semibold focus:outline-none border-b border-amber-500"
+                      className="w-14 bg-transparent text-dice-400 text-center text-sm font-mono font-semibold focus:outline-none border-b border-dice-500"
                     />
                   ) : (
                     <button
                       onClick={() => { setHpBaseTemp(String(hpMaxBase)); setEditandoHpBase(true) }}
-                      className="w-14 text-white text-center text-sm font-semibold focus:outline-none hover:text-amber-300 transition-colors"
+                      className="w-14 text-ink text-center text-sm font-mono font-semibold focus:outline-none hover:text-dice-400 transition-colors"
                       title={`HP máx base: ${hpMaxBase}${temModVida ? ` (+${vidaMaxFinal - hpMaxBase} de modificadores) = ${hpMaxDisplay}` : ''}`}
                     >
                       {hpMaxDisplay || '—'}
@@ -236,38 +258,38 @@ export default function CabecalhoPersonagem({
                   onClick={salvarHP}
                   className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                     hpSalvo
-                      ? 'bg-green-700 text-green-100'
-                      : 'bg-purple-700 hover:bg-purple-600 text-white'
+                      ? 'bg-ok/20 text-ok'
+                      : 'bg-accent-700 hover:bg-accent-600 text-ink'
                   }`}
                 >
                   {hpSalvo ? '✓ Salvo' : 'Salvar HP'}
                 </button>
               </div>
             ) : (
-              <p className="text-white text-lg font-semibold">
+              <p className="text-ink text-lg font-semibold font-mono">
                 {ficha.hp_atual ?? '?'}
-                <span className="text-purple-500 font-normal text-sm"> / {hpMaxDisplay || '?'}</span>
+                <span className="text-ink-dim font-normal text-sm"> / {hpMaxDisplay || '?'}</span>
               </p>
             )}
 
-            {hpErro && <p className="text-red-400 text-xs mt-1">{hpErro}</p>}
+            {hpErro && <p className="text-harm text-xs mt-1">{hpErro}</p>}
 
             {hpMaxDisplay > 0 && (
-              <div className="mt-2 h-2.5 bg-slate-700 rounded-full overflow-hidden max-w-xs">
+              <div className="mt-2 h-2.5 bg-void rounded-full overflow-hidden max-w-xs">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${hpColor}`}
+                  className={`h-full rounded-full bg-harm transition-all duration-300 ${hpBaixo ? 'animate-pulse' : ''} ${curando ? 'shadow-[0_0_12px_rgba(52,211,153,.8)]' : ''}`}
                   style={{ width: `${hpPercent}%` }}
                 />
               </div>
             )}
 
             {vidaTempEfetiva > 0 && (
-              <p className="text-sky-400 text-xs mt-1.5 font-medium flex items-center gap-1.5">
+              <p className="text-temp text-xs mt-1.5 font-medium flex items-center gap-1.5">
                 +{vidaTempEfetiva} Vida Temporária
                 {isDono && vidaTempPontual > 0 && (
                   <button
                     onClick={limparVidaTemp}
-                    className="text-sky-600 hover:text-sky-300 transition-colors"
+                    className="text-temp/70 hover:text-temp transition-colors"
                     title="Limpar vida temporária"
                   >
                     ✕
