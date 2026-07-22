@@ -1,6 +1,7 @@
 // Editor de layout/seções do sistema — usado pelo mestre no SistemaEditor
 import FormulaInput from './FormulaInput'
 import ProgressaoEditor from './ProgressaoEditor'
+import CriacaoEditor from './CriacaoEditor'
 import DefesaAtivaEditor from './DefesaAtivaEditor'
 import ResolucaoEditor from './ResolucaoEditor'
 import TrilhasEditor from './TrilhasEditor'
@@ -363,6 +364,15 @@ export default function LayoutEditor({
         onChange={p => onConfigChange({ ...config, progressao_xp: p })}
         modoProgressao={config.progressao}
         onModoChange={p => onConfigChange({ ...config, progressao: p })}
+      />
+
+      {/* Criação por prioridades (25.4b) */}
+      <CriacaoEditor
+        cfg={config.criacao_prioridades}
+        onChange={c => onConfigChange({ ...config, criacao_prioridades: c })}
+        atributos={atributos}
+        pericias={pericias}
+        pontosStatusAtivo={!!config.pontos_status?.ativo}
       />
 
       {/* Pontos de status (22.1) */}

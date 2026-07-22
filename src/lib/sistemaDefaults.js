@@ -45,6 +45,9 @@ export const CONFIG_LAYOUT_DEFAULT = {
   // [{ id, nome, min, max, inicial, destaque, feed, efeitos_por_faixa,
   //    alimenta_dados_especiais }]
   estados: [],
+  // Fase 25.4b — criação de personagem por PRIORIDADES. Excludente com
+  // rolagem (F3) e pontos de status (F22). { ativo, etapas: [...] }
+  criacao_prioridades: { ativo: false, etapas: [] },
   // Fase 23 — modo de RESOLUÇÃO da rolagem. Ausente/'soma' = comportamento de
   // sempre (retrocompatível byte a byte). Um modo por sistema.
   resolucao: {
@@ -156,6 +159,10 @@ export function mergeConfigLayout(raw) {
     critico: { ...CONFIG_LAYOUT_DEFAULT.critico, ...((raw || {}).critico || {}) },
     trilhas: (raw || {}).trilhas || [],
     estados: (raw || {}).estados || [],
+    criacao_prioridades: {
+      ativo: !!(raw || {}).criacao_prioridades?.ativo,
+      etapas: (raw || {}).criacao_prioridades?.etapas || [],
+    },
     exibicao_atributos: (raw || {}).exibicao_atributos || 'numero',
     maximo_dots: (raw || {}).maximo_dots || 5,
     resolucao: {
