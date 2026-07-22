@@ -1,0 +1,25 @@
+:root {
+  /* Superfícies (fundo mais profundo → mais elevado) */
+  --bg:      #0B0812;  /* fundo da página */
+  --void:    #120D1E;  /* painéis rebaixados */
+  --raised:  #191129;  /* cards */
+  --hover:   #231738;  /* hover de cards/linhas */
+  --border:  #2A2140;
+
+  /* Texto */
+  --ink:     #E9E4F5;
+  --ink-dim: rgba(233,228,245,.55);
+
+  /* Acento primário — violeta (identidade do site) */
+  --accent-300: #C4B5FD; --accent-400: #A78BFA; --accent-500: #8B5CF6;
+  --accent-600: #7C3AED; --accent-700: #6D28D9; --accent-800: #5B21B6;
+
+  /* Âmbar — exclusivo de DADOS e momentos de rolagem/crítico */
+  --dice-200: #FDE68A; --dice-400: #FBBF24; --dice-500: #F59E0B; --dice-700: #B45309;
+
+  /* Semânticas */
+  --ok:   #34D399;  /* cura, sucesso */
+  --warn: #FBBF24;
+  --harm: #F87171;  /* dano, botch */
+  --temp: #60A5FA;  /* vida temporária, escudos */
+}
