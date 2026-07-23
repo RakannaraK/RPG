@@ -1,13 +1,45 @@
+import { useState, useEffect } from 'react'
 import Dice3D from '../dados/Dice3D'
 import { listarSkins } from '../../lib/diceSkins'
 import { tocarSomDado } from '../../lib/diceSounds'
 import { usePreferencias } from '../../context/PreferenciasContext'
+import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../lib/supabase'
 
 const SKINS = listarSkins()
 
 export default function PreferenciasModal({ onFechar }) {
   const { preferencias, salvarPreferencias } = usePreferencias()
   const { dado_skin, som_ativo, som_volume, som_acao_ativo, som_acao_volume } = preferencias
+  const { session } = useAuth()
+
+  // Nome de exibição (apelido global) — o que outras pessoas veem no lugar do e-mail.
+  const [apelido, setApelido] = useState('')
+  const [apelidoSalvo, setApelidoSalvo] = useState(false)
+  const [apelidoErro, setApelidoErro] = useState('')
+  const [salvandoApelido, setSalvandoApelido] = useState(false)
+
+  useEffect(() => {
+    const uid = session?.user?.id
+    if (!uid) return
+    supabase.from('profiles').select('username').eq('id', uid).single()
+      .then(({ data }) => { if (data?.username) setApelido(data.username) })
+  }, [session?.user?.id])
+
+  async function salvarApelido() {
+    const uid = session?.user?.id
+    const v = apelido.trim()
+    setApelidoErro('')
+    if (!uid) return
+    if (!v) { setApelidoErro('O apelido não pode ficar vazio.'); return }
+    setSalvandoApelido(true)
+    const { error } = await supabase.from('profiles').update({ username: v }).eq('id', uid)
+    setSalvandoApelido(false)
+    if (error) { setApelidoErro(error.message || 'Erro ao salvar.'); return }
+    setApelido(v)
+    setApelidoSalvo(true)
+    setTimeout(() => setApelidoSalvo(false), 2000)
+  }
 
   function escolher(id) {
     salvarPreferencias({ dado_skin: id })
@@ -39,6 +71,31 @@ export default function PreferenciasModal({ onFechar }) {
 
         {/* Corpo */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+          {/* Nome de exibição (apelido global) */}
+          <div>
+            <p className="text-sm font-medium text-purple-200 mb-1">Nome de exibição</p>
+            <p className="text-purple-500 text-xs mb-2">É o que as outras pessoas veem (no lugar do seu e-mail). Pode trocar a qualquer hora.</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={apelido}
+                onChange={e => setApelido(e.target.value)}
+                maxLength={40}
+                placeholder="Seu apelido"
+                className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <button
+                type="button"
+                onClick={salvarApelido}
+                disabled={salvandoApelido}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${apelidoSalvo ? 'bg-green-700 text-green-100' : 'bg-purple-700 hover:bg-purple-600 text-white'}`}
+              >
+                {apelidoSalvo ? '✓ Salvo' : salvandoApelido ? '...' : 'Salvar'}
+              </button>
+            </div>
+            {apelidoErro && <p className="text-red-400 text-xs mt-1">{apelidoErro}</p>}
+          </div>
+
           {/* Grid de skins */}
           <div>
             <p className="text-sm font-medium text-purple-200 mb-3">Skin do dado</p>

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 import { useMesas } from '../hooks/useMesa'
 import MesaCard from '../components/mesa/MesaCard'
 import MesaCreate from '../components/mesa/MesaCreate'
@@ -18,6 +19,15 @@ export default function DashboardPage() {
   const [showPrefs, setShowPrefs] = useState(false)
   const [logoutLoading, setLogoutLoading] = useState(false)
   const [showArquivadas, setShowArquivadas] = useState(false)
+
+  // Nome de exibição do usuário logado (no lugar do e-mail no header)
+  const [meuApelido, setMeuApelido] = useState('')
+  useEffect(() => {
+    const uid = session?.user?.id
+    if (!uid) return
+    supabase.from('profiles').select('username').eq('id', uid).single()
+      .then(({ data }) => { if (data?.username) setMeuApelido(data.username) })
+  }, [session?.user?.id])
 
   // 16.8 — separa mesas ativas das arquivadas
   const ativas = mesas.filter(m => !m.arquivada)
@@ -52,7 +62,7 @@ export default function DashboardPage() {
           <span className="text-white font-bold text-lg">RPG Ficha</span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-purple-300 text-sm hidden sm:block">{session?.user?.email}</span>
+          <span className="text-purple-300 text-sm hidden sm:block">{meuApelido || '—'}</span>
           <Sininho />
           <button
             onClick={() => setShowPrefs(true)}

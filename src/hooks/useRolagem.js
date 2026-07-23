@@ -94,7 +94,7 @@ export function useRolagem() {
       const payload = {
         mesa_id: mesaId,
         autor_id: session.user.id,
-        autor_nome: autorNome || session.user.email,
+        autor_nome: autorNome || 'Jogador',
         ficha_id: fichaId || null,
         rotulo: rotulo || null,
         notacao: resultado.notacao,
@@ -209,7 +209,7 @@ export function useRolagem() {
       const payload = {
         mesa_id: mesaId,
         autor_id: session.user.id,
-        autor_nome: autorNome || session.user.email,
+        autor_nome: autorNome || 'Jogador',
         ficha_id: fichaId || null,
         rotulo: rotulo || null,
         notacao: notacaoStr,
@@ -258,7 +258,7 @@ export function useRolagem() {
 
     try {
       const payload = {
-        mesa_id: mesaId, autor_id: session.user.id, autor_nome: autorNome || session.user.email,
+        mesa_id: mesaId, autor_id: session.user.id, autor_nome: autorNome || 'Jogador',
         ficha_id: fichaId || null,
         rotulo: rotulo ? `↻ ${rotulo}` : '↻ Rerolagem',
         notacao: notacaoStr,
@@ -294,7 +294,7 @@ export function useRolagem() {
       const payload = {
         mesa_id: mesaId,
         autor_id: session.user.id,
-        autor_nome: autorNome || session.user.email,
+        autor_nome: autorNome || 'Jogador',
         ficha_id: fichaId || null,
         rotulo: rotulo || null,
         notacao: notacao || '',

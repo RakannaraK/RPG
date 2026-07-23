@@ -25,7 +25,9 @@ export function usePresencaSessao(sessaoId, mesaId) {
 
     async function setup() {
       // Nome/avatar de exibição: apelido+avatar da mesa (16.6), fallback username, fallback e-mail
-      let nome = session.user.email
+      // Nome de exibição: apelido da mesa (16.6) > username global > "Jogador".
+      // Nunca cai no e-mail (privacidade).
+      let nome = null
       let avatar = null
       if (mesaId) {
         try {
@@ -39,12 +41,13 @@ export function usePresencaSessao(sessaoId, mesaId) {
           if (membro?.avatar_url) avatar = membro.avatar_url
         } catch { /* segue p/ fallback */ }
       }
-      if (nome === session.user.email) {
+      if (!nome) {
         try {
           const { data } = await supabase.from('profiles').select('username').eq('id', userId).single()
           if (data?.username) nome = data.username
-        } catch { /* mantém e-mail */ }
+        } catch { /* segue p/ fallback */ }
       }
+      nome = nome || 'Jogador'
       if (cancelled) return
 
       channel = supabase.channel(`sessao-${sessaoId}`, {
