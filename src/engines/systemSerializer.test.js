@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { serializarSistema, desserializarSistema, VERSAO_FORMATO } from './systemSerializer'
+import { serializarSistema, desserializarSistema, montarPayloadImportacao, VERSAO_FORMATO } from './systemSerializer'
 
 // Gerador determinístico para asserção exata dos ids novos.
 function gerador() {
@@ -25,9 +25,10 @@ describe('serializarSistema', () => {
     expect(out.versao).toBe(VERSAO_FORMATO)
     expect(out.sistema).toEqual({ nome: 'Meu Sistema', descricao: 'd', config_layout: { a: 1 } })
     expect(out.sistema.id).toBeUndefined()
-    expect(out.atributos[0]).toEqual({ id: A, nome: 'Força' })
+    // sistema_id/mesa_id/criador_id saem; created_at FICA (o importador atômico
+    // insere a linha inteira via jsonb_populate_recordset).
+    expect(out.atributos[0]).toEqual({ id: A, created_at: 't', nome: 'Força' })
     expect(out.atributos[0].sistema_id).toBeUndefined()
-    expect(out.atributos[0].created_at).toBeUndefined()
   })
 })
 
@@ -123,5 +124,34 @@ describe('round-trip serializar → desserializar', () => {
     expect(r.habilidades[0].classe_id).toBe(r.classes[0].id)
     expect(Object.keys(r.sistema.config_layout.slots.grades)).toEqual([r.classes[0].id])
     expect(r.classes[0].id).not.toBe(CLASSE)
+  })
+})
+
+describe('montarPayloadImportacao', () => {
+  const SID = 'abcabcab-abca-4bca-8bca-abcabcabcabc'
+
+  it('carimba sistema_id nas coleções e usa sistemaId como id do sistema', () => {
+    const grafo = {
+      sistema: { nome: 'S', descricao: 'd', config_layout: { x: 1 } },
+      atributos: [{ id: A, nome: 'Força' }],
+      poderes: [{ id: '11111111-1111-4111-8111-111111111111', nome: 'Bola' }],
+    }
+    const p = montarPayloadImportacao(grafo, SID)
+    expect(p.sistema).toEqual({ id: SID, nome: 'S', descricao: 'd', config_layout: { x: 1 } })
+    expect(p.atributos[0].sistema_id).toBe(SID)
+    expect(p.poderes[0].sistema_id).toBe(SID)
+  })
+
+  it('achata os modificadores aninhados numa lista única e os remove das linhas-pai', () => {
+    const grafo = {
+      sistema: { nome: 'S', config_layout: {} },
+      racas: [{ id: R, nome: 'Humano', modificadores: [{ id: '22222222-2222-4222-8222-222222222222', raca_id: R }] }],
+      habilidades: [{ id: '33333333-3333-4333-8333-333333333333', nome: 'H', modificadores: [{ id: '44444444-4444-4444-8444-444444444444', habilidade_id: '33333333-3333-4333-8333-333333333333' }] }],
+    }
+    const p = montarPayloadImportacao(grafo, SID)
+    expect(p.modificadores).toHaveLength(2)
+    expect(p.racas[0].modificadores).toBeUndefined()
+    expect(p.habilidades[0].modificadores).toBeUndefined()
+    expect(p.modificadores[0].sistema_id).toBeUndefined()
   })
 })

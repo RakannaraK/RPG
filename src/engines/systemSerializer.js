@@ -5,8 +5,10 @@
 
 export const VERSAO_FORMATO = 1
 
-// Campos ligados ao ambiente (mesa/usuário/tempo): não viajam no export.
-const CAMPOS_AMBIENTE = ['mesa_id', 'sistema_id', 'criador_id', 'created_at', 'updated_at']
+// Campos de ambiente que NÃO viajam (são reatribuídos na importação).
+// created_at/updated_at ficam de propósito: o importador atômico insere a linha
+// inteira via jsonb_populate_recordset, então toda coluna precisa vir preenchida.
+const CAMPOS_AMBIENTE = ['mesa_id', 'sistema_id', 'criador_id']
 
 // Coleções de conteúdo de um sistema (todas penduradas em sistema_id).
 export const COLECOES = [
@@ -120,4 +122,35 @@ export function desserializarSistema(json, gerarId = defaultGerarId) {
     resultado[col] = (fonte[col] || []).map(row => remapear(row, mapa))
   }
   return resultado
+}
+
+// Monta o payload para a RPC importar_sistema: usa `sistemaId` como id do novo
+// sistema, carimba sistema_id em cada coleção e ACHATA os modificadores (que vêm
+// aninhados sob raças/classes/habilidades) numa lista única. Puro. O grafo de
+// entrada já deve estar remapeado (saída de desserializarSistema).
+export function montarPayloadImportacao(grafo, sistemaId) {
+  const comSistema = rows => (rows || []).map(row => ({ ...row, sistema_id: sistemaId }))
+  const semMods = rows => (rows || []).map(({ modificadores, ...resto }) => ({ ...resto, sistema_id: sistemaId }))
+  const modsDe = rows => (rows || []).flatMap(r => r.modificadores || [])
+  const g = grafo || {}
+  return {
+    sistema: {
+      id: sistemaId,
+      nome: g.sistema?.nome ?? '',
+      descricao: g.sistema?.descricao ?? null,
+      config_layout: g.sistema?.config_layout ?? {},
+    },
+    atributos: comSistema(g.atributos),
+    pericias: comSistema(g.pericias),
+    racas: semMods(g.racas),
+    classes: semMods(g.classes),
+    habilidades: semMods(g.habilidades),
+    poderes: comSistema(g.poderes),
+    linhas_poder: comSistema(g.linhas_poder),
+    pools: comSistema(g.pools),
+    categorias_item: comSistema(g.categorias_item),
+    propriedades_item: comSistema(g.propriedades_item),
+    recompensas_nivel: comSistema(g.recompensas_nivel),
+    modificadores: [...modsDe(g.racas), ...modsDe(g.classes), ...modsDe(g.habilidades)],
+  }
 }
