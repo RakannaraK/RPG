@@ -57,6 +57,22 @@ describe('desserializarSistema — remap de referências entre linhas', () => {
   })
 })
 
+describe('desserializarSistema — remap de ids aninhados', () => {
+  it('regenera o id de modificadores dentro de raça e mantém as refs (pai e alvo)', () => {
+    const MOD = '55555555-5555-4555-8555-555555555555'
+    const json = {
+      sistema: { nome: 'S', config_layout: {} },
+      atributos: [{ id: A, nome: 'Força' }],
+      racas: [{ id: R, nome: 'Humano', modificadores: [{ id: MOD, raca_id: R, alvo: A, valor: 2 }] }],
+    }
+    const r = desserializarSistema(json, gerador())
+    const mod = r.racas[0].modificadores[0]
+    expect(mod.id).not.toBe(MOD)
+    expect(mod.raca_id).toBe(r.racas[0].id)
+    expect(mod.alvo).toBe(r.atributos[0].id)
+  })
+})
+
 describe('desserializarSistema — remap dentro do config_layout', () => {
   it('remapeia id embutido como VALOR (pool_id em resolucao.rerolagem)', () => {
     const json = {

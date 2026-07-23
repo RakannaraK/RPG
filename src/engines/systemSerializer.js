@@ -96,11 +96,13 @@ export function serializarSistema(grafo) {
 export function desserializarSistema(json, gerarId = defaultGerarId) {
   const fonte = json || {}
 
+  // Coleta TODO uuid do grafo — ids de linha, ids ANINHADOS (ex.: modificadores
+  // dentro de raças/classes/habilidades) e ids embutidos no config_layout — para
+  // que nada carregue um id antigo na importação (evita colisão de PK ao clonar
+  // na mesma base).
   const idsAntigos = new Set()
   for (const col of COLECOES) {
-    for (const row of fonte[col] || []) {
-      if (row && ehUuid(row.id)) idsAntigos.add(row.id)
-    }
+    coletarUuids(fonte[col], idsAntigos)
   }
   coletarUuids(fonte.sistema && fonte.sistema.config_layout, idsAntigos)
 
