@@ -3,6 +3,8 @@ import { useSistema, useSaveSistema } from '../../hooks/useSistema'
 import { usePools } from '../../hooks/usePools'
 import { useLinhasPoder } from '../../hooks/useLinhasPoder'
 import { mergeConfigLayout } from '../../lib/sistemaDefaults'
+import { carregarSistemaCompleto } from '../../lib/carregarSistemaCompleto'
+import { serializarSistema } from '../../engines/systemSerializer'
 import AtributoEditor from './AtributoEditor'
 import LayoutEditor from './LayoutEditor'
 import RacasClassesEditor from './RacasClassesEditor'
@@ -68,6 +70,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
 
   const [saveError, setSaveError] = useState('')
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [exportando, setExportando] = useState(false)
 
   // Sincroniza estado local quando dados do DB chegam
   useEffect(() => {
@@ -145,6 +148,30 @@ export default function SistemaEditor({ mesaId, isMestre }) {
       refetch()
     } catch (err) {
       setSaveError(err.message)
+    }
+  }
+
+  async function handleExportar() {
+    if (!sistemaDB?.id || exportando) return
+    setExportando(true)
+    setSaveError('')
+    try {
+      const grafo = await carregarSistemaCompleto(sistemaDB.id)
+      const json = serializarSistema(grafo)
+      const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const base = (sistemaDB.nome || 'sistema').trim().replace(/[^\w-]+/g, '_').toLowerCase() || 'sistema'
+      a.download = `${base}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      setSaveError(err.message || 'Erro ao exportar o sistema.')
+    } finally {
+      setExportando(false)
     }
   }
 
@@ -381,6 +408,18 @@ export default function SistemaEditor({ mesaId, isMestre }) {
         >
           {saving ? 'Salvando...' : 'Salvar sistema'}
         </button>
+
+        {sistemaDB?.id && (
+          <button
+            type="button"
+            onClick={handleExportar}
+            disabled={exportando || saving}
+            className="px-4 py-2.5 border border-purple-700 text-purple-200 hover:bg-purple-900/40 disabled:opacity-50 rounded-lg transition-colors text-sm"
+            title="Baixa um .json com todo o sistema (backup ou importar em outra mesa)"
+          >
+            {exportando ? 'Exportando...' : '⬇ Exportar sistema'}
+          </button>
+        )}
 
         {saveSuccess && (
           <span className="text-green-400 text-sm">✓ Sistema salvo!</span>
