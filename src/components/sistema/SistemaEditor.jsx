@@ -5,6 +5,7 @@ import { useLinhasPoder } from '../../hooks/useLinhasPoder'
 import { mergeConfigLayout } from '../../lib/sistemaDefaults'
 import { carregarSistemaCompleto } from '../../lib/carregarSistemaCompleto'
 import { serializarSistema } from '../../engines/systemSerializer'
+import { importarSistemaNaMesa } from '../../lib/importarSistema'
 import AtributoEditor from './AtributoEditor'
 import LayoutEditor from './LayoutEditor'
 import RacasClassesEditor from './RacasClassesEditor'
@@ -71,6 +72,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
   const [saveError, setSaveError] = useState('')
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [exportando, setExportando] = useState(false)
+  const [importando, setImportando] = useState(false)
 
   // Sincroniza estado local quando dados do DB chegam
   useEffect(() => {
@@ -175,6 +177,23 @@ export default function SistemaEditor({ mesaId, isMestre }) {
     }
   }
 
+  async function handleImportar(e) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file || importando) return
+    setImportando(true)
+    setSaveError('')
+    try {
+      const json = JSON.parse(await file.text())
+      await importarSistemaNaMesa(mesaId, json)
+      refetch()
+    } catch (err) {
+      setSaveError(err.message || 'Erro ao importar o sistema.')
+    } finally {
+      setImportando(false)
+    }
+  }
+
   if (loading) {
     return <div className="py-12 text-center text-purple-400">Carregando sistema...</div>
   }
@@ -237,6 +256,21 @@ export default function SistemaEditor({ mesaId, isMestre }) {
         <h2 className="text-lg font-semibold text-white">
           {sistemaDB ? 'Editar sistema' : 'Criar sistema de regras'}
         </h2>
+        {!sistemaDB && (
+          <div className="flex items-center gap-3 flex-wrap bg-slate-800 border border-purple-800 rounded-xl px-4 py-3">
+            <span className="text-purple-300 text-sm">Comece do zero abaixo, ou importe um sistema pronto:</span>
+            <label className={`text-sm px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${importando ? 'bg-purple-900 text-purple-400 cursor-wait' : 'bg-purple-700 hover:bg-purple-600 text-white'}`}>
+              {importando ? 'Importando...' : '⬆ Importar sistema (.json)'}
+              <input
+                type="file"
+                accept="application/json,.json"
+                onChange={handleImportar}
+                disabled={importando}
+                className="hidden"
+              />
+            </label>
+          </div>
+        )}
         <div>
           <label className="block text-sm font-medium text-purple-200 mb-1">Nome do sistema *</label>
           <input
