@@ -7,6 +7,7 @@ import { carregarSistemaCompleto } from '../../lib/carregarSistemaCompleto'
 import { serializarSistema } from '../../engines/systemSerializer'
 import { importarSistemaNaMesa } from '../../lib/importarSistema'
 import { TEMPLATES_SISTEMA } from '../../templates'
+import GuiaMestre from '../ajuda/GuiaMestre'
 import AtributoEditor from './AtributoEditor'
 import LayoutEditor from './LayoutEditor'
 import RacasClassesEditor from './RacasClassesEditor'
@@ -74,6 +75,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [exportando, setExportando] = useState(false)
   const [importando, setImportando] = useState(false)
+  const [showGuia, setShowGuia] = useState(false)
 
   // Sincroniza estado local quando dados do DB chegam
   useEffect(() => {
@@ -268,9 +270,20 @@ export default function SistemaEditor({ mesaId, isMestre }) {
     <div className="space-y-6">
       {/* Nome e descrição do sistema */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-white">
-          {sistemaDB ? 'Editar sistema' : 'Criar sistema de regras'}
-        </h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-white">
+            {sistemaDB ? 'Editar sistema' : 'Criar sistema de regras'}
+          </h2>
+          {!sistemaDB && (
+            <button
+              type="button"
+              onClick={() => setShowGuia(true)}
+              className="text-sm text-purple-300 hover:text-white shrink-0"
+            >
+              ? Guia do mestre
+            </button>
+          )}
+        </div>
         {!sistemaDB && (
           <div className="flex items-center gap-3 flex-wrap bg-slate-800 border border-purple-800 rounded-xl px-4 py-3">
             <span className="text-purple-300 text-sm">Comece do zero abaixo, ou importe um sistema pronto:</span>
@@ -496,6 +509,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
           <span className="text-red-400 text-sm">{saveError}</span>
         )}
       </div>
+      {showGuia && <GuiaMestre onFechar={() => setShowGuia(false)} />}
     </div>
   )
 }

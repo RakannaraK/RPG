@@ -8,6 +8,7 @@ import MesaCreate from '../components/mesa/MesaCreate'
 import MesaInvite from '../components/mesa/MesaInvite'
 import PreferenciasModal from '../components/preferencias/PreferenciasModal'
 import Sininho from '../components/notificacoes/Sininho'
+import GuiaMestre from '../components/ajuda/GuiaMestre'
 
 export default function DashboardPage() {
   const { session, logout } = useAuth()
@@ -17,6 +18,7 @@ export default function DashboardPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [showInvite, setShowInvite] = useState(false)
   const [showPrefs, setShowPrefs] = useState(false)
+  const [showGuia, setShowGuia] = useState(false)
   const [logoutLoading, setLogoutLoading] = useState(false)
   const [showArquivadas, setShowArquivadas] = useState(false)
 
@@ -64,6 +66,13 @@ export default function DashboardPage() {
         <div className="flex items-center gap-4">
           <span className="text-purple-300 text-sm hidden sm:block">{meuApelido || '—'}</span>
           <Sininho />
+          <button
+            onClick={() => setShowGuia(true)}
+            title="Guia do mestre"
+            className="p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
+          >
+            ?
+          </button>
           <button
             onClick={() => setShowPrefs(true)}
             title="Preferências"
@@ -192,6 +201,7 @@ export default function DashboardPage() {
       )}
 
       {showPrefs && <PreferenciasModal onFechar={() => setShowPrefs(false)} />}
+      {showGuia && <GuiaMestre onFechar={() => setShowGuia(false)} />}
     </div>
   )
 }
