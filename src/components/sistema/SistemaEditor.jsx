@@ -6,6 +6,7 @@ import { mergeConfigLayout } from '../../lib/sistemaDefaults'
 import { carregarSistemaCompleto } from '../../lib/carregarSistemaCompleto'
 import { serializarSistema } from '../../engines/systemSerializer'
 import { importarSistemaNaMesa } from '../../lib/importarSistema'
+import { TEMPLATES_SISTEMA } from '../../templates'
 import AtributoEditor from './AtributoEditor'
 import LayoutEditor from './LayoutEditor'
 import RacasClassesEditor from './RacasClassesEditor'
@@ -194,6 +195,20 @@ export default function SistemaEditor({ mesaId, isMestre }) {
     }
   }
 
+  async function handleUsarModelo(t) {
+    if (importando) return
+    setImportando(true)
+    setSaveError('')
+    try {
+      await importarSistemaNaMesa(mesaId, t.dados)
+      refetch()
+    } catch (err) {
+      setSaveError(err.message || 'Erro ao criar a partir do modelo.')
+    } finally {
+      setImportando(false)
+    }
+  }
+
   if (loading) {
     return <div className="py-12 text-center text-purple-400">Carregando sistema...</div>
   }
@@ -269,6 +284,25 @@ export default function SistemaEditor({ mesaId, isMestre }) {
                 className="hidden"
               />
             </label>
+          </div>
+        )}
+        {!sistemaDB && (
+          <div className="bg-slate-800 border border-purple-800 rounded-xl px-4 py-3">
+            <p className="text-purple-300 text-sm mb-2">Ou comece de um modelo pronto (você ajusta tudo depois):</p>
+            <div className="flex flex-wrap gap-2">
+              {TEMPLATES_SISTEMA.map(t => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => handleUsarModelo(t)}
+                  disabled={importando}
+                  title={t.descricao}
+                  className="text-sm px-3 py-1.5 rounded-lg border border-purple-700 text-purple-200 hover:bg-purple-900/40 disabled:opacity-50 transition-colors"
+                >
+                  {t.nome}
+                </button>
+              ))}
+            </div>
           </div>
         )}
         <div>
