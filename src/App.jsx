@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { PreferenciasProvider } from './context/PreferenciasContext'
 import PageTransition from './theme/PageTransition'
+import ErrorBoundary from './components/ErrorBoundary'
 import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import MesaPage from './pages/MesaPage'
@@ -99,11 +100,13 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <PreferenciasProvider>
-          <AppRoutes />
-        </PreferenciasProvider>
-      </AuthProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <PreferenciasProvider>
+            <AppRoutes />
+          </PreferenciasProvider>
+        </AuthProvider>
+      </ErrorBoundary>
     </BrowserRouter>
   )
 }
