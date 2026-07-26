@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { maximoPool, gastarPool, notacaoGasto, recuperarPool, calcularMaximos } from './poolEngine'
+import { maximoPool, gastarPool, notacaoGasto, calcularMaximos } from './poolEngine'
 import { slotsTotais, slotsDisponiveis, gastarSlot, circulosGastaveis, slotsAtivos, recuperarSlots } from './slotsEngine'
 import { podeUsarPoder, montarNotacaoUso, cdDoPoder } from './poderes'
 import { podeAtivarHabilidade, planejarTurno } from './custoHabilidade'
-import { avaliarFormula } from './formulaEngine'
 
 /**
  * Teste de aceitação da Fase 20, com as duas fichas de referência.

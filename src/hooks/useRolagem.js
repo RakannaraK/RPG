@@ -139,7 +139,7 @@ export function useRolagem() {
     const faces = Number(resolucao?.dado) || 10
     let dadosNum = []
     let especiais_idx = []
-    let difParam = null
+    let difParam
     let notacaoStr = ''
     let dados3D = null
     let descartadoRU = null // 23.6 — o dado não usado no roll_under com vant/desv

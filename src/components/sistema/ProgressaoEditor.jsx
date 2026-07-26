@@ -41,7 +41,7 @@ function CategoriasCompra({ categorias = [], onChange }) {
       </p>
       {categorias.map((c, i) => {
         // prévia: custo do 2→3 (novo_valor = 3)
-        let previa = null
+        let previa
         try { previa = custoCompra(c, 2) } catch { previa = null }
         return (
           <div key={c.id} className="rounded-lg border border-purple-900/50 bg-slate-900/40 p-2 space-y-1.5">

@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest'
-import { avaliarFormula } from './formulaEngine'
 import { resolverNotacaoFormula } from './diceNotation'
 import { coletarModificadores, calcularValoresFinais } from './modifierEngine'
 import { atendeNivelMinimo } from './requisitos'

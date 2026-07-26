@@ -4,7 +4,7 @@ import { coletarModificadores, calcularValoresFinais, agregarDefesas, listarCond
 import { resolverFaixas, faixaAtiva } from './faixas'
 import { nivelPorXp, progressoXp } from './progressaoEngine'
 import { maximoPool } from './poolEngine'
-import { slotsTotais, slotsDisponiveis, usadosPorCirculo, circulosGastaveis } from './slotsEngine'
+import { slotsTotais, slotsDisponiveis, usadosPorCirculo } from './slotsEngine'
 import { podeUsarPoder, cdDoPoder, extraDaEscala, circuloBaseDoPoder } from './poderes'
 import { limiarCritico, ehCritico, dadoPuro, multiplicadorCritico, aplicarCritico } from './criticoEngine'
 import { resolverTipoDano } from './conversao'
@@ -18,7 +18,6 @@ import { totalConsolidado, converter, saldoDe } from './moedasEngine'
  */
 
 const MODF = 'piso((x - 10) / 2)' // modificador de atributo do D&D
-const mod = (attr, valor) => avaliarFormula(`mod(${attr})`, { atributos: { [attr]: valor }, formulaModificador: MODF })
 
 describe('Krad · Bárbaro 9 / Paladino 4 + XP/level-up', () => {
   const niveisClasse = { barbaro: 9, paladino: 4 }

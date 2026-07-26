@@ -579,7 +579,7 @@ export default function FichaPage() {
   // rola se for notação, aplica à vida e registra no feed.
   async function handleUsarAcao(mod, nomeHab, somPresetHab) {
     const valorStr = (mod.valor ?? '').toString().trim()
-    let total = 0
+    let total
     let dados = []
     if (valorStr && /\dd\d/i.test(valorStr) && validarNotacao(valorStr)) {
       const r = rolarNotacao(valorStr)

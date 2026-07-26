@@ -175,7 +175,7 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
   const derivadosCombate = [] // 22.7 — calculados marcados "exibir no combate"
   for (const campo of camposCombate) {
     if (campo.tipo !== 'calculado' || !campo.formula) continue
-    let valor = null
+    let valor
     try { valor = avaliarFormula(campo.formula, ctxCalc) } catch { valor = null }
     if (valor != null) combateCalculado[campo.id] = valor
     if (campo.exibir_combate) derivadosCombate.push({ id: campo.id, nome: campo.nome, valor })

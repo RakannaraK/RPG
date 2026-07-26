@@ -39,7 +39,7 @@ function SliderField({ label, value, min, max, onChange, disabled }) {
 function SimulacaoDados({ resultado }) {
   if (!resultado || !resultado.resultados.length) return null
 
-  const { resultados, mantidos, descartados } = resultado
+  const { resultados, mantidos } = resultado
   const ordenados = [...resultados].sort((a, b) => a - b)
 
   return (
@@ -47,11 +47,6 @@ function SimulacaoDados({ resultado }) {
       <p className="text-xs text-purple-400 mb-2">Simulação:</p>
       <div className="flex flex-wrap gap-2 mb-2">
         {ordenados.map((v, i) => {
-          const isDescartado = descartados.includes(v) &&
-            descartados.filter(d => d === v).length > ordenados.slice(0, i).filter(o => o === v).length
-            ? false
-            : descartados.indexOf(v) !== -1 && i < descartados.length
-
           const mantidoIdx = mantidos.indexOf(v)
           const isMantido = mantidoIdx !== -1
 

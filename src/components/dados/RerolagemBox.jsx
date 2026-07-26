@@ -54,7 +54,6 @@ export default function RerolagemBox({ resultado, rerolagem, mesaId, fichaId, se
     }
   }
 
-  const faces = params.faces
   const dif = params.dificuldade
 
   return (

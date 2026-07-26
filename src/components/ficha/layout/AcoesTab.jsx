@@ -46,7 +46,7 @@ function RollCompact({ label, resultado, rolando, onClose, skin, detalhamento })
   )
 }
 
-export default function AcoesTab({ fichaId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [] }) {
+export default function AcoesTab({ fichaId, mesaId, valoresFinais = {}, modificadoresAtivos = [] }) {
   const { itens } = useItens(fichaId)
   const { registrarRolagem } = useRolagem()
   const { preferencias } = usePreferencias()

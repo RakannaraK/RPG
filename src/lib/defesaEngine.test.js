@@ -62,7 +62,6 @@ describe('22.5 — validação das faixas (contíguas, sem sobreposição)', () 
     expect(validarFaixasDefesa(FAIXAS).valida).toBe(true)
   })
   it('rejeita sobreposição', () => {
-    const fs = [{ de: 5, ate: null, reducao_percentual: 90 }, { de: 3, ate: 4, reducao_percentual: 60 }, { de: null, ate: 2, reducao_percentual: 35 }]
     // 3..4 e depois 5..∞ não se sobrepõem, mas null..2 e 3..4 são contíguas; ok. Vamos criar sobreposição real:
     const sobrep = [{ de: -4, ate: 5, reducao_percentual: 60 }, { de: 4, ate: null, reducao_percentual: 90 }, { de: null, ate: -5, reducao_percentual: 35 }]
     expect(validarFaixasDefesa(sobrep).valida).toBe(false)

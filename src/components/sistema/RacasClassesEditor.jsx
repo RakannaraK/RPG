@@ -49,7 +49,7 @@ function fmtOpValor(mod) {
   return `${n >= 0 || isNaN(n) ? '+' : ''}${v}` // somar
 }
 
-function descCondicao(mod, atributos) {
+function descCondicao(mod, _atributos) {
   if (mod.condicao_tipo === 'manual') return mod.condicao_config?.rotulo || 'manual'
   if (mod.condicao_tipo === 'auto') {
     const c = mod.condicao_config || {}

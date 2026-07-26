@@ -170,17 +170,6 @@ function Toggle({ checked, onChange }) {
   )
 }
 
-function toFieldId(str) {
-  return (
-    str
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .replace(/[^a-z0-9]+/g, '_')
-      .replace(/^_|_$/g, '') || `campo_${Date.now()}`
-  )
-}
-
 export default function LayoutEditor({
   config,
   onConfigChange,

@@ -134,7 +134,6 @@ function PoolCard({ pool, atual, maximo, erro, isDono, onDefinirAtual, onRolagem
 
 export default function PainelPools({
   pools = [],
-  linhasPools = [],
   maximos = {},
   erros = {},
   isDono,
