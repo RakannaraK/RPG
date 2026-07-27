@@ -21,6 +21,18 @@ export function montarCondicao(s) {
     if (s.condMetrica === 'habilidade_ativa') {
       return { condicao_tipo: 'auto', condicao_config: { metrica: 'habilidade_ativa' } }
     }
+    // Condição por fórmula: guarda a expressão junto do comparador.
+    if (s.condMetrica === 'formula') {
+      return {
+        condicao_tipo: 'auto',
+        condicao_config: {
+          metrica: 'formula',
+          formula: (s.condFormula || '').trim(),
+          operador: s.condOperador,
+          valor: Number(s.condValor),
+        },
+      }
+    }
     return {
       condicao_tipo: 'auto',
       condicao_config: { metrica: s.condMetrica, operador: s.condOperador, valor: Number(s.condValor) },

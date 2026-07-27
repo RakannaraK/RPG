@@ -469,6 +469,15 @@ export default function FichaPage() {
     pericias: {},
     formulaModificador: config.formula_modificador || '',
   }
+  // Contexto das condições por FÓRMULA (metrica 'formula'). Usa atributos BASE
+  // e estados/pools armazenados — nunca os valores finais: uma condição que
+  // lesse o resultado dos modificadores fecharia um ciclo com eles. Mesmo
+  // precedente do ctxPools acima.
+  const ctxCondicao = {
+    ...ctxModificador,
+    atributos: atributosBase,
+    estados: mapaEstados(config.estados || [], valoresEstados),
+  }
   // 19.4 — a faixa ativa é escolhida ANTES de resolver fórmulas: o valor da
   // faixa ainda pode ser fórmula (ou notação de dado, que passa direto).
   // 24.4 — efeitos dos ESTADOS entram no MESMO pipeline (sem segundo mecanismo):
@@ -481,7 +490,7 @@ export default function FichaPage() {
           classes: classesAtivas,
           habilidadesFicha,
           itens: itensFicha, // 21 — itens equipados como fonte de modificador
-          estadoFicha,
+          estadoFicha: { ...estadoFicha, ctxFormula: ctxCondicao },
           condicoesManuais,
         }),
         ...modificadoresDeEstados(config.estados || [], valoresEstados),

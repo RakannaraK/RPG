@@ -69,6 +69,21 @@ export function avaliarCondicao(modificador, estadoFicha) {
       return estadoFicha.habilidadesAtivas instanceof Set
         ? estadoFicha.habilidadesAtivas.has(cfg.habilidade_id)
         : false
+    // Condição por FÓRMULA: o mestre escreve qualquer expressão do motor de
+    // fórmulas — estado(fome), pool(mana), pericia(x), nivel(classe)... — e
+    // compara com um valor. O contexto vem em estadoFicha.ctxFormula e usa
+    // valores BASE/armazenados (mesmo precedente anti-ciclo do ctxPools): um
+    // modificador condicional não pode depender do resultado dos modificadores.
+    // Fórmula inválida, ou sem contexto, NUNCA quebra a ficha — só não satisfaz.
+    case 'formula': {
+      if (!cfg.formula || !estadoFicha.ctxFormula) return false
+      try {
+        const v = avaliarFormula(cfg.formula, estadoFicha.ctxFormula)
+        return comparar(v, cfg.operador, Number(cfg.valor))
+      } catch {
+        return false
+      }
+    }
     default:
       return false
   }
