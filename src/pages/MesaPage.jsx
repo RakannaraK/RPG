@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import SistemaEditor from '../components/sistema/SistemaEditor'
+import RecapSessao from '../components/mesa/RecapSessao'
 import { useFichas } from '../hooks/useFicha'
 import FichaCreate from '../components/ficha/FichaCreate'
 import RoladorGenerico from '../components/dados/RoladorGenerico'
@@ -13,7 +14,7 @@ import SessoesHistorico from '../components/sessao/SessoesHistorico'
 import MeuPerfilMesa from '../components/mesa/MeuPerfilMesa'
 import Sininho from '../components/notificacoes/Sininho'
 
-const TABS = ['Fichas', 'Dados', 'Sistema', 'Membros']
+const TABS = ['Fichas', 'Dados', 'Resumo', 'Sistema', 'Membros']
 
 // Fase 16 — rótulo/cor por papel (mestre/co-mestre/jogador/espectador)
 const ROLE_INFO = {
@@ -556,6 +557,10 @@ export default function MesaPage() {
                 <FeedRolagens mesaId={id} onNovaRolagem={() => setNovasRolagens(n => n + 1)} />
               </div>
             </div>
+          )}
+
+          {activeTab === 'Resumo' && (
+            <RecapSessao mesaId={id} />
           )}
 
           {activeTab === 'Sistema' && (
