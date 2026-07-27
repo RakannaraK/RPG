@@ -56,6 +56,7 @@ function descCondicao(mod, _atributos) {
     if (c.metrica === 'vida_percent') return `vida ${c.operador} ${c.valor}%`
     if (c.metrica === 'nivel') return `nível ${c.operador} ${c.valor}`
     if (c.metrica === 'habilidade_ativa') return 'habilidade ativa'
+    if (c.metrica === 'formula') return `${c.formula} ${c.operador} ${c.valor}`
   }
   return null
 }
@@ -182,6 +183,7 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
   const [condMetrica, setCondMetrica] = useState('vida_percent')
   const [condOperador, setCondOperador] = useState('<')
   const [condValor, setCondValor] = useState('')
+  const [condFormula, setCondFormula] = useState('')
   const [condRotulo, setCondRotulo] = useState('')
 
   const [salvando, setSalvando] = useState(false)
@@ -245,6 +247,11 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
     if (condTipo === 'auto' && condMetrica !== 'habilidade_ativa' && (condValor === '' || isNaN(Number(condValor)))) {
       setErro('Informe o valor da condição automática.'); return
     }
+    if (condTipo === 'auto' && condMetrica === 'formula') {
+      if (!condFormula.trim()) { setErro('Escreva a fórmula da condição.'); return }
+      const chk = validarFormula(condFormula)
+      if (!chk.valida) { setErro(`Fórmula da condição inválida: ${chk.erro}`); return }
+    }
     if (condTipo === 'manual' && !condRotulo.trim()) { setErro('Informe o rótulo da condição manual.'); return }
 
     // Monta o payload (lógica pura — ver lib/efeitoForm.js)
@@ -252,7 +259,7 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
     const payload = montarEfeitoPayload({
       tipo, alvo, operacao, valor, valorEhFormula: !escalando && valorEhFormula && valorPodeFormula,
       dadosExtras, percentualRolagem: percRolagem, escopoCategoria, vantTipoAlvo, curaModo,
-      condTipo, condMetrica, condOperador, condValor, condRotulo,
+      condTipo, condMetrica, condOperador, condValor, condRotulo, condFormula,
       faixas: escalando ? faixaSpec : null,
       nivelMinimo,
     })
@@ -262,7 +269,7 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
       await onAdd(payload)
       // limpa campos de valor mas mantém o tipo selecionado
       setAlvo(''); setValor(''); setValorEhFormula(false); setDadosExtras(''); setPercRolagem(''); setEscopoCategoria('')
-      setCondTipo('nenhuma'); setCondValor(''); setCondRotulo('')
+      setCondTipo('nenhuma'); setCondValor(''); setCondRotulo(''); setCondFormula('')
       setEscalaFaixa(false); setFaixaSpec({ variavel: 'nivel', campo: 'valor', faixas: [] })
       setNivelMinimo('')
     } catch (err) {
@@ -448,6 +455,7 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
             <select value={condMetrica} onChange={e => setCondMetrica(e.target.value)} className={ic}>
               <option value="vida_percent">Vida %</option>
               <option value="nivel">Nível</option>
+              <option value="formula">Fórmula</option>
             </select>
             <select value={condOperador} onChange={e => setCondOperador(e.target.value)} className={ic}>
               <option value="<">&lt;</option>
@@ -459,6 +467,21 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
             <input type="number" value={condValor} onChange={e => setCondValor(e.target.value)}
               placeholder={condMetrica === 'vida_percent' ? '50' : '5'} className={`${ic} w-16 text-center`} />
             {condMetrica === 'vida_percent' && <span className="text-purple-500 text-[11px]">%</span>}
+            {condMetrica === 'formula' && (
+              <div className="w-full mt-1">
+                <FormulaInput
+                  value={condFormula}
+                  onChange={setCondFormula}
+                  placeholder="ex: estado(fome)"
+                  variaveis={['estado(', 'pool(', 'atributo(', 'pericia(', 'nivel', 'vida_atual']}
+                />
+                <p className="text-purple-600 text-[11px] mt-1">
+                  O efeito entra em jogo quando o resultado da fórmula satisfaz a comparação escolhida
+                  acima. Ex.: <span className="font-mono">estado(fome)</span> ≥ <span className="font-mono">4</span>.
+                  Usa os valores base da ficha (atributos, pools, estados) — não os já modificados.
+                </p>
+              </div>
+            )}
           </>
         )}
         {condTipo === 'manual' && (

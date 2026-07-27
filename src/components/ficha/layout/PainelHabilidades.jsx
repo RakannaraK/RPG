@@ -140,6 +140,7 @@ function descreverCondicao(m) {
     if (c.metrica === 'vida_percent')    return `se vida ${c.operador || ''} ${c.valor}%`
     if (c.metrica === 'nivel')           return `se nível ${c.operador || ''} ${c.valor}`
     if (c.metrica === 'habilidade_ativa') return 'se habilidade ativa'
+    if (c.metrica === 'formula') return `se ${c.formula} ${c.operador} ${c.valor}`
     return 'condicional'
   }
   return null
