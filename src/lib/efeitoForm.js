@@ -5,9 +5,10 @@
 // Quais campos cada tipo de efeito usa
 export const usaAtributoAlvo = t => t === 'atributo'
 export const usaCombateAlvo  = t => t === 'combate'
+export const usaPericiaAlvo  = t => t === 'pericia'
 export const usaTextoAlvo    = t => t === 'resistencia' || t === 'imunidade' || t === 'vulnerabilidade'
-export const usaValorNum     = t => t === 'atributo' || t === 'vida_max' || t === 'vida_temp' || t === 'combate'
-export const usaOperacao     = t => t === 'atributo' || t === 'vida_max' || t === 'combate'
+export const usaValorNum     = t => t === 'atributo' || t === 'vida_max' || t === 'vida_temp' || t === 'combate' || t === 'pericia'
+export const usaOperacao     = t => t === 'atributo' || t === 'vida_max' || t === 'combate' || t === 'pericia'
 export const ehAcertoDano    = t => t === 'acerto' || t === 'dano'
 export const ehVantagem      = t => t === 'vantagem' || t === 'desvantagem'
 export const ehAcao          = t => t === 'cura' || t === 'vida_temp_acao'
@@ -66,7 +67,7 @@ export function montarEfeitoPayload(s) {
     ...cond,
   }
   const t = s.tipo
-  if (usaAtributoAlvo(t) || usaCombateAlvo(t)) {
+  if (usaAtributoAlvo(t) || usaCombateAlvo(t) || usaPericiaAlvo(t)) {
     p.alvo = s.alvo
     p.valor = s.valor
     p.operacao = usaOperacao(t) ? s.operacao : 'somar'

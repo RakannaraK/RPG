@@ -4,6 +4,7 @@ import { useRolagem } from '../../../hooks/useRolagem'
 import { tocarSomDado, estimarNumDados } from '../../../lib/diceSounds'
 import { resolverVantagem, aplicarVantagem } from '../../../lib/rollModifiers'
 import { descreverResultado } from '../../../lib/resolutionEngine'
+import { bonusDeTipo } from '../../../lib/modifierEngine'
 import { usePreferencias } from '../../../context/PreferenciasContext'
 import Dice3D from '../../dados/Dice3D'
 import RerolagemBox from '../../dados/RerolagemBox'
@@ -63,6 +64,15 @@ export default function PainelPericias({
     return periciasFicha.find(p => p.pericia_id === periciaId) || { proficiente: false, bonus: 0 }
   }
 
+  // Bônus EFETIVO da perícia: o valor gravado na ficha + os modificadores de
+  // efeito com alvo nesta perícia (raça, classe, habilidade, item). O campo de
+  // edição continua mostrando o valor BASE — o dono edita o que é dele, não o
+  // total já modificado.
+  function bonusEfetivo(periciaId) {
+    const base = Number(getPericiaFicha(periciaId).bonus) || 0
+    return bonusDeTipo({ tipo: 'pericia', alvo: periciaId, base, modificadores: modificadoresAtivos }).final
+  }
+
   function getAtributoValor(atributoBaseId) {
     if (!atributoBaseId) return null
     const va = valoresAtributos.find(v => v.atributo?.id === atributoBaseId)
@@ -92,7 +102,7 @@ export default function PainelPericias({
     // 23.3 — modos de resolução: atributo-base + bônus vira parada (sucessos, ex
     // "Força + Briga"), alvo (roll_under) ou modificador (faixas).
     if (modoResolucao !== 'soma' && registrarResolvida) {
-      const valorModo = (Number(pf.bonus) || 0) + (Number(atributoVal) || 0)
+      const valorModo = bonusEfetivo(pericia.id) + (Number(atributoVal) || 0)
       const estado = resolverVantagem({ alvo: pericia.id, modificadoresAtivos })
       setRolando(true)
       setRollAtivo({ periciaId: pericia.id, resultado: null, rolando: true, estado })
@@ -104,7 +114,7 @@ export default function PainelPericias({
       return
     }
 
-    const notacaoBase = buildNotacao(pf.bonus, atributoVal, dadoPadrao)
+    const notacaoBase = buildNotacao(bonusEfetivo(pericia.id), atributoVal, dadoPadrao)
 
     // Vantagem/desvantagem desta perícia (12.3)
     const estado = resolverVantagem({ alvo: pericia.id, modificadoresAtivos })
@@ -148,7 +158,9 @@ export default function PainelPericias({
           {pericias.map(pericia => {
             const pf = getPericiaFicha(pericia.id)
             const atributoVal = getAtributoValor(pericia.atributo_base_id)
-            const bonusDisplay = pf.bonus >= 0 ? `+${pf.bonus}` : String(pf.bonus)
+            const bonusEfet = bonusEfetivo(pericia.id)
+            const temModPericia = bonusEfet !== (Number(pf.bonus) || 0)
+            const bonusDisplay = bonusEfet >= 0 ? `+${bonusEfet}` : String(bonusEfet)
             const esteRoll = rollAtivo?.periciaId === pericia.id
 
             return (
@@ -188,7 +200,8 @@ export default function PainelPericias({
                   {exibicaoAtributos === 'dots' ? (
                     <div className="shrink-0">
                       <Dots
-                        valor={Number(pf.bonus) || 0}
+                        valor={bonusEfet}
+                        valorBase={Number(pf.bonus) || 0}
                         max={maximoDots}
                         canEdit={isDono}
                         onSet={n => handleBonusBlur(pericia.id, n)}
@@ -206,7 +219,10 @@ export default function PainelPericias({
                       className="w-12 px-1 py-0.5 bg-void border border-border text-ink text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-accent-500 shrink-0"
                     />
                   ) : (
-                    <span className="text-ink text-sm font-semibold w-8 text-right shrink-0">
+                    <span
+                      className={`text-sm font-semibold w-8 text-right shrink-0 ${temModPericia ? 'text-ok' : 'text-ink'}`}
+                      title={temModPericia ? `base ${pf.bonus ?? 0} + efeitos` : undefined}
+                    >
                       {bonusDisplay}
                     </span>
                   )}

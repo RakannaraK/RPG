@@ -223,12 +223,88 @@ export function listarCondicoesManuais({ raca, classe, classes, habilidadesFicha
  *     }
  *   }
  */
+// Fase 18 — ORDEM DE OPERAÇÕES OFICIAL (contrato matemático):
+//   1. base
+//   2. somas   → subtotal1 = base + Σ somar
+//   3. percent → subtotal2 = piso(subtotal1 × (1 + Σ percentual/100))  [aditivos entre si]
+//   4. mult    → resultado = subtotal2 × Π multiplicar (em sequência)
+//   5. definir → último 'definir' sobrescreve tudo
+// Piso (floor) só após o passo de percentuais. Valor não fica negativo (piso em 0),
+// exceto quando 'definir' fixa explicitamente.
+function aplicar(valorBase, mods) {
+  const base = Number(valorBase) || 0
+  const fontes = []
+
+  // 2 — somas
+  let somaTotal = 0
+  for (const mod of mods.filter(m => m.operacao === 'somar')) {
+    const v = Number(mod.valor) || 0
+    somaTotal += v
+    fontes.push({ fonte: mod._fonte || '?', operacao: 'somar', valor: v })
+  }
+  const subtotal1 = base + somaTotal
+
+  // 3 — percentuais (ADITIVOS entre si, sobre subtotal1; piso ao fim do passo)
+  let percTotal = 0
+  for (const mod of mods.filter(m => m.operacao === 'percentual')) {
+    const v = Number(mod.valor) || 0
+    percTotal += v
+    fontes.push({ fonte: mod._fonte || '?', operacao: 'percentual', valor: v })
+  }
+  // piso em 0 aplica-se AO PASSO DE PERCENTUAIS (spec: "percentuais que
+  // resultariam em negativo → piso em 0"). Sem percentual, o subtotal passa
+  // intacto — fichas sem percentual não mudam NADA (regressão F9), inclusive
+  // podendo ficar negativas por somas, como no engine pré-Fase-18.
+  // Aritmética inteira: `× (1 + p/100)` sofre erro de ponto flutuante
+  // (100 com +13% dava 112, não 113 — 100 × 1.13 = 112.9999…). `× (100+p)/100`
+  // é exato para percentuais inteiros.
+  const subtotal2 = percTotal !== 0
+    ? Math.max(0, Math.floor(subtotal1 * (100 + percTotal) / 100))
+    : subtotal1
+
+  // 4 — multiplicadores duros (em sequência)
+  let resultado = subtotal2
+  for (const mod of mods.filter(m => m.operacao === 'multiplicar')) {
+    const v = Number(mod.valor) || 1
+    resultado = resultado * v
+    fontes.push({ fonte: mod._fonte || '?', operacao: 'multiplicar', valor: v })
+  }
+
+  // 5 — definir (último vence, valor exato)
+  const definires = mods.filter(m => m.operacao === 'definir')
+  let final = resultado
+  if (definires.length > 0) {
+    const ultimo = definires[definires.length - 1]
+    final = Number(ultimo.valor)
+    fontes.push({ fonte: ultimo._fonte || '?', operacao: 'definir', valor: final })
+  }
+
+  const passos = {
+    base, somaTotal, subtotal1, percTotal, subtotal2, resultado,
+    definido: definires.length > 0 ? final : null,
+  }
+  return { final, fontes, passos }
+}
+
+/**
+ * Aplica a MESMA pipeline oficial (somas → percentuais → multiplicadores →
+ * definir) a um alvo qualquer, para consumidores que já têm a lista de
+ * modificadores em mãos e não passam por calcularValoresFinais (ex.: o painel
+ * de perícias). Filtra por tipo e, se `alvo` vier, por alvo.
+ * @returns {{ final: number, fontes: Array, passos: object }}
+ */
+export function bonusDeTipo({ tipo, alvo = null, base = 0, modificadores = [] }) {
+  const mods = (modificadores || []).filter(m => m.tipo === tipo && (alvo == null || m.alvo === alvo))
+  return aplicar(base, mods)
+}
+
 export function calcularValoresFinais(base, modificadores) {
   // Separa modificadores por tipo/alvo
   const porAtributo = {}
   const porVidaMax = []
   const porVidaTemp = []
   const porCombate = {}
+  const porPericia = {}
 
   for (const mod of modificadores) {
     switch (mod.tipo) {
@@ -250,71 +326,14 @@ export function calcularValoresFinais(base, modificadores) {
           porCombate[mod.alvo].push(mod)
         }
         break
+      case 'pericia':
+        if (mod.alvo) {
+          if (!porPericia[mod.alvo]) porPericia[mod.alvo] = []
+          porPericia[mod.alvo].push(mod)
+        }
+        break
       // resistencia/imunidade/vulnerabilidade → agregarDefesas
     }
-  }
-
-  // Fase 18 — ORDEM DE OPERAÇÕES OFICIAL (contrato matemático):
-  //   1. base
-  //   2. somas   → subtotal1 = base + Σ somar
-  //   3. percent → subtotal2 = piso(subtotal1 × (1 + Σ percentual/100))  [aditivos entre si]
-  //   4. mult    → resultado = subtotal2 × Π multiplicar (em sequência)
-  //   5. definir → último 'definir' sobrescreve tudo
-  // Piso (floor) só após o passo de percentuais. Valor não fica negativo (piso em 0),
-  // exceto quando 'definir' fixa explicitamente.
-  function aplicar(valorBase, mods) {
-    const base = Number(valorBase) || 0
-    const fontes = []
-
-    // 2 — somas
-    let somaTotal = 0
-    for (const mod of mods.filter(m => m.operacao === 'somar')) {
-      const v = Number(mod.valor) || 0
-      somaTotal += v
-      fontes.push({ fonte: mod._fonte || '?', operacao: 'somar', valor: v })
-    }
-    const subtotal1 = base + somaTotal
-
-    // 3 — percentuais (ADITIVOS entre si, sobre subtotal1; piso ao fim do passo)
-    let percTotal = 0
-    for (const mod of mods.filter(m => m.operacao === 'percentual')) {
-      const v = Number(mod.valor) || 0
-      percTotal += v
-      fontes.push({ fonte: mod._fonte || '?', operacao: 'percentual', valor: v })
-    }
-    // piso em 0 aplica-se AO PASSO DE PERCENTUAIS (spec: "percentuais que
-    // resultariam em negativo → piso em 0"). Sem percentual, o subtotal passa
-    // intacto — fichas sem percentual não mudam NADA (regressão F9), inclusive
-    // podendo ficar negativas por somas, como no engine pré-Fase-18.
-    // Aritmética inteira: `× (1 + p/100)` sofre erro de ponto flutuante
-    // (100 com +13% dava 112, não 113 — 100 × 1.13 = 112.9999…). `× (100+p)/100`
-    // é exato para percentuais inteiros.
-    const subtotal2 = percTotal !== 0
-      ? Math.max(0, Math.floor(subtotal1 * (100 + percTotal) / 100))
-      : subtotal1
-
-    // 4 — multiplicadores duros (em sequência)
-    let resultado = subtotal2
-    for (const mod of mods.filter(m => m.operacao === 'multiplicar')) {
-      const v = Number(mod.valor) || 1
-      resultado = resultado * v
-      fontes.push({ fonte: mod._fonte || '?', operacao: 'multiplicar', valor: v })
-    }
-
-    // 5 — definir (último vence, valor exato)
-    const definires = mods.filter(m => m.operacao === 'definir')
-    let final = resultado
-    if (definires.length > 0) {
-      const ultimo = definires[definires.length - 1]
-      final = Number(ultimo.valor)
-      fontes.push({ fonte: ultimo._fonte || '?', operacao: 'definir', valor: final })
-    }
-
-    const passos = {
-      base, somaTotal, subtotal1, percTotal, subtotal2, resultado,
-      definido: definires.length > 0 ? final : null,
-    }
-    return { final, fontes, passos }
   }
 
   // Atributos
@@ -343,16 +362,28 @@ export function calcularValoresFinais(base, modificadores) {
     detCombate[id] = { base: Number(valorBase) || 0, final, fontes, passos }
   }
 
+  // Perícias (base opcional: só calcula as que o chamador informar)
+  const periciasFinal = {}
+  const detPericias = {}
+  for (const [id, valorBase] of Object.entries(base.pericias || {})) {
+    const mods = porPericia[id] || []
+    const { final, fontes, passos } = aplicar(valorBase, mods)
+    periciasFinal[id] = final
+    detPericias[id] = { base: Number(valorBase) || 0, final, fontes, passos }
+  }
+
   return {
     atributos: atributosFinal,
     vida_max: vidaMaxFinal,
     vida_temp: vidaTempFinal > 0 ? vidaTempFinal : 0,
     combate: combateFinal,
+    pericias: periciasFinal,
     detalhamento: {
       atributos: detAtributos,
       vida_max: { base: Number(base.vida_max) || 0, final: vidaMaxFinal, fontes: vidaMaxFontes, passos: vidaMaxPassos },
       vida_temp: { base: 0, final: vidaTempFinal, fontes: vidaTempFontes, passos: vidaTempPassos },
       combate: detCombate,
+      pericias: detPericias,
     },
   }
 }

@@ -3,7 +3,7 @@ import { useRacasClasses } from '../../hooks/useRacasClasses'
 import { useHabilidades } from '../../hooks/useHabilidades'
 import { usePools } from '../../hooks/usePools'
 import {
-  usaAtributoAlvo, usaCombateAlvo, usaTextoAlvo, usaValorNum, usaOperacao,
+  usaAtributoAlvo, usaCombateAlvo, usaPericiaAlvo, usaTextoAlvo, usaValorNum, usaOperacao,
   ehAcertoDano, ehVantagem, ehAcao, montarEfeitoPayload,
 } from '../../lib/efeitoForm'
 import { validarFormula, usaAtributoOuMod } from '../../lib/formulaEngine'
@@ -23,6 +23,7 @@ const TIPOS_MOD = [
   { value: 'imunidade',       label: 'Imunidade' },
   { value: 'vulnerabilidade', label: 'Vulnerabilidade' },
   { value: 'combate',         label: 'Campo de combate' },
+  { value: 'pericia',         label: 'Perícia' },
   { value: 'acerto',          label: 'Acerto (ataque)' },
   { value: 'dano',            label: 'Dano' },
   { value: 'vantagem',        label: 'Vantagem (teste)' },
@@ -311,6 +312,12 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
           <select value={alvo} onChange={e => setAlvo(e.target.value)} className={ic}>
             <option value="">Campo...</option>
             {camposCombate.map(c => <option key={c.id} value={c.id}>{c.nome || '(sem nome)'}</option>)}
+          </select>
+        )}
+        {usaPericiaAlvo(tipo) && (
+          <select value={alvo} onChange={e => setAlvo(e.target.value)} className={ic}>
+            <option value="">Perícia...</option>
+            {pericias.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
           </select>
         )}
         {usaTextoAlvo(tipo) && (
