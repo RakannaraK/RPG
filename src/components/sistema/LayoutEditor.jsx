@@ -6,6 +6,7 @@ import DefesaAtivaEditor from './DefesaAtivaEditor'
 import ResolucaoEditor from './ResolucaoEditor'
 import TrilhasEditor from './TrilhasEditor'
 import EstadosEditor from './EstadosEditor'
+import TabelasEditor from './TabelasEditor'
 import { avaliarFormula } from '../../lib/formulaEngine'
 import { ehRolado } from '../../lib/pontosEngine'
 import { PRESET_IDS } from '../../engines/actionSoundEngine'
@@ -428,6 +429,12 @@ export default function LayoutEditor({
 
       {/* FV.5a — sons padrão por tipo de evento (fallback quando a arma/habilidade
           não tem som próprio). Opcional; vazio = silêncio, como hoje. */}
+      {/* Tabelas do mestre */}
+      <TabelasEditor
+        tabelas={config.tabelas || []}
+        onChange={t => onConfigChange({ ...config, tabelas: t })}
+      />
+
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
         <p className="text-purple-200 text-sm font-semibold">Sons padrão (ações de combate)</p>
         <p className="text-purple-500 text-xs">

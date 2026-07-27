@@ -33,6 +33,9 @@ export const CONFIG_LAYOUT_DEFAULT = {
   poderes_rotulo: 'Poderes',
   // Fase 21.6 — moedas / economia. Desativada = sem carteira na ficha.
   moedas: { ativo: false, denominacoes: [] }, // [{ id, nome, sigla, valor }]
+  // Tabelas do mestre (rumores, loot, encontros, oráculos). Vazio = nada aparece.
+  // [{ id, nome, notacao, entradas: [{ de, ate, texto }] }]
+  tabelas: [],
   // FV.4/5 — sons de ação (combate). Vazio = silêncio (retrocompat; os sons
   // de dado da F11 ficam intocados). mapa: origemId (arma/habilidade) →
   // presetId. padroes: tipo de evento → presetId (fallback do mapa).
@@ -159,6 +162,7 @@ export function mergeConfigLayout(raw) {
     },
     poderes_rotulo: (raw || {}).poderes_rotulo || 'Poderes',
     moedas: { ...CONFIG_LAYOUT_DEFAULT.moedas, ...((raw || {}).moedas || {}) },
+    tabelas: (raw || {}).tabelas || [],
     sons: {
       mapa: { ...((raw || {}).sons?.mapa || {}) },
       padroes: { ...((raw || {}).sons?.padroes || {}) },
