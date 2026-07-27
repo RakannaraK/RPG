@@ -18,6 +18,7 @@ import { bloqueadosPorNivel } from '../lib/requisitos'
 import { recompensasAoSubir } from '../lib/recompensas'
 import { useRecompensas, useRecompensasFicha } from '../hooks/useRecompensas'
 import PainelRecompensas from '../components/ficha/PainelRecompensas'
+import PainelProjetos from '../components/ficha/PainelProjetos'
 import { calcularMaximos, mapaPools, atualDePool } from '../lib/poolEngine'
 import { usePools, usePoolsFicha } from '../hooks/usePools'
 import { useTrilhasFicha } from '../hooks/useTrilhasFicha'
@@ -1132,6 +1133,10 @@ export default function FichaPage() {
           isDono={isDono}
           onSalvar={async nova => { await updateFicha(fichaId, { carteira: nova }); refetch() }}
         />
+
+        {/* Projetos de downtime — o que o personagem toca entre as sessões.
+            Some por completo se a tabela ainda não existir no banco. */}
+        <PainelProjetos fichaId={fichaId} isDono={isDono} />
 
         {/* Recompensas de nível (19.6) — checklist-guia, some se não houver nenhuma */}
         <PainelRecompensas

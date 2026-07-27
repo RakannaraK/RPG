@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import SistemaEditor from '../components/sistema/SistemaEditor'
 import RecapSessao from '../components/mesa/RecapSessao'
+import PainelRelogios from '../components/mesa/PainelRelogios'
 import { useFichas } from '../hooks/useFicha'
 import FichaCreate from '../components/ficha/FichaCreate'
 import RoladorGenerico from '../components/dados/RoladorGenerico'
@@ -560,7 +561,10 @@ export default function MesaPage() {
           )}
 
           {activeTab === 'Resumo' && (
-            <RecapSessao mesaId={id} />
+            <div className="space-y-6">
+              <PainelRelogios mesaId={id} isGestor={isGestor} />
+              <RecapSessao mesaId={id} />
+            </div>
           )}
 
           {activeTab === 'Sistema' && (
