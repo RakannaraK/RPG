@@ -16,9 +16,10 @@ import PoderesEditor from './PoderesEditor'
 import LinhasPoderEditor from './LinhasPoderEditor'
 import SlotsEditor from './SlotsEditor'
 import MaestriaItensEditor from './MaestriaItensEditor'
+import SimuladorFicha from './SimuladorFicha'
 import DescansosEditor from './DescansosEditor'
 
-const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes', 'Descansos', 'Recursos', 'Poderes', 'Maestria & Itens']
+const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes', 'Descansos', 'Recursos', 'Poderes', 'Maestria & Itens', 'Simulador']
 
 const REGRA_PADRAO = {
   tipo: 'dados',
@@ -476,6 +477,14 @@ export default function SistemaEditor({ mesaId, isMestre }) {
           ) : (
             <p className="text-purple-500 text-sm">Salve o sistema antes de configurar maestria e categorias.</p>
           )
+        )}
+
+        {activeTab === 'Simulador' && (
+          <SimuladorFicha
+            config={configLayout}
+            atributos={atributos}
+            pericias={pericias}
+          />
         )}
       </div>
 
