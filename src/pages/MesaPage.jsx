@@ -355,6 +355,13 @@ export default function MesaPage() {
             </span>
             <Sininho />
             <button
+              onClick={() => navigate(`/mesa/${id}/mapa`)}
+              title="Mapa da mesa"
+              className="p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
+            >
+              🗺
+            </button>
+            <button
               onClick={() => setShowPrefs(true)}
               title="Preferências"
               className="p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"

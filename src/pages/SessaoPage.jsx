@@ -516,6 +516,13 @@ export default function SessaoPage() {
             )}
           </div>
           <div className="ml-auto shrink-0 flex items-center gap-3">
+            <button
+              onClick={() => navigate(`/mesa/${mesaId}/mapa`, { state: { voltar: `/mesa/${mesaId}/sessao/${sessaoId}` } })}
+              className="px-2.5 py-1.5 text-sm text-purple-200 hover:text-white bg-purple-900/50 hover:bg-purple-800/60 rounded-lg transition-colors"
+              title="Abrir o mapa da mesa"
+            >
+              🗺 <span className="hidden sm:inline">Mapa</span>
+            </button>
             <Sininho />
             <span
               className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${

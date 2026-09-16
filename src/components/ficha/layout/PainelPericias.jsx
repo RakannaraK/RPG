@@ -96,7 +96,6 @@ export default function PainelPericias({
 
   async function handleRolar(pericia) {
     if (rolando) return
-    const pf = getPericiaFicha(pericia.id)
     const atributoVal = getAtributoValor(pericia.atributo_base_id)
 
     // 23.3 — modos de resolução: atributo-base + bônus vira parada (sucessos, ex
