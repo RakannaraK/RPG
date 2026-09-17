@@ -10,6 +10,7 @@ import FichaPage from './pages/FichaPage'
 import SessaoPage from './pages/SessaoPage'
 import MapaPage from './pages/MapaPage'
 import DadosTestePage from './pages/DadosTestePage'
+import OuvinteDadosMesa from './components/dados/OuvinteDadosMesa'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -113,6 +114,8 @@ export default function App() {
         <AuthProvider>
           <PreferenciasProvider>
             <AppRoutes />
+            {/* F27 — bandeja de dados da mesa (fora da transição de página) */}
+            <OuvinteDadosMesa />
           </PreferenciasProvider>
         </AuthProvider>
       </ErrorBoundary>

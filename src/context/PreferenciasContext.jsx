@@ -7,6 +7,8 @@ const PADRAO = {
   dado_skin: 'padrao', som_ativo: true, som_volume: 0.6,
   // FV.4c — sons de ação (combate), independentes do som de dado acima
   som_acao_ativo: true, som_acao_volume: 0.6,
+  // F27 — bandeja de dados: 'todos' | 'meus' | 'nenhum'
+  dados_mesa: 'todos',
 }
 
 const PreferenciasContext = createContext(null)

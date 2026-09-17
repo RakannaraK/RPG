@@ -5,7 +5,9 @@ import { usePreferencias } from '../../context/PreferenciasContext'
 import { playDiceNotify } from '../../lib/diceSound'
 import { descreverResultado } from '../../lib/resolutionEngine'
 import { tocarSomAcao } from '../../audio/actionSynth'
+import { deveMostrar } from '../../lib/bandejaDados'
 import Dice3D from './Dice3D'
+import { bandejaSuportada } from './BandejaDados'
 
 const COR_TXT = { verde: 'text-ok', ambar: 'text-dice-400', vermelho: 'text-harm', roxo: 'text-accent-300' }
 const COR_CARD = { verde: 'border-ok/50', ambar: 'border-dice-500/50', vermelho: 'border-harm/50', roxo: 'border-border' }
@@ -237,7 +239,11 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
           if (payload.new.autor_id !== session?.user?.id) {
             setAnimandoId(payload.new.id)
             setTimeout(() => setAnimandoId(null), 1400)
-            playDiceNotify()
+            // F27 — se a bandeja vai mostrar (e soar) esta rolagem, sem aviso duplicado
+            const naBandeja = bandejaSuportada
+              && deveMostrar(preferenciasRef.current.dados_mesa, false)
+              && payload.new.resultados?.dados?.length > 0
+            if (!naBandeja) playDiceNotify()
             onNovaRolagem?.(payload.new)
 
             // FV.5b — som de ação: sincronizado com o pouso do dado (1400ms,

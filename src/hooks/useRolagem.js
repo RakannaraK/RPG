@@ -5,6 +5,7 @@ import { rolarNotacao } from '../lib/diceNotation'
 import { rolarDados } from '../lib/dice'
 import { aplicarCritico } from '../lib/criticoEngine'
 import { resolverRolagem, paradaComVantagem, escolherRollUnder } from '../lib/resolutionEngine'
+import { usePreferencias } from '../context/PreferenciasContext'
 
 // Troca os valores nos índices dados (imutável) — usado na rerolagem (23.4)
 function replaceAt(arr, indices, novos) {
@@ -27,6 +28,9 @@ function replaceAt(arr, indices, novos) {
  */
 export function useRolagem() {
   const { session } = useAuth()
+  // F27 — skin de quem rola vai junto: a bandeja dos outros usa o dado dele
+  const { preferencias } = usePreferencias()
+  const skin = preferencias.dado_skin || 'padrao'
   const [autorNome, setAutorNome] = useState('')
   const [rolando, setRolando] = useState(false)
   const [erro, setErro] = useState('')
@@ -104,6 +108,7 @@ export function useRolagem() {
           mantidos: resultado.mantidos,
           descartados: resultado.descartados,
           modificador: resultado.modificador,
+          skin,
           ...(percentual ? { percentual, total_base: resultado.total_base } : {}),
           ...(criticoInfo ? { critico: criticoInfo } : {}),
           // FV.5b — decisão de som já resolvida no cliente que rolou (o preset
@@ -213,7 +218,7 @@ export function useRolagem() {
         ficha_id: fichaId || null,
         rotulo: rotulo || null,
         notacao: notacaoStr,
-        resultados: { dados: dadosFeed, mantidos: dadosNum, descartados: [], modificador: 0 },
+        resultados: { dados: dadosFeed, mantidos: dadosNum, descartados: [], modificador: 0, skin },
         total,
         modo,
         resultado_estruturado: estruturado,
@@ -262,7 +267,7 @@ export function useRolagem() {
         ficha_id: fichaId || null,
         rotulo: rotulo ? `↻ ${rotulo}` : '↻ Rerolagem',
         notacao: notacaoStr,
-        resultados: { dados: dadosFeed, mantidos: resultadoLocal.mantidos, descartados: [], modificador: 0 },
+        resultados: { dados: dadosFeed, mantidos: resultadoLocal.mantidos, descartados: [], modificador: 0, skin },
         total, modo, resultado_estruturado: { ...estruturado, rerolada: true },
       }
       if (sessaoId) payload.sessao_id = sessaoId
@@ -304,6 +309,7 @@ export function useRolagem() {
           mantidos: dados.filter(d => !d.descartado).map(d => d.valor),
           descartados: dados.filter(d => d.descartado).map(d => d.valor),
           modificador: 0,
+          skin,
           // F14.6 — marca dano/cura de poder para o mestre aplicar a um alvo no combate
           ...(aplicavel ? { aplicavel } : {}),
           // FV.5b — som da ação já resolvido no cliente que registrou o evento
