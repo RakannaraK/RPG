@@ -26,5 +26,14 @@ Toda rolagem da mesa cai numa **bandeja** por cima da tela de todos que estão n
 ## Restrições
 1. three.js e cannon-es fora do bundle inicial. 2. O valor exibido é sempre o oficial. 3. A bandeja nunca captura clique (pointer-events: none). 4. Nada grava no banco além de `resultados.skin`. 5. Retrocompatível: rolagens antigas sem `skin` rolam com a padrão.
 
+## Como ficou (implementado — 76ee776, 2672805, 27.3)
+- **Arquivos:** `lib/bandejaDados.js` (+ testes), `lib/fisicaDados.js` (+ testes que simulam), `lib/materialDado.js`, `components/dados/BandejaDados.jsx` (invólucro leve), `BandejaDados3D.jsx` (lazy), `OuvinteDadosMesa.jsx` (no `App`), `bandeja.acceptance.test.js`; `/teste-dados` tem botões da bandeja.
+- **Física:** corpo convexo com triângulos coplanares fundidos (faces trianguladas faziam o d12 tremer sem nunca dormir) e 30 iterações de solver.
+- **Tela:** portal no `<body>` (o `transform` da transição de página prendia o `fixed` à página); tamanho medido pelo canvas (sem barra de rolagem); o **lado menor da tela** vale 12 unidades (9 em telas < 600 px) — no celular em pé a bandeja fica alta, não estreita.
+- **Tempo máximo rolando** conta em segundos de física (aparelho lento não mostra valor com dado no ar).
+- **Som:** quem rolou ouve no clique; os outros ouvem o dado cair; o feed não toca aviso quando a bandeja vai mostrar a rolagem.
+- **Rajadas:** teto de 6 lançamentos simultâneos em vez de comparar horário (relógio do navegador pode estar errado).
+- **Limites conhecidos:** d10/d100 usam icosaedro (como na F11); a física não é idêntica entre navegadores (só o valor é).
+
 ## Teste de aceitação da fase
 Jogador A (skin Madeira) rola 3d6 na ficha; jogador B, no mapa, vê 3 dados de madeira caírem, quicarem e pararem mostrando os mesmos valores do feed; A também vê. B com preferência "só os meus" não vê a de A. Rolagem de 60d6 mostra 40 dados + "+20 dados (soma S)". Rajada de 10 rolagens seguidas mostra no máximo 6 lançamentos. Suíte verde, build com three/cannon fora do chunk inicial.

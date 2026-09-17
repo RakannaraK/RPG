@@ -33,6 +33,18 @@ export function enfileirarLancamento(fila, novo, max = MAX_LANCAMENTOS_SIMULTANE
   return [...fila, novo].slice(-max)
 }
 
+/**
+ * Uma rolagem recebida (linha de `rolagens`) vira lançamento na bandeja?
+ * null se a preferência esconde ou se é evento sem dados (cura fixa, aviso).
+ * Rolagem antiga sem `resultados.skin` usa a padrão.
+ */
+export function lancamentoDeRolagem(r, { meuId, preferencia }) {
+  if (!deveMostrar(preferencia, r.autor_id === meuId)) return null
+  const { rolam, excedente } = separarExcedente(r.resultados?.dados)
+  if (!rolam.length) return null
+  return { id: r.id, dados: rolam, excedente, skin: r.resultados?.skin || 'padrao', autor: r.autor_nome }
+}
+
 /** Preferência `dados_mesa`: 'todos' (padrão) | 'meus' | 'nenhum'. */
 export function deveMostrar(preferencia, ehMinha) {
   if (preferencia === 'nenhum') return false

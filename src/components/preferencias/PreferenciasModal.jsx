@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Dice3D from '../dados/Dice3D'
+import { bandejaSuportada } from '../dados/BandejaDados'
 import { listarSkins } from '../../lib/diceSkins'
 import { tocarSomDado } from '../../lib/diceSounds'
 import { usePreferencias } from '../../context/PreferenciasContext'
@@ -131,6 +132,34 @@ export default function PreferenciasModal({ onFechar }) {
               })}
             </div>
           </div>
+
+          {/* F27 — bandeja: dados 3D com física caindo por cima da tela */}
+          <fieldset className="space-y-2 border-t border-purple-900 pt-5">
+            <legend className="text-sm font-medium text-purple-200 mb-2">Dados na mesa</legend>
+            {[
+              ['todos', 'De todos', 'As rolagens de qualquer pessoa da mesa caem na sua tela.'],
+              ['meus', 'Só os meus', 'Só as suas rolagens caem na tela.'],
+              ['nenhum', 'Desligado', 'Nenhum dado cai na tela (os resultados continuam no feed).'],
+            ].map(([valor, rotulo, dica]) => (
+              <label key={valor} className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="dados_mesa"
+                  value={valor}
+                  checked={(preferencias.dados_mesa || 'todos') === valor}
+                  onChange={() => salvarPreferencias({ dados_mesa: valor })}
+                  className="mt-1 accent-purple-500"
+                />
+                <span>
+                  <span className="block text-sm text-purple-100">{rotulo}</span>
+                  <span className="block text-xs text-purple-400">{dica}</span>
+                </span>
+              </label>
+            ))}
+            {!bandejaSuportada && (
+              <p className="text-xs text-amber-300">Neste aparelho a bandeja fica desligada (sem WebGL ou com "reduzir movimento" ativo).</p>
+            )}
+          </fieldset>
 
           {/* Controles de som */}
           <div className="space-y-3 border-t border-purple-900 pt-5">

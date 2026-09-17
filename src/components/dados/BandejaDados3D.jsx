@@ -60,6 +60,7 @@ export default function BandejaDados3D({ lancamentos, onTerminou }) {
     const ativos = new Map() // id → { dados, material, arestaMat, opacidadeBase, tMundo0, fase, tFase }
     const projetado = new THREE.Vector3()
     let largura = 20
+    let profundidade = PROFUNDIDADE_BANDEJA
     let raf = 0
     let anterior = 0
     let telaW = 1
@@ -72,18 +73,22 @@ export default function BandejaDados3D({ lancamentos, onTerminou }) {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, w < 768 ? 1.5 : 2))
       renderer.setSize(w, h, false)
       camera.aspect = w / h
-      const distancia = PROFUNDIDADE_BANDEJA / 2 / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))
+      // O LADO MENOR da tela mede N unidades (dado ≈ 1 unidade): no celular em pé
+      // a bandeja fica alta em vez de estreita, e o dado não ocupa 1/5 da tela.
+      const menorLado = Math.min(w, h) < 600 ? 9 : PROFUNDIDADE_BANDEJA
+      largura = w >= h ? menorLado * camera.aspect : menorLado
+      profundidade = w >= h ? menorLado : menorLado / camera.aspect
+      const distancia = profundidade / 2 / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))
       camera.position.set(0, distancia, 0)
       camera.lookAt(0, 0, 0)
       camera.updateProjectionMatrix()
-      largura = PROFUNDIDADE_BANDEJA * camera.aspect
-      ajustarParedes(mundo, largura)
+      ajustarParedes(mundo, largura, profundidade)
     }
 
     function lancar(l) {
       const material = criarMaterialSkin(getSkin(l.skin))
       const arestaMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 })
-      const planos = planejarLancamento(l.dados.length, { largura, profundidade: PROFUNDIDADE_BANDEJA })
+      const planos = planejarLancamento(l.dados.length, { largura, profundidade })
       const dados = l.dados.map((d, i) => {
         const geometry = criarGeometriaDado(d.lados)
         const arestas = new THREE.EdgesGeometry(geometry)

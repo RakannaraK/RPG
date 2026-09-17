@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import { tocarSomDado } from '../../lib/diceSounds'
-import { deveMostrar, enfileirarLancamento, separarExcedente } from '../../lib/bandejaDados'
+import { enfileirarLancamento, lancamentoDeRolagem } from '../../lib/bandejaDados'
 import BandejaDados, { bandejaSuportada } from './BandejaDados'
 
 /**
@@ -31,13 +31,10 @@ export default function OuvinteDadosMesa() {
       .channel(`bandeja-${mesaId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'rolagens', filter: `mesa_id=eq.${mesaId}` }, ({ new: r }) => {
         const p = preferenciasRef.current
-        const minha = r.autor_id === meuId
-        if (!deveMostrar(p.dados_mesa, minha)) return
-        const { rolam, excedente } = separarExcedente(r.resultados?.dados)
-        if (!rolam.length) return // evento sem dados (cura fixa, XP, avisos)
-        const skin = r.resultados?.skin || 'padrao'
-        if (!minha) tocarSomDado(skin, { ativo: p.som_ativo, volume: p.som_volume, numDados: rolam.length })
-        setLancamentos(fila => enfileirarLancamento(fila, { id: r.id, dados: rolam, excedente, skin, autor: r.autor_nome }))
+        const lancamento = lancamentoDeRolagem(r, { meuId, preferencia: p.dados_mesa })
+        if (!lancamento) return
+        if (r.autor_id !== meuId) tocarSomDado(lancamento.skin, { ativo: p.som_ativo, volume: p.som_volume, numDados: lancamento.dados.length })
+        setLancamentos(fila => enfileirarLancamento(fila, lancamento))
       })
       .subscribe()
     return () => {
