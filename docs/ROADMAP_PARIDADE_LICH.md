@@ -25,7 +25,7 @@ sem perder nada do que já existe (retrocompatibilidade total, como em F1–F25)
 
 | Fase | Conteúdo | Tamanho |
 |---|---|---|
-| **F26** | **Mesa virtual (mapa):** cenas, grade, tokens ao vivo, névoa de guerra, desenho, régua, ping, camadas, painel de mesa | muito grande |
+| **F26** ✅ | **Mesa virtual (mapa):** cenas, grade, tokens ao vivo, névoa de guerra, desenho, régua, ping, camadas, painel de mesa | muito grande |
 | **F27** | **Dados 3D na mesa:** dados com física rolando na tela de TODOS, skins, som, integrado ao feed | média |
 | **F28** | **Minigames de teste:** Roda Rúnica, cronômetro, memória; configuráveis como forma de teste; resultado no feed; ranking | média |
 | F29 | Chat da mesa, notas privadas do mestre, calendário do mundo | pequena |

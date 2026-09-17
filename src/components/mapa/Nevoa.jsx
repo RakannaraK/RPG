@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { memo, useRef } from 'react'
 import { normalizarNevoa, normalizarRet } from '../../lib/mapaEngine'
 import CapturaMapa from './CapturaMapa'
 
@@ -24,7 +24,8 @@ function FormaMascara({ op, largura, altura }) {
  * aplicando as operações em ordem. Mestre vê translúcida; jogador, opaca.
  * Só PINTA: esconder tokens de verdade é o `pontoRevelado` na MapaPage.
  */
-export function CamadaNevoa({ nevoa, rascunho, largura, altura, translucida }) {
+// 26.6 — memo: pan/zoom não refaz a máscara (a MapaPage memoriza `nevoa`).
+export const CamadaNevoa = memo(function CamadaNevoa({ nevoa, rascunho, largura, altura, translucida }) {
   const n = normalizarNevoa(nevoa)
   // Desligada: some — exceto enquanto o mestre desenha (a 1ª operação liga a névoa).
   if (!n.ativa && !rascunho) return null
@@ -40,7 +41,7 @@ export function CamadaNevoa({ nevoa, rascunho, largura, altura, translucida }) {
       <rect width={largura} height={altura} fill="#05030a" opacity={translucida ? 0.55 : 1} mask="url(#mascara-nevoa)" />
     </g>
   )
-}
+})
 
 /** Desenho da névoa pelo mestre: retângulo arrastado ou pincel. */
 export function EditorNevoa({ ctx, largura, altura, config, onRascunho, onConcluir }) {

@@ -204,3 +204,14 @@ export function pontoRevelado(nevoa, p) {
   }
   return revelado
 }
+
+/**
+ * O jogador (ou o mestre em "ver como jogador") enxerga este token?
+ * O próprio token sempre; oculto nunca; os demais só onde a névoa foi revelada.
+ * `token.meu` = a ficha do token pertence a quem está olhando.
+ */
+export function tokenVisivelParaJogador(token, nevoa) {
+  if (token.meu) return true
+  if (token.oculto) return false
+  return pontoRevelado(nevoa, token)
+}

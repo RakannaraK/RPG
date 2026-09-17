@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -10,7 +10,7 @@ import { useSessoes } from '../hooks/useSessoes'
 import { useEncontro } from '../hooks/useEncontro'
 import { useAvancarTurno } from '../hooks/useAvancarTurno'
 import { ordenarPorIniciativa } from '../lib/iniciativa'
-import { adicionarOpNevoa, espalhar, normalizarGrade, normalizarNevoa, pontoRevelado } from '../lib/mapaEngine'
+import { adicionarOpNevoa, espalhar, normalizarGrade, normalizarNevoa, tokenVisivelParaJogador } from '../lib/mapaEngine'
 import MapaVisor from '../components/mapa/MapaVisor'
 import PainelCenas from '../components/mapa/PainelCenas'
 import PainelTokens from '../components/mapa/PainelTokens'
@@ -183,12 +183,12 @@ export default function MapaPage() {
       meu: !!card && card.ficha?.dono_id === meuId,
     }
   })
-  const nevoa = normalizarNevoa(nevoaLocal?.cenaId === cena?.id ? nevoaLocal.nevoa : cena?.nevoa)
+  // Memo: mantém a identidade entre quadros do pan/zoom (CamadaNevoa é memo).
+  const nevoaSalva = nevoaLocal?.cenaId === cena?.id ? nevoaLocal.nevoa : cena?.nevoa
+  const nevoa = useMemo(() => normalizarNevoa(nevoaSalva), [nevoaSalva])
   // Jogador não recebe tokens sob a névoa nem ocultos (a máscara só pinta; nome e
   // barra vazariam). O próprio token segue visível para o dono.
-  const tokensNaTela = verTudo
-    ? tokensVisuais
-    : tokensVisuais.filter(t => t.meu || (!t.oculto && pontoRevelado(nevoa, t)))
+  const tokensNaTela = verTudo ? tokensVisuais : tokensVisuais.filter(t => tokenVisivelParaJogador(t, nevoa))
   const selecionado = tokensNaTela.find(t => t.id === selecionadoId) || null
   const tamanhoGrade = Number(normalizarGrade(grade).tamanho) > 0 ? Number(normalizarGrade(grade).tamanho) : 70
 
@@ -264,11 +264,12 @@ export default function MapaPage() {
           <>
             {camadas.desenhos && (
               <CamadaDesenhos
-                ctx={ctx}
+                zoom={ctx.vista.zoom}
                 desenhos={desenhosApi.desenhos}
                 rascunho={rascunhoDesenho}
                 borracha={ferramentaAtiva === 'desenho' && configDesenho.forma === 'borracha'}
-                podeApagar={d => isGestor || d.autor_id === meuId}
+                meuId={meuId}
+                apagaTodos={isGestor}
                 onApagar={id => tentar(() => desenhosApi.apagar(id))}
               />
             )}

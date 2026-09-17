@@ -47,6 +47,16 @@ export async function redimensionarImagem(file, maxSize = 1200, sempreComprimir 
   })
 }
 
+/** Caminho dentro do bucket a partir da URL pública (null se for de outro lugar). */
+export function caminhoNoBucket(url, bucket = 'fichas-imagens') {
+  try {
+    const m = new URL(url).pathname.match(new RegExp(`/${bucket}/(.+)$`))
+    return m ? decodeURIComponent(m[1]) : null
+  } catch {
+    return null
+  }
+}
+
 /** Largura/altura em pixels de um arquivo de imagem (F26 — coordenadas do mapa). */
 export async function lerDimensoes(file) {
   const bitmap = await createImageBitmap(file)

@@ -54,5 +54,17 @@ Mapa em tela cheia, sincronizado ao vivo para a mesa: cenas preparadas pelo mest
 ## Restrições
 1. `mapaEngine` puro; contrato = testes. 2. Coordenadas sempre em px do mapa. 3. Nada efêmero no banco (arraste/régua/ping só broadcast). 4. Sem dependência nova. 5. Sem limite de quantidade. 6. Retrocompatibilidade: nada do que existe muda de comportamento; sem o SQL, o botão Mapa mostra aviso e o resto do app segue igual.
 
+## Como ficou (implementado — commits 8aa8185 … 26.6)
+- **Arquivos:** `lib/mapaEngine.js` (+ `mapa.acceptance.test.js`), hooks `useMapas`, `useTokensMapa`, `useDesenhosMapa`, `useAvancarTurno`, `useCardsDaMesa` (em `useSessaoFichas.js`); componentes em `components/mapa/` (MapaVisor, CapturaMapa, PainelCenas, PainelTokens, CamadaTokens, Nevoa, Desenhos, PainelMesa); `pages/MapaPage.jsx`.
+- **Visibilidade para o jogador** = `tokenVisivelParaJogador`: próprio token sempre (desenhado ACIMA da névoa), oculto nunca, demais só onde `pontoRevelado`.
+- **Menu do token** abre só no clique sem arrastar (arrastar não cobre os vizinhos). Mudar tamanho reencaixa.
+- **Tokens novos** nascem em casas livres, em espiral a partir do meio da tela (`espalhar`).
+- **Próximo turno pelo mapa** usa `useAvancarTurno` (o mesmo da sessão): anuncia condições expiradas e cobra custo por turno.
+- **Ficha na gaveta** = a própria página da ficha num iframe do mesmo site, com "abrir em nova aba".
+- **Ping** também segurando o clique parado ~0,6 s. **Atalhos:** V D R P N Esc.
+- **Limpeza:** apagar token avulso ou cena apaga as imagens de `/tokens/` e do mapa no Storage.
+- **Desempenho:** desenhos e névoa memorizados — pan/zoom só muda a transformação.
+- **Limites conhecidos:** névoa editada por dois gestores ao mesmo tempo → vence a última gravação; névoa é por operações (cresce com o uso; simplificar traços se o JSON pesar).
+
 ## Teste de aceitação da fase
 Mestre prepara 2 cenas (uma com grade 5-10-5 em metros), ativa a primeira; jogador entra e vê só ela; mestre troca de cena e o jogador acompanha sem recarregar; tokens de 2 fichas + 3 inimigos do combate ativo; jogador move só o próprio token e todos veem o arraste; destaque segue o turno; névoa revelada por retângulo e pincel esconde o resto do jogador; régua mede "3 quadrados · 4,5 m" igual para todos; ping visível; rolagem feita pelo painel aparece no feed da sessão; suíte verde.

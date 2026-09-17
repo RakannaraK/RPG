@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { memo, useRef, useState } from 'react'
 import { encaixar, medir } from '../../lib/mapaEngine'
 import CapturaMapa from './CapturaMapa'
 
@@ -12,15 +12,19 @@ const caminho = pontos => (pontos?.length
 /**
  * Fase 26.4 — traços gravados (e o rascunho de quem desenha agora).
  * Com a borracha ligada, cada traço apagável ganha uma área de clique larga.
+ *
+ * 26.6 — memo: durante o pan/zoom só a transformação muda; os traços não são
+ * refeitos. `zoom` só importa com a borracha (largura da área de clique).
+ * `onApagar` fica fora da comparação: não guarda estado que envelheça.
  */
-export function CamadaDesenhos({ ctx, desenhos, rascunho, borracha, podeApagar, onApagar }) {
-  const px = n => n / ctx.vista.zoom
+export const CamadaDesenhos = memo(function CamadaDesenhos({ zoom, desenhos, rascunho, borracha, meuId, apagaTodos, onApagar }) {
+  const px = n => n / zoom
   return (
     <g>
       {desenhos.map(d => (
         <g key={d.id}>
           <path d={caminho(d.pontos)} fill="none" stroke={d.cor} strokeWidth={d.espessura} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />
-          {borracha && podeApagar(d) && (
+          {borracha && (apagaTodos || d.autor_id === meuId) && (
             <path
               d={caminho(d.pontos)} fill="none" stroke="transparent"
               strokeWidth={Math.max(Number(d.espessura) || 0, px(16))} strokeLinecap="round"
@@ -35,7 +39,10 @@ export function CamadaDesenhos({ ctx, desenhos, rascunho, borracha, podeApagar, 
       )}
     </g>
   )
-}
+}, (a, b) => (
+  a.desenhos === b.desenhos && a.rascunho === b.rascunho && a.borracha === b.borracha
+  && a.meuId === b.meuId && a.apagaTodos === b.apagaTodos && (!a.borracha || a.zoom === b.zoom)
+))
 
 /** Traço livre (amostrado a cada ~3 px de tela) ou linha reta. Espessura fica em px do mapa. */
 export function EditorDesenho({ ctx, largura, altura, config, onRascunho, onConcluir }) {

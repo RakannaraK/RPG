@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { redimensionarImagem, lerDimensoes } from '../lib/imageUtils'
+import { caminhoNoBucket, redimensionarImagem, lerDimensoes } from '../lib/imageUtils'
 
 const BUCKET = 'fichas-imagens'
 const MAX_LADO = 4096
@@ -127,10 +127,17 @@ export function useMapas(mesaId) {
   }
 
   async function remover(mapa) {
+    // Imagens de tokens avulsos somem junto (o CASCADE apaga as linhas, não os arquivos)
+    const { data: tokens } = await supabase.from('tokens_mapa').select('imagem_url').eq('mapa_id', mapa.id)
+    const imagensTokens = (tokens || [])
+      .map(t => (t.imagem_url ? caminhoNoBucket(t.imagem_url) : null))
+      .filter(p => p?.includes('/tokens/'))
+
     const { error } = await supabase.from('mapas').delete().eq('id', mapa.id)
     if (error) throw error
     setMapas(prev => prev.filter(m => m.id !== mapa.id))
     await removerArquivo(mapa.imagem_path)
+    for (const p of imagensTokens) await removerArquivo(p)
     avisar()
   }
 

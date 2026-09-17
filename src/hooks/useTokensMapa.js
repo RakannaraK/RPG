@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { redimensionarImagem } from '../lib/imageUtils'
+import { caminhoNoBucket, redimensionarImagem } from '../lib/imageUtils'
 
 const INTERVALO_ARRASTE_MS = 66 // ~15 posições/s durante o arraste
 
@@ -122,9 +122,16 @@ export function useTokensMapa(mapaId, mesaId) {
   }
 
   async function remover(id) {
+    const token = tokens.find(t => t.id === id)
     setTokens(prev => prev.filter(t => t.id !== id))
     const { error } = await supabase.from('tokens_mapa').delete().eq('id', id)
     if (error) { await fetchAll(); throw error }
+    // Imagem enviada para token avulso (26.2) não fica órfã no Storage.
+    // Imagem de ficha não é tocada: só a pasta /tokens/.
+    const path = token?.imagem_url ? caminhoNoBucket(token.imagem_url) : null
+    if (path?.includes('/tokens/')) {
+      try { await supabase.storage.from('fichas-imagens').remove([path]) } catch { /* best-effort */ }
+    }
   }
 
   /** Imagem de token avulso: ≤ 512 px, sempre recomprimida. Devolve a URL pública. */
