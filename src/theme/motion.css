@@ -69,3 +69,9 @@
     animation: none;
   }
 }
+
+/* F28 — barra de tempo da Memória (largura vai de 100% a 0 no tempo da rodada) */
+@keyframes memoria-tempo {
+  from { width: 100%; }
+  to   { width: 0%; }
+}

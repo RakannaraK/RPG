@@ -6,6 +6,9 @@ import { PRESET_IDS } from '../engines/actionSoundEngine'
 import { tocarPresetAcao } from '../audio/actionSynth'
 import BandejaDados, { bandejaSuportada } from '../components/dados/BandejaDados'
 import { enfileirarLancamento, separarExcedente } from '../lib/bandejaDados'
+import JogoMinigame from '../components/minigames/JogoMinigame'
+import { JOGOS, NOMES_DIFICULDADE, configDoJogo, resumoResultado, rotuloFeed } from '../lib/minigames/resultado'
+import { novaSemente } from '../lib/minigames/semente'
 
 const TIPOS = [4, 6, 8, 10, 12, 20, 100]
 const SKINS = listarSkins()
@@ -28,6 +31,8 @@ export default function DadosTestePage() {
 
   // F27 — lança na bandeja: `descartarMenores` marca os N menores como descartados (kh)
   const [bandeja, setBandeja] = useState([])
+  const [partida, setPartida] = useState(null) // F28 — { tipo, dificuldade, semente }
+  const [ultimoMinigame, setUltimoMinigame] = useState('')
   function lancarNaBandeja(ladosLista, descartarMenores = 0) {
     const dados = ladosLista.map(lados => ({ lados, valor: Math.ceil(Math.random() * lados), descartado: false }))
     ;[...dados].sort((a, b) => a.valor - b.valor).slice(0, descartarMenores).forEach(d => { d.descartado = true })
@@ -177,6 +182,38 @@ export default function DadosTestePage() {
         {!bandejaSuportada && <p className="text-amber-300 text-sm">Bandeja indisponível (sem WebGL ou "reduzir movimento" ligado).</p>}
       </div>
       <BandejaDados lancamentos={bandeja} onTerminou={id => setBandeja(f => f.filter(l => l.id !== id))} />
+
+      {/* F28 — minigames (sem login: resultado só aparece aqui) */}
+      <div className="border-t border-purple-900 pt-8 flex flex-col items-center gap-3">
+        <h2 className="text-white text-lg font-bold">Minigames (F28)</h2>
+        {Object.entries(JOGOS).map(([tipo, jogo]) => (
+          <div key={tipo} className="flex flex-wrap items-center gap-2 justify-center">
+            <span className="text-purple-200 text-sm w-28 text-right">{jogo.icone} {jogo.nome}</span>
+            {['normal', 'dificil', 'impossivel'].map(dif => (
+              <button
+                key={dif}
+                onClick={() => setPartida({ tipo, dificuldade: dif, semente: novaSemente() })}
+                className="px-3 py-1.5 rounded-lg border border-purple-800 bg-purple-950/50 hover:border-purple-600 text-purple-200 text-sm transition-colors"
+              >
+                {NOMES_DIFICULDADE[dif]}
+              </button>
+            ))}
+          </div>
+        ))}
+        {ultimoMinigame && <p className="text-purple-300 text-sm" data-testid="ultimo-minigame">{ultimoMinigame}</p>}
+      </div>
+      {partida && (
+        <JogoMinigame
+          key={partida.semente}
+          tipo={partida.tipo}
+          dificuldade={partida.dificuldade}
+          config={configDoJogo(partida.tipo, partida.dificuldade)}
+          semente={partida.semente}
+          onResultado={async r => setUltimoMinigame(`${rotuloFeed(partida.tipo, partida.dificuldade)} — ${resumoResultado(partida.tipo, r)}`)}
+          onJogarDeNovo={() => setPartida(p => ({ ...p, semente: novaSemente() }))}
+          onFechar={() => setPartida(null)}
+        />
+      )}
 
       {/* FV.4 — preview dos presets de som de ação (dev only; nenhum som dispara no jogo ainda) */}
       <div className="border-t border-purple-900 pt-8 flex flex-col items-center gap-3">
