@@ -187,7 +187,7 @@ export function BarraDesenho({ config, onConfig, isGestor, jogadoresDesenham, on
 }
 
 /** Barra vertical de ferramentas (todas as pessoas; névoa só gestor). */
-export function BarraFerramentas({ ferramenta, onFerramenta, podeDesenhar, isGestor }) {
+export function BarraFerramentas({ ferramenta, onFerramenta, podeDesenhar, isGestor, onEnquadrar, onTelaCheia }) {
   const itens = [
     { id: 'mover', icone: '✋', nome: 'Mover (V)' },
     podeDesenhar && { id: 'desenho', icone: '✏️', nome: 'Desenhar (D)' },
@@ -210,6 +210,11 @@ export function BarraFerramentas({ ferramenta, onFerramenta, podeDesenhar, isGes
             {it.icone}
           </button>
         ))}
+        <span className="h-px mx-1 my-0.5 bg-border" />
+        <button onClick={onEnquadrar} title="Ajustar à tela" aria-label="Ajustar à tela" className="w-10 h-10 rounded-lg text-lg text-ink hover:bg-hover">⤢</button>
+        {onTelaCheia && (
+          <button onClick={onTelaCheia} title="Tela cheia" aria-label="Tela cheia" className="w-10 h-10 rounded-lg text-lg text-ink hover:bg-hover">⛶</button>
+        )}
       </div>
     </div>
   )

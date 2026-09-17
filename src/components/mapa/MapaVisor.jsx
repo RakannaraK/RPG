@@ -18,7 +18,7 @@ const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
  *   sobreposicao(ctx) — HTML por cima do mapa (menus), posicionado com ctx.vista
  *   onToqueVazio    — clique/toque sem arrastar fora de qualquer camada interativa
  *   onToqueLongo(p) — segurar parado ~0,6 s; recebe o ponto em px do mapa (26.4)
- *   apiRef          — recebe { centroVisivel() } (ponto do mapa no meio da tela)
+ *   apiRef          — recebe { centroVisivel(), centralizar(p) }
  *
  * ctx = { vista, grade, paraMapa(clientX, clientY) }
  */
@@ -40,6 +40,12 @@ export default function MapaVisor({ mapa, grade, mostrarGrade = true, chaveEnqua
       centroVisivel: () => {
         const el = areaRef.current
         return el ? telaParaMapa({ x: el.clientWidth / 2, y: el.clientHeight / 2 }, vistaRef.current) : { x: 0, y: 0 }
+      },
+      /** Traz o ponto do mapa `p` para o meio da tela, mantendo o zoom (26.5). */
+      centralizar: p => {
+        const el = areaRef.current
+        if (!el) return
+        setVista(v => ({ ...v, x: el.clientWidth / 2 - p.x * v.zoom, y: el.clientHeight / 2 - p.y * v.zoom }))
       },
     }
   }, [apiRef])

@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { useUpdateFicha } from '../hooks/useFicha'
 import { usePresencaSessao } from '../hooks/usePresencaSessao'
 import { useCardsDaMesa } from '../hooks/useSessaoFichas'
-import { planejarTurno } from '../lib/custoHabilidade'
+import { useAvancarTurno } from '../hooks/useAvancarTurno'
 import { useEncontro } from '../hooks/useEncontro'
 import { useRolagem } from '../hooks/useRolagem'
 import { calcularDescanso } from '../lib/restEngine'
@@ -35,7 +35,6 @@ export default function SessaoPage() {
   const [isMestre, setIsMestre] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [avisoTurno, setAvisoTurno] = useState('') // 20.5 — cobrança de custo por turno
   const [sugestaoDano, setSugestaoDano] = useState(null) // F14.6 — dano de poder a aplicar num alvo
 
   const { conectados } = usePresencaSessao(sessaoId, mesaId)
@@ -51,6 +50,9 @@ export default function SessaoPage() {
   const encontroApi = useEncontro(sessaoId, mesaId)
   const { registrarRolagem, registrarEvento } = useRolagem()
   const { updateFicha } = useUpdateFicha()
+  // 14.4 + 20.5 — próximo turno com expiração de condições e custo por turno
+  // (extraído na 26.5 para o mapa avançar turno do mesmo jeito)
+  const { proximoTurno: handleProximoTurno, avisoTurno, setAvisoTurno } = useAvancarTurno({ encontroApi, cards, mesaId, sessaoId })
 
   // Iniciativa (14.2): 1d{padrão} + campo de combate cujo nome contenha "inici"
   const dadoPadrao = sistema?.config_layout?.dado_padrao || 20
@@ -343,62 +345,6 @@ export default function SessaoPage() {
       }
     }
     return itens
-  }
-
-  // Avança turno e avisa no feed as condições que expiraram na virada de rodada (14.4)
-  async function handleProximoTurno() {
-    const res = await encontroApi.proximoTurno()
-    for (const cond of res?.expiradas || []) {
-      await registrarEvento({
-        mesaId, sessaoId,
-        rotulo: `${cond.nome} expirou em ${cond.combatenteNome}`,
-        notacao: '', total: 0, dados: [],
-      })
-    }
-    await cobrarCustoDoTurno(res?.turno)
-  }
-
-  /**
-   * Fase 20.5 — ao entrar o turno de um personagem, cobra os custos recorrentes
-   * das habilidades ativas dele (transformações). Quem não paga, desativa.
-   *
-   * O mestre não pode escrever no pools_ficha de outro jogador (RLS), então o
-   * plano é calculado aqui pelo motor puro e persistido pela RPC SECURITY DEFINER.
-   */
-  async function cobrarCustoDoTurno(indiceTurno) {
-    if (indiceTurno == null) return
-    const combatente = ordemIniciativa()[indiceTurno]
-    const fichaId = combatente?.ficha_id
-    if (!fichaId) return
-
-    const card = cards.find(c => c.id === fichaId)
-    const ct = card?.custosTurno
-    if (!ct?.habilidadesAtivas?.length) return
-
-    const plano = planejarTurno(ct.habilidadesAtivas, {
-      atualDoPool: id => ct.atualPorPool[id] ?? 0,
-      poolsPorId: ct.poolsPorId,
-      contexto: ct.contexto,
-    })
-    if (plano.debitos.length === 0 && plano.desativar.length === 0) return
-
-    try {
-      const { error: err } = await supabase.rpc('pagar_custo_turno', {
-        p_ficha_id: fichaId,
-        p_debitos: plano.debitos,
-        p_desativar: plano.desativar,
-      })
-      if (err) throw err
-    } catch (err) {
-      // Não quebra o combate, mas avisa o mestre que o custo por turno não foi cobrado.
-      const nome = card?.nome || 'o personagem'
-      setAvisoTurno(`Custo por turno de ${nome} não foi cobrado: ${err.message || 'erro na cobrança'}. Ajuste os recursos na mão.`)
-      return
-    }
-
-    for (const aviso of plano.avisos) {
-      await registrarEvento({ mesaId, sessaoId, rotulo: aviso, notacao: '', total: 0, dados: [] })
-    }
   }
 
   // Aba ativa no mobile (no desktop painel e feed aparecem lado a lado)
