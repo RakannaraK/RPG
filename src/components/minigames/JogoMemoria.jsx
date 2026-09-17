@@ -7,7 +7,7 @@ const PAUSA_ERRO_MS = 1100
  * Fase 28.2 — Memória jogável. Teclas 1–9 escolhem as runas da grade na ordem
  * de leitura (além de mouse/toque). Ao errar, mostra a certa antes de acabar.
  */
-export default function JogoMemoria({ config, semente, onFim }) {
+export default function JogoMemoria({ config, semente, onFim, onSom }) {
   const [e, setE] = useState(() => iniciarMemoria(config, semente))
   const [avisoRodada, setAvisoRodada] = useState(0) // rodada em que o aviso de sumir já apareceu
   const onFimRef = useRef(onFim)
@@ -24,8 +24,17 @@ export default function JogoMemoria({ config, semente, onFim }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [e.fase, e.rodada])
 
+  // Som ao completar uma rodada (a rodada sobe) e ao errar
+  const rodadaAnterior = useRef(e.rodada)
+  useEffect(() => {
+    if (e.rodada > rodadaAnterior.current) onSom?.('arcano')
+    rodadaAnterior.current = e.rodada
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [e.rodada])
+
   useEffect(() => {
     if (e.fase !== 'fim') return
+    onSom?.('falha')
     const id = setTimeout(() => onFimRef.current(resultadoMemoria(e)), PAUSA_ERRO_MS)
     return () => clearTimeout(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps

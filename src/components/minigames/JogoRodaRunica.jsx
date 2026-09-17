@@ -18,11 +18,12 @@ function caminhoArco(centro, largura) {
  * Fase 28.2 — Roda Rúnica jogável. Tocar/clicar na roda, ou espaço/enter.
  * O relógio é o requestAnimationFrame (aba em segundo plano = jogo pausa).
  */
-export default function JogoRodaRunica({ config, semente, onFim }) {
+export default function JogoRodaRunica({ config, semente, onFim, onSom }) {
   const [estado, setEstado] = useState(() => iniciarRoda(config, semente))
   const estadoRef = useRef(estado)
   const onFimRef = useRef(onFim)
-  useEffect(() => { onFimRef.current = onFim }, [onFim])
+  const onSomRef = useRef(onSom)
+  useEffect(() => { onFimRef.current = onFim; onSomRef.current = onSom }, [onFim, onSom])
 
   useEffect(() => {
     let raf = 0
@@ -30,7 +31,9 @@ export default function JogoRodaRunica({ config, semente, onFim }) {
     const quadro = agora => {
       const dt = anterior ? Math.min(0.05, (agora - anterior) / 1000) : 0
       anterior = agora
+      const errosAntes = estadoRef.current.erros
       estadoRef.current = avancarRoda(estadoRef.current, dt)
+      if (estadoRef.current.erros > errosAntes) onSomRef.current?.('falha') // runa passou
       setEstado(estadoRef.current)
       if (estadoRef.current.fim) {
         onFimRef.current(resultadoRoda(estadoRef.current))
@@ -52,7 +55,11 @@ export default function JogoRodaRunica({ config, semente, onFim }) {
   }, [])
 
   function tocar() {
-    estadoRef.current = tocarRoda(estadoRef.current)
+    const antes = estadoRef.current
+    estadoRef.current = tocarRoda(antes)
+    const depois = estadoRef.current
+    if (depois.acertos > antes.acertos) onSomRef.current?.(depois.combo % 5 === 0 ? 'critico' : 'arcano')
+    else if (depois.erros > antes.erros) onSomRef.current?.('falha')
     setEstado(estadoRef.current)
   }
 
@@ -76,7 +83,7 @@ export default function JogoRodaRunica({ config, semente, onFim }) {
       <button
         type="button"
         onPointerDown={e => { e.preventDefault(); tocar() }}
-        className="relative w-[min(80vw,22rem)] aspect-square rounded-full touch-none focus:outline-none"
+        className="relative w-full max-w-[22rem] aspect-square rounded-full touch-none focus:outline-none"
         aria-label="Roda Rúnica — toque quando o ponteiro estiver na runa acesa"
       >
         <svg viewBox="0 0 200 200" className="w-full h-full">

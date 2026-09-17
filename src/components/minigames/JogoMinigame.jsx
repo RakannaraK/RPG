@@ -4,6 +4,8 @@ import { JOGOS, NOMES_DIFICULDADE, resumoResultado } from '../../lib/minigames/r
 import JogoRodaRunica from './JogoRodaRunica'
 import JogoCronometro from './JogoCronometro'
 import JogoMemoria from './JogoMemoria'
+import { usePreferencias } from '../../context/PreferenciasContext'
+import { tocarPresetAcao } from '../../audio/actionSynth'
 
 const COMPONENTE = { roda: JogoRodaRunica, cronometro: JogoCronometro, memoria: JogoMemoria }
 
@@ -26,6 +28,9 @@ export default function JogoMinigame({ tipo, dificuldade, config, semente, titul
   const [envio, setEnvio] = useState({ estado: 'parado', erro: '' })
   const enviouRef = useRef(false)
   const Jogo = COMPONENTE[tipo]
+  const { preferencias } = usePreferencias()
+  // Sons dos jogos seguem a preferência de "sons de ação"
+  const onSom = preset => tocarPresetAcao(preset, { ativo: preferencias.som_acao_ativo, volume: preferencias.som_acao_volume })
 
   useEffect(() => {
     if (fase !== 'contagem') return
@@ -60,7 +65,7 @@ export default function JogoMinigame({ tipo, dificuldade, config, semente, titul
 
   return createPortal(
     <div className="fixed inset-0 z-[70] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={nomeJogo}>
-      <div className="w-full max-w-lg rounded-2xl border border-border bg-bg shadow-2xl p-5 sm:p-6 flex flex-col items-center gap-4 max-h-full overflow-y-auto">
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-bg shadow-2xl p-5 sm:p-6 flex flex-col items-center gap-4 max-h-full overflow-y-auto overflow-x-hidden">
         <div className="text-center">
           <h2 className="text-ink text-xl font-bold">{nomeJogo}</h2>
           <p className="text-ink-dim text-sm">{NOMES_DIFICULDADE[dificuldade] || dificuldade}{titulo ? ` · ${titulo}` : ''}</p>
@@ -80,7 +85,7 @@ export default function JogoMinigame({ tipo, dificuldade, config, semente, titul
           <p key={contagem} className="text-dice-400 text-7xl font-bold tabular-nums py-10" aria-live="assertive">{contagem || 'Já!'}</p>
         )}
 
-        {fase === 'jogando' && <Jogo config={config} semente={semente} onFim={terminar} />}
+        {fase === 'jogando' && <Jogo config={config} semente={semente} onFim={terminar} onSom={onSom} />}
 
         {fase === 'resultado' && resultado && (
           <>

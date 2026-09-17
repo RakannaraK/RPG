@@ -7,7 +7,7 @@ const fmt = s => s.toFixed(2).replace('.', ',')
  * Fase 28.2 — Cronômetro jogável: começa sozinho; parar com o botão,
  * espaço ou enter. Quem não para até o limite fica com 0 pontos.
  */
-export default function JogoCronometro({ config, semente, onFim }) {
+export default function JogoCronometro({ config, semente, onFim, onSom }) {
   const c = useMemo(() => iniciarCronometro(config, semente), [config, semente])
   const [t, setT] = useState(0)
   const [parado, setParado] = useState(false)
@@ -22,7 +22,9 @@ export default function JogoCronometro({ config, semente, onFim }) {
     setParado(true)
     const tempo = (performance.now() - inicioRef.current) / 1000
     setT(tempo)
-    onFimRef.current(pararCronometro(c, Math.min(tempo, c.limite)))
+    const resultado = pararCronometro(c, Math.min(tempo, c.limite))
+    onSom?.({ Perfeito: 'critico', Excelente: 'arcano', Errou: 'falha' }[resultado.faixa] || 'neutro')
+    onFimRef.current(resultado)
   }
 
   useEffect(() => {

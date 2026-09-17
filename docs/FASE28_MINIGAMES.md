@@ -32,5 +32,14 @@ Mestre/co-mestre cria: jogo, dificuldade, participantes (quantos quiser, incluin
 ## Restrições
 1. Motores puros, sem `Math.random` direto: tudo pela semente. 2. Tempo passado explicitamente aos motores (testáveis sem relógio). 3. Resultado no feed sempre com jogo e dificuldade. 4. Sem limite de participantes, partidas ou parâmetros. 5. Retrocompatível: sem o SQL, jogar avulso funciona e vai ao feed; ranking e desafios mostram aviso.
 
+## Como ficou (implementado — a639219 … 28.6)
+- **Arquivos:** `lib/minigames/` (semente, rodaRunica, cronometro, memoria, resultado, desafios + testes e aceitação); `components/minigames/` (JogoRodaRunica, JogoCronometro, JogoMemoria, JogoMinigame, SeletorJogo, PainelMinigames, PainelDesafios, OuvinteDesafios); hooks `useMinigames` (+ `registrarResultado` solto) e `useDesafios`; `sql/fase28_minigames.sql` (rodado).
+- **Onde:** aba Dados da mesa (minigames + desafios), gaveta de rolagens do mapa (minigames), página da sessão (desafios), aviso de desafio em qualquer página da mesa (App).
+- **Segurança:** RLS testado 20/20 no banco real. Resposta de desafio não pode ser apagada pelo jogador (senão apagaria e jogaria de novo); placar sem UPDATE.
+- **Achado de passagem (fora da fase):** `expulsar_membro` aceitava chamada sem login → `sql/seguranca_funcoes_anon.sql` (anônimo sem EXECUTE em funções; lógica corrigida).
+- **Canais Realtime com nome único por instância** (`useId`): com o mesmo nome o Supabase devolve o canal existente e dois painéis na mesma página se atrapalhariam.
+- **Sons:** acertos/erros/faixas usam os presets de "sons de ação" e respeitam essa preferência.
+- **Limites conhecidos:** placar calculado no navegador (como no Lich); desafios/resultados testados sem duas contas reais ao mesmo tempo (RLS e motores testados; interface do desafio revisada, não clicada logada).
+
 ## Teste de aceitação da fase
 Mesma semente produz a mesma Roda/Cronômetro/Memória; acertar 5 seguidos na Roda dobra os pontos por acerto; parar o cronômetro 20 ms fora dá "Perfeito" 980; memória erra na 2ª runa da rodada 3 → pontos = 4+5+1 (Normal). Mestre desafia 3 jogadores na Roda Difícil com meta; cada um joga uma vez só; resultados chegam ao vivo; encerrar publica "1º … 2º … 3º" e quem bateu a meta. Espectador não registra resultado. Suíte verde.
