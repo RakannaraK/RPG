@@ -14,6 +14,10 @@ import PainelCenas from '../components/mapa/PainelCenas'
 import PainelTokens from '../components/mapa/PainelTokens'
 import CamadaTokens, { MenuToken } from '../components/mapa/CamadaTokens'
 import { BarraNevoa, CamadaNevoa, EditorNevoa } from '../components/mapa/Nevoa'
+import {
+  BarraDesenho, BarraFerramentas, CamadaDesenhos, CamadaPings, CamadaReguas, EditorDesenho, EditorPing, EditorRegua,
+} from '../components/mapa/Desenhos'
+import { useDesenhosMapa } from '../hooks/useDesenhosMapa'
 
 const BTN_ICONE = 'h-9 min-w-9 px-2 rounded-lg text-sm transition-colors'
 const telaCheiaDisponivel = typeof document !== 'undefined' && document.fullscreenEnabled
@@ -58,8 +62,12 @@ export default function MapaPage() {
   const [rascunho, setRascunho] = useState({ cenaId: null, grade: null })
   const [selecionadoId, setSelecionadoId] = useState(null)
   const visorApi = useRef(null)
-  // 26.3 — névoa: ferramenta do mestre + cópia local otimista enquanto grava
-  const [ferramenta, setFerramenta] = useState('mover') // 'mover' | 'nevoa'
+  const [papel, setPapel] = useState(null) // role em membros_mesa (espectador não desenha)
+  const [ferramenta, setFerramenta] = useState('mover') // 'mover' | 'desenho' | 'regua' | 'ping' | 'nevoa'
+  // 26.4 — desenho
+  const [configDesenho, setConfigDesenho] = useState({ forma: 'livre', cor: '#FBBF24', espessura: 4 })
+  const [rascunhoDesenho, setRascunhoDesenho] = useState(null)
+  // 26.3 — névoa: cópia local otimista enquanto grava
   const [configNevoa, setConfigNevoa] = useState({ modo: 'revelar', forma: 'ret', raio: null })
   const [rascunhoNevoa, setRascunhoNevoa] = useState(null)
   const [nevoaLocal, setNevoaLocal] = useState(null) // { cenaId, nevoa }
@@ -71,16 +79,14 @@ export default function MapaPage() {
     let cancelado = false
     async function carregar() {
       const { data: mesa } = await supabase.from('mesas').select('criador_id').eq('id', mesaId).maybeSingle()
-      let gestor = mesa?.criador_id === session.user.id
-      if (!gestor) {
-        const { data: membro } = await supabase
-          .from('membros_mesa').select('role')
-          .eq('mesa_id', mesaId).eq('usuario_id', session.user.id)
-          .maybeSingle()
-        gestor = membro?.role === 'co-mestre'
-      }
+      const { data: membro } = await supabase
+        .from('membros_mesa').select('role')
+        .eq('mesa_id', mesaId).eq('usuario_id', session.user.id)
+        .maybeSingle()
+      const gestor = mesa?.criador_id === session.user.id || membro?.role === 'co-mestre'
       if (!cancelado) {
         setIsGestor(gestor)
+        setPapel(membro?.role || null)
         setPapelCarregado(true)
       }
     }
@@ -97,6 +103,36 @@ export default function MapaPage() {
   const { sessaoAtiva } = useSessoes(mesaId)
   const { encontro, combatentes } = useEncontro(sessaoAtiva?.id, mesaId)
   const tokensApi = useTokensMapa(cena?.id, mesaId)
+  const desenhosApi = useDesenhosMapa(cena?.id)
+
+  // Mesmas regras do RLS (26.4): gestor sempre; jogador se liberado e não espectador.
+  const podeDesenhar = isGestor || (!!cena?.jogadores_desenham && papel !== 'espectador')
+  // Ferramentas de gestor/desenho caem para "mover" quando a permissão some.
+  const ferramentaAtiva = (ferramenta === 'desenho' && !podeDesenhar) || (ferramenta === 'nevoa' && !isGestor) ? 'mover' : ferramenta
+
+  function escolherFerramenta(f) {
+    setFerramenta(f)
+    setSelecionadoId(null)
+  }
+
+  // Atalhos: V mover · D desenhar · R régua · P ping · N névoa · Esc volta a mover.
+  // Sem permissão, `ferramentaAtiva` já cai para "mover".
+  useEffect(() => {
+    const atalhos = { v: 'mover', d: 'desenho', r: 'regua', p: 'ping', n: 'nevoa', escape: 'mover' }
+    const aoTeclar = e => {
+      if (e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return
+      const f = atalhos[e.key.toLowerCase()]
+      if (!f) return
+      setFerramenta(f)
+      setSelecionadoId(null)
+    }
+    window.addEventListener('keydown', aoTeclar)
+    return () => window.removeEventListener('keydown', aoTeclar)
+  }, [])
+
+  async function tentar(fn) {
+    try { await fn() } catch (err) { setAviso(err.message || 'Algo deu errado.') }
+  }
 
   const combatentesAtivos = encontro ? combatentes : []
   const daVez = encontro ? ordenarPorIniciativa(combatentes)[encontro.turno_atual ?? 0] : null
@@ -183,8 +219,17 @@ export default function MapaPage() {
         chaveEnquadrar={chaveEnquadrar}
         apiRef={visorApi}
         onToqueVazio={() => setSelecionadoId(null)}
+        onToqueLongo={p => desenhosApi.pingar(p.x, p.y)}
         camadas={ctx => (
           <>
+            <CamadaDesenhos
+              ctx={ctx}
+              desenhos={desenhosApi.desenhos}
+              rascunho={rascunhoDesenho}
+              borracha={ferramentaAtiva === 'desenho' && configDesenho.forma === 'borracha'}
+              podeApagar={d => isGestor || d.autor_id === meuId}
+              onApagar={id => tentar(() => desenhosApi.apagar(id))}
+            />
             <CamadaTokens
               ctx={ctx}
               tokens={isGestor ? tokensNaTela : tokensNaTela.filter(t => !t.podeMover)}
@@ -195,7 +240,9 @@ export default function MapaPage() {
             {!isGestor && (
               <CamadaTokens ctx={ctx} tokens={tokensNaTela.filter(t => t.podeMover)} comDefs={false} {...propsTokens} />
             )}
-            {isGestor && ferramenta === 'nevoa' && (
+            <CamadaReguas ctx={ctx} reguas={desenhosApi.reguas} />
+            <CamadaPings ctx={ctx} pings={desenhosApi.pings} />
+            {ferramentaAtiva === 'nevoa' && (
               <EditorNevoa
                 ctx={ctx}
                 largura={cena.largura}
@@ -204,6 +251,22 @@ export default function MapaPage() {
                 onRascunho={setRascunhoNevoa}
                 onConcluir={aplicarOpNevoa}
               />
+            )}
+            {ferramentaAtiva === 'desenho' && configDesenho.forma !== 'borracha' && (
+              <EditorDesenho
+                ctx={ctx}
+                largura={cena.largura}
+                altura={cena.altura}
+                config={configDesenho}
+                onRascunho={setRascunhoDesenho}
+                onConcluir={d => tentar(() => desenhosApi.desenhar(d))}
+              />
+            )}
+            {ferramentaAtiva === 'regua' && (
+              <EditorRegua ctx={ctx} largura={cena.largura} altura={cena.altura} onMedir={desenhosApi.medir} onFim={desenhosApi.encerrarRegua} />
+            )}
+            {ferramentaAtiva === 'ping' && (
+              <EditorPing ctx={ctx} largura={cena.largura} altura={cena.altura} onPing={desenhosApi.pingar} />
             )}
           </>
         )}
@@ -255,14 +318,6 @@ export default function MapaPage() {
           {isGestor && !indisponivel && (
             <>
               <button
-                onClick={() => { setFerramenta(f => (f === 'nevoa' ? 'mover' : 'nevoa')); setSelecionadoId(null) }}
-                className={`${BTN_ICONE} hover:bg-hover ${ferramenta === 'nevoa' ? 'text-accent-300' : 'text-ink'}`}
-                title="Névoa de guerra"
-                disabled={!cena}
-              >
-                🌫 <span className="hidden lg:inline">Névoa</span>
-              </button>
-              <button
                 onClick={() => alternarPainel('tokens')}
                 className={`${BTN_ICONE} hover:bg-hover ${painel === 'tokens' ? 'text-accent-300' : 'text-ink'}`}
                 title="Tokens"
@@ -291,7 +346,10 @@ export default function MapaPage() {
               <button onClick={() => setAviso('')} className="text-amber-400 hover:text-amber-100 text-sm" title="Dispensar">✕</button>
             </div>
           )}
-          {isGestor && cena && ferramenta === 'nevoa' && (
+          {cena && !indisponivel && (
+            <BarraFerramentas ferramenta={ferramentaAtiva} onFerramenta={escolherFerramenta} podeDesenhar={podeDesenhar} isGestor={isGestor} />
+          )}
+          {cena && ferramentaAtiva === 'nevoa' && (
             <BarraNevoa
               nevoa={nevoa}
               config={{ ...configNevoa, raio: configNevoa.raio ?? tamanhoGrade }}
@@ -299,7 +357,18 @@ export default function MapaPage() {
               onConfig={setConfigNevoa}
               onAlternar={() => salvarNevoa({ ...nevoa, ativa: !nevoa.ativa })}
               onTudo={modo => aplicarOpNevoa({ modo, forma: 'tudo' })}
-              onFechar={() => setFerramenta('mover')}
+              onFechar={() => escolherFerramenta('mover')}
+            />
+          )}
+          {cena && ferramentaAtiva === 'desenho' && (
+            <BarraDesenho
+              config={configDesenho}
+              onConfig={setConfigDesenho}
+              isGestor={isGestor}
+              jogadoresDesenham={!!cena.jogadores_desenham}
+              onAlternarJogadores={() => tentar(() => atualizar(cena.id, { jogadores_desenham: !cena.jogadores_desenham }))}
+              onLimpar={todos => tentar(() => desenhosApi.limpar(todos))}
+              onFechar={() => escolherFerramenta('mover')}
             />
           )}
         </main>

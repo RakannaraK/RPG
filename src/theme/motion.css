@@ -47,3 +47,25 @@
     animation: none;
   }
 }
+
+/* F26.4 — ping no mapa: duas ondas expandindo a partir do ponto */
+@keyframes ping-onda {
+  from { transform: scale(.2); opacity: 1; }
+  to   { transform: scale(1.6); opacity: 0; }
+}
+
+.ping-onda {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ping-onda 1s ease-out infinite;
+}
+
+.ping-onda-2 {
+  animation-delay: .5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ping-onda {
+    animation: none;
+  }
+}

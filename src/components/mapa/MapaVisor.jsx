@@ -17,19 +17,22 @@ const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
  *   camadas(ctx)    — elementos SVG em px do mapa, acima da grade (26.2+)
  *   sobreposicao(ctx) — HTML por cima do mapa (menus), posicionado com ctx.vista
  *   onToqueVazio    — clique/toque sem arrastar fora de qualquer camada interativa
+ *   onToqueLongo(p) — segurar parado ~0,6 s; recebe o ponto em px do mapa (26.4)
  *   apiRef          — recebe { centroVisivel() } (ponto do mapa no meio da tela)
  *
  * ctx = { vista, grade, paraMapa(clientX, clientY) }
  */
-export default function MapaVisor({ mapa, grade, mostrarGrade = true, chaveEnquadrar, camadas, sobreposicao, onToqueVazio, apiRef }) {
+export default function MapaVisor({ mapa, grade, mostrarGrade = true, chaveEnquadrar, camadas, sobreposicao, onToqueVazio, onToqueLongo, apiRef }) {
   const areaRef = useRef(null)
   const [vista, setVista] = useState({ x: 0, y: 0, zoom: 1 })
   const vistaRef = useRef(vista)
   const ponteiros = useRef(new Map())
   const gesto = useRef(null)
   const toque = useRef(null)
+  const timerLongo = useRef(null)
 
   useEffect(() => { vistaRef.current = vista }, [vista])
+  useEffect(() => () => clearTimeout(timerLongo.current), [])
 
   useEffect(() => {
     if (!apiRef) return
@@ -88,12 +91,30 @@ export default function MapaVisor({ mapa, grade, mostrarGrade = true, chaveEnqua
     e.currentTarget.setPointerCapture(e.pointerId)
     ponteiros.current.set(e.pointerId, local(e))
     toque.current = ponteiros.current.size === 1 ? local(e) : null
+    clearTimeout(timerLongo.current)
+    // Segurar parado ~0,6 s (26.4): vira toque longo (ping) e cancela o pan
+    if (toque.current && onToqueLongo) {
+      timerLongo.current = setTimeout(() => {
+        const p = toque.current
+        if (!p) return
+        toque.current = null
+        gesto.current = null
+        onToqueLongo(telaParaMapa(p, vistaRef.current))
+      }, 600)
+    }
     iniciarGesto()
   }
 
   function aoMover(e) {
     if (!ponteiros.current.has(e.pointerId)) return
     ponteiros.current.set(e.pointerId, local(e))
+    if (toque.current) {
+      const p = local(e)
+      if (Math.hypot(p.x - toque.current.x, p.y - toque.current.y) >= 5) {
+        toque.current = null
+        clearTimeout(timerLongo.current)
+      }
+    }
     const g = gesto.current
     if (!g) return
     const pts = [...ponteiros.current.values()]
@@ -105,6 +126,7 @@ export default function MapaVisor({ mapa, grade, mostrarGrade = true, chaveEnqua
   }
 
   function aoSoltar(e) {
+    clearTimeout(timerLongo.current)
     if (toque.current && e.type === 'pointerup' && ponteiros.current.size === 1) {
       const p = local(e)
       if (Math.hypot(p.x - toque.current.x, p.y - toque.current.y) < 5) onToqueVazio?.()

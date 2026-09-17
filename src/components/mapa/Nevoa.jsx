@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { normalizarNevoa, normalizarRet } from '../../lib/mapaEngine'
+import CapturaMapa from './CapturaMapa'
 
 const caminho = pontos => {
   if (!pontos?.length) return ''
@@ -41,59 +42,39 @@ export function CamadaNevoa({ nevoa, rascunho, largura, altura, translucida }) {
   )
 }
 
-/**
- * Captura o desenho da névoa (mestre, ferramenta ativa): retângulo arrastado
- * ou pincel. Fica por cima dos tokens enquanto a ferramenta está ligada.
- * A roda do mouse continua dando zoom (ela é tratada no visor).
- */
+/** Desenho da névoa pelo mestre: retângulo arrastado ou pincel. */
 export function EditorNevoa({ ctx, largura, altura, config, onRascunho, onConcluir }) {
   const atual = useRef(null)
-  const ponto = e => {
-    const p = ctx.paraMapa(e.clientX, e.clientY)
-    return { x: Math.round(p.x), y: Math.round(p.y) }
-  }
+  const arred = p => ({ x: Math.round(p.x), y: Math.round(p.y) })
   const montar = a => (config.forma === 'ret'
     ? { modo: config.modo, forma: 'ret', ...normalizarRet(a.inicio, a.fim) }
     : { modo: config.modo, forma: 'traco', raio: config.raio, pontos: a.pontos })
 
-  function pressionar(e) {
-    if (e.pointerType === 'mouse' && e.button !== 0) return
-    e.stopPropagation()
-    e.currentTarget.setPointerCapture(e.pointerId)
-    const p = ponto(e)
-    atual.current = { id: e.pointerId, inicio: p, fim: p, pontos: [[p.x, p.y]] }
-    onRascunho(montar(atual.current))
-  }
-
-  function mover(e) {
-    const a = atual.current
-    if (!a || a.id !== e.pointerId) return
-    const p = ponto(e)
-    a.fim = p
-    const ultimo = a.pontos[a.pontos.length - 1]
-    // ponytail: amostragem por distância (raio/3); simplificação de traço se o JSON crescer demais
-    if (Math.hypot(p.x - ultimo[0], p.y - ultimo[1]) >= Math.max(2, config.raio / 3)) a.pontos = [...a.pontos, [p.x, p.y]]
-    onRascunho(montar(a))
-  }
-
-  function soltar(e) {
-    const a = atual.current
-    if (!a || a.id !== e.pointerId) return
-    atual.current = null
-    onRascunho(null)
-    if (e.type === 'pointerup') onConcluir(montar(a))
-  }
-
   return (
-    <rect
-      width={largura}
-      height={altura}
-      fill="transparent"
-      style={{ cursor: 'crosshair', touchAction: 'none' }}
-      onPointerDown={pressionar}
-      onPointerMove={mover}
-      onPointerUp={soltar}
-      onPointerCancel={soltar}
+    <CapturaMapa
+      ctx={ctx}
+      largura={largura}
+      altura={altura}
+      onInicio={p0 => {
+        const p = arred(p0)
+        atual.current = { inicio: p, fim: p, pontos: [[p.x, p.y]] }
+        onRascunho(montar(atual.current))
+      }}
+      onMover={p0 => {
+        const a = atual.current
+        const p = arred(p0)
+        a.fim = p
+        const ultimo = a.pontos[a.pontos.length - 1]
+        // ponytail: amostragem por distância (raio/3); simplificação de traço se o JSON crescer demais
+        if (Math.hypot(p.x - ultimo[0], p.y - ultimo[1]) >= Math.max(2, config.raio / 3)) a.pontos = [...a.pontos, [p.x, p.y]]
+        onRascunho(montar(a))
+      }}
+      onFim={(_, concluiu) => {
+        const a = atual.current
+        atual.current = null
+        onRascunho(null)
+        if (concluiu && a) onConcluir(montar(a))
+      }}
     />
   )
 }
