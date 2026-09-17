@@ -5,7 +5,7 @@ import {
 } from './rodaRunica'
 import { cronometroVisivel, iniciarCronometro, pararCronometro } from './cronometro'
 import { comecarResposta, iniciarMemoria, responderMemoria, resultadoMemoria, tempoExibir } from './memoria'
-import { classificar, configDoJogo, resumoResultado, rotuloFeed, textoClassificacao } from './resultado'
+import { classificar, configDoJogo, estatisticasJogador, rankingMesa, resumoResultado, rotuloFeed, textoClassificacao } from './resultado'
 
 /** Leva o ponteiro até o centro do arco (em passos pequenos) e toca. */
 function acertar(e) {
@@ -159,6 +159,34 @@ describe('resultado e desafios', () => {
     expect(rotuloFeed('roda', 'dificil')).toBe('🎮 Roda Rúnica (Difícil)')
     expect(resumoResultado('roda', { pontos: 23, acertos: 18, maiorCombo: 7, duracao: 42.1 })).toBe('23 pontos · 18 acertos · combo 7 · 42,1 s')
     expect(resumoResultado('cronometro', pararCronometro({ alvo: 4.5 }, 4.48))).toBe('Perfeito — parou em 4,48 s (alvo 4,5 s, −20 ms) · 980 pontos')
+  })
+
+  it('ranking da mesa: melhor de cada pessoa, só do jogo e dificuldade pedidos', () => {
+    const lista = [
+      { usuario_id: 'a', tipo: 'roda', dificuldade: 'normal', pontos: 10 },
+      { usuario_id: 'a', tipo: 'roda', dificuldade: 'normal', pontos: 25 },
+      { usuario_id: 'b', tipo: 'roda', dificuldade: 'normal', pontos: 18 },
+      { usuario_id: 'c', tipo: 'roda', dificuldade: 'dificil', pontos: 99 },
+      { usuario_id: 'd', tipo: 'memoria', dificuldade: 'normal', pontos: 50 },
+    ]
+    expect(rankingMesa(lista, 'roda', 'normal').map(r => [r.usuario_id, r.pontos, r.posicao])).toEqual([['a', 25, 1], ['b', 18, 2]])
+    expect(rankingMesa(lista, 'roda', 'normal', 1)).toHaveLength(1)
+  })
+
+  it('estatísticas do jogador por jogo', () => {
+    const lista = [
+      { usuario_id: 'a', tipo: 'roda', pontos: 10, detalhes: { maiorCombo: 4, duracao: 20.5 } },
+      { usuario_id: 'a', tipo: 'roda', pontos: 7, detalhes: { maiorCombo: 9, duracao: 12 } },
+      { usuario_id: 'a', tipo: 'cronometro', pontos: 900, detalhes: { erroMs: 100 } },
+      { usuario_id: 'a', tipo: 'cronometro', pontos: 960, detalhes: { erroMs: 40 } },
+      { usuario_id: 'a', tipo: 'memoria', pontos: 9, detalhes: { maiorSequencia: 5 } },
+      { usuario_id: 'b', tipo: 'roda', pontos: 50, detalhes: { maiorCombo: 30, duracao: 90 } },
+    ]
+    expect(estatisticasJogador(lista, 'a')).toEqual({
+      roda: { partidas: 2, melhor: 10, maiorCombo: 9, maiorSobrevivencia: 20.5 },
+      cronometro: { partidas: 2, melhor: 960, menorErroMs: 40 },
+      memoria: { partidas: 1, melhor: 9, maiorSequencia: 5 },
+    })
   })
 
   it('classificação com empate e meta', () => {
