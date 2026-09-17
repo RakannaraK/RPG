@@ -4,6 +4,8 @@ import { listarSkins } from '../lib/diceSkins'
 import { tocarSomDado } from '../lib/diceSounds'
 import { PRESET_IDS } from '../engines/actionSoundEngine'
 import { tocarPresetAcao } from '../audio/actionSynth'
+import BandejaDados, { bandejaSuportada } from '../components/dados/BandejaDados'
+import { enfileirarLancamento, separarExcedente } from '../lib/bandejaDados'
 
 const TIPOS = [4, 6, 8, 10, 12, 20, 100]
 const SKINS = listarSkins()
@@ -22,6 +24,16 @@ export default function DadosTestePage() {
     setRolando(true)
     tocarSomDado(skin, { ativo: somAtivo, volume, numDados: TIPOS.length })
     setTimeout(() => setRolando(false), 1400)
+  }
+
+  // F27 — lança na bandeja: `descartarMenores` marca os N menores como descartados (kh)
+  const [bandeja, setBandeja] = useState([])
+  function lancarNaBandeja(ladosLista, descartarMenores = 0) {
+    const dados = ladosLista.map(lados => ({ lados, valor: Math.ceil(Math.random() * lados), descartado: false }))
+    ;[...dados].sort((a, b) => a.valor - b.valor).slice(0, descartarMenores).forEach(d => { d.descartado = true })
+    const { rolam, excedente } = separarExcedente(dados)
+    tocarSomDado(skin, { ativo: somAtivo, volume, numDados: rolam.length })
+    return { id: crypto.randomUUID(), dados: rolam, excedente, skin, autor: 'Teste' }
   }
 
   function ouvir(skinId) {
@@ -141,6 +153,30 @@ export default function DadosTestePage() {
       >
         {rolando ? '🎲 Rolando...' : '🎲 Rolar tudo'}
       </button>
+
+      {/* F27 — bandeja: dados com física por cima da tela */}
+      <div className="border-t border-purple-900 pt-8 flex flex-col items-center gap-3">
+        <h2 className="text-white text-lg font-bold">Bandeja de dados (F27)</h2>
+        <div className="flex flex-wrap gap-2 justify-center max-w-lg">
+          {[
+            ['3d6', () => [lancarNaBandeja(Array(3).fill(6))]],
+            ['1 de cada', () => [lancarNaBandeja(TIPOS)]],
+            ['4d6 kh3', () => [lancarNaBandeja(Array(4).fill(6), 1)]],
+            ['60d6 (excedente)', () => [lancarNaBandeja(Array(60).fill(6))]],
+            ['Rajada ×10', () => Array.from({ length: 10 }, () => lancarNaBandeja([20]))],
+          ].map(([rotulo, gerar]) => (
+            <button
+              key={rotulo}
+              onClick={() => { for (const l of gerar()) setBandeja(f => enfileirarLancamento(f, l)) }}
+              className="px-3 py-1.5 rounded-lg border border-purple-800 bg-purple-950/50 hover:border-purple-600 text-purple-200 text-sm transition-colors"
+            >
+              🎲 {rotulo}
+            </button>
+          ))}
+        </div>
+        {!bandejaSuportada && <p className="text-amber-300 text-sm">Bandeja indisponível (sem WebGL ou "reduzir movimento" ligado).</p>}
+      </div>
+      <BandejaDados lancamentos={bandeja} onTerminou={id => setBandeja(f => f.filter(l => l.id !== id))} />
 
       {/* FV.4 — preview dos presets de som de ação (dev only; nenhum som dispara no jogo ainda) */}
       <div className="border-t border-purple-900 pt-8 flex flex-col items-center gap-3">

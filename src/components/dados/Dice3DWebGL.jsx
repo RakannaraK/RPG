@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { renderDie } from '../../lib/diceRenderer'
 import { getSkin } from '../../lib/diceSkins'
+import { criarMaterialSkin } from '../../lib/materialDado'
 
 // Este componente concentra TODO o código three.js. É carregado via lazy() pelo
 // Dice3D, então o three.js fica num chunk separado fora do bundle inicial.
@@ -15,34 +16,6 @@ function criarGeometria(lados) {
     case 20: return new THREE.IcosahedronGeometry(1.3)
     default: return new THREE.IcosahedronGeometry(1.3) // d10, d100, etc.
   }
-}
-
-// Material three.js a partir de uma skin (ver lib/diceSkins.js).
-// MeshPhysicalMaterial cobre metal, brilho emissivo e transmissão (cristal/gelo).
-function criarMaterialSkin(skin) {
-  const mat = new THREE.MeshPhysicalMaterial({
-    color: skin.cor,
-    metalness: skin.metalness ?? 0.3,
-    roughness: skin.roughness ?? 0.5,
-    emissive: skin.emissive ?? 0x000000,
-  })
-
-  if ((skin.emissive ?? 0x000000) !== 0x000000) {
-    mat.emissiveIntensity = 0.85
-  }
-
-  if (skin.transmissivo) {
-    mat.transmission = 0.9
-    mat.thickness = 1.5
-    mat.ior = 1.4
-    mat.transparent = true
-    mat.opacity = skin.opacity ?? 1
-  } else if ((skin.opacity ?? 1) < 1) {
-    mat.transparent = true
-    mat.opacity = skin.opacity
-  }
-
-  return mat
 }
 
 function criarCena(lados, skin) {
