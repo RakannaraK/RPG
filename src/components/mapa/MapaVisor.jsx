@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { enquadrar, normalizarGrade, pinca, zoomNoPonto } from '../../lib/mapaEngine'
+import { enquadrar, normalizarGrade, pinca, telaParaMapa, zoomNoPonto } from '../../lib/mapaEngine'
 
 const centro = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 })
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
@@ -14,15 +14,37 @@ const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
  *   grade           — grade a exibir (rascunho do editor ou a salva)
  *   mostrarGrade    — camada local (liga/desliga por pessoa)
  *   chaveEnquadrar  — mudar o valor re-enquadra o mapa na tela
+ *   camadas(ctx)    — elementos SVG em px do mapa, acima da grade (26.2+)
+ *   sobreposicao(ctx) — HTML por cima do mapa (menus), posicionado com ctx.vista
+ *   onToqueVazio    — clique/toque sem arrastar fora de qualquer camada interativa
+ *   apiRef          — recebe { centroVisivel() } (ponto do mapa no meio da tela)
+ *
+ * ctx = { vista, grade, paraMapa(clientX, clientY) }
  */
-export default function MapaVisor({ mapa, grade, mostrarGrade = true, chaveEnquadrar }) {
+export default function MapaVisor({ mapa, grade, mostrarGrade = true, chaveEnquadrar, camadas, sobreposicao, onToqueVazio, apiRef }) {
   const areaRef = useRef(null)
   const [vista, setVista] = useState({ x: 0, y: 0, zoom: 1 })
   const vistaRef = useRef(vista)
   const ponteiros = useRef(new Map())
   const gesto = useRef(null)
+  const toque = useRef(null)
 
   useEffect(() => { vistaRef.current = vista }, [vista])
+
+  useEffect(() => {
+    if (!apiRef) return
+    apiRef.current = {
+      centroVisivel: () => {
+        const el = areaRef.current
+        return el ? telaParaMapa({ x: el.clientWidth / 2, y: el.clientHeight / 2 }, vistaRef.current) : { x: 0, y: 0 }
+      },
+    }
+  }, [apiRef])
+
+  const paraMapa = (clientX, clientY) => {
+    const r = areaRef.current.getBoundingClientRect()
+    return telaParaMapa({ x: clientX - r.left, y: clientY - r.top }, vistaRef.current)
+  }
 
   const largura = mapa?.largura || 0
   const altura = mapa?.altura || 0
@@ -65,6 +87,7 @@ export default function MapaVisor({ mapa, grade, mostrarGrade = true, chaveEnqua
     if (e.pointerType === 'mouse' && e.button !== 0 && e.button !== 1) return
     e.currentTarget.setPointerCapture(e.pointerId)
     ponteiros.current.set(e.pointerId, local(e))
+    toque.current = ponteiros.current.size === 1 ? local(e) : null
     iniciarGesto()
   }
 
@@ -82,6 +105,11 @@ export default function MapaVisor({ mapa, grade, mostrarGrade = true, chaveEnqua
   }
 
   function aoSoltar(e) {
+    if (toque.current && e.type === 'pointerup' && ponteiros.current.size === 1) {
+      const p = local(e)
+      if (Math.hypot(p.x - toque.current.x, p.y - toque.current.y) < 5) onToqueVazio?.()
+    }
+    toque.current = null
     ponteiros.current.delete(e.pointerId)
     gesto.current = null
     // De 2 dedos para 1: segue como pan a partir daqui, sem salto.
@@ -90,6 +118,7 @@ export default function MapaVisor({ mapa, grade, mostrarGrade = true, chaveEnqua
 
   const g = normalizarGrade(grade)
   const t = Number(g.tamanho)
+  const ctx = { vista, grade: g, paraMapa }
 
   return (
     <div
@@ -124,8 +153,10 @@ export default function MapaVisor({ mapa, grade, mostrarGrade = true, chaveEnqua
               <rect width={largura} height={altura} fill="url(#grade-mapa)" opacity={g.opacidade} pointerEvents="none" />
             </>
           )}
+          {camadas?.(ctx)}
         </svg>
       )}
+      {largura > 0 && sobreposicao?.(ctx)}
     </div>
   )
 }

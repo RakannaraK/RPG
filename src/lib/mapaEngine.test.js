@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   ZOOM_MAX, ZOOM_MIN, normalizarGrade, telaParaMapa, mapaParaTela, zoomNoPonto, pinca,
-  enquadrar, encaixar, distanciaCelulas, medir, normalizarRet, adicionarOpNevoa, normalizarNevoa,
+  enquadrar, encaixar, espalhar, distanciaCelulas, medir, normalizarRet, adicionarOpNevoa, normalizarNevoa,
 } from './mapaEngine'
 
 describe('visão', () => {
@@ -69,6 +69,29 @@ describe('grade', () => {
 
   it('encaixe respeita o deslocamento da grade', () => {
     expect(encaixar({ x: 100, y: 100 }, { tamanho: 70, offset_x: 10, offset_y: 20 }, 1)).toEqual({ x: 115, y: 125 })
+  })
+
+  it('espalhar: N tokens em células distintas, encaixados e dentro do mapa', () => {
+    const pos = espalhar({ x: 350, y: 350 }, 5, g, 700, 700)
+    expect(pos).toHaveLength(5)
+    expect(new Set(pos.map(p => `${p.x},${p.y}`)).size).toBe(5)
+    for (const p of pos) expect(encaixar(p, g, 1)).toEqual(p)
+    const noCanto = espalhar({ x: 0, y: 0 }, 4, g, 700, 700)
+    expect(noCanto).toHaveLength(4)
+    expect(new Set(noCanto.map(p => `${p.x},${p.y}`)).size).toBe(4)
+    for (const p of noCanto) {
+      expect(p.x).toBeGreaterThanOrEqual(0)
+      expect(p.y).toBeGreaterThanOrEqual(0)
+    }
+  })
+
+  it('espalhar pula casas já ocupadas por outros tokens', () => {
+    const ocupados = espalhar({ x: 350, y: 350 }, 3, g, 700, 700)
+    const novos = espalhar({ x: 350, y: 350 }, 2, g, 700, 700, 1, ocupados)
+    for (const p of novos) {
+      expect(ocupados.some(o => o.x === p.x && o.y === p.y)).toBe(false)
+    }
+    expect(novos[0]).not.toEqual(novos[1])
   })
 
   it('grade com tamanho inválido não encaixa', () => {

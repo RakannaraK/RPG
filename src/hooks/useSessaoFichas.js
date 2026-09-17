@@ -1,5 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
+import { useSistema } from './useSistema'
+import { usePools } from './usePools'
 import { coletarModificadores, calcularValoresFinais, agregarDefesas, resolverValoresFormula, listarCondicoesManuais } from '../lib/modifierEngine'
 import { resolverFaixas } from '../lib/faixas'
 import { avaliarFormula } from '../lib/formulaEngine'
@@ -481,4 +483,29 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
   }, [mesaId, recarregarFicha])
 
   return { cards, loading, error, conectado, refetch: carregarTudo }
+}
+
+/**
+ * Sistema da mesa + cards de todas as fichas pelo motor completo. Usado pela
+ * sessão (F13) e pelo mapa (F26.2 — vida nos tokens).
+ */
+export function useCardsDaMesa(mesaId) {
+  const { sistema, racas, classes, habilidades, atributos, pericias } = useSistema(mesaId)
+  const { pools } = usePools(sistema?.id) // 20.1
+  const cl = sistema?.config_layout
+  // construirCard lê formula_modificador/formula_proficiencia do bundle — sem elas,
+  // as fórmulas do card rodariam sem a regra do sistema.
+  const sistemaBundle = useMemo(
+    () => ({
+      racas, classes, habilidades, atributos, pericias, pools,
+      formula_modificador: cl?.formula_modificador || '',
+      formula_proficiencia: cl?.formula_proficiencia || '',
+      slots: cl?.slots || null,
+      campos_combate: cl?.campos_combate || [], // 22.7 — campos calculados no card
+      trilhas: cl?.trilhas || [], // 24.2 — trilhas no card
+    }),
+    [racas, classes, habilidades, atributos, pericias, pools, cl]
+  )
+  const { cards, loading, error, conectado } = useSessaoFichas(mesaId, sistemaBundle)
+  return { sistema, racas, classes, habilidades, atributos, pericias, pools, cards, loading, error, conectado }
 }

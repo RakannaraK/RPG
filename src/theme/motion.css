@@ -31,3 +31,19 @@
     animation: none;
   }
 }
+
+/* F26.2 — anel pulsante do token de quem é a vez (mapa) */
+@keyframes token-turno {
+  0%, 100% { stroke-opacity: 1; }
+  50%      { stroke-opacity: .3; }
+}
+
+.token-turno {
+  animation: token-turno 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .token-turno {
+    animation: none;
+  }
+}

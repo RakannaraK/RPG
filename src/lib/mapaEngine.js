@@ -77,6 +77,32 @@ export function encaixar(p, grade, tamanho = 1) {
   return { x: eixo(p.x, Number(g.offset_x) || 0), y: eixo(p.y, Number(g.offset_y) || 0) }
 }
 
+/**
+ * Posições para N tokens novos em casas LIVRES em volta de `centro`, em anéis
+ * (espiral quadrada), encaixadas na grade e presas dentro do mapa. `ocupados`
+ * são as posições dos tokens que já estão na cena.
+ */
+export function espalhar(centro, n, grade, largura, altura, tamanho = 1, ocupados = []) {
+  const g = normalizarGrade(grade)
+  const t = Number(g.tamanho) > 0 ? Number(g.tamanho) : 70
+  const passo = t * tamanho
+  const limitar = (v, max) => Math.min(Math.max(v, 0), max || v)
+  const base = g.ativa ? encaixar(centro, g, tamanho) : centro
+  const perto = (a, b) => Math.abs(a.x - b.x) < passo / 2 && Math.abs(a.y - b.y) < passo / 2
+  const saida = []
+  // ponytail: busca linear nos ocupados; troca por índice espacial se uma cena tiver milhares de tokens
+  for (let anel = 0; saida.length < n && anel < 200; anel++) {
+    for (let dy = -anel; dy <= anel && saida.length < n; dy++) {
+      for (let dx = -anel; dx <= anel && saida.length < n; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== anel) continue
+        const p = { x: limitar(base.x + dx * passo, largura), y: limitar(base.y + dy * passo, altura) }
+        if (!ocupados.some(o => perto(o, p)) && !saida.some(o => perto(o, p))) saida.push(p)
+      }
+    }
+  }
+  return saida
+}
+
 export function celula(p, grade) {
   const g = normalizarGrade(grade)
   const t = Number(g.tamanho)

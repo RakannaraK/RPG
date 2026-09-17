@@ -1,12 +1,10 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { useSistema } from '../hooks/useSistema'
 import { useUpdateFicha } from '../hooks/useFicha'
 import { usePresencaSessao } from '../hooks/usePresencaSessao'
-import { useSessaoFichas } from '../hooks/useSessaoFichas'
-import { usePools } from '../hooks/usePools'
+import { useCardsDaMesa } from '../hooks/useSessaoFichas'
 import { planejarTurno } from '../lib/custoHabilidade'
 import { useEncontro } from '../hooks/useEncontro'
 import { useRolagem } from '../hooks/useRolagem'
@@ -42,31 +40,12 @@ export default function SessaoPage() {
 
   const { conectados } = usePresencaSessao(sessaoId, mesaId)
 
-  // Sistema da mesa (para o motor de modificadores no painel de fichas)
-  const { sistema, racas, classes, habilidades, atributos, pericias } = useSistema(mesaId)
-  const { pools } = usePools(sistema?.id) // 20.1
-  // construirCard lê formula_modificador/formula_proficiencia do bundle — sem elas,
-  // as fórmulas do painel de sessão rodariam sem a regra do sistema.
-  const formulaModificador = sistema?.config_layout?.formula_modificador || ''
-  const formulaProficiencia = sistema?.config_layout?.formula_proficiencia || ''
-  const configSlots = sistema?.config_layout?.slots || null
+  // Sistema da mesa + cards das fichas pelo motor (13.3; extraído p/ o mapa na 26.2)
+  const { sistema, habilidades, atributos, cards, loading: loadingCards, error: erroCards, conectado } = useCardsDaMesa(mesaId)
   const camposCombate = sistema?.config_layout?.campos_combate || []
-  const sistemaBundle = useMemo(
-    () => ({
-      racas, classes, habilidades, atributos, pericias, pools,
-      formula_modificador: formulaModificador,
-      formula_proficiencia: formulaProficiencia,
-      slots: configSlots,
-      campos_combate: camposCombate, // 22.7 — computar campos calculados no card
-      trilhas: sistema?.config_layout?.trilhas || [], // 24.2 — trilhas no card
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [racas, classes, habilidades, atributos, pericias, pools, formulaModificador, formulaProficiencia, configSlots, camposCombate, sistema?.config_layout?.trilhas]
-  )
   const descansos = sistema?.config_layout?.descansos || []
   const defesaAtiva = sistema?.config_layout?.defesa_ativa || null // 22.6
   const progressaoModo = sistema?.config_layout?.progressao?.modo || 'nivel' // 25.5
-  const { cards, loading: loadingCards, error: erroCards, conectado } = useSessaoFichas(mesaId, sistemaBundle)
 
   // Encontro de combate (Fase 14)
   const encontroApi = useEncontro(sessaoId, mesaId)

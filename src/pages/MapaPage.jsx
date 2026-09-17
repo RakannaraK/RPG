@@ -1,18 +1,42 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useMapas } from '../hooks/useMapas'
+import { useTokensMapa } from '../hooks/useTokensMapa'
+import { useCardsDaMesa } from '../hooks/useSessaoFichas'
+import { useSessoes } from '../hooks/useSessoes'
+import { useEncontro } from '../hooks/useEncontro'
+import { ordenarPorIniciativa } from '../lib/iniciativa'
+import { espalhar, normalizarGrade } from '../lib/mapaEngine'
 import MapaVisor from '../components/mapa/MapaVisor'
 import PainelCenas from '../components/mapa/PainelCenas'
+import PainelTokens from '../components/mapa/PainelTokens'
+import CamadaTokens, { MenuToken } from '../components/mapa/CamadaTokens'
 
 const BTN_ICONE = 'h-9 min-w-9 px-2 rounded-lg text-sm transition-colors'
 const telaCheiaDisponivel = typeof document !== 'undefined' && document.fullscreenEnabled
 
+/** Vida exibida no token: ficha (motor da sessão, ou caixinhas livres da trilha) ou combatente. */
+function vidaDoToken(card, combatente, isGestor) {
+  if (card?.trilhaVida) {
+    const m = card.trilhaVida.marcas || []
+    return m.length ? { atual: m.filter(x => x == null).length, max: m.length, temp: 0 } : null
+  }
+  const max = card ? card.hpMax || card.hpMaxBase || 0 : 0
+  if (card && max > 0) return { atual: card.hpAtual ?? 0, max, temp: card.vidaTemp || 0 }
+  // Vida de inimigo/NPC só para o mestre
+  if (combatente && !combatente.ficha_id && isGestor && combatente.hp_maximo > 0) {
+    return { atual: combatente.hp_atual ?? 0, max: combatente.hp_maximo, temp: 0 }
+  }
+  return null
+}
+
 /**
  * Fase 26 — mesa virtual (mapa) em tela cheia.
- *  26.1 — cenas, pan/zoom, grade, painel do mestre (aqui).
- *  26.2+ — tokens, névoa, desenho/régua/ping, painel da mesa.
+ *  26.1 — cenas, pan/zoom, grade, painel do mestre.
+ *  26.2 — tokens (fichas, combatentes, avulsos), arraste ao vivo, vida, turno.
+ *  26.3+ — névoa, desenho/régua/ping, painel da mesa.
  */
 export default function MapaPage() {
   const { id: mesaId } = useParams()
@@ -20,16 +44,19 @@ export default function MapaPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const voltarPara = location.state?.voltar || `/mesa/${mesaId}`
+  const meuId = session?.user?.id
 
   const [isGestor, setIsGestor] = useState(false)
   const [papelCarregado, setPapelCarregado] = useState(false)
   const { mapas, ativo, loading, indisponivel, criar, ativar, atualizar, remover } = useMapas(mesaId)
 
   const [vistaId, setVistaId] = useState(null)
-  const [painelAberto, setPainelAberto] = useState(true)
+  const [painel, setPainel] = useState('cenas') // 'cenas' | 'tokens' | null
   const [mostrarGrade, setMostrarGrade] = useState(true)
   const [chaveEnquadrar, setChaveEnquadrar] = useState(0)
   const [rascunho, setRascunho] = useState({ cenaId: null, grade: null })
+  const [selecionadoId, setSelecionadoId] = useState(null)
+  const visorApi = useRef(null)
 
   // Gestor = criador OU co-mestre (mesmo critério da SessaoPage, F16.5)
   useEffect(() => {
@@ -57,6 +84,39 @@ export default function MapaPage() {
   const cena = isGestor ? (mapas.find(m => m.id === vistaId) || ativo || mapas[0] || null) : ativo
   const grade = rascunho.cenaId === cena?.id && rascunho.grade ? rascunho.grade : cena?.grade
 
+  // Fichas (vida pelo motor) e combate ativo (turno, combatentes)
+  const { cards } = useCardsDaMesa(mesaId)
+  const { sessaoAtiva } = useSessoes(mesaId)
+  const { encontro, combatentes } = useEncontro(sessaoAtiva?.id, mesaId)
+  const tokensApi = useTokensMapa(cena?.id, mesaId)
+
+  const combatentesAtivos = encontro ? combatentes : []
+  const daVez = encontro ? ordenarPorIniciativa(combatentes)[encontro.turno_atual ?? 0] : null
+
+  const tokensVisuais = tokensApi.tokens.map(tk => {
+    const card = tk.ficha_id ? cards.find(c => c.id === tk.ficha_id) : null
+    const comb = tk.combatente_id ? combatentesAtivos.find(c => c.id === tk.combatente_id) : null
+    const remoto = tokensApi.remotos[tk.id]
+    return {
+      ...tk,
+      x: remoto?.x ?? tk.x,
+      y: remoto?.y ?? tk.y,
+      nome: card?.nome || tk.nome,
+      imagem: card?.imagem || tk.imagem_url,
+      vida: vidaDoToken(card, comb, isGestor),
+      daVez: !!daVez && ((!!tk.ficha_id && tk.ficha_id === daVez.ficha_id) || tk.combatente_id === daVez.id),
+      podeMover: isGestor || (!!card && card.ficha?.dono_id === meuId),
+    }
+  })
+  const selecionado = tokensVisuais.find(t => t.id === selecionadoId) || null
+
+  async function adicionarTokens(lista, tamanho = 1) {
+    if (!cena) return
+    const centro = visorApi.current?.centroVisivel() || { x: cena.largura / 2, y: cena.altura / 2 }
+    const posicoes = espalhar(centro, lista.length, normalizarGrade(grade), cena.largura, cena.altura, tamanho, tokensApi.tokens)
+    await tokensApi.adicionar(lista.map((t, i) => ({ ...t, ...posicoes[i] })))
+  }
+
   function alternarTelaCheia() {
     if (document.fullscreenElement) document.exitFullscreen()
     else document.documentElement.requestFullscreen()
@@ -79,12 +139,45 @@ export default function MapaPage() {
       </Aviso>
     )
   } else {
-    conteudo = <MapaVisor mapa={cena} grade={grade} mostrarGrade={mostrarGrade} chaveEnquadrar={chaveEnquadrar} />
+    conteudo = (
+      <MapaVisor
+        mapa={cena}
+        grade={grade}
+        mostrarGrade={mostrarGrade}
+        chaveEnquadrar={chaveEnquadrar}
+        apiRef={visorApi}
+        onToqueVazio={() => setSelecionadoId(null)}
+        camadas={ctx => (
+          <CamadaTokens
+            ctx={ctx}
+            tokens={tokensVisuais}
+            largura={cena.largura}
+            altura={cena.altura}
+            selecionadoId={selecionadoId}
+            onSelecionar={setSelecionadoId}
+            onArrastar={tokensApi.arrastar}
+            onSoltar={tokensApi.mover}
+          />
+        )}
+        sobreposicao={ctx => selecionado && (
+          <MenuToken
+            ctx={ctx}
+            token={selecionado}
+            isGestor={isGestor}
+            onAtualizar={tokensApi.atualizar}
+            onRemover={async id => { await tokensApi.remover(id); setSelecionadoId(null) }}
+            onAbrirFicha={fichaId => window.open(`/mesa/${mesaId}/ficha/${fichaId}`, '_blank')}
+          />
+        )}
+      />
+    )
   }
+
+  const alternarPainel = nome => setPainel(p => (p === nome ? null : nome))
 
   return (
     <div className="h-[100dvh] flex flex-col bg-void overflow-hidden">
-      <header className="h-12 shrink-0 flex items-center gap-2 px-2 sm:px-3 border-b border-border bg-bg/90 backdrop-blur z-10">
+      <header className="h-12 shrink-0 flex items-center gap-2 px-2 sm:px-3 border-b border-border bg-bg/90 backdrop-blur z-20">
         <button onClick={() => navigate(voltarPara)} className="text-accent-400 hover:text-ink text-sm px-2 shrink-0">
           ← Voltar
         </button>
@@ -94,6 +187,7 @@ export default function MapaPage() {
             {cena.ativo ? '● jogadores veem' : 'só gestores veem'}
           </span>
         )}
+        {daVez && <span className="hidden md:inline text-xs text-dice-400 shrink-0 truncate">Vez de {daVez.nome}</span>}
         <div className="ml-auto flex items-center gap-1 shrink-0">
           <button onClick={() => setChaveEnquadrar(k => k + 1)} className={`${BTN_ICONE} text-ink hover:bg-hover`} title="Ajustar à tela">
             ⤢
@@ -111,34 +205,54 @@ export default function MapaPage() {
             </button>
           )}
           {isGestor && !indisponivel && (
-            <button
-              onClick={() => setPainelAberto(v => !v)}
-              className={`${BTN_ICONE} hover:bg-hover ${painelAberto ? 'text-accent-300' : 'text-ink'}`}
-              title="Cenas"
-            >
-              🗺 <span className="hidden sm:inline">Cenas</span>
-            </button>
+            <>
+              <button
+                onClick={() => alternarPainel('tokens')}
+                className={`${BTN_ICONE} hover:bg-hover ${painel === 'tokens' ? 'text-accent-300' : 'text-ink'}`}
+                title="Tokens"
+                disabled={!cena}
+              >
+                ● <span className="hidden sm:inline">Tokens</span>
+              </button>
+              <button
+                onClick={() => alternarPainel('cenas')}
+                className={`${BTN_ICONE} hover:bg-hover ${painel === 'cenas' ? 'text-accent-300' : 'text-ink'}`}
+                title="Cenas"
+              >
+                🗺 <span className="hidden sm:inline">Cenas</span>
+              </button>
+            </>
           )}
         </div>
       </header>
 
       <div className="relative flex-1 flex min-h-0">
         <main className="relative flex-1 min-w-0">{conteudo}</main>
-        {isGestor && !indisponivel && painelAberto && (
+        {isGestor && !indisponivel && painel && (
           <aside className="absolute sm:static right-0 inset-y-0 z-10 w-80 max-w-[85vw] shrink-0 overflow-y-auto border-l border-border bg-bg">
-            <PainelCenas
-              mapas={mapas}
-              cena={cena}
-              onVer={setVistaId}
-              onCriar={async dados => {
-                const nova = await criar(dados)
-                setVistaId(nova.id)
-              }}
-              onAtivar={ativar}
-              onRemover={remover}
-              onAtualizar={atualizar}
-              onRascunhoGrade={(cenaId, g) => setRascunho({ cenaId, grade: g })}
-            />
+            {painel === 'cenas' || !cena ? (
+              <PainelCenas
+                mapas={mapas}
+                cena={cena}
+                onVer={id => { setVistaId(id); setSelecionadoId(null) }}
+                onCriar={async dados => {
+                  const nova = await criar(dados)
+                  setVistaId(nova.id)
+                }}
+                onAtivar={ativar}
+                onRemover={remover}
+                onAtualizar={atualizar}
+                onRascunhoGrade={(cenaId, g) => setRascunho({ cenaId, grade: g })}
+              />
+            ) : (
+              <PainelTokens
+                cards={cards}
+                combatentes={combatentesAtivos}
+                tokens={tokensApi.tokens}
+                onAdicionar={adicionarTokens}
+                onEnviarImagem={tokensApi.enviarImagem}
+              />
+            )}
           </aside>
         )}
       </div>
