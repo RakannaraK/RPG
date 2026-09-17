@@ -6,6 +6,7 @@ import SistemaEditor from '../components/sistema/SistemaEditor'
 import RecapSessao from '../components/mesa/RecapSessao'
 import PainelRelogios from '../components/mesa/PainelRelogios'
 import PainelMinigames from '../components/minigames/PainelMinigames'
+import PainelDesafios from '../components/minigames/PainelDesafios'
 import { useFichas } from '../hooks/useFicha'
 import FichaCreate from '../components/ficha/FichaCreate'
 import RoladorGenerico from '../components/dados/RoladorGenerico'
@@ -566,6 +567,11 @@ export default function MesaPage() {
                 <div>
                   <p className="text-purple-200 font-medium text-sm mb-4">Minigames</p>
                   <PainelMinigames mesaId={id} meuId={session?.user?.id} podeJogar={podeEscrever} />
+                </div>
+                {/* F28.5 — desafios: o mestre põe vários jogadores na mesma partida */}
+                <div>
+                  <p className="text-purple-200 font-medium text-sm mb-4">Desafios</p>
+                  <PainelDesafios mesaId={id} meuId={session?.user?.id} isGestor={isGestor} podeJogar={podeEscrever} />
                 </div>
               </div>
               <div>

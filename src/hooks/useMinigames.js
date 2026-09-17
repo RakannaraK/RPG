@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useId } from 'react'
 import { supabase } from '../lib/supabase'
 import { useRolagem } from './useRolagem'
 import { resumoResultado, rotuloFeed } from '../lib/minigames/resultado'
@@ -16,6 +16,29 @@ function mensagem(e) {
 }
 
 /**
+ * Grava um resultado (ranking/desafio) e publica no feed. Lança erro legível se
+ * não valeu. Sem a tabela, partida avulsa ainda vai ao feed (e avisa).
+ * Função solta para quem só precisa registrar (ex.: aviso de desafio no App).
+ */
+export async function registrarResultado({ mesaId, registrarEvento, tipo, dificuldade, resultado, fichaId = null, desafioId = null, sessaoId = null }) {
+  const { data, error } = await supabase
+    .from('minigames_resultados')
+    .insert({ mesa_id: mesaId, ficha_id: fichaId, desafio_id: desafioId, tipo, dificuldade, pontos: resultado.pontos, detalhes: resultado })
+    .select()
+    .single()
+  if (error && (desafioId || !tabelaAusente(error))) throw new Error(mensagem(error))
+  await registrarEvento({
+    mesaId, fichaId, sessaoId,
+    rotulo: `${rotuloFeed(tipo, dificuldade)}${desafioId ? ' · desafio' : ''}`,
+    notacao: resumoResultado(tipo, resultado),
+    total: resultado.pontos,
+    dados: [],
+  })
+  if (error) throw new Error(mensagem(error)) // tabela ausente: foi ao feed, avisa do ranking
+  return data
+}
+
+/**
  * Fase 28.3 — resultados de minigames da mesa (ranking/estatísticas) e
  * membros com nome de exibição. `registrar` grava na tabela e publica no feed.
  *
@@ -23,6 +46,9 @@ function mensagem(e) {
  */
 export function useMinigames(mesaId) {
   const { registrarEvento } = useRolagem()
+  // Nome de canal único por instância: com o mesmo nome o Supabase devolve o
+  // canal já existente (dois painéis na mesma página se atrapalhariam).
+  const idCanal = useId().replace(/[^a-zA-Z0-9]/g, '')
   const [resultados, setResultados] = useState([])
   const [membros, setMembros] = useState([]) // [{ usuario_id, nome, role }]
   const [indisponivel, setIndisponivel] = useState(false)
@@ -48,7 +74,7 @@ export function useMinigames(mesaId) {
   useEffect(() => {
     if (!mesaId) return
     const canal = supabase
-      .channel(`minigames-${mesaId}`)
+      .channel(`minigames-${mesaId}-${idCanal}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'minigames_resultados', filter: `mesa_id=eq.${mesaId}` }, p => {
         setResultados(prev => (prev.some(r => r.id === p.new.id) ? prev : [p.new, ...prev]))
       })
@@ -57,31 +83,16 @@ export function useMinigames(mesaId) {
       })
       .subscribe()
     return () => { supabase.removeChannel(canal) }
-  }, [mesaId])
+  }, [mesaId, idCanal])
 
   const nomeDe = useCallback(
     usuarioId => membros.find(m => m.usuario_id === usuarioId)?.nome || 'Jogador',
     [membros]
   )
 
-  /** Grava o resultado (ranking) e publica no feed. Lança erro legível se não valeu. */
-  async function registrar({ tipo, dificuldade, resultado, fichaId = null, desafioId = null, sessaoId = null }) {
-    const { data, error } = await supabase
-      .from('minigames_resultados')
-      .insert({ mesa_id: mesaId, ficha_id: fichaId, desafio_id: desafioId, tipo, dificuldade, pontos: resultado.pontos, detalhes: resultado })
-      .select()
-      .single()
-    // Desafio só vale gravado; avulso segue para o feed mesmo sem a tabela
-    if (error && (desafioId || !tabelaAusente(error))) throw new Error(mensagem(error))
-    if (data) setResultados(prev => (prev.some(r => r.id === data.id) ? prev : [data, ...prev]))
-    await registrarEvento({
-      mesaId, fichaId, sessaoId,
-      rotulo: `${rotuloFeed(tipo, dificuldade)}${desafioId ? ' · desafio' : ''}`,
-      notacao: resumoResultado(tipo, resultado),
-      total: resultado.pontos,
-      dados: [],
-    })
-    if (error) throw new Error(mensagem(error)) // tabela ausente: foi ao feed, avisa do ranking
+  async function registrar(params) {
+    const linha = await registrarResultado({ mesaId, registrarEvento, ...params })
+    if (linha) setResultados(prev => (prev.some(r => r.id === linha.id) ? prev : [linha, ...prev]))
   }
 
   return { resultados, membros, nomeDe, indisponivel, registrar, recarregar: carregar }

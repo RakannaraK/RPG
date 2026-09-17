@@ -11,6 +11,7 @@ import SessaoPage from './pages/SessaoPage'
 import MapaPage from './pages/MapaPage'
 import DadosTestePage from './pages/DadosTestePage'
 import OuvinteDadosMesa from './components/dados/OuvinteDadosMesa'
+import OuvinteDesafios from './components/minigames/OuvinteDesafios'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -116,6 +117,8 @@ export default function App() {
             <AppRoutes />
             {/* F27 — bandeja de dados da mesa (fora da transição de página) */}
             <OuvinteDadosMesa />
+            {/* F28 — aviso de desafio de minigame (fora da transição de página) */}
+            <OuvinteDesafios />
           </PreferenciasProvider>
         </AuthProvider>
       </ErrorBoundary>

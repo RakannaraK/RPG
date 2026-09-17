@@ -17,6 +17,7 @@ import PainelFichas from '../components/sessao/PainelFichas'
 import CombatePanel from '../components/sessao/CombatePanel'
 import DescansoGrupo from '../components/sessao/DescansoGrupo'
 import ConcederXpGrupo from '../components/sessao/ConcederXpGrupo'
+import PainelDesafios from '../components/minigames/PainelDesafios'
 import FeedRolagens from '../components/dados/FeedRolagens'
 import Sininho from '../components/notificacoes/Sininho'
 
@@ -534,6 +535,16 @@ export default function SessaoPage() {
         {/* Conceder XP ao grupo (25.5) — só mestre, sessão ativa, modo xp_direto */}
         {sessao.ativa && isMestre && progressaoModo === 'xp_direto' && (
           <ConcederXpGrupo onConceder={handleConcederXpGrupo} />
+        )}
+
+        {/* F28.5 — desafios de minigame durante a sessão */}
+        {sessao.ativa && (
+          <details className="mb-6 rounded-xl border border-purple-900 bg-slate-900/60">
+            <summary className="cursor-pointer px-4 py-3 text-purple-200 text-sm font-medium">🎮 Desafios de minigame</summary>
+            <div className="px-4 pb-4">
+              <PainelDesafios mesaId={mesaId} meuId={session?.user?.id} isGestor={isMestre} sessaoId={sessaoId} />
+            </div>
+          </details>
         )}
 
         {/* Abas — só no mobile */}
