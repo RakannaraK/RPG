@@ -168,3 +168,39 @@ export function adicionarOpNevoa(nevoa, op) {
   if (op.forma === 'traco' && !(op.pontos?.length > 0)) return n
   return { ...n, ops: [...n.ops, op] }
 }
+
+function distanciaAoSegmento(p, a, b) {
+  const dx = b[0] - a[0]
+  const dy = b[1] - a[1]
+  const comprimento2 = dx * dx + dy * dy
+  const t = comprimento2 > 0 ? Math.max(0, Math.min(1, ((p.x - a[0]) * dx + (p.y - a[1]) * dy) / comprimento2)) : 0
+  return Math.hypot(p.x - (a[0] + t * dx), p.y - (a[1] + t * dy))
+}
+
+function dentroDaOp(op, p) {
+  if (op.forma === 'tudo') return true
+  if (op.forma === 'ret') return p.x >= op.x && p.x <= op.x + op.w && p.y >= op.y && p.y <= op.y + op.h
+  if (op.forma === 'traco') {
+    const pts = op.pontos || []
+    if (pts.length === 1) return Math.hypot(p.x - pts[0][0], p.y - pts[0][1]) <= op.raio
+    for (let i = 1; i < pts.length; i++) {
+      if (distanciaAoSegmento(p, pts[i - 1], pts[i]) <= op.raio) return true
+    }
+  }
+  return false
+}
+
+/**
+ * O ponto está visível para o jogador? Névoa desligada → sim. Ligada → começa
+ * coberto e cada operação que contém o ponto decide, na ordem (a última vence).
+ * A máscara SVG só PINTA a névoa; isto é o que esconde tokens de verdade.
+ */
+export function pontoRevelado(nevoa, p) {
+  const n = normalizarNevoa(nevoa)
+  if (!n.ativa) return true
+  let revelado = false
+  for (const op of n.ops) {
+    if (dentroDaOp(op, p)) revelado = op.modo === 'revelar'
+  }
+  return revelado
+}

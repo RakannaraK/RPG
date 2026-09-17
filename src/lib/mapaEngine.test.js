@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   ZOOM_MAX, ZOOM_MIN, normalizarGrade, telaParaMapa, mapaParaTela, zoomNoPonto, pinca,
-  enquadrar, encaixar, espalhar, distanciaCelulas, medir, normalizarRet, adicionarOpNevoa, normalizarNevoa,
+  enquadrar, encaixar, espalhar, distanciaCelulas, medir, normalizarRet, adicionarOpNevoa, normalizarNevoa, pontoRevelado,
 } from './mapaEngine'
 
 describe('visão', () => {
@@ -137,6 +137,39 @@ describe('névoa', () => {
     const n = normalizarNevoa(null)
     expect(adicionarOpNevoa(n, { modo: 'revelar', forma: 'ret', x: 0, y: 0, w: 0, h: 5 }).ops).toEqual([])
     expect(adicionarOpNevoa(n, { modo: 'revelar', forma: 'traco', pontos: [], raio: 20 }).ops).toEqual([])
+  })
+
+  it('pontoRevelado: desligada mostra tudo; ligada e vazia esconde tudo', () => {
+    expect(pontoRevelado({ ativa: false, ops: [] }, { x: 5, y: 5 })).toBe(true)
+    expect(pontoRevelado({ ativa: true, ops: [] }, { x: 5, y: 5 })).toBe(false)
+  })
+
+  it('pontoRevelado: a última operação que contém o ponto vence', () => {
+    const n = {
+      ativa: true,
+      ops: [
+        { modo: 'revelar', forma: 'ret', x: 0, y: 0, w: 100, h: 100 },
+        { modo: 'cobrir', forma: 'ret', x: 40, y: 40, w: 20, h: 20 },
+      ],
+    }
+    expect(pontoRevelado(n, { x: 10, y: 10 })).toBe(true)
+    expect(pontoRevelado(n, { x: 50, y: 50 })).toBe(false)
+    expect(pontoRevelado(n, { x: 150, y: 50 })).toBe(false)
+  })
+
+  it('pontoRevelado: pincel revela a faixa em volta do traço (e um toque único)', () => {
+    const traco = { modo: 'revelar', forma: 'traco', raio: 10, pontos: [[0, 0], [100, 0]] }
+    const n = { ativa: true, ops: [traco] }
+    expect(pontoRevelado(n, { x: 50, y: 9 })).toBe(true)
+    expect(pontoRevelado(n, { x: 50, y: 11 })).toBe(false)
+    expect(pontoRevelado(n, { x: 105, y: 5 })).toBe(true)
+    const toque = { ativa: true, ops: [{ modo: 'revelar', forma: 'traco', raio: 10, pontos: [[200, 200]] }] }
+    expect(pontoRevelado(toque, { x: 206, y: 206 })).toBe(true)
+    expect(pontoRevelado(toque, { x: 215, y: 200 })).toBe(false)
+  })
+
+  it('pontoRevelado: revelar tudo', () => {
+    expect(pontoRevelado({ ativa: true, ops: [{ modo: 'revelar', forma: 'tudo' }] }, { x: 9999, y: 1 })).toBe(true)
   })
 
   it('não muta a névoa original', () => {

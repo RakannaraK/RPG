@@ -14,7 +14,7 @@ const diametro = (token, grade) => (Number(grade.tamanho) > 0 ? Number(grade.tam
  * turno e permissão). Arraste: posição local imediata + broadcast; ao soltar,
  * encaixa na grade (se ativa), prende dentro do mapa e grava.
  */
-export default function CamadaTokens({ ctx, tokens, largura, altura, selecionadoId, onSelecionar, onArrastar, onSoltar }) {
+export default function CamadaTokens({ ctx, tokens, largura, altura, selecionadoId, onSelecionar, onArrastar, onSoltar, comDefs = true }) {
   const [local, setLocal] = useState(null) // { id, x, y } do meu arraste
   const arraste = useRef(null)
   const z = ctx.vista.zoom
@@ -61,11 +61,13 @@ export default function CamadaTokens({ ctx, tokens, largura, altura, selecionado
 
   return (
     <g>
-      <defs>
-        <clipPath id="token-circulo" clipPathUnits="objectBoundingBox">
-          <circle cx="0.5" cy="0.5" r="0.5" />
-        </clipPath>
-      </defs>
+      {comDefs && (
+        <defs>
+          <clipPath id="token-circulo" clipPathUnits="objectBoundingBox">
+            <circle cx="0.5" cy="0.5" r="0.5" />
+          </clipPath>
+        </defs>
+      )}
       {tokens.map(tk => {
         const pos = local?.id === tk.id ? local : tk
         const d = diametro(tk, ctx.grade)

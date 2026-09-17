@@ -8,11 +8,12 @@ import { useCardsDaMesa } from '../hooks/useSessaoFichas'
 import { useSessoes } from '../hooks/useSessoes'
 import { useEncontro } from '../hooks/useEncontro'
 import { ordenarPorIniciativa } from '../lib/iniciativa'
-import { espalhar, normalizarGrade } from '../lib/mapaEngine'
+import { adicionarOpNevoa, espalhar, normalizarGrade, normalizarNevoa, pontoRevelado } from '../lib/mapaEngine'
 import MapaVisor from '../components/mapa/MapaVisor'
 import PainelCenas from '../components/mapa/PainelCenas'
 import PainelTokens from '../components/mapa/PainelTokens'
 import CamadaTokens, { MenuToken } from '../components/mapa/CamadaTokens'
+import { BarraNevoa, CamadaNevoa, EditorNevoa } from '../components/mapa/Nevoa'
 
 const BTN_ICONE = 'h-9 min-w-9 px-2 rounded-lg text-sm transition-colors'
 const telaCheiaDisponivel = typeof document !== 'undefined' && document.fullscreenEnabled
@@ -57,6 +58,13 @@ export default function MapaPage() {
   const [rascunho, setRascunho] = useState({ cenaId: null, grade: null })
   const [selecionadoId, setSelecionadoId] = useState(null)
   const visorApi = useRef(null)
+  // 26.3 — névoa: ferramenta do mestre + cópia local otimista enquanto grava
+  const [ferramenta, setFerramenta] = useState('mover') // 'mover' | 'nevoa'
+  const [configNevoa, setConfigNevoa] = useState({ modo: 'revelar', forma: 'ret', raio: null })
+  const [rascunhoNevoa, setRascunhoNevoa] = useState(null)
+  const [nevoaLocal, setNevoaLocal] = useState(null) // { cenaId, nevoa }
+  const seqNevoa = useRef(0)
+  const [aviso, setAviso] = useState('')
 
   // Gestor = criador OU co-mestre (mesmo critério da SessaoPage, F16.5)
   useEffect(() => {
@@ -108,7 +116,27 @@ export default function MapaPage() {
       podeMover: isGestor || (!!card && card.ficha?.dono_id === meuId),
     }
   })
-  const selecionado = tokensVisuais.find(t => t.id === selecionadoId) || null
+  const nevoa = normalizarNevoa(nevoaLocal?.cenaId === cena?.id ? nevoaLocal.nevoa : cena?.nevoa)
+  // Jogador não recebe tokens sob a névoa (a máscara só pinta; nome/barra vazariam).
+  // O próprio token segue visível para o dono.
+  const tokensNaTela = isGestor ? tokensVisuais : tokensVisuais.filter(t => t.podeMover || pontoRevelado(nevoa, t))
+  const selecionado = tokensNaTela.find(t => t.id === selecionadoId) || null
+  const tamanhoGrade = Number(normalizarGrade(grade).tamanho) > 0 ? Number(normalizarGrade(grade).tamanho) : 70
+
+  async function salvarNevoa(nova) {
+    const seq = ++seqNevoa.current
+    const cenaId = cena.id
+    setNevoaLocal({ cenaId, nevoa: nova })
+    try {
+      await atualizar(cenaId, { nevoa: nova })
+    } catch (err) {
+      setAviso(`A névoa não foi salva: ${err.message || 'erro'}`)
+    } finally {
+      if (seqNevoa.current === seq) setNevoaLocal(null)
+    }
+  }
+
+  const aplicarOpNevoa = op => salvarNevoa(adicionarOpNevoa({ ...nevoa, ativa: true }, op))
 
   async function adicionarTokens(lista, tamanho = 1) {
     if (!cena) return
@@ -139,6 +167,14 @@ export default function MapaPage() {
       </Aviso>
     )
   } else {
+    const propsTokens = {
+      largura: cena.largura,
+      altura: cena.altura,
+      selecionadoId,
+      onSelecionar: setSelecionadoId,
+      onArrastar: tokensApi.arrastar,
+      onSoltar: tokensApi.mover,
+    }
     conteudo = (
       <MapaVisor
         mapa={cena}
@@ -148,16 +184,28 @@ export default function MapaPage() {
         apiRef={visorApi}
         onToqueVazio={() => setSelecionadoId(null)}
         camadas={ctx => (
-          <CamadaTokens
-            ctx={ctx}
-            tokens={tokensVisuais}
-            largura={cena.largura}
-            altura={cena.altura}
-            selecionadoId={selecionadoId}
-            onSelecionar={setSelecionadoId}
-            onArrastar={tokensApi.arrastar}
-            onSoltar={tokensApi.mover}
-          />
+          <>
+            <CamadaTokens
+              ctx={ctx}
+              tokens={isGestor ? tokensNaTela : tokensNaTela.filter(t => !t.podeMover)}
+              {...propsTokens}
+            />
+            <CamadaNevoa nevoa={nevoa} rascunho={rascunhoNevoa} largura={cena.largura} altura={cena.altura} translucida={isGestor} />
+            {/* Jogador: o próprio token fica ACIMA da névoa (nunca some para o dono) */}
+            {!isGestor && (
+              <CamadaTokens ctx={ctx} tokens={tokensNaTela.filter(t => t.podeMover)} comDefs={false} {...propsTokens} />
+            )}
+            {isGestor && ferramenta === 'nevoa' && (
+              <EditorNevoa
+                ctx={ctx}
+                largura={cena.largura}
+                altura={cena.altura}
+                config={{ ...configNevoa, raio: configNevoa.raio ?? tamanhoGrade }}
+                onRascunho={setRascunhoNevoa}
+                onConcluir={aplicarOpNevoa}
+              />
+            )}
+          </>
         )}
         sobreposicao={ctx => selecionado && (
           <MenuToken
@@ -207,6 +255,14 @@ export default function MapaPage() {
           {isGestor && !indisponivel && (
             <>
               <button
+                onClick={() => { setFerramenta(f => (f === 'nevoa' ? 'mover' : 'nevoa')); setSelecionadoId(null) }}
+                className={`${BTN_ICONE} hover:bg-hover ${ferramenta === 'nevoa' ? 'text-accent-300' : 'text-ink'}`}
+                title="Névoa de guerra"
+                disabled={!cena}
+              >
+                🌫 <span className="hidden lg:inline">Névoa</span>
+              </button>
+              <button
                 onClick={() => alternarPainel('tokens')}
                 className={`${BTN_ICONE} hover:bg-hover ${painel === 'tokens' ? 'text-accent-300' : 'text-ink'}`}
                 title="Tokens"
@@ -227,7 +283,26 @@ export default function MapaPage() {
       </header>
 
       <div className="relative flex-1 flex min-h-0">
-        <main className="relative flex-1 min-w-0">{conteudo}</main>
+        <main className="relative flex-1 min-w-0">
+          {conteudo}
+          {aviso && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 max-w-md rounded-xl border border-amber-700/70 bg-amber-950/90 px-4 py-2 flex items-start gap-3">
+              <p className="text-amber-100 text-sm flex-1">{aviso}</p>
+              <button onClick={() => setAviso('')} className="text-amber-400 hover:text-amber-100 text-sm" title="Dispensar">✕</button>
+            </div>
+          )}
+          {isGestor && cena && ferramenta === 'nevoa' && (
+            <BarraNevoa
+              nevoa={nevoa}
+              config={{ ...configNevoa, raio: configNevoa.raio ?? tamanhoGrade }}
+              tamanhoGrade={tamanhoGrade}
+              onConfig={setConfigNevoa}
+              onAlternar={() => salvarNevoa({ ...nevoa, ativa: !nevoa.ativa })}
+              onTudo={modo => aplicarOpNevoa({ modo, forma: 'tudo' })}
+              onFechar={() => setFerramenta('mover')}
+            />
+          )}
+        </main>
         {isGestor && !indisponivel && painel && (
           <aside className="absolute sm:static right-0 inset-y-0 z-10 w-80 max-w-[85vw] shrink-0 overflow-y-auto border-l border-border bg-bg">
             {painel === 'cenas' || !cena ? (
