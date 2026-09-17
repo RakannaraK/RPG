@@ -29,8 +29,8 @@ export default function JogoMinigame({ tipo, dificuldade, config, semente, titul
 
   useEffect(() => {
     if (fase !== 'contagem') return
-    if (contagem <= 0) { setFase('jogando'); return }
-    const id = setTimeout(() => setContagem(n => n - 1), 700)
+    // 3, 2, 1 a cada 0,7 s; o 'Já!' fica 0,4 s antes do jogo
+    const id = setTimeout(() => (contagem <= 0 ? setFase('jogando') : setContagem(n => n - 1)), contagem <= 0 ? 400 : 700)
     return () => clearTimeout(id)
   }, [fase, contagem])
 

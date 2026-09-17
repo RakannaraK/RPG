@@ -9,7 +9,7 @@ const PAUSA_ERRO_MS = 1100
  */
 export default function JogoMemoria({ config, semente, onFim }) {
   const [e, setE] = useState(() => iniciarMemoria(config, semente))
-  const [quaseSumindo, setQuaseSumindo] = useState(false)
+  const [avisoRodada, setAvisoRodada] = useState(0) // rodada em que o aviso de sumir já apareceu
   const onFimRef = useRef(onFim)
   useEffect(() => { onFimRef.current = onFim }, [onFim])
 
@@ -17,8 +17,8 @@ export default function JogoMemoria({ config, semente, onFim }) {
   useEffect(() => {
     if (e.fase !== 'memorizar') return
     const ms = tempoExibir(e) * 1000
-    setQuaseSumindo(false)
-    const aviso = setTimeout(() => setQuaseSumindo(true), Math.max(0, ms - 1000))
+    const rodada = e.rodada
+    const aviso = setTimeout(() => setAvisoRodada(rodada), Math.max(0, ms - 1000))
     const fim = setTimeout(() => setE(x => comecarResposta(x)), ms)
     return () => { clearTimeout(aviso); clearTimeout(fim) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -42,6 +42,7 @@ export default function JogoMemoria({ config, semente, onFim }) {
   }, [])
 
   const erro = e.fase === 'fim' ? e.ultimo : null
+  const quaseSumindo = e.fase === 'memorizar' && avisoRodada === e.rodada
 
   return (
     <div className="flex flex-col items-center gap-4 select-none w-full">

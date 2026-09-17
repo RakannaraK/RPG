@@ -10,6 +10,7 @@ const fmt = s => s.toFixed(2).replace('.', ',')
 export default function JogoCronometro({ config, semente, onFim }) {
   const c = useMemo(() => iniciarCronometro(config, semente), [config, semente])
   const [t, setT] = useState(0)
+  const [parado, setParado] = useState(false)
   const inicioRef = useRef(0)
   const paradoRef = useRef(false)
   const onFimRef = useRef(onFim)
@@ -18,6 +19,7 @@ export default function JogoCronometro({ config, semente, onFim }) {
   function parar() {
     if (paradoRef.current) return
     paradoRef.current = true
+    setParado(true)
     const tempo = (performance.now() - inicioRef.current) / 1000
     setT(tempo)
     onFimRef.current(pararCronometro(c, Math.min(tempo, c.limite)))
@@ -47,7 +49,7 @@ export default function JogoCronometro({ config, semente, onFim }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [c])
 
-  const visivel = cronometroVisivel(c, t) || paradoRef.current
+  const visivel = cronometroVisivel(c, t) || parado
   return (
     <div className="flex flex-col items-center gap-5 select-none">
       <p className="text-ink-dim text-sm">Pare exatamente em</p>
@@ -58,7 +60,7 @@ export default function JogoCronometro({ config, semente, onFim }) {
       >
         {visivel ? fmt(t) : '??,??'}
       </p>
-      {!cronometroVisivel(c, t) && !paradoRef.current && <p className="text-ink-dim text-xs">Sumiu! Conte de cabeça…</p>}
+      {!cronometroVisivel(c, t) && !parado && <p className="text-ink-dim text-xs">Sumiu! Conte de cabeça…</p>}
       <button
         type="button"
         onPointerDown={e => { e.preventDefault(); parar() }}
