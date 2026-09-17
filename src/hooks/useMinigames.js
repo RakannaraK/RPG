@@ -34,7 +34,7 @@ export function useMinigames(mesaId) {
         .order('created_at', { ascending: false }).limit(LIMITE_RESULTADOS),
       supabase.from('membros_mesa').select('role, apelido, usuario:usuario_id (id, username)').eq('mesa_id', mesaId),
     ])
-    setIndisponivel(!!res.error)
+    setIndisponivel(tabelaAusente(res.error))
     setResultados(res.error ? [] : res.data || [])
     setMembros((mem.data || []).map(m => ({
       usuario_id: m.usuario?.id,

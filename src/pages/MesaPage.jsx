@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import SistemaEditor from '../components/sistema/SistemaEditor'
 import RecapSessao from '../components/mesa/RecapSessao'
 import PainelRelogios from '../components/mesa/PainelRelogios'
+import PainelMinigames from '../components/minigames/PainelMinigames'
 import { useFichas } from '../hooks/useFicha'
 import FichaCreate from '../components/ficha/FichaCreate'
 import RoladorGenerico from '../components/dados/RoladorGenerico'
@@ -554,12 +555,19 @@ export default function MesaPage() {
 
           {activeTab === 'Dados' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-              {podeEscrever && (
+              <div className="space-y-8">
+                {podeEscrever && (
+                  <div>
+                    <p className="text-purple-200 font-medium text-sm mb-4">Rolar dados</p>
+                    <RoladorGenerico mesaId={id} />
+                  </div>
+                )}
+                {/* F28 — minigames: resultado vai ao feed ao lado */}
                 <div>
-                  <p className="text-purple-200 font-medium text-sm mb-4">Rolar dados</p>
-                  <RoladorGenerico mesaId={id} />
+                  <p className="text-purple-200 font-medium text-sm mb-4">Minigames</p>
+                  <PainelMinigames mesaId={id} meuId={session?.user?.id} podeJogar={podeEscrever} />
                 </div>
-              )}
+              </div>
               <div>
                 <p className="text-purple-200 font-medium text-sm mb-4">Histórico da sessão</p>
                 <FeedRolagens mesaId={id} onNovaRolagem={() => setNovasRolagens(n => n + 1)} />

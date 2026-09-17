@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import FeedRolagens from '../dados/FeedRolagens'
 import RoladorGenerico from '../dados/RoladorGenerico'
+import PainelMinigames from '../minigames/PainelMinigames'
 import { ordenarPorIniciativa } from '../../lib/iniciativa'
 
 const BTN = 'px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
 const COR_TIPO = { jogador: 'text-accent-300', aliado: 'text-emerald-300', npc: 'text-amber-300', inimigo: 'text-red-300' }
 
 /** Fase 26.5 — rolar e ver o feed sem sair do mapa. */
-export function PainelRolagens({ mesaId, podeRolar }) {
+export function PainelRolagens({ mesaId, podeRolar, meuId, sessaoId }) {
   return (
     <div className="p-4 space-y-5">
       {podeRolar && (
@@ -16,6 +17,13 @@ export function PainelRolagens({ mesaId, podeRolar }) {
           <RoladorGenerico mesaId={mesaId} />
         </section>
       )}
+      {/* F28 — minigames sem sair do mapa */}
+      <details className="rounded-xl border border-border bg-void">
+        <summary className="cursor-pointer px-3 py-2 text-ink text-sm font-semibold">🎮 Minigames</summary>
+        <div className="p-3 pt-1">
+          <PainelMinigames mesaId={mesaId} meuId={meuId} sessaoId={sessaoId} podeJogar={podeRolar} />
+        </div>
+      </details>
       <section>
         <h2 className="text-ink-dim text-xs font-semibold uppercase tracking-wider mb-2">Rolagens da mesa</h2>
         <FeedRolagens mesaId={mesaId} />

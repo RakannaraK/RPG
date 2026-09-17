@@ -450,7 +450,7 @@ export default function MapaPage() {
                 onEnviarImagem={tokensApi.enviarImagem}
               />
             ) : painelVisivel === 'rolagens' ? (
-              <PainelRolagens mesaId={mesaId} podeRolar={papel !== 'espectador'} />
+              <PainelRolagens mesaId={mesaId} podeRolar={papel !== 'espectador'} meuId={meuId} sessaoId={sessaoAtiva?.id} />
             ) : painelVisivel === 'combate' ? (
               <PainelCombateMapa
                 encontro={encontro}
