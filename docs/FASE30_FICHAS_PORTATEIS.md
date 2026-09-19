@@ -27,5 +27,14 @@
 ## Restrições
 1. Nada muda para quem não mexer (ficha pública, sem pasta). 2. Sem limite de pastas, leitores, editores. 3. Importar nunca sobrescreve: sempre cria ficha nova do importador. 4. Falha no meio da importação apaga a ficha criada (nada pela metade).
 
+## Como ficou (implementado — f429150 … 30.4)
+- **Arquivos:** `lib/permissoesFicha.js` (podeEditarFicha, acesso, pastas), `lib/fichaPortatil.js` (motor puro do arquivo) + `lib/fichaBanco.js` (ler/gravar/duplicar), `lib/baixarArquivo.js` (usado também pelo export de sistema), `components/ficha/AcessoFicha.jsx` e `components/ficha/ImportarFicha.jsx`; `sql/fase30_fichas_pastas_permissoes.sql` (rodado).
+- **Onde:** ficha → 🔒 (quando privada), **🔐 Acesso**, **⬇ exportar**, **⧉ duplicar**; mesa (aba Fichas) → lista agrupada por pasta com 📁 para mover e **⬆ Importar ficha** com prévia.
+- **Editor liberado** edita a ficha, a sessão, o combate e o token do mapa como o dono; imagem enviada vai para a pasta de quem envia (o Storage só aceita a própria).
+- **Prévia da importação** diz o que entra ("3 atributos, 1 item") e o que fica de fora, com o motivo.
+- **De passagem:** barras de abas (mesa, ficha, sistema) não mostram mais a barrinha de rolagem vertical à toa; linha de atributo sem atributo não derruba mais a ficha.
+- **Como testei a interface:** sessão falsa no navegador + respostas do Supabase simuladas (`page.route` do Playwright) — as páginas reais da mesa e da ficha abrem e os cliques valem. Importação conferida ponta a ponta (arquivo → prévia → o que foi gravado).
+- **Limites conhecidos:** históricos (XP, descansos, pontos) não viajam no arquivo; imagens continuam apontando para o arquivo original no Storage; sem duas contas reais logadas ao mesmo tempo.
+
 ## Teste de aceitação
 Ficha privada some para outro jogador (inclusive itens/atributos) e segue visível ao mestre; leitor vê e não edita; editor edita vida e itens mas não muda privacidade nem toma a ficha; editor rebaixado a espectador perde a edição. Exportar e importar numa mesa com o mesmo sistema reproduz a ficha; numa mesa com sistema diferente, o que não casa por nome é avisado e o resto entra.

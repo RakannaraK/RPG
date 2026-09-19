@@ -29,7 +29,7 @@ sem perder nada do que já existe (retrocompatibilidade total, como em F1–F25)
 | **F27** ✅ | **Dados 3D na mesa:** dados com física rolando na tela de TODOS, skins, som, integrado ao feed | média |
 | **F28** ✅ | **Minigames de teste:** Roda Rúnica, cronômetro, memória; configuráveis como forma de teste; resultado no feed; ranking | média |
 | **F29** ✅ | **Chat da mesa** (sussurro, `/r`), **notas** privadas/compartilhadas, **calendário do mundo** | pequena |
-| F30 | Exportar/importar ficha, pastas, permissão por ficha | pequena/média |
+| **F30** ✅ | **Exportar/importar/duplicar ficha**, **pastas**, **ficha privada + acesso por membro** | pequena/média |
 | F31 | Bestiário: criaturas com ficha completa do sistema, arte, som, ameaça, invocar no combate e no mapa, boss | grande |
 | F32 | Combate avançado: recarga em turnos, ultimates, dano/cura contínuos, reserva e troca, contra-ataque, habilidade vs habilidade | média |
 | F33 | Transformações (forma alternativa) + árvore de habilidades visual | grande |
