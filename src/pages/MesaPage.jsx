@@ -14,6 +14,7 @@ import { useChatMesa } from '../hooks/useChatMesa'
 import { agruparPorPasta, podeEditarFicha } from '../lib/permissoesFicha'
 import { useFichas } from '../hooks/useFicha'
 import FichaCreate from '../components/ficha/FichaCreate'
+import ImportarFicha from '../components/ficha/ImportarFicha'
 import RoladorGenerico from '../components/dados/RoladorGenerico'
 import FeedRolagens from '../components/dados/FeedRolagens'
 import PreferenciasModal from '../components/preferencias/PreferenciasModal'
@@ -467,12 +468,18 @@ export default function MesaPage() {
                     : 'Nenhuma ficha ainda'}
                 </p>
                 {podeEscrever && (
-                  <button
-                    onClick={() => setShowFichaCreate(true)}
-                    className="text-sm px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-lg transition-colors"
-                  >
-                    + Nova ficha
-                  </button>
+                  <div className="flex gap-2">
+                    <ImportarFicha
+                      mesaId={id} donoId={session?.user?.id}
+                      onImportada={novoId => { refetchFichas(); navigate(`/mesa/${id}/ficha/${novoId}`) }}
+                    />
+                    <button
+                      onClick={() => setShowFichaCreate(true)}
+                      className="text-sm px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-lg transition-colors"
+                    >
+                      + Nova ficha
+                    </button>
+                  </div>
                 )}
               </div>
 

@@ -66,6 +66,9 @@ import AbasCentrais from '../components/ficha/layout/AbasCentrais'
 import { resolveActionSound } from '../engines/actionSoundEngine'
 import { podeEditarFicha } from '../lib/permissoesFicha'
 import AcessoFicha from '../components/ficha/AcessoFicha'
+import { duplicarFicha, exportarFichaDoBanco } from '../lib/fichaBanco'
+import { nomeArquivoFicha } from '../lib/fichaPortatil'
+import { baixarJson } from '../lib/baixarArquivo'
 
 export default function FichaPage() {
   const { id: mesaId, fichaId } = useParams()
@@ -175,6 +178,28 @@ export default function FichaPage() {
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showAcesso, setShowAcesso] = useState(false) // F30.2
+  const [portatil, setPortatil] = useState('') // F30.3: '' | 'exportando' | 'duplicando'
+
+  async function handleExportar() {
+    setPortatil('exportando')
+    try {
+      const { ficha: f, arquivo } = await exportarFichaDoBanco(fichaId)
+      baixarJson(nomeArquivoFicha(f.nome_personagem), arquivo)
+    } catch (e) {
+      window.alert(`Não foi possível exportar: ${e.message}`)
+    } finally { setPortatil('') }
+  }
+
+  async function handleDuplicar() {
+    if (!window.confirm('Criar uma cópia desta ficha nesta mesa?')) return
+    setPortatil('duplicando')
+    try {
+      const novoId = await duplicarFicha(fichaId, { mesaId, donoId: session.user.id })
+      navigate(`/mesa/${mesaId}/ficha/${novoId}`)
+    } catch (e) {
+      window.alert(`Não foi possível duplicar: ${e.message}`)
+    } finally { setPortatil('') }
+  }
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
 
@@ -983,6 +1008,24 @@ export default function FichaPage() {
             )}
             {ficha.privada && (
               <span className="text-xs text-ink-dim" title="Ficha privada">🔒</span>
+            )}
+            <button
+              onClick={handleExportar}
+              disabled={!!portatil}
+              className="px-2.5 py-1.5 text-sm text-ink-dim hover:text-ink hover:bg-hover rounded-lg transition-colors disabled:opacity-50"
+              title="Exportar ficha (.json)"
+            >
+              {portatil === 'exportando' ? '…' : '⬇'}
+            </button>
+            {(isDono || souGestor) && (
+              <button
+                onClick={handleDuplicar}
+                disabled={!!portatil}
+                className="px-2.5 py-1.5 text-sm text-ink-dim hover:text-ink hover:bg-hover rounded-lg transition-colors disabled:opacity-50"
+                title="Duplicar ficha nesta mesa"
+              >
+                {portatil === 'duplicando' ? '…' : '⧉'}
+              </button>
             )}
             {(isDono || souGestor) && (
               <button

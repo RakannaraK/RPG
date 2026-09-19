@@ -5,6 +5,7 @@ import { useLinhasPoder } from '../../hooks/useLinhasPoder'
 import { mergeConfigLayout } from '../../lib/sistemaDefaults'
 import { carregarSistemaCompleto } from '../../lib/carregarSistemaCompleto'
 import { serializarSistema } from '../../engines/systemSerializer'
+import { baixarJson } from '../../lib/baixarArquivo'
 import { importarSistemaNaMesa } from '../../lib/importarSistema'
 import { TEMPLATES_SISTEMA } from '../../templates'
 import GuiaMestre from '../ajuda/GuiaMestre'
@@ -163,17 +164,8 @@ export default function SistemaEditor({ mesaId, isMestre }) {
     setSaveError('')
     try {
       const grafo = await carregarSistemaCompleto(sistemaDB.id)
-      const json = serializarSistema(grafo)
-      const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
       const base = (sistemaDB.nome || 'sistema').trim().replace(/[^\w-]+/g, '_').toLowerCase() || 'sistema'
-      a.download = `${base}.json`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      baixarJson(`${base}.json`, serializarSistema(grafo))
     } catch (err) {
       setSaveError(err.message || 'Erro ao exportar o sistema.')
     } finally {

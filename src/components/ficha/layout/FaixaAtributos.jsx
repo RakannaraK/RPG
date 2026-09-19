@@ -39,7 +39,8 @@ export default function FaixaAtributos({
         Atributos
       </p>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-2">
-        {valoresAtributos.map(va => (
+        {/* linha sem atributo (dado torto) é ignorada: melhor faltar um card do que derrubar a ficha */}
+        {valoresAtributos.filter(va => va.atributo).map(va => (
           <AtributoCard
             key={va.id}
             atributo={va.atributo}
