@@ -17,7 +17,7 @@ const ROTULOS = {
 const contar = (tabela, n) => `${n} ${(ROTULOS[tabela] || [tabela, tabela])[n === 1 ? 0 : 1]}`
 
 /** Fase 30.3 — importar ficha de arquivo .json, com prévia antes de gravar. */
-export default function ImportarFicha({ mesaId, donoId, onImportada, className = '' }) {
+export default function ImportarFicha({ mesaId, donoId, onImportada, className = '', extras = {}, rotulo = '⬆ Importar ficha' }) {
   const inputRef = useRef(null)
   const [plano, setPlano] = useState(null)
   const [ocupado, setOcupado] = useState(false)
@@ -40,7 +40,7 @@ export default function ImportarFicha({ mesaId, donoId, onImportada, className =
   async function confirmar() {
     setOcupado(true); setErro('')
     try {
-      const id = await gravarImportacao(plano, { mesaId, donoId })
+      const id = await gravarImportacao(plano, { mesaId, donoId, extras })
       setPlano(null)
       onImportada(id)
     } catch (err) {
@@ -62,7 +62,7 @@ export default function ImportarFicha({ mesaId, donoId, onImportada, className =
         className={className || 'text-sm px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors disabled:opacity-50'}
         title="Importar ficha de um arquivo .json"
       >
-        {ocupado && !plano ? 'Lendo…' : '⬆ Importar ficha'}
+        {ocupado && !plano ? 'Lendo…' : rotulo}
       </button>
       {erro && !plano && <p className="text-red-400 text-xs mt-1">{erro}</p>}
 

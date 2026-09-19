@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 
-export function useFichas(mesaId) {
+/** F31: `tipo` separa personagens do bestiário (criaturas). */
+export function useFichas(mesaId, tipo = 'personagem') {
   const [fichas, setFichas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -13,8 +14,9 @@ export function useFichas(mesaId) {
     try {
       const { data, error: err } = await supabase
         .from('fichas')
-        .select('id, nome_personagem, raca, classe, nivel, hp_atual, hp_maximo, imagem_url, created_at, pasta, privada, editores, dono_id, dono:dono_id (id, username)')
+        .select('id, nome_personagem, raca, classe, nivel, hp_atual, hp_maximo, imagem_url, created_at, pasta, privada, editores, dono_id, tipo_ficha, ameaca, especie, som_preset, origem_id, dono:dono_id (id, username)')
         .eq('mesa_id', mesaId)
+        .eq('tipo_ficha', tipo)
         .order('created_at', { ascending: true })
       if (err) throw err
       setFichas(data || [])
@@ -23,7 +25,7 @@ export function useFichas(mesaId) {
     } finally {
       setLoading(false)
     }
-  }, [mesaId])
+  }, [mesaId, tipo])
 
   useEffect(() => { fetchFichas() }, [fetchFichas])
 
@@ -77,7 +79,7 @@ export function useFicha(fichaId) {
 export function useCreateFicha() {
   const [loading, setLoading] = useState(false)
 
-  async function createFicha({ mesaId, sistemaId, donoId, infoBasica, valoresAtributos }) {
+  async function createFicha({ mesaId, sistemaId, donoId, infoBasica, valoresAtributos = [], extras = {} }) {
     setLoading(true)
     try {
       const { data: fichaData, error: fichaErr } = await supabase
@@ -95,6 +97,7 @@ export function useCreateFicha() {
           hp_atual: infoBasica.hp_maximo ? Number(infoBasica.hp_maximo) : null,
           hp_maximo: infoBasica.hp_maximo ? Number(infoBasica.hp_maximo) : null,
           notas: '',
+          ...extras, // F31: tipo_ficha, privada, especie, ameaca…
         })
         .select()
         .single()

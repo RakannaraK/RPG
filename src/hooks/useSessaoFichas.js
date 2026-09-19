@@ -392,7 +392,9 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
         .order('created_at', { ascending: true })
       if (err) throw err
 
-      const fichas = fichasData || []
+      // F31: criatura do bestiário não é personagem na mesa; a CÓPIA em jogo
+      // (origem_id preenchido) entra, para o mestre acompanhar o boss no card.
+      const fichas = (fichasData || []).filter(f => f.tipo_ficha !== 'criatura' || f.origem_id)
       const ids = fichas.map(f => f.id)
       idsRef.current = new Set(ids)
       if (ids.length === 0) { setCards([]); return }

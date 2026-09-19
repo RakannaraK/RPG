@@ -42,8 +42,8 @@ export async function prepararImportacao(json, mesaId) {
  * Grava a ficha planejada. Se algo falhar no meio, apaga a ficha criada — as
  * filhas vão junto (ON DELETE CASCADE), então não sobra ficha pela metade.
  */
-export async function gravarImportacao(plano, { mesaId, donoId, nome = null }) {
-  const ficha = { ...plano.ficha, mesa_id: mesaId, dono_id: donoId, sistema_id: plano.sistemaId || null }
+export async function gravarImportacao(plano, { mesaId, donoId, nome = null, extras = {} }) {
+  const ficha = { ...plano.ficha, mesa_id: mesaId, dono_id: donoId, sistema_id: plano.sistemaId || null, ...extras }
   if (nome) ficha.nome_personagem = nome
   const { error } = await supabase.from('fichas').insert(ficha)
   if (error) throw new Error(error.message)
@@ -66,9 +66,16 @@ export async function gravarImportacao(plano, { mesaId, donoId, nome = null }) {
 }
 
 /** Cópia da ficha na mesma mesa, no nome de quem duplicou. */
-export async function duplicarFicha(fichaId, { mesaId, donoId }) {
+export async function duplicarFicha(fichaId, { mesaId, donoId, extras = {}, nome = null }) {
   const { ficha, arquivo } = await exportarFichaDoBanco(fichaId)
   const plano = planejarImportacao(arquivo, await grafoDoSistema(ficha.sistema_id))
   plano.sistemaId = ficha.sistema_id
-  return gravarImportacao(plano, { mesaId, donoId, nome: `${ficha.nome_personagem} (cópia)`.slice(0, 200) })
+  // F31: a cópia de uma criatura continua criatura (e privada como a original)
+  const herdado = ficha.tipo_ficha === 'criatura'
+    ? { tipo_ficha: 'criatura', privada: ficha.privada, especie: ficha.especie, ameaca: ficha.ameaca, som_preset: ficha.som_preset }
+    : {}
+  return gravarImportacao(plano, {
+    mesaId, donoId, extras: { ...herdado, ...extras },
+    nome: nome || `${ficha.nome_personagem} (cópia)`.slice(0, 200),
+  })
 }

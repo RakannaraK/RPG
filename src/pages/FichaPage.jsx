@@ -66,6 +66,7 @@ import AbasCentrais from '../components/ficha/layout/AbasCentrais'
 import { resolveActionSound } from '../engines/actionSoundEngine'
 import { podeEditarFicha } from '../lib/permissoesFicha'
 import AcessoFicha from '../components/ficha/AcessoFicha'
+import BlocoCriatura from '../components/bestiario/BlocoCriatura'
 import { duplicarFicha, exportarFichaDoBanco } from '../lib/fichaBanco'
 import { nomeArquivoFicha } from '../lib/fichaPortatil'
 import { baixarJson } from '../lib/baixarArquivo'
@@ -1052,6 +1053,15 @@ export default function FichaPage() {
       {/* Conteúdo principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* Cabeçalho do personagem */}
+        {/* F31 — criatura do bestiário: espécie, ameaça e som */}
+        {ficha.tipo_ficha === 'criatura' && (
+          <BlocoCriatura
+            ficha={ficha}
+            isDono={isDono}
+            onSalvar={async patch => { await updateFicha(fichaId, patch); await refetch() }}
+          />
+        )}
+
         <CabecalhoPersonagem
           ficha={ficha}
           rotuloVida={rotuloVida}

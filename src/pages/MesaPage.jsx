@@ -15,6 +15,7 @@ import { agruparPorPasta, podeEditarFicha } from '../lib/permissoesFicha'
 import { useFichas } from '../hooks/useFicha'
 import FichaCreate from '../components/ficha/FichaCreate'
 import ImportarFicha from '../components/ficha/ImportarFicha'
+import PainelBestiario from '../components/bestiario/PainelBestiario'
 import RoladorGenerico from '../components/dados/RoladorGenerico'
 import FeedRolagens from '../components/dados/FeedRolagens'
 import PreferenciasModal from '../components/preferencias/PreferenciasModal'
@@ -23,7 +24,7 @@ import SessoesHistorico from '../components/sessao/SessoesHistorico'
 import MeuPerfilMesa from '../components/mesa/MeuPerfilMesa'
 import Sininho from '../components/notificacoes/Sininho'
 
-const TABS = ['Fichas', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
+const TABS = ['Fichas', 'Bestiário', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
 
 // Fase 16 — rótulo/cor por papel (mestre/co-mestre/jogador/espectador)
 const ROLE_INFO = {
@@ -609,6 +610,14 @@ export default function MesaPage() {
                 />
               )}
             </div>
+          )}
+
+          {activeTab === 'Bestiário' && (
+            <PainelBestiario
+              mesaId={id} meuId={session?.user?.id} isGestor={isGestor}
+              podeEscrever={podeEscrever}
+              onAbrir={fichaId => navigate(`/mesa/${id}/ficha/${fichaId}`)}
+            />
           )}
 
           {activeTab === 'Dados' && (
