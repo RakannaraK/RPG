@@ -9,6 +9,7 @@ import PainelMinigames from '../components/minigames/PainelMinigames'
 import PainelDesafios from '../components/minigames/PainelDesafios'
 import PainelChat from '../components/mesa/PainelChat'
 import PainelNotas from '../components/mesa/PainelNotas'
+import PainelCalendario from '../components/mesa/PainelCalendario'
 import { useChatMesa } from '../hooks/useChatMesa'
 import { useFichas } from '../hooks/useFicha'
 import FichaCreate from '../components/ficha/FichaCreate'
@@ -598,6 +599,8 @@ export default function MesaPage() {
 
           {activeTab === 'Resumo' && (
             <div className="space-y-6">
+              {/* F29.4 — calendário do mundo */}
+              <PainelCalendario mesaId={id} isGestor={isGestor && !arquivada} />
               <PainelRelogios mesaId={id} isGestor={isGestor} />
               {/* F29.3 — notas privadas ou compartilhadas */}
               <div>

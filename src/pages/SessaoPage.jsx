@@ -21,6 +21,7 @@ import PainelDesafios from '../components/minigames/PainelDesafios'
 import FeedRolagens from '../components/dados/FeedRolagens'
 import PainelChat from '../components/mesa/PainelChat'
 import PainelNotas from '../components/mesa/PainelNotas'
+import PainelCalendario from '../components/mesa/PainelCalendario'
 import { useChatMesa } from '../hooks/useChatMesa'
 import Sininho from '../components/notificacoes/Sininho'
 
@@ -542,6 +543,9 @@ export default function SessaoPage() {
         {sessao.ativa && isMestre && progressaoModo === 'xp_direto' && (
           <ConcederXpGrupo onConceder={handleConcederXpGrupo} />
         )}
+
+        {/* F29.4 — data da campanha (o mestre passa o tempo daqui) */}
+        <PainelCalendario mesaId={mesaId} isGestor={isMestre && sessao.ativa} sessaoId={sessao.ativa ? sessaoId : null} recolhivel />
 
         {/* F29.3 — notas (o plano do mestre à mão durante a sessão) */}
         <details className="mb-6 rounded-xl border border-purple-900 bg-slate-900/60">

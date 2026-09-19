@@ -96,6 +96,8 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
   const percentual = resultados?.percentual // Fase 18.3
   const totalBase = resultados?.total_base
   const critico = !!rolagem.critico // F22.3 — crítico configurável
+  // Aviso (turno, desafio, tempo passando…): sem dados nem notação, o "Total: 0" não diz nada
+  const soAviso = dados.length === 0 && !notacao && !total
 
   return (
     <div className={`bg-raised/60 border border-border rounded-xl p-3 space-y-2 ${critico ? 'crit-glow' : ''}`}>
@@ -110,7 +112,7 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
         <span className="text-ink-dim text-xs shrink-0">{tempoRelativo(created_at)}</span>
       </div>
 
-      <div className="flex flex-wrap gap-2 items-center">
+      {!soAviso && <div className="flex flex-wrap gap-2 items-center">
         {ehMeu ? (
           // Minhas rolagens: dado 3D com a minha skin
           dados.map((d, i) => (
@@ -145,7 +147,7 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
           <span className="text-ink-dim text-xs">Total:</span>
           <span className="text-2xl font-mono font-bold text-dice-400 leading-none">{total}</span>
         </div>
-      </div>
+      </div>}
 
       {(mantidos.length > 1 || modificador !== 0) && (
         <p className="text-ink-dim text-xs">
