@@ -11,6 +11,7 @@ import PainelChat from '../components/mesa/PainelChat'
 import PainelNotas from '../components/mesa/PainelNotas'
 import PainelCalendario from '../components/mesa/PainelCalendario'
 import { useChatMesa } from '../hooks/useChatMesa'
+import { agruparPorPasta, podeEditarFicha } from '../lib/permissoesFicha'
 import { useFichas } from '../hooks/useFicha'
 import FichaCreate from '../components/ficha/FichaCreate'
 import RoladorGenerico from '../components/dados/RoladorGenerico'
@@ -317,6 +318,16 @@ export default function MesaPage() {
   const arquivada = mesa?.arquivada === true
   const podeEscrever = !souEspectador && !arquivada // criar ficha, rolar, iniciar sessão
 
+  // F30.2 — pasta nasce ao mover a primeira ficha para ela (sem tabela de pastas)
+  async function moverParaPasta(f) {
+    const nome = window.prompt(`Pasta de "${f.nome_personagem}" (vazio = sem pasta):`, f.pasta || '')
+    if (nome === null) return
+    const { error: err } = await supabase
+      .from('fichas').update({ pasta: nome.trim().slice(0, 60) || null }).eq('id', f.id)
+    if (err) window.alert(`Não foi possível mover: ${err.message}`)
+    else refetchFichas()
+  }
+
   async function handleArquivar(novoValor) {
     try {
       const { error: err } = await supabase.from('mesas').update({ arquivada: novoValor }).eq('id', id)
@@ -418,7 +429,7 @@ export default function MesaPage() {
         {/* Fase 13.5 — histórico de sessões encerradas */}
         <SessoesHistorico mesaId={id} />
 
-        <div className="flex border-b border-purple-900 mt-6 overflow-x-auto">
+        <div className="flex border-b border-purple-900 mt-6 overflow-x-auto overflow-y-hidden">
           {TABS.map(tab => (
             <button
               key={tab}
@@ -490,8 +501,11 @@ export default function MesaPage() {
                   )}
                 </div>
               ) : (
+                <div className="space-y-5">
+                  {agruparPorPasta(fichas).map(({ pasta, fichas: daPasta }, _i, grupos) => {
+                    const cartoes = (
                 <div className="grid gap-3">
-                  {fichas.map(f => {
+                  {daPasta.map(f => {
                     const ehDono = f.dono?.id === session?.user?.id
                     // Órfã: dono não é mais membro da mesa (saiu/expulso) — Fase 16.2
                     const orfa = !f.dono?.id || !membroIds.has(f.dono.id)
@@ -511,6 +525,10 @@ export default function MesaPage() {
                             <div>
                               <p className="text-white font-semibold flex items-center gap-2">
                                 {f.nome_personagem}
+                                {f.privada && <span title="Ficha privada" className="text-xs">🔒</span>}
+                                {!ehDono && podeEditarFicha(f, session?.user?.id) && (
+                                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-700/60 text-emerald-300">você edita</span>
+                                )}
                                 {orfa && (
                                   <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-950 border border-amber-700/60 text-amber-300">
                                     órfã
@@ -535,6 +553,15 @@ export default function MesaPage() {
                             </div>
                           </div>
                         </button>
+                        {(isGestor || podeEditarFicha(f, session?.user?.id)) && !arquivada && (
+                          <button
+                            onClick={() => moverParaPasta(f)}
+                            className="px-3 text-purple-400 hover:text-white hover:bg-purple-900/40 border-l border-purple-800 transition-colors"
+                            title="Mover para pasta"
+                          >
+                            📁
+                          </button>
+                        )}
                         {podeDeletar && (
                           <button
                             onClick={() => { setDeleteFichaError(''); setFichaToDelete(f) }}
@@ -545,6 +572,19 @@ export default function MesaPage() {
                           </button>
                         )}
                       </div>
+                    )
+                  })}
+                </div>
+                    )
+                    // Sem nenhuma pasta na mesa: lista simples, como sempre foi
+                    if (grupos.length === 1 && pasta === null) return <div key="sem-pasta">{cartoes}</div>
+                    return (
+                      <details key={pasta ?? ''} open className="group/pasta">
+                        <summary className="cursor-pointer text-purple-300 text-sm font-medium mb-2 select-none">
+                          📁 {pasta ?? 'Sem pasta'} <span className="text-purple-500 font-normal">({daPasta.length})</span>
+                        </summary>
+                        {cartoes}
+                      </details>
                     )
                   })}
                 </div>

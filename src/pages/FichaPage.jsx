@@ -64,6 +64,8 @@ import PainelDefesas from '../components/ficha/layout/PainelDefesas'
 import PainelImagens from '../components/ficha/layout/PainelImagens'
 import AbasCentrais from '../components/ficha/layout/AbasCentrais'
 import { resolveActionSound } from '../engines/actionSoundEngine'
+import { podeEditarFicha } from '../lib/permissoesFicha'
+import AcessoFicha from '../components/ficha/AcessoFicha'
 
 export default function FichaPage() {
   const { id: mesaId, fichaId } = useParams()
@@ -142,7 +144,7 @@ export default function FichaPage() {
   const classePrimaria = classesFicha[0]?.classe_id || null
   useEffect(() => {
     if (!ficha) return
-    const dono = ficha.dono_id === session?.user?.id
+    const dono = podeEditarFicha(ficha, session?.user?.id)
     if (!dono || classesFicha.length === 0) return
     if (somaNiveis === (ficha.nivel ?? null) && classePrimaria === (ficha.classe_id ?? null)) return
     updateFicha(fichaId, { nivel: somaNiveis, classe_id: classePrimaria }).catch(() => {})
@@ -172,6 +174,7 @@ export default function FichaPage() {
   }, [mesaId, session?.user?.id])
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showAcesso, setShowAcesso] = useState(false) // F30.2
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
 
@@ -357,7 +360,9 @@ export default function FichaPage() {
     )
   }
 
-  const isDono = ficha.dono_id === session?.user?.id
+  // F30 — editor liberado pelo dono edita tudo como ele (menos apagar e compartilhar)
+  const souDonoDeFato = ficha.dono_id === session?.user?.id
+  const isDono = podeEditarFicha(ficha, session?.user?.id)
   const config = sistema?.config_layout ? mergeConfigLayout(sistema.config_layout) : mergeConfigLayout(null)
   const secoes = config.secoes
   const camposCombate = config.campos_combate || []
@@ -976,7 +981,19 @@ export default function FichaPage() {
                 Visualizando
               </span>
             )}
-            {isDono && (
+            {ficha.privada && (
+              <span className="text-xs text-ink-dim" title="Ficha privada">🔒</span>
+            )}
+            {(isDono || souGestor) && (
+              <button
+                onClick={() => setShowAcesso(true)}
+                className="px-2.5 py-1.5 text-sm text-ink-dim hover:text-ink hover:bg-hover rounded-lg transition-colors"
+                title="Acesso e pasta"
+              >
+                🔐 <span className="hidden sm:inline">Acesso</span>
+              </button>
+            )}
+            {souDonoDeFato && (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
                 className="p-2 text-harm hover:text-harm hover:bg-harm/50 rounded-lg transition-colors"
@@ -1245,7 +1262,7 @@ export default function FichaPage() {
             <AbasCentrais
               secoes={secoes}
               fichaId={fichaId}
-              donoId={ficha.dono_id}
+              donoId={session?.user?.id} /* pasta de upload = quem envia (o Storage só aceita a própria; F30: editor também envia) */
               isDono={isDono}
               mesaId={mesaId}
               ficha={ficha}
@@ -1303,7 +1320,7 @@ export default function FichaPage() {
               {secoes.imagens && (
                 <PainelImagens
                   fichaId={fichaId}
-                  donoId={ficha.dono_id}
+                  donoId={session?.user?.id} /* pasta de upload = quem envia (o Storage só aceita a própria; F30: editor também envia) */
                   isDono={isDono}
                 />
               )}
@@ -1314,6 +1331,16 @@ export default function FichaPage() {
       </div>
 
       {/* Modal de confirmação de deleção */}
+      {showAcesso && (
+        <AcessoFicha
+          ficha={ficha}
+          mesaId={mesaId}
+          podeCompartilhar={souDonoDeFato || souGestor}
+          onSalvar={async patch => { await updateFicha(fichaId, patch); await refetch() }}
+          onFechar={() => setShowAcesso(false)}
+        />
+      )}
+
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-void border border-harm/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">

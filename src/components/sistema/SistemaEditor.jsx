@@ -343,7 +343,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
 
       {/* Sub-abas: Atributos | Layout da ficha */}
       <div>
-        <div className="flex border-b border-purple-900 mb-5 overflow-x-auto">
+        <div className="flex border-b border-purple-900 mb-5 overflow-x-auto overflow-y-hidden">
           {TABS_EDITOR.map(tab => (
             <button
               key={tab}

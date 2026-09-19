@@ -13,7 +13,7 @@ export function useFichas(mesaId) {
     try {
       const { data, error: err } = await supabase
         .from('fichas')
-        .select('id, nome_personagem, raca, classe, nivel, hp_atual, hp_maximo, imagem_url, created_at, dono:dono_id (id, username)')
+        .select('id, nome_personagem, raca, classe, nivel, hp_atual, hp_maximo, imagem_url, created_at, pasta, privada, editores, dono_id, dono:dono_id (id, username)')
         .eq('mesa_id', mesaId)
         .order('created_at', { ascending: true })
       if (err) throw err

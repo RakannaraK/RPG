@@ -4,6 +4,7 @@
  * fica no hook.
  */
 import { memo } from 'react'
+import { podeEditarFicha } from '../../lib/permissoesFicha'
 
 function corVida(pct) {
   if (pct > 50) return 'bg-green-500'
@@ -250,7 +251,7 @@ export default function PainelFichas({ cards = [], camposCombate = [], loading, 
           key={card.id}
           card={card}
           camposCombate={camposCombate}
-          souDono={!!meuUserId && card.ficha?.dono_id === meuUserId}
+          souDono={podeEditarFicha(card.ficha, meuUserId)}
           onToggleCondicao={onToggleCondicao}
         />
       ))}

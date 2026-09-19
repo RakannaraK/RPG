@@ -93,7 +93,7 @@ export default function AbasCentrais({
 
   return (
     <div className="bg-raised border border-border rounded-xl overflow-hidden">
-      <div className="flex border-b border-border overflow-x-auto">
+      <div className="flex border-b border-border overflow-x-auto overflow-y-hidden">
         {tabsList.map(tab => (
           <button
             key={tab.id}

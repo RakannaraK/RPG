@@ -3,6 +3,7 @@ import AcoesCombate from './AcoesCombate'
 import DefesaAtivaPrompt from './DefesaAtivaPrompt'
 import { MiniTrilha } from './PainelFichas'
 import { ordenarPorIniciativa } from '../../lib/iniciativa'
+import { podeEditarFicha } from '../../lib/permissoesFicha'
 
 /**
  * Fase 14 — painel de combate dentro da SessaoPage.
@@ -471,12 +472,12 @@ export default function CombatePanel({
 
   // Pode definir/rolar iniciativa deste combatente: mestre (todos) ou dono da ficha (o seu)
   const podeAgir = c =>
-    isMestre || (c.ficha_id && cardsPorFicha[c.ficha_id]?.ficha?.dono_id === meuUserId)
+    isMestre || (c.ficha_id && podeEditarFicha(cardsPorFicha[c.ficha_id]?.ficha, meuUserId))
 
   // F22.6 — defensor: o dono do alvo (jogador); o mestre responde pelos inimigos
   const souDefensor = c =>
     c.ficha_id
-      ? cardsPorFicha[c.ficha_id]?.ficha?.dono_id === meuUserId
+      ? podeEditarFicha(cardsPorFicha[c.ficha_id]?.ficha, meuUserId)
       : isMestre
 
   // Sem combate ativo

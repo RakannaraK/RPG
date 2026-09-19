@@ -23,6 +23,7 @@ import { GavetaFicha, MenuCamadas, PainelCombateMapa, PainelRolagens } from '../
 import PainelChat from '../components/mesa/PainelChat'
 import PainelNotas from '../components/mesa/PainelNotas'
 import { useChatMesa } from '../hooks/useChatMesa'
+import { podeEditarFicha } from '../lib/permissoesFicha'
 
 const BTN_ICONE = 'h-9 min-w-9 px-2 rounded-lg text-sm transition-colors'
 const telaCheiaDisponivel = typeof document !== 'undefined' && document.fullscreenEnabled
@@ -163,7 +164,7 @@ export default function MapaPage() {
 
   const combatentesAtivos = encontro ? combatentes : []
   const daVez = encontro ? ordenarPorIniciativa(combatentes)[encontro.turno_atual ?? 0] : null
-  const minhasFichas = cards.filter(c => c.ficha?.dono_id === meuId)
+  const minhasFichas = cards.filter(c => podeEditarFicha(c.ficha, meuId))
   const fichasDaGaveta = isGestor ? cards : minhasFichas
 
   function abrirFicha(fichaId) {
@@ -183,8 +184,8 @@ export default function MapaPage() {
       imagem: card?.imagem || tk.imagem_url,
       vida: vidaDoToken(card, comb, verTudo),
       daVez: !!daVez && ((!!tk.ficha_id && tk.ficha_id === daVez.ficha_id) || tk.combatente_id === daVez.id),
-      podeMover: isGestor || (!!card && card.ficha?.dono_id === meuId),
-      meu: !!card && card.ficha?.dono_id === meuId,
+      podeMover: isGestor || podeEditarFicha(card?.ficha, meuId),
+      meu: podeEditarFicha(card?.ficha, meuId),
     }
   })
   // Memo: mantém a identidade entre quadros do pan/zoom (CamadaNevoa é memo).
