@@ -174,6 +174,18 @@ export function useEncontro(sessaoId, mesaId) {
     await carregarCombatentes(encontro.id)
   }
 
+  // F31.2 — insere combatentes já montados (invocação do bestiário) e devolve as linhas
+  async function adicionarCombatentes(linhas) {
+    if (!encontro || !linhas?.length) return []
+    const { data, error: err } = await supabase
+      .from('combatentes')
+      .insert(linhas.map(l => ({ ...l, encontro_id: encontro.id })))
+      .select()
+    if (err) throw err
+    await carregarCombatentes(encontro.id)
+    return data || []
+  }
+
   // ---- Turnos e rodadas (14.3) ----
   // turno_atual é o índice na ordem de iniciativa (calculada igual no cliente).
   // A matemática só usa a QUANTIDADE de combatentes; a ordem importa só p/ o destaque.
@@ -269,7 +281,7 @@ export function useEncontro(sessaoId, mesaId) {
     encontro, combatentes, condicoes, loading, error, conectado,
     refetch: carregar,
     iniciarCombate, encerrarCombate,
-    adicionarJogadores, adicionarInimigos, removerCombatente, atualizarCombatente,
+    adicionarJogadores, adicionarInimigos, adicionarCombatentes, removerCombatente, atualizarCombatente,
     proximoTurno, turnoAnterior, reordenar,
     aplicarCondicao, removerCondicao,
   }

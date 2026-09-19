@@ -433,6 +433,7 @@ export default function CombatePanel({
   onEncerrar,
   onAdicionarJogadores,
   onAdicionarInimigos,
+  acoesBestiario = null, // F31.2
   onRemoverCombatente,
   onRolarIniciativa,
   onRolarIniciativaTodos,
@@ -666,6 +667,7 @@ export default function CombatePanel({
           >
             {ausentes.length === 0 ? 'Todos os personagens já estão no combate' : `+ Adicionar personagens da mesa (${ausentes.length})`}
           </button>
+          {acoesBestiario}
           <FormInimigo onAdicionar={onAdicionarInimigos} />
           {erro && <p className="text-red-400 text-xs">{erro}</p>}
         </div>

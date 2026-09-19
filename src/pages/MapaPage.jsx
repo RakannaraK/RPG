@@ -14,6 +14,7 @@ import { adicionarOpNevoa, espalhar, normalizarGrade, normalizarNevoa, tokenVisi
 import MapaVisor from '../components/mapa/MapaVisor'
 import PainelCenas from '../components/mapa/PainelCenas'
 import PainelTokens from '../components/mapa/PainelTokens'
+import InvocarBestiario from '../components/bestiario/InvocarBestiario'
 import CamadaTokens, { MenuToken } from '../components/mapa/CamadaTokens'
 import { BarraNevoa, CamadaNevoa, EditorNevoa } from '../components/mapa/Nevoa'
 import {
@@ -127,7 +128,8 @@ export default function MapaPage() {
   const cena = isGestor ? (mapas.find(m => m.id === vistaId) || ativo || mapas[0] || null) : ativo
   const grade = rascunho.cenaId === cena?.id && rascunho.grade ? rascunho.grade : cena?.grade
 
-  const { cards } = useCardsDaMesa(mesaId)
+  const { cards, sistema } = useCardsDaMesa(mesaId)
+  const camposCombate = sistema?.config_layout?.campos_combate || [] // F31.3
   const { sessaoAtiva } = useSessoes(mesaId)
   const encontroApi = useEncontro(sessaoAtiva?.id, mesaId)
   const { encontro, combatentes } = encontroApi
@@ -217,6 +219,20 @@ export default function MapaPage() {
     const centro = visorApi.current?.centroVisivel() || { x: cena.largura / 2, y: cena.altura / 2 }
     const posicoes = espalhar(centro, lista.length, normalizarGrade(grade), cena.largura, cena.altura, tamanho, tokensApi.tokens)
     await tokensApi.adicionar(lista.map((t, i) => ({ ...t, ...posicoes[i] })))
+  }
+
+  // F31.3 — invocar do bestiário no mapa: combatentes (se há combate) + tokens com a arte
+  async function invocarNoMapa(linhas, { criatura, noMapa }) {
+    const combs = encontro ? await encontroApi.adicionarCombatentes(linhas) : []
+    if (!noMapa || !cena) return
+    await adicionarTokens(linhas.map((l, i) => ({
+      nome: l.nome,
+      imagem_url: criatura.imagem_url || null,
+      // só a cópia do boss carrega ficha; mook fica ligado ao combatente
+      ficha_id: l.ficha_id && l.ficha_id !== criatura.id ? l.ficha_id : null,
+      combatente_id: combs[i]?.id || null,
+      cor: '#B91C1C',
+    })))
   }
 
   function focarCombatente(c) {
@@ -461,6 +477,17 @@ export default function MapaPage() {
                 tokens={tokensApi.tokens}
                 onAdicionar={adicionarTokens}
                 onEnviarImagem={tokensApi.enviarImagem}
+                acoesBestiario={isGestor && (
+                  <InvocarBestiario
+                    mesaId={mesaId} meuId={meuId} isGestor={isGestor}
+                    camposCombate={camposCombate}
+                    nomesExistentes={combatentes.map(c => c.nome)}
+                    comMapa={!!cena}
+                    onInvocar={invocarNoMapa}
+                    className="w-full py-2 rounded-lg bg-hover text-ink text-sm hover:bg-border transition-colors"
+                    rotulo="🐾 Invocar do bestiário"
+                  />
+                )}
               />
             ) : painelVisivel === 'rolagens' ? (
               <PainelRolagens mesaId={mesaId} podeRolar={papel !== 'espectador'} meuId={meuId} sessaoId={sessaoAtiva?.id} />

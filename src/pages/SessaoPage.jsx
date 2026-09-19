@@ -18,6 +18,7 @@ import CombatePanel from '../components/sessao/CombatePanel'
 import DescansoGrupo from '../components/sessao/DescansoGrupo'
 import ConcederXpGrupo from '../components/sessao/ConcederXpGrupo'
 import PainelDesafios from '../components/minigames/PainelDesafios'
+import InvocarBestiario from '../components/bestiario/InvocarBestiario'
 import FeedRolagens from '../components/dados/FeedRolagens'
 import PainelChat from '../components/mesa/PainelChat'
 import PainelNotas from '../components/mesa/PainelNotas'
@@ -510,6 +511,16 @@ export default function SessaoPage() {
             onEncerrar={encontroApi.encerrarCombate}
             onAdicionarJogadores={encontroApi.adicionarJogadores}
             onAdicionarInimigos={encontroApi.adicionarInimigos}
+            acoesBestiario={
+              <InvocarBestiario
+                mesaId={mesaId} meuId={session?.user?.id} isGestor={isMestre}
+                camposCombate={camposCombate}
+                nomesExistentes={encontroApi.combatentes.map(c => c.nome)}
+                onInvocar={linhas => encontroApi.adicionarCombatentes(linhas)}
+                className="w-full py-2 bg-slate-700 hover:bg-slate-600 text-purple-200 hover:text-white text-sm rounded-lg transition-colors"
+                rotulo="🐾 Invocar do bestiário"
+              />
+            }
             onRemoverCombatente={encontroApi.removerCombatente}
             onRolarIniciativa={handleRolarIniciativa}
             onRolarIniciativaTodos={handleRolarIniciativaTodos}

@@ -9,7 +9,7 @@ const COR_POR_TIPO = { jogador: '#8B5CF6', aliado: '#16A34A', npc: '#D97706', in
  * mesa, combatentes do combate ativo e tokens avulsos (imagem ou cor+iniciais).
  * Os tokens nascem no meio da tela, lado a lado e encaixados na grade.
  */
-export default function PainelTokens({ cards, combatentes, tokens, onAdicionar, onEnviarImagem }) {
+export default function PainelTokens({ cards, combatentes, tokens, onAdicionar, onEnviarImagem, acoesBestiario = null }) {
   const fichasNoMapa = new Set(tokens.filter(t => t.ficha_id).map(t => t.ficha_id))
   const combatentesNoMapa = new Set(tokens.filter(t => t.combatente_id).map(t => t.combatente_id))
 
@@ -32,6 +32,7 @@ export default function PainelTokens({ cards, combatentes, tokens, onAdicionar, 
 
   return (
     <div className="p-4 space-y-6">
+      {acoesBestiario && <div>{acoesBestiario}</div>}
       <Secao
         titulo={`Personagens da mesa (${fichasFora.length} fora do mapa)`}
         vazio={cards.length === 0 ? 'Nenhuma ficha nesta mesa.' : 'Todos os personagens já estão no mapa.'}
