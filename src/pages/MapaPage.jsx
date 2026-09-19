@@ -21,6 +21,7 @@ import {
 } from '../components/mapa/Desenhos'
 import { GavetaFicha, MenuCamadas, PainelCombateMapa, PainelRolagens } from '../components/mapa/PainelMesa'
 import PainelChat from '../components/mesa/PainelChat'
+import PainelNotas from '../components/mesa/PainelNotas'
 import { useChatMesa } from '../hooks/useChatMesa'
 
 const BTN_ICONE = 'h-9 min-w-9 px-2 rounded-lg text-sm transition-colors'
@@ -68,7 +69,7 @@ export default function MapaPage() {
   const { mapas, ativo, loading, indisponivel, criar, ativar, atualizar, remover } = useMapas(mesaId)
 
   const [vistaId, setVistaId] = useState(null)
-  const [painel, setPainel] = useState(null) // 'cenas' | 'tokens' | 'rolagens' | 'chat' | 'combate' | 'ficha'
+  const [painel, setPainel] = useState(null) // 'cenas' | 'tokens' | 'rolagens' | 'chat' | 'notas' | 'combate' | 'ficha'
   const chat = useChatMesa(mesaId, meuId) // F29.2
   const [fichaAberta, setFichaAberta] = useState(null)
   const [camadas, setCamadasEstado] = useState(lerCamadas)
@@ -365,6 +366,7 @@ export default function MapaPage() {
             <>
               {botaoPainel('rolagens', '🎲', 'Rolagens')}
               {botaoPainel('chat', '💬', 'Chat')}
+              {botaoPainel('notas', '📝', 'Notas')}
               {(encontro || (isGestor && sessaoAtiva)) && botaoPainel('combate', '⚔', 'Combate')}
               {fichasDaGaveta.length > 0 && botaoPainel('ficha', '📜', 'Ficha')}
               <button
@@ -463,6 +465,8 @@ export default function MapaPage() {
               <PainelRolagens mesaId={mesaId} podeRolar={papel !== 'espectador'} meuId={meuId} sessaoId={sessaoAtiva?.id} />
             ) : painelVisivel === 'chat' ? (
               <PainelChat chat={chat} mesaId={mesaId} meuId={meuId} isGestor={isGestor} podeRolar={papel !== 'espectador'} sessaoId={sessaoAtiva?.id} className="flex-1" />
+            ) : painelVisivel === 'notas' ? (
+              <div className="p-4"><PainelNotas mesaId={mesaId} meuId={meuId} estreito /></div>
             ) : painelVisivel === 'combate' ? (
               <PainelCombateMapa
                 encontro={encontro}

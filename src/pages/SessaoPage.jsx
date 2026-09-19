@@ -20,6 +20,7 @@ import ConcederXpGrupo from '../components/sessao/ConcederXpGrupo'
 import PainelDesafios from '../components/minigames/PainelDesafios'
 import FeedRolagens from '../components/dados/FeedRolagens'
 import PainelChat from '../components/mesa/PainelChat'
+import PainelNotas from '../components/mesa/PainelNotas'
 import { useChatMesa } from '../hooks/useChatMesa'
 import Sininho from '../components/notificacoes/Sininho'
 
@@ -541,6 +542,14 @@ export default function SessaoPage() {
         {sessao.ativa && isMestre && progressaoModo === 'xp_direto' && (
           <ConcederXpGrupo onConceder={handleConcederXpGrupo} />
         )}
+
+        {/* F29.3 — notas (o plano do mestre à mão durante a sessão) */}
+        <details className="mb-6 rounded-xl border border-purple-900 bg-slate-900/60">
+          <summary className="cursor-pointer px-4 py-3 text-purple-200 text-sm font-medium">📝 Notas</summary>
+          <div className="px-4 pb-4">
+            <PainelNotas mesaId={mesaId} meuId={session?.user?.id} />
+          </div>
+        </details>
 
         {/* F28.5 — desafios de minigame durante a sessão */}
         {sessao.ativa && (
