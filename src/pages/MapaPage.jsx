@@ -20,6 +20,8 @@ import {
   BarraDesenho, BarraFerramentas, CamadaDesenhos, CamadaPings, CamadaReguas, EditorDesenho, EditorPing, EditorRegua,
 } from '../components/mapa/Desenhos'
 import { GavetaFicha, MenuCamadas, PainelCombateMapa, PainelRolagens } from '../components/mapa/PainelMesa'
+import PainelChat from '../components/mesa/PainelChat'
+import { useChatMesa } from '../hooks/useChatMesa'
 
 const BTN_ICONE = 'h-9 min-w-9 px-2 rounded-lg text-sm transition-colors'
 const telaCheiaDisponivel = typeof document !== 'undefined' && document.fullscreenEnabled
@@ -66,7 +68,8 @@ export default function MapaPage() {
   const { mapas, ativo, loading, indisponivel, criar, ativar, atualizar, remover } = useMapas(mesaId)
 
   const [vistaId, setVistaId] = useState(null)
-  const [painel, setPainel] = useState(null) // 'cenas' | 'tokens' | 'rolagens' | 'combate' | 'ficha'
+  const [painel, setPainel] = useState(null) // 'cenas' | 'tokens' | 'rolagens' | 'chat' | 'combate' | 'ficha'
+  const chat = useChatMesa(mesaId, meuId) // F29.2
   const [fichaAberta, setFichaAberta] = useState(null)
   const [camadas, setCamadasEstado] = useState(lerCamadas)
   const [menuCamadas, setMenuCamadas] = useState(false)
@@ -334,6 +337,11 @@ export default function MapaPage() {
       {...extra}
     >
       {icone} <span className="hidden lg:inline">{rotulo}</span>
+      {nome === 'chat' && chat.naoLidas > 0 && painelVisivel !== 'chat' && (
+        <span className="ml-1 inline-flex items-center justify-center text-[10px] font-bold bg-amber-500 text-amber-950 rounded-full w-4 h-4">
+          {chat.naoLidas > 9 ? '9+' : chat.naoLidas}
+        </span>
+      )}
     </button>
   )
   const avisoAtual = aviso || turno.avisoTurno
@@ -356,6 +364,7 @@ export default function MapaPage() {
           {!indisponivel && (
             <>
               {botaoPainel('rolagens', '🎲', 'Rolagens')}
+              {botaoPainel('chat', '💬', 'Chat')}
               {(encontro || (isGestor && sessaoAtiva)) && botaoPainel('combate', '⚔', 'Combate')}
               {fichasDaGaveta.length > 0 && botaoPainel('ficha', '📜', 'Ficha')}
               <button
@@ -424,7 +433,8 @@ export default function MapaPage() {
         {!indisponivel && painelVisivel && (
           <aside
             className={`absolute sm:static right-0 inset-y-0 z-10 max-w-[92vw] shrink-0 border-l border-border bg-bg ${
-              painelVisivel === 'ficha' ? 'w-[28rem] flex flex-col overflow-hidden' : 'w-80 overflow-y-auto'
+              painelVisivel === 'ficha' ? 'w-[28rem] flex flex-col overflow-hidden'
+                : painelVisivel === 'chat' ? 'w-80 flex flex-col overflow-hidden p-3' : 'w-80 overflow-y-auto'
             }`}
           >
             {painelVisivel === 'cenas' || (painelVisivel === 'tokens' && !cena) ? (
@@ -451,6 +461,8 @@ export default function MapaPage() {
               />
             ) : painelVisivel === 'rolagens' ? (
               <PainelRolagens mesaId={mesaId} podeRolar={papel !== 'espectador'} meuId={meuId} sessaoId={sessaoAtiva?.id} />
+            ) : painelVisivel === 'chat' ? (
+              <PainelChat chat={chat} mesaId={mesaId} meuId={meuId} isGestor={isGestor} podeRolar={papel !== 'espectador'} sessaoId={sessaoAtiva?.id} className="flex-1" />
             ) : painelVisivel === 'combate' ? (
               <PainelCombateMapa
                 encontro={encontro}

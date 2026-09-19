@@ -19,6 +19,8 @@ import DescansoGrupo from '../components/sessao/DescansoGrupo'
 import ConcederXpGrupo from '../components/sessao/ConcederXpGrupo'
 import PainelDesafios from '../components/minigames/PainelDesafios'
 import FeedRolagens from '../components/dados/FeedRolagens'
+import PainelChat from '../components/mesa/PainelChat'
+import { useChatMesa } from '../hooks/useChatMesa'
 import Sininho from '../components/notificacoes/Sininho'
 
 /**
@@ -350,6 +352,9 @@ export default function SessaoPage() {
 
   // Aba ativa no mobile (no desktop painel e feed aparecem lado a lado)
   const [abaMobile, setAbaMobile] = useState('fichas')
+  // F29.2 — a lateral alterna entre rolagens e chat
+  const [lateral, setLateral] = useState('feed')
+  const chat = useChatMesa(mesaId, session?.user?.id)
 
   useEffect(() => {
     async function carregar() {
@@ -557,14 +562,17 @@ export default function SessaoPage() {
           >
             Personagens
           </button>
-          <button
-            onClick={() => setAbaMobile('feed')}
-            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-              abaMobile === 'feed' ? 'bg-purple-700 text-white' : 'bg-slate-800 text-purple-300'
-            }`}
-          >
-            Rolagens
-          </button>
+          {[['feed', 'Rolagens'], ['chat', 'Chat']].map(([valor, rotulo]) => (
+            <button
+              key={valor}
+              onClick={() => { setAbaMobile('feed'); setLateral(valor) }}
+              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                abaMobile === 'feed' && lateral === valor ? 'bg-purple-700 text-white' : 'bg-slate-800 text-purple-300'
+              }`}
+            >
+              {rotulo}{valor === 'chat' && chat.naoLidas > 0 && lateral !== 'chat' ? ` (${chat.naoLidas})` : ''}
+            </button>
+          ))}
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6 items-start">
@@ -583,9 +591,26 @@ export default function SessaoPage() {
 
           {/* Feed compartilhado (13.4) */}
           <aside className={`w-full lg:w-80 xl:w-96 shrink-0 ${abaMobile === 'feed' ? 'block' : 'hidden'} lg:block`}>
-            <p className="hidden lg:block text-purple-300 text-sm font-medium mb-3">
-              {sessao.ativa ? 'Rolagens' : 'Rolagens da sessão'}
-            </p>
+            <div className="hidden lg:flex gap-4 mb-3">
+              {[['feed', sessao.ativa ? 'Rolagens' : 'Rolagens da sessão'], ['chat', 'Chat']].map(([valor, rotulo]) => (
+                <button
+                  key={valor} onClick={() => setLateral(valor)}
+                  className={`text-sm font-medium transition-colors ${lateral === valor ? 'text-white' : 'text-purple-400 hover:text-purple-200'}`}
+                >
+                  {rotulo}
+                  {valor === 'chat' && chat.naoLidas > 0 && lateral !== 'chat' && (
+                    <span className="ml-1.5 inline-flex items-center justify-center text-[10px] font-bold bg-amber-500 text-amber-950 rounded-full w-4 h-4">
+                      {chat.naoLidas > 9 ? '9+' : chat.naoLidas}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+            {lateral === 'chat' && (
+              <PainelChat chat={chat} mesaId={mesaId} meuId={session?.user?.id} isGestor={isMestre} sessaoId={sessao.ativa ? sessaoId : null} className="h-[70vh]" />
+            )}
+            {/* O feed fica montado escondido: continua avisando dano aplicável ao mestre */}
+            <div className={lateral === 'chat' ? 'hidden' : ''}>
             {sessao.ativa ? (
               <FeedRolagens mesaId={mesaId} onNovaRolagem={aoNovaRolagem} />
             ) : (
@@ -596,6 +621,7 @@ export default function SessaoPage() {
                 aoVivo={false}
               />
             )}
+            </div>
           </aside>
         </div>
       </div>

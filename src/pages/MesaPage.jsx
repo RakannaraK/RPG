@@ -7,6 +7,8 @@ import RecapSessao from '../components/mesa/RecapSessao'
 import PainelRelogios from '../components/mesa/PainelRelogios'
 import PainelMinigames from '../components/minigames/PainelMinigames'
 import PainelDesafios from '../components/minigames/PainelDesafios'
+import PainelChat from '../components/mesa/PainelChat'
+import { useChatMesa } from '../hooks/useChatMesa'
 import { useFichas } from '../hooks/useFicha'
 import FichaCreate from '../components/ficha/FichaCreate'
 import RoladorGenerico from '../components/dados/RoladorGenerico'
@@ -17,7 +19,7 @@ import SessoesHistorico from '../components/sessao/SessoesHistorico'
 import MeuPerfilMesa from '../components/mesa/MeuPerfilMesa'
 import Sininho from '../components/notificacoes/Sininho'
 
-const TABS = ['Fichas', 'Dados', 'Resumo', 'Sistema', 'Membros']
+const TABS = ['Fichas', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
 
 // Fase 16 — rótulo/cor por papel (mestre/co-mestre/jogador/espectador)
 const ROLE_INFO = {
@@ -43,6 +45,7 @@ export default function MesaPage() {
   const [showFichaCreate, setShowFichaCreate] = useState(false)
   const [novasRolagens, setNovasRolagens] = useState(0)
   const [showPrefs, setShowPrefs] = useState(false)
+  const chat = useChatMesa(id, session?.user?.id) // F29.2 — na página: não lidas contam com a aba fechada
 
   // delete mesa
   const [showDeleteMesa, setShowDeleteMesa] = useState(false)
@@ -430,6 +433,11 @@ export default function MesaPage() {
                   {novasRolagens > 9 ? '9+' : novasRolagens}
                 </span>
               )}
+              {tab === 'Chat' && chat.naoLidas > 0 && activeTab !== 'Chat' && (
+                <span className="ml-1.5 inline-flex items-center justify-center text-[10px] font-bold bg-amber-500 text-amber-950 rounded-full w-4 h-4">
+                  {chat.naoLidas > 9 ? '9+' : chat.naoLidas}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -578,6 +586,12 @@ export default function MesaPage() {
                 <p className="text-purple-200 font-medium text-sm mb-4">Histórico da sessão</p>
                 <FeedRolagens mesaId={id} onNovaRolagem={() => setNovasRolagens(n => n + 1)} />
               </div>
+            </div>
+          )}
+
+          {activeTab === 'Chat' && (
+            <div className="max-w-3xl">
+              <PainelChat chat={chat} mesaId={id} meuId={session?.user?.id} isGestor={isGestor} podeFalar={!arquivada} podeRolar={podeEscrever} className="h-[65vh]" />
             </div>
           )}
 

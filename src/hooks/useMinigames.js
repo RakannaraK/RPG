@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useId } from 'react'
 import { supabase } from '../lib/supabase'
 import { useRolagem } from './useRolagem'
+import { useMembrosMesa } from './useMembrosMesa'
 import { resumoResultado, rotuloFeed } from '../lib/minigames/resultado'
 
 // ponytail: últimos 1000 resultados da mesa bastam para ranking/estatísticas; paginar se uma mesa jogar muito mais
@@ -50,23 +51,15 @@ export function useMinigames(mesaId) {
   // canal já existente (dois painéis na mesma página se atrapalhariam).
   const idCanal = useId().replace(/[^a-zA-Z0-9]/g, '')
   const [resultados, setResultados] = useState([])
-  const [membros, setMembros] = useState([]) // [{ usuario_id, nome, role }]
+  const { membros, nomeDe } = useMembrosMesa(mesaId)
   const [indisponivel, setIndisponivel] = useState(false)
 
   const carregar = useCallback(async () => {
     if (!mesaId) return
-    const [res, mem] = await Promise.all([
-      supabase.from('minigames_resultados').select('*').eq('mesa_id', mesaId)
-        .order('created_at', { ascending: false }).limit(LIMITE_RESULTADOS),
-      supabase.from('membros_mesa').select('role, apelido, usuario:usuario_id (id, username)').eq('mesa_id', mesaId),
-    ])
+    const res = await supabase.from('minigames_resultados').select('*').eq('mesa_id', mesaId)
+      .order('created_at', { ascending: false }).limit(LIMITE_RESULTADOS)
     setIndisponivel(tabelaAusente(res.error))
     setResultados(res.error ? [] : res.data || [])
-    setMembros((mem.data || []).map(m => ({
-      usuario_id: m.usuario?.id,
-      nome: m.apelido || m.usuario?.username || 'Jogador',
-      role: m.role,
-    })).filter(m => m.usuario_id))
   }, [mesaId])
 
   useEffect(() => { carregar() }, [carregar])
@@ -84,11 +77,6 @@ export function useMinigames(mesaId) {
       .subscribe()
     return () => { supabase.removeChannel(canal) }
   }, [mesaId, idCanal])
-
-  const nomeDe = useCallback(
-    usuarioId => membros.find(m => m.usuario_id === usuarioId)?.nome || 'Jogador',
-    [membros]
-  )
 
   async function registrar(params) {
     const linha = await registrarResultado({ mesaId, registrarEvento, ...params })
