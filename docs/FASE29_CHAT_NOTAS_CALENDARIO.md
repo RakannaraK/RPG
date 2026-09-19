@@ -28,5 +28,14 @@ Três ferramentas de mesa que o Lich tem e aqui faltavam, sem limite de quantida
 ## Restrições
 1. Sem o SQL: nada quebra; os painéis avisam. 2. Sem limite de mensagens, notas, eventos, meses ou dias. 3. Mensagem com `/r` inválido não é enviada como texto (mostra o erro). 4. Sussurro é privado de verdade (RLS), não só escondido na tela.
 
+## Como ficou (implementado — 1ddca1b … 29.5)
+- **Arquivos:** `lib/calendarioEngine.js`, `lib/chatMesa.js` (+ testes e `fase29.acceptance.test.js`); hooks `useChatMesa`, `useNotasMesa`, `useCalendario`, `useMembrosMesa` (nomes dos membros, agora também usado pelos minigames); componentes `mesa/PainelChat`, `mesa/PainelNotas`, `mesa/PainelCalendario`; `sql/fase29_chat_notas_calendario.sql` (rodado).
+- **Onde:** mesa → aba **Chat** (com contador de não lidas) e aba **Resumo** (calendário, notas); sessão → lateral alterna **Rolagens/Chat**, e blocos recolhíveis "📅 data" e "📝 Notas"; mapa → botões **💬 Chat** e **📝 Notas** na barra.
+- **Chat:** Enter envia, Shift+Enter quebra linha; seletor "para quem" (mesa toda, só os mestres, uma pessoa); tocar num sussurro recebido responde em sussurro; autor e mestre apagam; "visto até" guardado no navegador por mesa.
+- **Notas:** salva sozinha 0,8 s depois de parar de digitar (e na hora, se trocar de nota); 🔒/👥 alterna privada/compartilhada; 📌 fixa no topo; nota de outra pessoa abre só para leitura.
+- **Calendário:** modelos Gregoriano (sem bissexto) e Fantasia 12×30; meses, dias e semana livres; "passar o tempo" ±1/+7/n dias publica no feed com os eventos (não secretos) do novo dia; clicar num dia mostra/cria eventos e "Tornar hoje".
+- **De passagem:** avisos no feed sem dados (turno, desafio, tempo) não mostram mais "Total: 0".
+- **Limites conhecidos:** chat mostra as 200 mensagens mais recentes; nota que deixa de ser compartilhada some para os outros só ao recarregar; sem editar mensagem (de propósito); interface testada com respostas simuladas no navegador, sem duas contas reais logadas.
+
 ## Teste de aceitação
 Jogador sussurra ao mestre e ninguém mais lê; `/r 1d20+5` rola e aparece no feed; espectador conversa mas não rola; nota privada do mestre não aparece para jogador até ser compartilhada; mestre passa 3 dias de 29 de Fevereiro-que-não-existe (normalizado) e a data vira mês seguinte com dia da semana correto; evento anual aparece todo ano; evento secreto não aparece para jogador.
