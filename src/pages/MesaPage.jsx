@@ -16,6 +16,7 @@ import { useFichas } from '../hooks/useFicha'
 import FichaCreate from '../components/ficha/FichaCreate'
 import ImportarFicha from '../components/ficha/ImportarFicha'
 import PainelBestiario from '../components/bestiario/PainelBestiario'
+import PainelEscudo from '../components/mesa/PainelEscudo'
 import RoladorGenerico from '../components/dados/RoladorGenerico'
 import FeedRolagens from '../components/dados/FeedRolagens'
 import PreferenciasModal from '../components/preferencias/PreferenciasModal'
@@ -25,6 +26,7 @@ import MeuPerfilMesa from '../components/mesa/MeuPerfilMesa'
 import Sininho from '../components/notificacoes/Sininho'
 
 const TABS = ['Fichas', 'Bestiário', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
+const TABS_GESTOR = ['Escudo'] // F34.3 — só mestre/co-mestre
 
 // Fase 16 — rótulo/cor por papel (mestre/co-mestre/jogador/espectador)
 const ROLE_INFO = {
@@ -432,7 +434,7 @@ export default function MesaPage() {
         <SessoesHistorico mesaId={id} />
 
         <div className="flex border-b border-purple-900 mt-6 overflow-x-auto overflow-y-hidden">
-          {TABS.map(tab => (
+          {[...TABS, ...(isGestor ? TABS_GESTOR : [])].map(tab => (
             <button
               key={tab}
               onClick={() => { setActiveTab(tab); if (tab === 'Dados') setNovasRolagens(0) }}
@@ -669,6 +671,10 @@ export default function MesaPage() {
 
           {activeTab === 'Sistema' && (
             <SistemaEditor mesaId={id} isMestre={isGestor} />
+          )}
+
+          {activeTab === 'Escudo' && isGestor && (
+            <PainelEscudo mesaId={id} isGestor={isGestor} />
           )}
 
           {activeTab === 'Membros' && (

@@ -33,7 +33,7 @@ sem perder nada do que já existe (retrocompatibilidade total, como em F1–F25)
 | **F31** ✅ | **Bestiário:** criaturas com ficha completa, arte, som, ameaça, invocar no combate e no mapa, boss | grande |
 | **F32** ✅ | **Combate avançado:** recarga em turnos, ultimates, dano/cura contínuos, reserva e troca, contra-ataque rolado, habilidade vs habilidade | média |
 | **F33** ✅ | **Transformações** (forma alternativa) + **árvore de habilidades visual** | grande |
-| F34 | Escudo do mestre + overlay para OBS (link secreto) | pequena/média |
+| **F34** ✅ | **Escudo do mestre** + **overlay para OBS** (link secreto) | pequena/média |
 | F35 | Personalização: som de crítico enviado, temas/fontes, mídia em habilidade, barra com escudo, barra de progressão | média |
 | F36 | Comunidade: galeria de artes, compartilhar fichas/criaturas/sistemas, moderação, página pública com demo sem conta | grande |
 

@@ -12,6 +12,7 @@ import MapaPage from './pages/MapaPage'
 import DadosTestePage from './pages/DadosTestePage'
 import OuvinteDadosMesa from './components/dados/OuvinteDadosMesa'
 import OuvinteDesafios from './components/minigames/OuvinteDesafios'
+import OverlayPage from './pages/OverlayPage'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -101,6 +102,8 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        {/* F34 — overlay para OBS: sem login, só com o token secreto */}
+        <Route path="/overlay/:token" element={<OverlayPage />} />
         <Route path="/teste-dados" element={<DadosTestePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
