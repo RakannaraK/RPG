@@ -28,5 +28,13 @@
 ## Restrições
 1. Sem o SQL: nada muda (ninguém tem forma; nenhuma habilidade exige outra). 2. A forma é ficha de verdade: vale export/import, permissões e bestiário como qualquer outra. 3. Ciclo de pré-requisito (A exige B que exige A) não pode travar a tela: vira raiz com aviso. 4. Transformar não apaga nada — é só trocar qual ficha está valendo.
 
+## Como ficou (implementado — 8b4f72a … 33.4)
+- **Arquivos:** `lib/transformacao.js` e `lib/arvoreHabilidades.js` (+ testes e `fase33.acceptance.test.js`), `components/ficha/PainelFormas.jsx`, `components/ficha/ArvoreHabilidades.jsx`; `sql/fase33_transformacoes_arvore.sql` (rodado).
+- **Formas:** bloco **🐺 Formas** no topo da ficha — criar em branco ou copiando uma criatura do bestiário, abrir a ficha da forma, **Transformar** / **Voltar ao normal**, apagar. A ficha de uma forma mostra um atalho de volta para a original.
+- **Enquanto transformado:** o card da sessão e o mapa mostram "Aria (Lobo)" com os atributos, a vida e as habilidades da forma, e o **dano vai para a vida da forma** (ao voltar, a original está como estava). A forma não aparece na lista de personagens nem no bestiário.
+- **Árvore:** aba **Árvore** na ficha (só aparece quando o sistema liga habilidades entre si) — verde = já tem, contorno roxo = disponível (um clique aprende), apagada = bloqueada, com o motivo ("Precisa de Golpe Duplo", "Precisa de nível 5"). Ligações desenhadas entre pré-requisito e habilidade. No editor do sistema, cada habilidade escolhe "Exige a habilidade".
+- **Robustez:** pré-requisito apagado ou em círculo (A exige B que exige A) vira raiz com aviso, em vez de travar a tela.
+- **Limites conhecidos:** um pré-requisito por habilidade (árvore, não teia); a forma é trocada por quem tem a ficha (mestre ou dono), não automaticamente por gasto de recurso; testado sem duas contas reais ao mesmo tempo.
+
 ## Teste de aceitação
 Criar a forma "Lobo" a partir da criatura do bestiário; transformar: o card da sessão vira "Aria (Lobo)" com a vida do Lobo, o dano do mestre tira vida do Lobo e, ao voltar, a vida de Aria está intacta. Na árvore, "Golpe Duplo" exige "Golpe Rápido": sem ela fica bloqueada com o motivo; com ela, aparece disponível e um clique adiciona.
