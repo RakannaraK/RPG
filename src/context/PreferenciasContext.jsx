@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, useCallback } f
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 import { atributosDeAparencia } from '../lib/personalizacao'
+import { definirSomDoDado } from '../lib/diceSounds'
 
 // Preferências visuais/sonoras do usuário, persistidas em profiles.preferencias (JSONB).
 const PADRAO = {
@@ -12,6 +13,8 @@ const PADRAO = {
   dados_mesa: 'todos',
   // F35 — aparência e som de crítico próprio
   tema: 'violeta', fonte: 'padrao', som_critico_url: null,
+  // F37 — som de dado enviado pelo usuário (no lugar do sintetizado)
+  som_dado_url: null,
 }
 
 const PreferenciasContext = createContext(null)
@@ -32,6 +35,9 @@ export function PreferenciasProvider({ children }) {
       else document.documentElement.removeAttribute(attr)
     }
   }, [preferencias])
+
+  // F37 — avisa o módulo de som qual arquivo usar no lugar do sintetizado
+  useEffect(() => { definirSomDoDado(preferencias.som_dado_url) }, [preferencias.som_dado_url])
 
   // Carrega ao iniciar / trocar de usuário
   useEffect(() => {

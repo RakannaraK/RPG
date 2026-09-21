@@ -30,6 +30,7 @@
 - **Mídia em habilidade:** link de imagem ou som no editor do sistema; na ficha, imagem vira miniatura e som ganha botão 🔊, tocando também ao usar a habilidade.
 - **Barra com escudo:** a barra de vida da ficha mostra a vida temporária como pedaço azul (mesmo motor do overlay e do escudo do mestre).
 - **Barras de progressão:** projetos e relógios da campanha já eram barra; a conta agora é a mesma função pura (`faixasDaBarra`).
+- **Som de dado próprio (acréscimo de 2026-09-21):** o mesmo campo de envio virou componente reaproveitável (`EnvioDeSom` em `Aparencia.jsx`) e ganhou um segundo uso, **Som do dado**, na preferência `som_dado_url` (arquivo em `fichas-imagens/<uid>/sons/dado-*.ext`). Quando existe, `tocarSomDado` toca o arquivo **no lugar do sintetizado, em todas as skins** — o `PreferenciasContext` registra a URL uma vez via `definirSomDoDado`, então nenhuma das 8 telas que rolam dado precisou mudar. Vale por pessoa: você ouve o seu, os outros ouvem o deles. Se o arquivo não tocar (bloqueio do navegador, 404), cai no sintetizado sozinho. Testado no banco/Storage de verdade com conta de teste + `src/lib/diceSounds.test.js` (4).
 - **Limites conhecidos:** o arquivo de som fica no bucket de imagens (pasta do próprio usuário) — sem bucket novo; só um som de crítico por pessoa; o tema não muda as cores semânticas (dano, cura, dados) de propósito.
 
 ## Teste de aceitação

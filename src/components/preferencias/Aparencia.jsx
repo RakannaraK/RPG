@@ -19,19 +19,17 @@ function duracaoDoArquivo(arquivo) {
 }
 
 /**
- * Fase 35.2 + 35.3 — aparência (tema e fonte) e som de crítico próprio.
- * Tudo por usuário: ninguém mexe no que os outros veem/ouvem.
+ * Um som enviado pelo usuário (F35.3 crítico, F37 dado). Guarda a URL pública
+ * na preferência `campo`; `campoVolume` diz em qual volume ele é tocado aqui.
  */
-export default function Aparencia() {
+function EnvioDeSom({ campo, campoVolume, pasta, titulo, dica, rodape }) {
   const { preferencias, salvarPreferencias } = usePreferencias()
   const { session } = useAuth()
   const inputRef = useRef(null)
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState('')
 
-  const tema = preferencias.tema || 'violeta'
-  const fonte = preferencias.fonte || 'padrao'
-  const somCritico = preferencias.som_critico_url || null
+  const som = preferencias[campo] || null
 
   async function enviarSom(e) {
     const arquivo = e.target.files?.[0]
@@ -43,11 +41,11 @@ export default function Aparencia() {
     if (!checagem.ok) { setErro(checagem.erro); return }
     setEnviando(true)
     try {
-      const caminho = `${session.user.id}/sons/critico-${Date.now()}.${extensaoDoSom(arquivo)}`
+      const caminho = `${session.user.id}/sons/${pasta}-${Date.now()}.${extensaoDoSom(arquivo)}`
       const { error } = await supabase.storage.from(BUCKET).upload(caminho, arquivo, { upsert: true, contentType: arquivo.type })
       if (error) throw new Error(error.message)
       const { data } = supabase.storage.from(BUCKET).getPublicUrl(caminho)
-      await salvarPreferencias({ som_critico_url: data.publicUrl })
+      await salvarPreferencias({ [campo]: data.publicUrl })
     } catch (err) {
       setErro(err.message || 'Não foi possível enviar o som.')
     } finally {
@@ -56,11 +54,49 @@ export default function Aparencia() {
   }
 
   function ouvir() {
-    if (!somCritico) return
-    const audio = new Audio(somCritico)
-    audio.volume = preferencias.som_acao_volume ?? 0.6
+    if (!som) return
+    const audio = new Audio(som)
+    audio.volume = preferencias[campoVolume] ?? 0.6
     audio.play().catch(() => setErro('O navegador bloqueou o som; clique de novo.'))
   }
+
+  return (
+    <div className="space-y-1.5">
+      <p className="text-xs text-purple-400">
+        {titulo} (até {LIMITE_SOM.segundos} s e {(LIMITE_SOM.bytes / 1_000_000).toFixed(1)} MB)
+      </p>
+      {dica && <p className="text-purple-500 text-[11px]">{dica}</p>}
+      <input ref={inputRef} type="file" accept="audio/*" onChange={enviarSom} className="hidden" />
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button" onClick={() => inputRef.current?.click()} disabled={enviando}
+          className="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white text-sm"
+        >{enviando ? 'Enviando…' : som ? 'Trocar som' : 'Enviar som'}</button>
+        {som && (
+          <>
+            <button type="button" onClick={ouvir} className="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm">🔊 Ouvir</button>
+            <button
+              type="button" onClick={() => salvarPreferencias({ [campo]: null })}
+              className="px-2 py-1.5 text-red-400 hover:text-red-300 text-sm"
+            >Remover</button>
+          </>
+        )}
+      </div>
+      {som && rodape && <p className="text-purple-500 text-[11px]">{rodape}</p>}
+      {erro && <p className="text-red-400 text-xs">{erro}</p>}
+    </div>
+  )
+}
+
+/**
+ * Fase 35.2 + 35.3 (+ F37) — aparência (tema e fonte) e sons próprios.
+ * Tudo por usuário: ninguém mexe no que os outros veem/ouvem.
+ */
+export default function Aparencia() {
+  const { preferencias, salvarPreferencias } = usePreferencias()
+
+  const tema = preferencias.tema || 'violeta'
+  const fonte = preferencias.fonte || 'padrao'
 
   return (
     <div className="space-y-4 border-t border-purple-900 pt-5">
@@ -96,29 +132,18 @@ export default function Aparencia() {
         </select>
       </label>
 
-      <div className="space-y-1.5">
-        <p className="text-xs text-purple-400">
-          Som de crítico próprio (até {LIMITE_SOM.segundos} s e {(LIMITE_SOM.bytes / 1_000_000).toFixed(1)} MB)
-        </p>
-        <input ref={inputRef} type="file" accept="audio/*" onChange={enviarSom} className="hidden" />
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button" onClick={() => inputRef.current?.click()} disabled={enviando}
-            className="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white text-sm"
-          >{enviando ? 'Enviando…' : somCritico ? 'Trocar som' : 'Enviar som'}</button>
-          {somCritico && (
-            <>
-              <button type="button" onClick={ouvir} className="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm">🔊 Ouvir</button>
-              <button
-                type="button" onClick={() => salvarPreferencias({ som_critico_url: null })}
-                className="px-2 py-1.5 text-red-400 hover:text-red-300 text-sm"
-              >Remover</button>
-            </>
-          )}
-        </div>
-        {somCritico && <p className="text-purple-500 text-[11px]">Toca no lugar do som padrão quando sai um crítico.</p>}
-        {erro && <p className="text-red-400 text-xs">{erro}</p>}
-      </div>
+      <EnvioDeSom
+        campo="som_dado_url" campoVolume="som_volume" pasta="dado"
+        titulo="Som de dado próprio"
+        dica="Toca no lugar do som sintetizado, em todas as skins. Curto (menos de 1 s) fica melhor."
+        rodape="Você ouve o seu som em toda rolagem; os outros ouvem o deles."
+      />
+
+      <EnvioDeSom
+        campo="som_critico_url" campoVolume="som_acao_volume" pasta="critico"
+        titulo="Som de crítico próprio"
+        rodape="Toca no lugar do som padrão quando sai um crítico."
+      />
     </div>
   )
 }

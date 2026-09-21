@@ -7,7 +7,20 @@
 // primeiro gesto do usuário). `construirSomDado(ctx, destino, skinId, opts)` é a
 // camada de baixo nível — usada também para render offline (preview/testes).
 
+import { tocarSomProprio } from '../audio/somProprio'
+
 let _ctx = null
+
+// Som de dado enviado pelo usuário (F37): quando existe, toca no lugar do
+// sintetizado — em todas as skins, e só para quem enviou. Guardado aqui num
+// módulo porque `tocarSomDado` é chamado de 8 telas: o PreferenciasContext
+// registra uma vez e nenhuma delas precisa saber disso.
+let _urlSomProprio = null
+
+/** Registra (ou tira, com null) o som de dado enviado pelo usuário. */
+export function definirSomDoDado(url) {
+  _urlSomProprio = url || null
+}
 
 function getCtx() {
   if (!_ctx || _ctx.state === 'closed') {
@@ -249,6 +262,9 @@ export function estimarNumDados(notacao) {
 export function tocarSomDado(skinId, opts = {}) {
   const { ativo = true, volume = 0.6, numDados = 1 } = opts
   if (!ativo || volume <= 0) return
+  // ponytail: o arquivo do usuário toca UMA vez, não importa quantos dados —
+  // dar quique num arquivo pronto exige fatiar o áudio; se incomodar, aí sim.
+  if (_urlSomProprio && tocarSomProprio(_urlSomProprio, { volume })) return
   try {
     const ctx = getCtx()
     // Limiter no master pra mais dados não estourarem
