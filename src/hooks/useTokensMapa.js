@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useId } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { caminhoNoBucket, redimensionarImagem } from '../lib/imageUtils'
@@ -17,6 +17,9 @@ const INTERVALO_ARRASTE_MS = 66 // ~15 posições/s durante o arraste
  * DELETE chega a todos (o Realtime não aplica RLS em DELETE).
  */
 export function useTokensMapa(mapaId, mesaId) {
+  // Nome de canal único por instância: com o mesmo nome o supabase-js devolve o
+  // canal já existente e o segundo `.on()` estoura (F34: Escudo + banner na mesma tela).
+  const idCanal = useId().replace(/[^a-zA-Z0-9]/g, '')
   const { session } = useAuth()
   const [tokens, setTokens] = useState([])
   const [remotos, setRemotos] = useState({}) // id → {x, y} arrastado por outra pessoa agora
@@ -49,7 +52,7 @@ export function useTokensMapa(mapaId, mesaId) {
     })
     const filtro = { schema: 'public', table: 'tokens_mapa', filter: `mapa_id=eq.${mapaId}` }
     const canal = supabase
-      .channel(`tokens-${mapaId}`)
+      .channel(`tokens-${mapaId}-${idCanal}`)
       .on('postgres_changes', { event: 'INSERT', ...filtro }, p => upsert(p.new))
       .on('postgres_changes', { event: 'UPDATE', ...filtro }, p => { upsert(p.new); esquecerRemoto(p.new.id) })
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'tokens_mapa' }, p => {

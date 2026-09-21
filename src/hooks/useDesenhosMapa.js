@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useId } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
@@ -19,6 +19,9 @@ export function corDoUsuario(id) {
  * O RLS decide quem desenha/apaga; aqui só refletimos o resultado.
  */
 export function useDesenhosMapa(mapaId) {
+  // Nome de canal único por instância: com o mesmo nome o supabase-js devolve o
+  // canal já existente e o segundo `.on()` estoura (F34: Escudo + banner na mesma tela).
+  const idCanal = useId().replace(/[^a-zA-Z0-9]/g, '')
   const { session } = useAuth()
   const meuId = session?.user?.id
   const [desenhos, setDesenhos] = useState([])
@@ -55,7 +58,7 @@ export function useDesenhosMapa(mapaId) {
       return novo
     })
     const canal = supabase
-      .channel(`desenhos-${mapaId}`)
+      .channel(`desenhos-${mapaId}-${idCanal}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'desenhos_mapa', filter: `mapa_id=eq.${mapaId}` }, p => {
         setDesenhos(prev => (prev.some(d => d.id === p.new.id) ? prev : [...prev, p.new]))
       })

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useId } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { usePreferencias } from '../../context/PreferenciasContext'
@@ -172,6 +172,9 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
 }
 
 export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate = null, aoVivo = true }) {
+  // Nome de canal único por instância: com o mesmo nome o supabase-js devolve o
+  // canal já existente e o segundo `.on()` estoura (F34: Escudo + banner na mesma tela).
+  const idCanal = useId().replace(/[^a-zA-Z0-9]/g, '')
   const { session } = useAuth()
   const { preferencias } = usePreferencias()
   const [rolagens, setRolagens] = useState([])
@@ -228,7 +231,7 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
     if (!aoVivo) return
 
     const channel = supabase
-      .channel(`feed-${mesaId}`)
+      .channel(`feed-${mesaId}-${idCanal}`)
       .on(
         'postgres_changes',
         {

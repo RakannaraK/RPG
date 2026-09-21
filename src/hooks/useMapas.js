@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useId } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { caminhoNoBucket, redimensionarImagem, lerDimensoes } from '../lib/imageUtils'
@@ -23,6 +23,9 @@ async function removerArquivo(path) {
  * o aviso do SQL e o resto do app segue igual.
  */
 export function useMapas(mesaId) {
+  // Nome de canal único por instância: com o mesmo nome o supabase-js devolve o
+  // canal já existente e o segundo `.on()` estoura (F34: Escudo + banner na mesma tela).
+  const idCanal = useId().replace(/[^a-zA-Z0-9]/g, '')
   const { session } = useAuth()
   const [mapas, setMapas] = useState([])
   const [loading, setLoading] = useState(true)
@@ -56,7 +59,7 @@ export function useMapas(mesaId) {
     if (!mesaId) return
     let jaConectou = false
     const canal = supabase
-      .channel(`mapas-${mesaId}`)
+      .channel(`mapas-${mesaId}-${idCanal}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'mapas', filter: `mesa_id=eq.${mesaId}` }, () => fetchAll())
       .on('broadcast', { event: 'recarregar' }, () => fetchAll())
       .subscribe(status => {

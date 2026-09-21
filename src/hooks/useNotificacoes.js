@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useId } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
@@ -8,6 +8,9 @@ import { useAuth } from '../context/AuthContext'
  * RLS `notif_proprio` (usuario_id = auth.uid()) cobre select/update.
  */
 export function useNotificacoes() {
+  // Nome de canal único por instância: com o mesmo nome o supabase-js devolve o
+  // canal já existente e o segundo `.on()` estoura (F34: Escudo + banner na mesma tela).
+  const idCanal = useId().replace(/[^a-zA-Z0-9]/g, '')
   const { session } = useAuth()
   const userId = session?.user?.id
   const [notificacoes, setNotificacoes] = useState([])
@@ -34,7 +37,7 @@ export function useNotificacoes() {
   useEffect(() => {
     if (!userId) return
     const ch = supabase
-      .channel(`notif-${userId}`)
+      .channel(`notif-${userId}-${idCanal}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notificacoes', filter: `usuario_id=eq.${userId}` },

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useId } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
@@ -13,6 +13,9 @@ import { useAuth } from '../context/AuthContext'
  * `error` — a MesaPage segue funcionando normalmente, só sem UI de sessão.
  */
 export function useSessoes(mesaId) {
+  // Nome de canal único por instância: com o mesmo nome o supabase-js devolve o
+  // canal já existente e o segundo `.on()` estoura (F34: Escudo + banner na mesma tela).
+  const idCanal = useId().replace(/[^a-zA-Z0-9]/g, '')
   const { session } = useAuth()
   const [sessaoAtiva, setSessaoAtiva] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -46,7 +49,7 @@ export function useSessoes(mesaId) {
   useEffect(() => {
     if (!mesaId) return
     const channel = supabase
-      .channel(`sessoes-mesa-${mesaId}`)
+      .channel(`sessoes-mesa-${mesaId}-${idCanal}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'sessoes', filter: `mesa_id=eq.${mesaId}` },

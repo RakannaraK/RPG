@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useId } from 'react'
 import { planejarTroca } from '../lib/combateAvancado'
 import { supabase } from '../lib/supabase'
 
@@ -13,6 +13,9 @@ import { supabase } from '../lib/supabase'
  * 14.4 condições · 14.5 HP/dano.
  */
 export function useEncontro(sessaoId, mesaId) {
+  // Nome de canal único por instância: com o mesmo nome o supabase-js devolve o
+  // canal já existente e o segundo `.on()` estoura (F34: Escudo + banner na mesma tela).
+  const idCanal = useId().replace(/[^a-zA-Z0-9]/g, '')
   const [encontro, setEncontro] = useState(null)
   const [combatentes, setCombatentes] = useState([])
   const [condicoes, setCondicoes] = useState([])
@@ -83,7 +86,7 @@ export function useEncontro(sessaoId, mesaId) {
       if (encId && encId === encontroIdRef.current) carregarCombatentes(encId)
     }
     const channel = supabase
-      .channel(`encontro-sessao-${sessaoId}`)
+      .channel(`encontro-sessao-${sessaoId}-${idCanal}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'encontros', filter: `sessao_id=eq.${sessaoId}` }, payload => {
         // Mudança de turno/rodada: atualiza só o encontro sem recarregar tudo
         if (payload.eventType === 'UPDATE' && payload.new?.id === encontroIdRef.current) {

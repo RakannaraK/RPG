@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo, useId } from 'react'
 import { fichaValendo, rotuloDaForma } from '../lib/transformacao'
 import { supabase } from '../lib/supabase'
 import { useSistema } from './useSistema'
@@ -339,6 +339,9 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
  * @param {object} sistemaBundle — { racas, classes, habilidades, atributos, pericias }
  */
 export function useSessaoFichas(mesaId, sistemaBundle) {
+  // Nome de canal único por instância: com o mesmo nome o supabase-js devolve o
+  // canal já existente e o segundo `.on()` estoura (F34: Escudo + banner na mesma tela).
+  const idCanal = useId().replace(/[^a-zA-Z0-9]/g, '')
   const [cards, setCards] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -460,7 +463,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       if (fid && idsRef.current.has(fid)) recarregarFicha(fid)
     }
     const channel = supabase
-      .channel(`sessao-fichas-${mesaId}`)
+      .channel(`sessao-fichas-${mesaId}-${idCanal}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'fichas', filter: `mesa_id=eq.${mesaId}` }, payload => {
         if (payload.eventType === 'DELETE') {
           const id = payload.old?.id

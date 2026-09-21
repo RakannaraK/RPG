@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useId } from 'react'
 import { useMatch } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -16,6 +16,9 @@ import BandejaDados, { bandejaSuportada } from './BandejaDados'
  * Som: quem rolou já ouviu no clique; os demais ouvem quando o dado cai.
  */
 export default function OuvinteDadosMesa() {
+  // Nome de canal único por instância: com o mesmo nome o supabase-js devolve o
+  // canal já existente e o segundo `.on()` estoura (F34: Escudo + banner na mesma tela).
+  const idCanal = useId().replace(/[^a-zA-Z0-9]/g, '')
   const mesaId = useMatch('/mesa/:id/*')?.params.id
   const { session } = useAuth()
   const { preferencias } = usePreferencias()
@@ -28,7 +31,7 @@ export default function OuvinteDadosMesa() {
   useEffect(() => {
     if (!mesaId || !meuId || !bandejaSuportada) return
     const canal = supabase
-      .channel(`bandeja-${mesaId}`)
+      .channel(`bandeja-${mesaId}-${idCanal}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'rolagens', filter: `mesa_id=eq.${mesaId}` }, ({ new: r }) => {
         const p = preferenciasRef.current
         const lancamento = lancamentoDeRolagem(r, { meuId, preferencia: p.dados_mesa })
