@@ -60,6 +60,8 @@ function CondicaoForm({ onAplicar, onFechar }) {
   const [nome, setNome] = useState('')
   const [dur, setDur] = useState('')
   const [caMod, setCaMod] = useState('')
+  const [porRodada, setPorRodada] = useState('') // F32.3 — dano/cura por rodada (valor ou notação)
+  const [tipoRodada, setTipoRodada] = useState('dano')
   const [busy, setBusy] = useState(false)
   const inputCls = 'px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-500'
 
@@ -70,7 +72,12 @@ function CondicaoForm({ onAplicar, onFechar }) {
       const modificadorConfig = caMod !== '' && Number(caMod) !== 0
         ? { tipo: 'combate', alvo: 'ca', valor: Number(caMod) }
         : null
-      await onAplicar({ nome, duracaoRodadas: dur, modificadorConfig })
+      // F32.3 — "1d4" rola a cada rodada; "3" é fixo
+      const bruto = porRodada.trim()
+      const efeitoTurno = bruto
+        ? { tipo: tipoRodada, ...(/^\d+$/.test(bruto) ? { valor: Number(bruto) } : { notacao: bruto }) }
+        : null
+      await onAplicar({ nome, duracaoRodadas: dur, modificadorConfig, efeitoTurno })
       onFechar()
     } finally { setBusy(false) }
   }
@@ -86,8 +93,67 @@ function CondicaoForm({ onAplicar, onFechar }) {
         CA
         <input value={caMod} onChange={e => setCaMod(e.target.value)} type="number" placeholder="0" className={`${inputCls} w-14`} title="Efeito na CA (ex: -2)" />
       </label>
+      <label className="text-purple-400 text-[11px] flex items-center gap-1">
+        Por rodada
+        <select value={tipoRodada} onChange={e => setTipoRodada(e.target.value)} className={`${inputCls} w-20`} title="Dano ou cura no começo do turno de quem carrega a condição">
+          <option value="dano">dano</option>
+          <option value="cura">cura</option>
+        </select>
+        <input value={porRodada} onChange={e => setPorRodada(e.target.value)} placeholder="1d4 ou 3" className={`${inputCls} w-20`} title="Vazio = sem efeito por rodada" />
+      </label>
       <button onClick={submit} disabled={busy || !nome.trim()} className="px-2 py-1 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors">Aplicar</button>
       <button onClick={onFechar} className="px-2 py-1 text-purple-400 hover:text-white text-xs transition-colors">Cancelar</button>
+    </div>
+  )
+}
+
+/**
+ * F32.4 — banco de reservas: quem está fora da ordem de turnos. O mestre troca
+ * (o suplente herda o lugar na iniciativa) ou traz de volta sem trocar.
+ */
+function PainelReserva({ reserva, emJogo, isMestre, onTrocar, onDefinirReserva }) {
+  const [escolha, setEscolha] = useState({})
+  const [erro, setErro] = useState('')
+  if (reserva.length === 0) return null
+  return (
+    <div className="rounded-xl border border-purple-900/70 bg-slate-900/50 p-2.5 space-y-1.5">
+      <p className="text-purple-300 text-xs font-semibold uppercase tracking-wider">Reserva ({reserva.length})</p>
+      {reserva.map(c => (
+        <div key={c.id} className="flex flex-wrap items-center gap-2">
+          <span className="text-purple-200 text-sm flex-1 min-w-[6rem] truncate">
+            {c.nome}
+            {c.hp_maximo != null && <span className="text-purple-500 text-xs"> · {c.hp_atual ?? '?'}/{c.hp_maximo}</span>}
+          </span>
+          {isMestre && (
+            <>
+              <select
+                value={escolha[c.id] || ''}
+                onChange={e => setEscolha(prev => ({ ...prev, [c.id]: e.target.value }))}
+                className="px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs"
+                aria-label={`Trocar ${c.nome} por`}
+              >
+                <option value="">entra no lugar de…</option>
+                {emJogo.map(x => <option key={x.id} value={x.id}>{x.nome}</option>)}
+              </select>
+              <button
+                type="button"
+                onClick={async () => {
+                  setErro('')
+                  try { await onTrocar(escolha[c.id], c.id) } catch (e) { setErro(e.message) }
+                }}
+                disabled={!escolha[c.id]}
+                className="px-2 py-1 bg-purple-700 hover:bg-purple-600 disabled:opacity-40 text-white text-xs rounded-lg transition-colors"
+              >⇄ Trocar</button>
+              <button
+                type="button" onClick={() => onDefinirReserva(c.id, false)}
+                className="px-2 py-1 text-purple-300 hover:text-white text-xs"
+                title="Entrar sem trocar (vai para o fim da ordem até rolar iniciativa)"
+              >Entrar</button>
+            </>
+          )}
+        </div>
+      ))}
+      {erro && <p className="text-red-400 text-xs">{erro}</p>}
     </div>
   )
 }
@@ -147,6 +213,7 @@ function CombatenteRow({
   // F22.6 — defesa ativa
   defesaAtiva = null, atributosSistema = [], souDefensor = false,
   mesaId, sessaoId, onPedirDefesa, onResponderDefesa, onResolverDefesa, onCancelarDefesa,
+  onDefinirReserva = null, // F32.4
   // 24.2 — dano/cura por MARCAS quando a ficha tem trilha que substitui a vida
   onMarcarTrilha, onCurarTrilha,
 }) {
@@ -242,6 +309,13 @@ function CombatenteRow({
             <button onClick={() => onMover(c.id, -1)} disabled={!podeSubir} className="text-purple-500 hover:text-white disabled:opacity-20 transition-colors text-[10px]" title="Subir (desempate)">▲</button>
             <button onClick={() => onMover(c.id, +1)} disabled={!podeDescer} className="text-purple-500 hover:text-white disabled:opacity-20 transition-colors text-[10px]" title="Descer (desempate)">▼</button>
           </div>
+        )}
+        {isMestre && onDefinirReserva && (
+          <button
+            onClick={() => onDefinirReserva(c.id, true)}
+            className="text-purple-500 hover:text-white transition-colors shrink-0 text-xs"
+            title="Mandar para a reserva (sai da ordem de turnos, sem perder nada)"
+          >⇣</button>
         )}
         {isMestre && (
           <button onClick={() => onRemover(c.id)} className="text-red-800 hover:text-red-500 transition-colors shrink-0 text-sm" title="Remover do combate">✕</button>
@@ -434,6 +508,7 @@ export default function CombatePanel({
   onAdicionarJogadores,
   onAdicionarInimigos,
   acoesBestiario = null, // F31.2
+  onTrocarReserva, onDefinirReserva, // F32.4
   onRemoverCombatente,
   onRolarIniciativa,
   onRolarIniciativaTodos,
@@ -505,7 +580,8 @@ export default function CombatePanel({
   const ausentes = fichasSessao.filter(f => !combatentes.some(c => c.ficha_id === f.id))
 
   // Ordem de iniciativa + combatente ativo (turno_atual é índice nessa ordem)
-  const ordenados = ordenarPorIniciativa(combatentes)
+  const ordenados = ordenarPorIniciativa(combatentes) // F32.4 — já ignora a reserva
+  const naReservaLista = combatentes.filter(c => c.reserva)
   const turnoIdx = ordenados.length ? Math.min(Math.max(0, encontro.turno_atual ?? 0), ordenados.length - 1) : 0
   const ativo = ordenados[turnoIdx] || null
 
@@ -641,8 +717,19 @@ export default function CombatePanel({
               onCancelarDefesa={onCancelarDefesa}
               onMarcarTrilha={onMarcarTrilha}
               onCurarTrilha={onCurarTrilha}
+              onDefinirReserva={onDefinirReserva}
             />
           ))}
+          {/* F32.4 — banco de reservas */}
+          {onTrocarReserva && (
+            <PainelReserva
+              reserva={naReservaLista}
+              emJogo={ordenados}
+              isMestre={isMestre}
+              onTrocar={onTrocarReserva}
+              onDefinirReserva={onDefinirReserva}
+            />
+          )}
         </div>
       )}
 

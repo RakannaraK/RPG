@@ -6,6 +6,7 @@ import { useUpdateFicha } from '../hooks/useFicha'
 import { usePresencaSessao } from '../hooks/usePresencaSessao'
 import { useCardsDaMesa } from '../hooks/useSessaoFichas'
 import { useAvancarTurno } from '../hooks/useAvancarTurno'
+import { useAplicarHp } from '../hooks/useAplicarHp'
 import { useEncontro } from '../hooks/useEncontro'
 import { useRolagem } from '../hooks/useRolagem'
 import { calcularDescanso } from '../lib/restEngine'
@@ -56,9 +57,14 @@ export default function SessaoPage() {
   const encontroApi = useEncontro(sessaoId, mesaId)
   const { registrarRolagem, registrarEvento } = useRolagem()
   const { updateFicha } = useUpdateFicha()
-  // 14.4 + 20.5 — próximo turno com expiração de condições e custo por turno
-  // (extraído na 26.5 para o mapa avançar turno do mesmo jeito)
-  const { proximoTurno: handleProximoTurno, avisoTurno, setAvisoTurno } = useAvancarTurno({ encontroApi, cards, mesaId, sessaoId })
+  // Aplica dano (delta<0) ou cura (delta>0) a um combatente (14.5); jogador → HP
+  // da ficha (vida temp consumida antes), inimigo → HP do combatente. F32.3: é
+  // um hook, porque a virada de turno (aqui e no mapa) aplica efeito contínuo.
+  const handleAplicarHp = useAplicarHp({ cards, encontroApi, mesaId, sessaoId })
+
+  // 14.4 + 20.5 + 32.3 — próximo turno com expiração de condições, custo por
+  // turno, recarga/ultimate e dano/cura contínuos (extraído na 26.5 p/ o mapa)
+  const { proximoTurno: handleProximoTurno, avisoTurno, setAvisoTurno } = useAvancarTurno({ encontroApi, cards, mesaId, sessaoId, aplicarHp: handleAplicarHp })
 
   // Iniciativa (14.2): 1d{padrão} + campo de combate cujo nome contenha "inici"
   const dadoPadrao = sistema?.config_layout?.dado_padrao || 20
@@ -93,47 +99,6 @@ export default function SessaoPage() {
   // Ordem de iniciativa dos combatentes (mesma dos turnos). Usada p/ achar quem
   // age agora (custo por turno 20.5; atacante da defesa ativa 22.6).
   const ordemIniciativa = () => ordenarPorIniciativa(encontroApi.combatentes)
-
-  // Aplica dano (delta<0) ou cura (delta>0) a um combatente (14.5).
-  // Jogador → HP da ficha (vida temp consumida antes); inimigo → HP do combatente.
-  // rotuloCustom (22.6) substitui a narração padrão do feed, se informado.
-  async function handleAplicarHp(c, delta, rotuloCustom = null) {
-    if (!delta) return
-    try {
-      if (c.ficha_id) {
-        const card = cards.find(cd => cd.id === c.ficha_id)
-        if (!card) return
-        const max = card.hpMax || card.hpMaxBase || 0
-        let hp = card.hpAtual ?? 0
-        if (delta < 0) {
-          let dano = -delta
-          let temp = card.ficha?.vida_temp_atual ?? 0
-          const patch = {}
-          if (temp > 0) {
-            const consumido = Math.min(temp, dano)
-            temp -= consumido; dano -= consumido
-            patch.vida_temp_atual = temp
-          }
-          patch.hp_atual = hp - dano
-          await updateFicha(c.ficha_id, patch)
-        } else {
-          await updateFicha(c.ficha_id, { hp_atual: max > 0 ? Math.min(max, hp + delta) : hp + delta })
-        }
-      } else {
-        let hp = c.hp_atual ?? 0
-        const max = c.hp_maximo
-        const novo = delta > 0 && max != null ? Math.min(max, hp + delta) : hp + delta
-        await encontroApi.atualizarCombatente(c.id, { hp_atual: novo })
-      }
-      await registrarEvento({
-        mesaId, sessaoId, fichaId: c.ficha_id || null,
-        rotulo: rotuloCustom || `${c.nome} ${delta < 0 ? `sofreu ${-delta} de dano` : `recuperou ${delta} de vida`}`,
-        notacao: '', total: Math.abs(delta), dados: [],
-      })
-    } catch {
-      // silenciado — sem permissão (RLS) ou falha de rede não deve quebrar a UI
-    }
-  }
 
   // ---- Defesa ativa (22.6) — fluxo assíncrono no combate ----
   // O mestre PEDE a defesa: grava o pedido no combatente-alvo (Realtime). O
@@ -511,6 +476,11 @@ export default function SessaoPage() {
             onEncerrar={encontroApi.encerrarCombate}
             onAdicionarJogadores={encontroApi.adicionarJogadores}
             onAdicionarInimigos={encontroApi.adicionarInimigos}
+            onTrocarReserva={async (saiId, entraId) => {
+              const narracao = await encontroApi.trocarReserva(saiId, entraId)
+              await registrarEvento({ mesaId, sessaoId, rotulo: `⇄ ${narracao}`, notacao: '', total: 0, dados: [] })
+            }}
+            onDefinirReserva={encontroApi.definirReserva}
             acoesBestiario={
               <InvocarBestiario
                 mesaId={mesaId} meuId={session?.user?.id} isGestor={isMestre}

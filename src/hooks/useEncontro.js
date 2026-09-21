@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { planejarTroca } from '../lib/combateAvancado'
 import { supabase } from '../lib/supabase'
 
 /**
@@ -191,7 +192,7 @@ export function useEncontro(sessaoId, mesaId) {
   // A matemática só usa a QUANTIDADE de combatentes; a ordem importa só p/ o destaque.
   async function avancarTurno(dir) {
     if (!encontro) return
-    const n = combatentes.length
+    const n = combatentes.filter(c => !c.reserva).length // F32.4 — reserva não tem turno
     if (n === 0) return
     let turno = encontro.turno_atual ?? 0
     let rodada = encontro.rodada ?? 1
@@ -233,6 +234,27 @@ export function useEncontro(sessaoId, mesaId) {
   const proximoTurno = () => avancarTurno(+1)
   const turnoAnterior = () => avancarTurno(-1)
 
+  // F32.4 — troca: o suplente entra no lugar do titular, herdando a iniciativa
+  async function trocarReserva(saiId, entraId) {
+    const { patches, narracao } = planejarTroca(combatentes, saiId, entraId)
+    for (const { id, ...campos } of patches) {
+      const { error: err } = await supabase.from('combatentes').update(campos).eq('id', id)
+      if (err) throw err
+    }
+    setCombatentes(prev => prev.map(c => {
+      const p = patches.find(x => x.id === c.id)
+      return p ? { ...c, ...p } : c
+    }))
+    return narracao
+  }
+
+  /** Manda alguém para o banco (ou traz de volta) sem trocar com ninguém. */
+  async function definirReserva(id, reserva) {
+    const { error: err } = await supabase.from('combatentes').update({ reserva }).eq('id', id)
+    if (err) throw err
+    setCombatentes(prev => prev.map(c => (c.id === id ? { ...c, reserva } : c)))
+  }
+
   async function removerCombatente(id) {
     const { error: err } = await supabase.from('combatentes').delete().eq('id', id)
     if (err) throw err
@@ -256,7 +278,7 @@ export function useEncontro(sessaoId, mesaId) {
   }
 
   // ---- Condições ativas (14.4) ----
-  async function aplicarCondicao(combatenteId, { nome, descricao, duracaoRodadas, modificadorConfig }) {
+  async function aplicarCondicao(combatenteId, { nome, descricao, duracaoRodadas, modificadorConfig, efeitoTurno = null }) {
     const payload = {
       combatente_id: combatenteId,
       nome: (nome || '').trim() || 'Condição',
@@ -264,6 +286,7 @@ export function useEncontro(sessaoId, mesaId) {
       duracao_rodadas: duracaoRodadas !== '' && duracaoRodadas != null ? Number(duracaoRodadas) : null,
       rodada_inicio: encontro?.rodada ?? 1,
       modificador_config: modificadorConfig || null,
+      efeito_turno: efeitoTurno || null, // F32.3 — dano/cura por rodada
     }
     const { data, error: err } = await supabase.from('condicoes_ativas').insert(payload).select().single()
     if (err) throw err
@@ -284,5 +307,6 @@ export function useEncontro(sessaoId, mesaId) {
     adicionarJogadores, adicionarInimigos, adicionarCombatentes, removerCombatente, atualizarCombatente,
     proximoTurno, turnoAnterior, reordenar,
     aplicarCondicao, removerCondicao,
+    trocarReserva, definirReserva,
   }
 }

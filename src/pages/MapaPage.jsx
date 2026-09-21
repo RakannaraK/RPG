@@ -9,6 +9,7 @@ import { useCardsDaMesa } from '../hooks/useSessaoFichas'
 import { useSessoes } from '../hooks/useSessoes'
 import { useEncontro } from '../hooks/useEncontro'
 import { useAvancarTurno } from '../hooks/useAvancarTurno'
+import { useAplicarHp } from '../hooks/useAplicarHp'
 import { ordenarPorIniciativa } from '../lib/iniciativa'
 import { adicionarOpNevoa, espalhar, normalizarGrade, normalizarNevoa, tokenVisivelParaJogador } from '../lib/mapaEngine'
 import MapaVisor from '../components/mapa/MapaVisor'
@@ -133,7 +134,9 @@ export default function MapaPage() {
   const { sessaoAtiva } = useSessoes(mesaId)
   const encontroApi = useEncontro(sessaoAtiva?.id, mesaId)
   const { encontro, combatentes } = encontroApi
-  const turno = useAvancarTurno({ encontroApi, cards, mesaId, sessaoId: sessaoAtiva?.id })
+  // F32.3 — avançar turno pelo mapa aplica os mesmos efeitos da sessão
+  const aplicarHp = useAplicarHp({ cards, encontroApi, mesaId, sessaoId: sessaoAtiva?.id })
+  const turno = useAvancarTurno({ encontroApi, cards, mesaId, sessaoId: sessaoAtiva?.id, aplicarHp })
   const tokensApi = useTokensMapa(cena?.id, mesaId)
   const desenhosApi = useDesenhosMapa(cena?.id)
 
