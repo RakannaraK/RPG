@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { estadoDaHabilidade } from '../../../lib/combateAvancado'
+import { midiaEhSom } from '../../../lib/personalizacao'
+import { tocarSomProprio } from '../../../audio/somProprio'
 import { custosDeTurno, descreverCustoTurno } from '../../../lib/custoHabilidade'
 
 function Toggle({ ativa, onChange }) {
@@ -100,6 +102,22 @@ function EstadoCombate({ hf, isDono, onUsar, onAjustarCarga, onLiberarRecarga })
       )}
     </div>
   )
+}
+
+/** F35.4 — mídia da habilidade: miniatura (imagem) ou botão de ouvir (som). */
+function MidiaHabilidade({ hab, volume }) {
+  const url = hab?.midia_url
+  if (!url) return null
+  if (midiaEhSom(url)) {
+    return (
+      <button
+        type="button" onClick={() => tocarSomProprio(url, { volume })}
+        className="text-xs px-2 py-1 rounded-lg bg-hover text-ink hover:bg-border transition-colors"
+        title="Ouvir o som desta habilidade"
+      >🔊 som</button>
+    )
+  }
+  return <img src={url} alt="" className="w-10 h-10 rounded-lg object-cover border border-border shrink-0" />
 }
 
 function OrigemBadge({ origem }) {
@@ -293,6 +311,7 @@ export default function PainelHabilidades({
   habilidadesBloqueadas = [], // 19.5 — visíveis, mas inativas até o nível
   poolsPorId = {}, onPagarTurno, // 20.5
   onUsarHabilidade, onAjustarCarga, onLiberarRecarga, // F32.2
+  volumeSom = 0.6, // F35.4 — volume do som da habilidade
 }) {
   const [pagando, setPagando] = useState(false)
   const [selecionada, setSelecionada] = useState('')
@@ -419,6 +438,7 @@ export default function PainelHabilidades({
                     />
                     <AcoesPontuais hf={hf} onUsarAcao={onUsarAcao} isDono={isDono} />
                     <EstadoCombate hf={hf} isDono={isDono} onUsar={onUsarHabilidade} onAjustarCarga={onAjustarCarga} onLiberarRecarga={onLiberarRecarga} />
+                    <div className="mt-2"><MidiaHabilidade hab={hab} volume={volumeSom} /></div>
                   </div>
                   {isDono && hf.origem === 'manual' && (
                     <button
@@ -463,6 +483,7 @@ export default function PainelHabilidades({
                     />
                     <AcoesPontuais hf={hf} onUsarAcao={onUsarAcao} isDono={isDono} />
                     <EstadoCombate hf={hf} isDono={isDono} onUsar={onUsarHabilidade} onAjustarCarga={onAjustarCarga} onLiberarRecarga={onLiberarRecarga} />
+                    <div className="mt-2"><MidiaHabilidade hab={hab} volume={volumeSom} /></div>
                   </div>
                   {isDono && hf.origem === 'manual' && (
                     <button

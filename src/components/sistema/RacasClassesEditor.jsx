@@ -550,6 +550,7 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
   const [editSomPreset, setEditSomPreset] = useState('') // FV.5a
   const [editRecarga, setEditRecarga] = useState('')       // F32.2
   const [editRequer, setEditRequer] = useState('')         // F33.3 — pré-requisito
+  const [editMidia, setEditMidia] = useState('')           // F35.4 — imagem/som
   const [editCargaMax, setEditCargaMax] = useState('')
   const [editCargaRodada, setEditCargaRodada] = useState('')
   const [salvando, setSalvando] = useState(false)
@@ -574,6 +575,7 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
         // F32.2 — vazio = sem recarga / não é ultimate
         recarga_turnos: editRecarga === '' ? null : Math.max(0, Number(editRecarga) || 0),
         requer_habilidade_id: editRequer || null, // F33.3
+        midia_url: editMidia, // F35.4
         carga_max: editCargaMax === '' ? null : Math.max(1, Number(editCargaMax) || 1),
         carga_por_rodada: editCargaRodada === '' ? null : Math.max(0, Number(editCargaRodada) || 0),
       })
@@ -602,6 +604,7 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
     setEditSomPreset(habilidade.som_preset || '')
     setEditRecarga(habilidade.recarga_turnos != null ? String(habilidade.recarga_turnos) : '')
     setEditRequer(habilidade.requer_habilidade_id || '')
+    setEditMidia(habilidade.midia_url || '')
     setEditCargaMax(habilidade.carga_max != null ? String(habilidade.carga_max) : '')
     setEditCargaRodada(habilidade.carga_por_rodada != null ? String(habilidade.carga_por_rodada) : '')
     setErro(''); setEditando(true)
@@ -669,6 +672,13 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
                   )}
                 </>
               )}
+              {/* F35.4 — imagem ou som da habilidade (link) */}
+              <div>
+                <p className="text-purple-400 text-xs mb-1">Imagem ou som (link)</p>
+                <input type="text" value={editMidia} onChange={e => setEditMidia(e.target.value)}
+                  placeholder="https://… .png ou .mp3" className={`${SEL} w-52`}
+                  title="Aparece na ficha; se for áudio, toca ao usar a habilidade." />
+              </div>
               {/* F33.3 — pré-requisito: outra habilidade (monta a árvore) */}
               <div>
                 <p className="text-purple-400 text-xs mb-1">Exige a habilidade</p>

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
+import { atributosDeAparencia } from '../lib/personalizacao'
 
 // Preferências visuais/sonoras do usuário, persistidas em profiles.preferencias (JSONB).
 const PADRAO = {
@@ -9,6 +10,8 @@ const PADRAO = {
   som_acao_ativo: true, som_acao_volume: 0.6,
   // F27 — bandeja de dados: 'todos' | 'meus' | 'nenhum'
   dados_mesa: 'todos',
+  // F35 — aparência e som de crítico próprio
+  tema: 'violeta', fonte: 'padrao', som_critico_url: null,
 }
 
 const PreferenciasContext = createContext(null)
@@ -20,6 +23,15 @@ export function PreferenciasProvider({ children }) {
 
   const prefsRef = useRef(preferencias)
   useEffect(() => { prefsRef.current = preferencias }, [preferencias])
+
+  // F35 — tema e fonte no <html>: valem no site todo, só para quem escolheu
+  useEffect(() => {
+    const atributos = atributosDeAparencia(preferencias)
+    for (const [attr, valor] of Object.entries(atributos)) {
+      if (valor) document.documentElement.setAttribute(attr, valor)
+      else document.documentElement.removeAttribute(attr)
+    }
+  }, [preferencias])
 
   // Carrega ao iniciar / trocar de usuário
   useEffect(() => {

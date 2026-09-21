@@ -1,0 +1,124 @@
+import { useRef, useState } from 'react'
+import { supabase } from '../../lib/supabase'
+import { usePreferencias } from '../../context/PreferenciasContext'
+import { useAuth } from '../../context/AuthContext'
+import { FONTES, LIMITE_SOM, TEMAS, extensaoDoSom, validarSom } from '../../lib/personalizacao'
+
+const BUCKET = 'ficha-imagens' // mesmo bucket das imagens: pasta do próprio usuário
+
+/** Lê a duração do áudio no navegador (o teto é de 15 s). */
+function duracaoDoArquivo(arquivo) {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(arquivo)
+    const audio = new Audio()
+    audio.preload = 'metadata'
+    audio.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(Number.isFinite(audio.duration) ? audio.duration : null) }
+    audio.onerror = () => { URL.revokeObjectURL(url); resolve(null) }
+    audio.src = url
+  })
+}
+
+/**
+ * Fase 35.2 + 35.3 — aparência (tema e fonte) e som de crítico próprio.
+ * Tudo por usuário: ninguém mexe no que os outros veem/ouvem.
+ */
+export default function Aparencia() {
+  const { preferencias, salvarPreferencias } = usePreferencias()
+  const { session } = useAuth()
+  const inputRef = useRef(null)
+  const [enviando, setEnviando] = useState(false)
+  const [erro, setErro] = useState('')
+
+  const tema = preferencias.tema || 'violeta'
+  const fonte = preferencias.fonte || 'padrao'
+  const somCritico = preferencias.som_critico_url || null
+
+  async function enviarSom(e) {
+    const arquivo = e.target.files?.[0]
+    e.target.value = ''
+    if (!arquivo) return
+    setErro('')
+    const duracao = await duracaoDoArquivo(arquivo)
+    const checagem = validarSom(arquivo, duracao)
+    if (!checagem.ok) { setErro(checagem.erro); return }
+    setEnviando(true)
+    try {
+      const caminho = `${session.user.id}/sons/critico-${Date.now()}.${extensaoDoSom(arquivo)}`
+      const { error } = await supabase.storage.from(BUCKET).upload(caminho, arquivo, { upsert: true, contentType: arquivo.type })
+      if (error) throw new Error(error.message)
+      const { data } = supabase.storage.from(BUCKET).getPublicUrl(caminho)
+      await salvarPreferencias({ som_critico_url: data.publicUrl })
+    } catch (err) {
+      setErro(err.message || 'Não foi possível enviar o som.')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  function ouvir() {
+    if (!somCritico) return
+    const audio = new Audio(somCritico)
+    audio.volume = preferencias.som_acao_volume ?? 0.6
+    audio.play().catch(() => setErro('O navegador bloqueou o som; clique de novo.'))
+  }
+
+  return (
+    <div className="space-y-4 border-t border-purple-900 pt-5">
+      <div>
+        <p className="text-sm font-medium text-purple-200">Aparência</p>
+        <p className="text-xs text-purple-400">Vale só para você, no site todo.</p>
+      </div>
+
+      <div>
+        <p className="text-xs text-purple-400 mb-1.5">Cor do tema</p>
+        <div className="flex flex-wrap gap-2">
+          {TEMAS.map(t => (
+            <button
+              key={t.id} type="button" onClick={() => salvarPreferencias({ tema: t.id })}
+              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs transition-colors ${
+                tema === t.id ? 'border-purple-400 bg-purple-900/40 text-white' : 'border-purple-800 text-purple-300 hover:border-purple-600'
+              }`}
+            >
+              <span className="w-3.5 h-3.5 rounded-full border border-white/25" style={{ background: t.amostra }} />
+              {t.nome}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <label className="block">
+        <span className="text-xs text-purple-400">Fonte</span>
+        <select
+          value={fonte} onChange={e => salvarPreferencias({ fonte: e.target.value })}
+          className="mt-1 w-full px-2 py-1.5 rounded-lg bg-slate-900 border border-purple-800 text-white text-sm"
+        >
+          {FONTES.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+        </select>
+      </label>
+
+      <div className="space-y-1.5">
+        <p className="text-xs text-purple-400">
+          Som de crítico próprio (até {LIMITE_SOM.segundos} s e {(LIMITE_SOM.bytes / 1_000_000).toFixed(1)} MB)
+        </p>
+        <input ref={inputRef} type="file" accept="audio/*" onChange={enviarSom} className="hidden" />
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button" onClick={() => inputRef.current?.click()} disabled={enviando}
+            className="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white text-sm"
+          >{enviando ? 'Enviando…' : somCritico ? 'Trocar som' : 'Enviar som'}</button>
+          {somCritico && (
+            <>
+              <button type="button" onClick={ouvir} className="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm">🔊 Ouvir</button>
+              <button
+                type="button" onClick={() => salvarPreferencias({ som_critico_url: null })}
+                className="px-2 py-1.5 text-red-400 hover:text-red-300 text-sm"
+              >Remover</button>
+            </>
+          )}
+        </div>
+        {somCritico && <p className="text-purple-500 text-[11px]">Toca no lugar do som padrão quando sai um crítico.</p>}
+        {erro && <p className="text-red-400 text-xs">{erro}</p>}
+      </div>
+    </div>
+  )
+}

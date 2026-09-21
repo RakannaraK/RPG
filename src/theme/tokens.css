@@ -23,3 +23,70 @@
   --harm: #F87171;  /* dano, botch */
   --temp: #60A5FA;  /* vida temporária, escudos */
 }
+
+/* ── Fase 35 — temas: mexem só no ACENTO (o contraste do texto fica igual) ── */
+:root[data-tema="esmeralda"] {
+  --accent-300: #6EE7B7; --accent-400: #34D399; --accent-500: #10B981;
+  --accent-600: #059669; --accent-700: #047857; --accent-800: #065F46;
+}
+:root[data-tema="carmim"] {
+  --accent-300: #FDA4AF; --accent-400: #FB7185; --accent-500: #F43F5E;
+  --accent-600: #E11D48; --accent-700: #BE123C; --accent-800: #9F1239;
+}
+:root[data-tema="ambar"] {
+  --accent-300: #FCD34D; --accent-400: #FBBF24; --accent-500: #F59E0B;
+  --accent-600: #D97706; --accent-700: #B45309; --accent-800: #92400E;
+}
+:root[data-tema="gelo"] {
+  --accent-300: #7DD3FC; --accent-400: #38BDF8; --accent-500: #0EA5E9;
+  --accent-600: #0284C7; --accent-700: #0369A1; --accent-800: #075985;
+}
+
+/* ── Fase 35 — fontes ───────────────────────────────────────────────────── */
+:root[data-fonte="serifada"] body { font-family: Georgia, 'Times New Roman', serif; }
+:root[data-fonte="mono"] body { font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; }
+:root[data-fonte="facil"] body {
+  font-family: Verdana, Tahoma, sans-serif;
+  letter-spacing: .02em;
+  line-height: 1.7;
+  word-spacing: .08em;
+}
+
+/* ── Fase 35 — o tema também pega nas telas antigas ─────────────────────────
+   Parte do site nasceu com as classes fixas `purple-*` (antes dos tokens).
+   Com um tema escolhido, essas classes passam a usar o acento do tema, para a
+   cor valer no site todo em vez de só nas telas novas. Só cor: nada de layout.
+   ponytail: lista das classes realmente usadas; se aparecer um tom novo, é uma
+   linha a mais aqui. */
+:root[data-tema] {
+  .bg-purple-600  { background-color: var(--accent-600) !important; }
+  .bg-purple-700  { background-color: var(--accent-700) !important; }
+  .bg-purple-800  { background-color: var(--accent-800) !important; }
+  .bg-purple-900  { background-color: color-mix(in srgb, var(--accent-800) 55%, #000) !important; }
+  .bg-purple-950  { background-color: color-mix(in srgb, var(--accent-800) 25%, #000) !important; }
+  .hover\:bg-purple-500:hover { background-color: var(--accent-500) !important; }
+  .hover\:bg-purple-600:hover { background-color: var(--accent-600) !important; }
+  .hover\:bg-purple-700:hover { background-color: var(--accent-700) !important; }
+
+  .text-purple-100, .text-purple-200 { color: var(--accent-300) !important; }
+  .text-purple-300 { color: var(--accent-400) !important; }
+  .text-purple-400 { color: color-mix(in srgb, var(--accent-400) 75%, #fff 0%) !important; }
+  .text-purple-500, .text-purple-600 { color: color-mix(in srgb, var(--accent-500) 70%, #000) !important; }
+  .hover\:text-purple-200:hover { color: var(--accent-300) !important; }
+
+  .border-purple-600 { border-color: var(--accent-600) !important; }
+  .border-purple-700 { border-color: var(--accent-700) !important; }
+  .border-purple-800 { border-color: var(--accent-800) !important; }
+  .border-purple-900 { border-color: color-mix(in srgb, var(--accent-800) 55%, #000) !important; }
+  .hover\:border-purple-600:hover { border-color: var(--accent-600) !important; }
+  .focus\:ring-purple-500:focus { --tw-ring-color: var(--accent-500) !important; }
+
+  .accent-purple-500 { accent-color: var(--accent-500) !important; }
+
+  /* fundo das páginas e destaque da aba ativa */
+  .from-purple-950 { --tw-gradient-from: color-mix(in srgb, var(--accent-800) 30%, #000) !important; }
+  .from-purple-900 { --tw-gradient-from: color-mix(in srgb, var(--accent-800) 45%, #000) !important; }
+  .border-purple-500 { border-color: var(--accent-500) !important; }
+  .bg-purple-500 { background-color: var(--accent-500) !important; }
+  .ring-purple-500 { --tw-ring-color: var(--accent-500) !important; }
+}

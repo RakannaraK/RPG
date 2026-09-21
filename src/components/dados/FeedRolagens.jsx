@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import { playDiceNotify } from '../../lib/diceSound'
+import { tocarSomProprio } from '../../audio/somProprio'
 import { descreverResultado } from '../../lib/resolutionEngine'
 import { tocarSomAcao } from '../../audio/actionSynth'
 import { deveMostrar } from '../../lib/bandejaDados'
@@ -253,6 +254,11 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
             // eventos de rajada de reconexão (>5s de idade) e respeita o mudo.
             const idadeMs = Date.now() - new Date(payload.new.created_at).getTime()
             if (idadeMs <= 5000) {
+              // F35.3 — crítico com som enviado pelo usuário: toca o dele
+              const p0 = preferenciasRef.current
+              if (payload.new.critico && p0.som_critico_url && p0.som_acao_ativo !== false) {
+                setTimeout(() => tocarSomProprio(p0.som_critico_url, { volume: p0.som_acao_volume ?? 0.6 }), 1400)
+              }
               const som = payload.new.resultados?.som
               if (som) {
                 setTimeout(() => {

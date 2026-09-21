@@ -65,6 +65,9 @@ import PainelImagens from '../components/ficha/layout/PainelImagens'
 import AbasCentrais from '../components/ficha/layout/AbasCentrais'
 import { resolveActionSound } from '../engines/actionSoundEngine'
 import { podeEditarFicha } from '../lib/permissoesFicha'
+import { usePreferencias } from '../context/PreferenciasContext'
+import { midiaEhSom } from '../lib/personalizacao'
+import { tocarSomProprio } from '../audio/somProprio'
 import AcessoFicha from '../components/ficha/AcessoFicha'
 import BlocoCriatura from '../components/bestiario/BlocoCriatura'
 import PainelFormas from '../components/ficha/PainelFormas'
@@ -81,6 +84,7 @@ export default function FichaPage() {
   const { sistema, pericias: periciasDoSistema, racas, classes, habilidades } = useSistema(mesaId)
   const { updateValorAtributo, updateFicha } = useUpdateFicha()
   const { registrarRolagem, registrarResolvida, registrarEvento } = useRolagem()
+  const { preferencias } = usePreferencias() // F35.4 — volume do som da habilidade
   const {
     habilidadesFicha,
     toggleHabilidade,
@@ -625,6 +629,10 @@ export default function FichaPage() {
     try {
       await usarHabilidade(hf.id)
       const hab = hf.habilidade || {}
+      // F35.4 — som próprio da habilidade, se o mestre pôs um
+      if (hab.midia_url && midiaEhSom(hab.midia_url)) {
+        tocarSomProprio(hab.midia_url, { volume: preferencias.som_acao_volume ?? 0.6 })
+      }
       const detalhe = hab.carga_max ? ' (ultimate!)' : hab.recarga_turnos ? ` — recarrega em ${hab.recarga_turnos} turno${hab.recarga_turnos === 1 ? '' : 's'}` : ''
       await registrarEvento({
         mesaId, fichaId,
@@ -1376,6 +1384,7 @@ export default function FichaPage() {
               onUsarHabilidade={handleUsarHabilidade}
               onAjustarCargaHabilidade={ajustarCargaHabilidade}
               onLiberarRecargaHabilidade={liberarRecargaHabilidade}
+              volumeSomHabilidade={preferencias.som_acao_ativo === false ? 0 : (preferencias.som_acao_volume ?? 0.6)}
               onRecuperarRecursos={recuperarRecursos}
               valoresFinais={valoresFinais}
               modificadoresAtivos={modificadoresAtivos}

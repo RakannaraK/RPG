@@ -66,6 +66,7 @@ export default function AbasCentrais({
   habilidades = [], habilidadesFicha = [],
   onToggleHabilidade, onAdicionarHabilidade, onRemoverHabilidade, onAjustarRecurso, onRecuperarRecursos,
   onUsarHabilidade, onAjustarCargaHabilidade, onLiberarRecargaHabilidade, // F32.2
+  volumeSomHabilidade = 0.6, // F35.4
   valoresFinais = {}, modificadoresAtivos = [], onUsarAcaoHabilidade,
   condicoesManuais = {}, condicoesManuaisDisponiveis = [], onToggleCondicao, nomesAlvos = {},
   habilidadesBloqueadas = [], // 19.5
@@ -187,6 +188,7 @@ export default function AbasCentrais({
             onUsarHabilidade={onUsarHabilidade}
             onAjustarCarga={onAjustarCargaHabilidade}
             onLiberarRecarga={onLiberarRecargaHabilidade}
+            volumeSom={volumeSomHabilidade}
             onRecuperarRecursos={onRecuperarRecursos}
             onUsarAcao={onUsarAcaoHabilidade}
             condicoesManuais={condicoesManuais}

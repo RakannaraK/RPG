@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { faixasDaBarra } from '../../../lib/barraVida'
 import { useUpdateFicha } from '../../../hooks/useFicha'
 import ClassesFicha, { resumoClasses } from './ClassesFicha'
 
@@ -80,7 +81,9 @@ export default function CabecalhoPersonagem({
   // vidaMaxFinal inclui modificadores de raça/classe; hpMaximo é o valor base editável
   const hpMaxBase = Number(hpMaximo || 0)
   const hpMaxDisplay = vidaMaxFinal !== undefined ? vidaMaxFinal : hpMaxBase
-  const hpPercent = hpMaxDisplay > 0 ? Math.min(100, Math.max(0, (hpNum / hpMaxDisplay) * 100)) : 0
+  // F35.4 — mesma barra do overlay/escudo: vida + pedaço de escudo (vida temp)
+  const barra = faixasDaBarra({ atual: hpNum, maximo: hpMaxDisplay, temp: vidaTempEfetiva })
+  const hpPercent = barra.pct
   const hpBaixo = hpPercent > 0 && hpPercent <= 25
   const temModVida = vidaMaxFinal !== undefined && vidaMaxFinal !== hpMaxBase
 
@@ -275,11 +278,15 @@ export default function CabecalhoPersonagem({
             {hpErro && <p className="text-harm text-xs mt-1">{hpErro}</p>}
 
             {hpMaxDisplay > 0 && (
-              <div className="mt-2 h-2.5 bg-void rounded-full overflow-hidden max-w-xs">
+              <div className="mt-2 h-2.5 bg-void rounded-full overflow-hidden max-w-xs flex">
                 <div
-                  className={`h-full rounded-full bg-harm transition-all duration-300 ${hpBaixo ? 'animate-pulse' : ''} ${curando ? 'shadow-[0_0_12px_rgba(52,211,153,.8)]' : ''}`}
+                  className={`h-full bg-harm transition-all duration-300 ${hpBaixo ? 'animate-pulse' : ''} ${curando ? 'shadow-[0_0_12px_rgba(52,211,153,.8)]' : ''}`}
                   style={{ width: `${hpPercent}%` }}
                 />
+                {/* pedaço de escudo: a vida temporária que segura o próximo dano */}
+                {barra.pctTemp > 0 && (
+                  <div className="h-full bg-temp transition-all duration-300" style={{ width: `${barra.pctTemp}%` }} title={`+${vidaTempEfetiva} de vida temporária`} />
+                )}
               </div>
             )}
 

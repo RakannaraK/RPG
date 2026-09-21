@@ -6,6 +6,7 @@ import { tocarSomDado } from '../../lib/diceSounds'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+import Aparencia from './Aparencia'
 
 const SKINS = listarSkins()
 
@@ -189,6 +190,9 @@ export default function PreferenciasModal({ onFechar }) {
               />
             </div>
           </div>
+
+          {/* F35 — tema, fonte e som de crítico próprio */}
+          <Aparencia />
 
           {/* FV.4c — sons de ação (combate), independentes do som de dado acima */}
           <div className="space-y-3 border-t border-purple-900 pt-5">
