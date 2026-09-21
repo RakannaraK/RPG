@@ -65,6 +65,12 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-purple-300 text-sm hidden sm:block">{meuApelido || '—'}</span>
+          {/* F36 — vitrine da comunidade */}
+          <button
+            onClick={() => navigate('/comunidade')}
+            title="Comunidade: fichas, criaturas, sistemas e artes compartilhados"
+            className="p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
+          >🌍</button>
           <Sininho />
           <button
             onClick={() => setShowGuia(true)}

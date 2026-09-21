@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import LoginForm from '../components/auth/LoginForm'
 import RegisterForm from '../components/auth/RegisterForm'
 
@@ -55,6 +56,15 @@ export default function AuthPage() {
             )}
           </div>
         </div>
+
+        {/* F36 — dá para experimentar antes de criar conta */}
+        <p className="text-center mt-5 text-sm text-purple-400">
+          Quer ver antes?{' '}
+          <Link to="/comunidade" className="text-purple-200 underline hover:text-white">
+            Rode um dado e veja o que a comunidade compartilha
+          </Link>{' '}
+          — sem conta.
+        </p>
       </div>
     </div>
   )

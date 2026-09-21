@@ -13,6 +13,7 @@ import DadosTestePage from './pages/DadosTestePage'
 import OuvinteDadosMesa from './components/dados/OuvinteDadosMesa'
 import OuvinteDesafios from './components/minigames/OuvinteDesafios'
 import OverlayPage from './pages/OverlayPage'
+import ComunidadePage from './pages/ComunidadePage'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -102,6 +103,8 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        {/* F36 — comunidade: abre sem login (vitrine em leitura + demo) */}
+        <Route path="/comunidade" element={<ComunidadePage />} />
         {/* F34 — overlay para OBS: sem login, só com o token secreto */}
         <Route path="/overlay/:token" element={<OverlayPage />} />
         <Route path="/teste-dados" element={<DadosTestePage />} />

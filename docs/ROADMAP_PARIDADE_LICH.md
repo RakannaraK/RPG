@@ -35,10 +35,19 @@ sem perder nada do que já existe (retrocompatibilidade total, como em F1–F25)
 | **F33** ✅ | **Transformações** (forma alternativa) + **árvore de habilidades visual** | grande |
 | **F34** ✅ | **Escudo do mestre** + **overlay para OBS** (link secreto) | pequena/média |
 | **F35** ✅ | **Personalização:** som de crítico enviado, temas/fontes, mídia em habilidade, barra com escudo, barra de progressão | média |
-| F36 | Comunidade: galeria de artes, compartilhar fichas/criaturas/sistemas, moderação, página pública com demo sem conta | grande |
+| **F36** ✅ | **Comunidade:** galeria de artes, compartilhar fichas/criaturas/sistemas, moderação, página pública com demo sem conta | grande |
 
 Cada fase ganha sua spec em `docs/FASExx_*.md` antes de ser implementada,
 e é feita em sub-fases com build + testes verdes a cada uma.
 
 Fora do plano até o usuário pedir: doações/planos pagos (o Lich tem PIX e
 tags de doador).
+
+## Roadmap concluído (2026-09-21)
+
+Todas as fases F26–F36 estão implementadas, com SQL rodado, testes verdes e no ar.
+O que o LICHRPG tinha e faltava aqui foi coberto; as limitações dele (quantidade de
+personagens, campanhas, combatentes, barras, ultimates, métodos de rolagem e chave
+paga para cadastrar) continuam **não copiadas**.
+
+Fora do plano até o usuário pedir: doações/planos pagos.
