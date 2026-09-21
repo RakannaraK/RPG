@@ -28,5 +28,16 @@
 ## Restrições
 1. Sem o SQL: tudo segue como antes (nenhuma habilidade tem recarga nem carga; ninguém fica na reserva). 2. Sem limite de ultimates, recargas ou reservas. 3. O motor é puro e testável sem banco. 4. Nada é aplicado sem o mestre avançar o turno (o efeito contínuo não roda sozinho no servidor).
 
+## Como ficou (implementado — 6fe2cf3 … 32.6)
+- **Arquivos:** `lib/combateAvancado.js` (+ testes e `fase32.acceptance.test.js`), `hooks/useAplicarHp.js` (extraído da SessaoPage: a virada de turno no mapa aplica o mesmo), `sql/fase32_combate_avancado.sql` (rodado, 9/9 no banco).
+- **Recarga e ultimate:** no editor de habilidade do sistema (recarga em turnos, carga da ultimate, carga por rodada) e na ficha — botão **⚡ Usar** que bloqueia em recarga ou sem carga cheia, pontinhos de carga com ajuste na mão, link "pronta" para liberar fora de combate, e aviso no feed ao usar.
+- **Virada de turno** (sessão e mapa) agora: expira condições → cobra custo por turno → **baixa a recarga e sobe a carga** (RPC `avancar_turno_ficha`) → **aplica dano/cura contínuos** das condições de quem entra, rolando a notação e mostrando no feed.
+- **Condição com efeito por rodada:** no formulário de condição do combate ("Por rodada: dano/cura, 1d4 ou 3").
+- **Reserva:** ⇣ manda para o banco (sai da ordem de iniciativa sem perder nada); o painel **Reserva** troca o suplente pelo titular (herda a iniciativa) ou o traz sem trocar; a troca vai ao feed.
+- **Habilidade vs habilidade:** ao ser atacado, o defensor pode responder "com habilidade…" — rola a reação, o feed mostra "Escudo Arcano (Aparar)" e a habilidade entra em recarga.
+- **Contra-ataque com rolagem:** opção de reação marcada como contra-ataque rola também o **dano do troco** (`defesa_ativa.contra_ataque.notacao`, novo campo no editor), que vira dano pendente para o mestre aplicar no atacante.
+- **De passagem:** ficha sob ataque com o sistema ainda carregando derrubava a página (config nula) — corrigido.
+- **Limites conhecidos:** o efeito contínuo só roda quando o mestre avança o turno (nada roda sozinho no servidor); a recarga conta turnos do próprio dono no combate; testado sem duas contas reais ao mesmo tempo.
+
 ## Teste de aceitação
 Habilidade com recarga 2: usar bloqueia, passa 1 turno do dono ainda bloqueada, no 2º volta. Ultimate com carga 3 e ganho 1/rodada: só usa na 3ª rodada, e usar zera. Veneno de 1d4 por rodada tira vida no começo do turno do alvo e aparece no feed. Trocar reserva põe o suplente no lugar do titular, com a mesma iniciativa. Defender com uma habilidade da ficha rola a notação dela; contra-ataque abre a rolagem do troco.

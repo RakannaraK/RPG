@@ -11,6 +11,7 @@ import { useEncontro } from '../hooks/useEncontro'
 import { useRolagem } from '../hooks/useRolagem'
 import { calcularDescanso } from '../lib/restEngine'
 import { planejarDefesa } from '../lib/defesaEngine'
+import { aoUsarHabilidade } from '../lib/combateAvancado'
 import { ordenarPorIniciativa } from '../lib/iniciativa'
 import { marcar, curar } from '../lib/trackEngine'
 import PresencaBar from '../components/sessao/PresencaBar'
@@ -481,6 +482,12 @@ export default function SessaoPage() {
               await registrarEvento({ mesaId, sessaoId, rotulo: `⇄ ${narracao}`, notacao: '', total: 0, dados: [] })
             }}
             onDefinirReserva={encontroApi.definirReserva}
+            onUsarHabilidadeReacao={async hf => {
+              // F32.5 — a habilidade usada como reação entra em recarga / gasta a carga
+              const patch = aoUsarHabilidade(hf, hf.habilidade || {})
+              if (Object.keys(patch).length === 0) return
+              await supabase.from('habilidades_ficha').update(patch).eq('id', hf.id)
+            }}
             acoesBestiario={
               <InvocarBestiario
                 mesaId={mesaId} meuId={session?.user?.id} isGestor={isMestre}

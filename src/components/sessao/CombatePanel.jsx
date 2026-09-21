@@ -3,6 +3,7 @@ import AcoesCombate from './AcoesCombate'
 import DefesaAtivaPrompt from './DefesaAtivaPrompt'
 import { MiniTrilha } from './PainelFichas'
 import { ordenarPorIniciativa } from '../../lib/iniciativa'
+import { estadoDaHabilidade } from '../../lib/combateAvancado'
 import { podeEditarFicha } from '../../lib/permissoesFicha'
 
 /**
@@ -104,6 +105,13 @@ function CondicaoForm({ onAplicar, onFechar }) {
       <button onClick={submit} disabled={busy || !nome.trim()} className="px-2 py-1 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors">Aplicar</button>
       <button onClick={onFechar} className="px-2 py-1 text-purple-400 hover:text-white text-xs transition-colors">Cancelar</button>
     </div>
+  )
+}
+
+/** F32.5 — ativáveis da ficha que estão prontas (fora de recarga, carga cheia). */
+function habilidadesProntasDoCard(card) {
+  return (card?.habilidadesFicha || []).filter(hf =>
+    hf.habilidade?.tipo === 'ativavel' && estadoDaHabilidade(hf, hf.habilidade).pronta
   )
 }
 
@@ -214,6 +222,7 @@ function CombatenteRow({
   defesaAtiva = null, atributosSistema = [], souDefensor = false,
   mesaId, sessaoId, onPedirDefesa, onResponderDefesa, onResolverDefesa, onCancelarDefesa,
   onDefinirReserva = null, // F32.4
+  onUsarHabilidadeReacao = null, // F32.5
   // 24.2 — dano/cura por MARCAS quando a ficha tem trilha que substitui a vida
   onMarcarTrilha, onCurarTrilha,
 }) {
@@ -403,6 +412,8 @@ function CombatenteRow({
           mesaId={mesaId}
           sessaoId={sessaoId}
           onResponder={onResponderDefesa}
+          habilidadesProntas={habilidadesProntasDoCard(c.ficha_id ? cardsPorFicha[c.ficha_id] : null)}
+          onUsarHabilidade={onUsarHabilidadeReacao}
         />
       )}
 
@@ -509,6 +520,7 @@ export default function CombatePanel({
   onAdicionarInimigos,
   acoesBestiario = null, // F31.2
   onTrocarReserva, onDefinirReserva, // F32.4
+  onUsarHabilidadeReacao, // F32.5
   onRemoverCombatente,
   onRolarIniciativa,
   onRolarIniciativaTodos,
@@ -718,6 +730,7 @@ export default function CombatePanel({
               onMarcarTrilha={onMarcarTrilha}
               onCurarTrilha={onCurarTrilha}
               onDefinirReserva={onDefinirReserva}
+              onUsarHabilidadeReacao={onUsarHabilidadeReacao}
             />
           ))}
           {/* F32.4 — banco de reservas */}

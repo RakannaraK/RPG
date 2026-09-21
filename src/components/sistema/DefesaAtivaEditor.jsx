@@ -105,6 +105,13 @@ export default function DefesaAtivaEditor({ cfg = {}, onChange }) {
             </div>
             <input type="text" value={contra.condicao?.descricao || ''} onChange={e => setCond({ descricao: e.target.value })}
               placeholder="Descrição da condição (ex: desvantagem no próximo desvio)" className={`${INP} w-full`} />
+            {/* F32.5 — dano do troco: rolado pelo defensor na hora do contra-ataque */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-purple-500 text-[11px]">dano do troco:</span>
+              <input type="text" value={contra.notacao || ''} onChange={e => setContra({ notacao: e.target.value })}
+                placeholder="Ex: 1d6+atributo(Força)" className={`${INP} w-56`}
+                title="O defensor rola isto ao contra-atacar; o resultado vira dano pendente para o mestre aplicar no atacante. Vazio = sem rolagem." />
+            </div>
           </div>
         </>
       )}

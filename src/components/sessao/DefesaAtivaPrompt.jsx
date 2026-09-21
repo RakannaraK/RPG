@@ -11,14 +11,19 @@ import { calcularValoresFinais } from '../../lib/modifierEngine'
  * o mestre resolver a redução. Fallback: valor manual (inimigos sem atributos).
  */
 export default function DefesaAtivaPrompt({
-  combatente, card = null, config = {}, atributosSistema = [],
+  combatente, card = null, config: configProp = null, atributosSistema = [],
   mesaId, sessaoId, onResponder,
+  habilidadesProntas = [], onUsarHabilidade = null, // F32.5 — habilidade vs habilidade
 }) {
+  // O sistema pode ainda estar carregando (config = null): sem isto, uma defesa
+  // pendente derrubava a página.
+  const config = configProp || {}
   const { registrarRolagem, rolando } = useRolagem()
   const [baseAttrs, setBaseAttrs] = useState(null)
   const [erro, setErro] = useState('')
   const [manual, setManual] = useState('')
   const [opcaoManual, setOpcaoManual] = useState('')
+  const [habEscolhida, setHabEscolhida] = useState('') // F32.5
   const [busy, setBusy] = useState(false)
 
   const opcoes = config.opcoes || []
@@ -52,7 +57,24 @@ export default function DefesaAtivaPrompt({
     return { ...(card?.custosTurno?.contexto || {}), atributos }
   }
 
-  async function reagir(opcao) {
+  /**
+   * F32.5 — contra-ataque com rolagem: o defensor rola o dano do troco na hora
+   * e ele vira "dano pendente" no feed, que o mestre aplica no atacante (F14.6).
+   */
+  async function rolarTroco() {
+    const bruto = (config.contra_ataque?.notacao || '').trim()
+    if (!bruto) return
+    let resolvida
+    try { resolvida = resolverNotacaoFormula(bruto, montarContexto()).notacao } catch { return }
+    if (!validarNotacao(resolvida)) return
+    await registrarRolagem({
+      mesaId, sessaoId, fichaId,
+      rotulo: `⚔ Contra-ataque de ${combatente.nome}`,
+      notacao: resolvida,
+    })
+  }
+
+  async function reagir(opcao, habilidade = null) {
     setErro('')
     setBusy(true)
     try {
@@ -73,9 +95,13 @@ export default function DefesaAtivaPrompt({
         notacao: resolvida,
       })
       await onResponder(combatente, {
-        opcao_id: opcao.id, opcao_nome: opcao.nome,
+        opcao_id: opcao.id,
+        opcao_nome: habilidade ? `${habilidade.habilidade.nome} (${opcao.nome})` : opcao.nome,
         contra_ataque: !!opcao.contra_ataque, defesa_total: res.total,
       })
+      // a habilidade usada como reação entra em recarga / gasta a carga
+      if (habilidade && onUsarHabilidade) await onUsarHabilidade(habilidade)
+      if (opcao.contra_ataque) await rolarTroco()
     } finally { setBusy(false) }
   }
 
@@ -124,6 +150,28 @@ export default function DefesaAtivaPrompt({
             {o.contra_ataque ? '⚔ ' : '🎲 '}{o.nome}
           </button>
         ))}
+        {habilidadesProntas.length > 0 && opcoes.length > 0 && (
+          <span className="flex items-center gap-1.5">
+            <select
+              value={habEscolhida} onChange={e => setHabEscolhida(e.target.value)}
+              className="px-1.5 py-1 rounded bg-purple-950 border border-purple-700 text-white text-[11px]"
+              aria-label="Responder com habilidade"
+            >
+              <option value="">com habilidade…</option>
+              {habilidadesProntas.map(hf => <option key={hf.id} value={hf.id}>{hf.habilidade?.nome}</option>)}
+            </select>
+            <button
+              onClick={() => {
+                const hf = habilidadesProntas.find(h => h.id === habEscolhida)
+                const op = opcoes.find(o => o.id === opcaoManual) || opcoes[0]
+                if (hf && op) reagir(op, hf)
+              }}
+              disabled={trabalhando || !habEscolhida}
+              className="px-2 py-1 text-xs bg-dice-700 hover:bg-dice-600 disabled:opacity-50 text-white rounded-lg transition-colors"
+              title="Usa a habilidade como reação: rola a reação e a habilidade entra em recarga"
+            >✨ Usar</button>
+          </span>
+        )}
         <button
           onClick={naoReagir}
           disabled={trabalhando}

@@ -322,6 +322,8 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
     defesas,
     chips,
     modificadoresAtivos, // 14.6 — para ataques/dano com os buffs ativos
+    // F32.5 — habilidades da ficha (com recarga/carga) p/ responder a um ataque
+    habilidadesFicha,
   }
 }
 
