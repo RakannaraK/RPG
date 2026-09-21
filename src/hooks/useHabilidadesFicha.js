@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { ajustarCarga, aoUsarHabilidade, liberarRecarga } from '../lib/combateAvancado'
 import { supabase } from '../lib/supabase'
 import { atendeNivelMinimo } from '../lib/requisitos'
 
@@ -111,6 +112,33 @@ export function useHabilidadesFicha(fichaId, habilidadesSistema = []) {
     } catch {}
   }
 
+  // ── F32.2 — recarga em turnos e carga de ultimate ──
+  async function gravarPatch(habilidadeFichaId, patch) {
+    if (!patch || Object.keys(patch).length === 0) return
+    setRawRows(prev => prev.map(r => (r.id === habilidadeFichaId ? { ...r, ...patch } : r)))
+    const { error: err } = await supabase.from('habilidades_ficha').update(patch).eq('id', habilidadeFichaId)
+    if (err) { await fetchAll(); throw new Error(err.message) }
+  }
+
+  /** Usar: liga a recarga e zera a carga da ultimate. */
+  async function usarHabilidade(habilidadeFichaId) {
+    const row = rawRows.find(r => r.id === habilidadeFichaId)
+    if (!row) return
+    const hab = habilidadesSistema.find(h => h.id === row.habilidade_id)
+    await gravarPatch(habilidadeFichaId, aoUsarHabilidade(row, hab || {}))
+  }
+
+  /** Carga da ultimate na mão (+1 quando o mestre premia um feito). */
+  async function ajustarCargaHabilidade(habilidadeFichaId, delta) {
+    const row = rawRows.find(r => r.id === habilidadeFichaId)
+    if (!row) return
+    const hab = habilidadesSistema.find(h => h.id === row.habilidade_id)
+    await gravarPatch(habilidadeFichaId, ajustarCarga(row, hab || {}, delta))
+  }
+
+  /** Tira a habilidade da recarga (fora de combate). */
+  const liberarRecargaHabilidade = habilidadeFichaId => gravarPatch(habilidadeFichaId, liberarRecarga())
+
   /**
    * Ao trocar raça ou classe, remove habilidades da origem anterior
    * e adiciona as da nova. Passivas entram ativas; ativáveis, desligadas.
@@ -208,6 +236,7 @@ export function useHabilidadesFicha(fichaId, habilidadesSistema = []) {
   return {
     habilidadesFicha, loading, error, refetch: fetchAll,
     toggleHabilidade, adicionarHabilidade, removerHabilidade, ajustarRecurso,
+    usarHabilidade, ajustarCargaHabilidade, liberarRecargaHabilidade,
     sincronizarOrigem, sincronizarClasses, recuperarRecursos, definirRecurso,
   }
 }

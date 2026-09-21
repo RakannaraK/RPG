@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { estadoDaHabilidade } from '../../../lib/combateAvancado'
 import { custosDeTurno, descreverCustoTurno } from '../../../lib/custoHabilidade'
 
 function Toggle({ ativa, onChange }) {
@@ -45,6 +46,58 @@ function RecursoCounter({ hf, onAjustar, isDono }) {
         disabled={atual >= max}
         className="w-5 h-5 rounded bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs flex items-center justify-center transition-colors"
       >+</button>
+    </div>
+  )
+}
+
+/**
+ * F32.2 — recarga em turnos e carga de ultimate. Só aparece se a habilidade
+ * tiver uma das duas configuradas no sistema.
+ */
+function EstadoCombate({ hf, isDono, onUsar, onAjustarCarga, onLiberarRecarga }) {
+  const hab = hf.habilidade || {}
+  const est = estadoDaHabilidade(hf, hab)
+  const temRecarga = hab.recarga_turnos != null && hab.recarga_turnos > 0
+  if (!temRecarga && !est.ehUltimate) return null
+  return (
+    <div className="flex flex-wrap items-center gap-2 mt-2">
+      {est.ehUltimate && (
+        <span className="flex items-center gap-1" title={`Carga ${est.carga}/${est.cargaMax}`}>
+          <span className="text-ink-dim text-xs">Ultimate</span>
+          <span className="flex gap-0.5" aria-label={`Carga ${est.carga} de ${est.cargaMax}`}>
+            {Array.from({ length: est.cargaMax }, (_, i) => (
+              <span key={i} className={`w-2.5 h-2.5 rounded-full border ${i < est.carga ? 'bg-dice-400 border-dice-300' : 'bg-void border-border'}`} />
+            ))}
+          </span>
+          {isDono && (
+            <>
+              <button onClick={() => onAjustarCarga?.(hf.id, -1)} disabled={est.carga <= 0}
+                className="w-5 h-5 rounded bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs" title="Menos carga">−</button>
+              <button onClick={() => onAjustarCarga?.(hf.id, +1)} disabled={est.carga >= est.cargaMax}
+                className="w-5 h-5 rounded bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs" title="Mais carga">+</button>
+            </>
+          )}
+        </span>
+      )}
+      {est.emRecarga && (
+        <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-amber-950/60 border border-amber-700/60 text-amber-300">
+          ⏳ {est.motivo}
+        </span>
+      )}
+      {isDono && est.emRecarga && (
+        <button onClick={() => onLiberarRecarga?.(hf.id)} className="text-ink-dim text-xs hover:text-ink underline" title="Tirar da recarga">pronta</button>
+      )}
+      {isDono && (
+        <button
+          onClick={() => onUsar?.(hf)}
+          disabled={!est.pronta}
+          className="px-2 py-1 text-xs rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold"
+          title={est.pronta ? 'Usar (entra em recarga / gasta a carga)' : est.motivo}
+        >⚡ Usar</button>
+      )}
+      {temRecarga && !est.emRecarga && (
+        <span className="text-ink-dim text-[11px]">recarga {hab.recarga_turnos} turno{hab.recarga_turnos === 1 ? '' : 's'}</span>
+      )}
     </div>
   )
 }
@@ -239,6 +292,7 @@ export default function PainelHabilidades({
   nomesAlvos = {},
   habilidadesBloqueadas = [], // 19.5 — visíveis, mas inativas até o nível
   poolsPorId = {}, onPagarTurno, // 20.5
+  onUsarHabilidade, onAjustarCarga, onLiberarRecarga, // F32.2
 }) {
   const [pagando, setPagando] = useState(false)
   const [selecionada, setSelecionada] = useState('')
@@ -364,6 +418,7 @@ export default function PainelHabilidades({
                       emJogo={hf.ativa}
                     />
                     <AcoesPontuais hf={hf} onUsarAcao={onUsarAcao} isDono={isDono} />
+                    <EstadoCombate hf={hf} isDono={isDono} onUsar={onUsarHabilidade} onAjustarCarga={onAjustarCarga} onLiberarRecarga={onLiberarRecarga} />
                   </div>
                   {isDono && hf.origem === 'manual' && (
                     <button
@@ -407,6 +462,7 @@ export default function PainelHabilidades({
                       emJogo={true}
                     />
                     <AcoesPontuais hf={hf} onUsarAcao={onUsarAcao} isDono={isDono} />
+                    <EstadoCombate hf={hf} isDono={isDono} onUsar={onUsarHabilidade} onAjustarCarga={onAjustarCarga} onLiberarRecarga={onLiberarRecarga} />
                   </div>
                   {isDono && hf.origem === 'manual' && (
                     <button

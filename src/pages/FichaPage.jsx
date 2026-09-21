@@ -86,6 +86,9 @@ export default function FichaPage() {
     adicionarHabilidade,
     removerHabilidade,
     ajustarRecurso,
+    usarHabilidade,
+    ajustarCargaHabilidade,
+    liberarRecargaHabilidade,
     sincronizarOrigem,
     sincronizarClasses,
     recuperarRecursos,
@@ -615,6 +618,23 @@ export default function FichaPage() {
     contexto: contextoFormula,
   }
   const classesIds = new Set(fonteClasses.map(c => c.classe_id).filter(Boolean))
+
+  // F32.2 — usar habilidade com recarga/ultimate: grava o estado e avisa a mesa
+  async function handleUsarHabilidade(hf) {
+    try {
+      await usarHabilidade(hf.id)
+      const hab = hf.habilidade || {}
+      const detalhe = hab.carga_max ? ' (ultimate!)' : hab.recarga_turnos ? ` — recarrega em ${hab.recarga_turnos} turno${hab.recarga_turnos === 1 ? '' : 's'}` : ''
+      await registrarEvento({
+        mesaId, fichaId,
+        rotulo: `${ficha?.nome_personagem || 'Personagem'} usou ${hab.nome || 'a habilidade'}${detalhe}`,
+        notacao: '', total: 0, dados: [],
+        som: hab.som_preset ? { presetId: hab.som_preset } : null,
+      })
+    } catch (e) {
+      window.alert(`Não foi possível usar: ${e.message}`)
+    }
+  }
 
   // 12.4 — usa um efeito pontual (cura ou vida_temp_acao) de uma habilidade:
   // rola se for notação, aplica à vida e registra no feed.
@@ -1328,6 +1348,9 @@ export default function FichaPage() {
               onAdicionarHabilidade={adicionarHabilidade}
               onRemoverHabilidade={removerHabilidade}
               onAjustarRecurso={ajustarRecurso}
+              onUsarHabilidade={handleUsarHabilidade}
+              onAjustarCargaHabilidade={ajustarCargaHabilidade}
+              onLiberarRecargaHabilidade={liberarRecargaHabilidade}
               onRecuperarRecursos={recuperarRecursos}
               valoresFinais={valoresFinais}
               modificadoresAtivos={modificadoresAtivos}

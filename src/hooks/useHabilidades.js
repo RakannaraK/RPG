@@ -80,6 +80,12 @@ export function useHabilidades(sistemaId) {
       updates.custo_pool?.length ? updates.custo_pool : null
     // FV.5a — som da ação (null = sem som próprio; usa o padrão do sistema)
     if (updates.som_preset !== undefined) payload.som_preset = updates.som_preset || null
+    // F32.2 — recarga em turnos e ultimate (null = não tem)
+    for (const campo of ['recarga_turnos', 'carga_max', 'carga_por_rodada']) {
+      if (updates[campo] !== undefined) {
+        payload[campo] = updates[campo] === '' || updates[campo] == null ? null : Number(updates[campo])
+      }
+    }
 
     const { error } = await supabase.from('habilidades').update(payload).eq('id', id)
     if (error) throw error

@@ -548,6 +548,9 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
   const [editNivelMin, setEditNivelMin] = useState('') // 19.5
   const [editCustoPool, setEditCustoPool] = useState([]) // 20.5
   const [editSomPreset, setEditSomPreset] = useState('') // FV.5a
+  const [editRecarga, setEditRecarga] = useState('')       // F32.2
+  const [editCargaMax, setEditCargaMax] = useState('')
+  const [editCargaRodada, setEditCargaRodada] = useState('')
   const [salvando, setSalvando] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [erro, setErro] = useState('')
@@ -567,6 +570,10 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
         nivel_minimo: editNivelMin,
         custo_pool: editTipo === 'ativavel' ? editCustoPool.filter(c => c.pool_id) : [],
         som_preset: editSomPreset,
+        // F32.2 — vazio = sem recarga / não é ultimate
+        recarga_turnos: editRecarga === '' ? null : Math.max(0, Number(editRecarga) || 0),
+        carga_max: editCargaMax === '' ? null : Math.max(1, Number(editCargaMax) || 1),
+        carga_por_rodada: editCargaRodada === '' ? null : Math.max(0, Number(editCargaRodada) || 0),
       })
       setEditando(false)
     } catch (err) {
@@ -591,6 +598,9 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
     setEditNivelMin(habilidade.nivel_minimo != null ? String(habilidade.nivel_minimo) : '')
     setEditCustoPool(Array.isArray(habilidade.custo_pool) ? habilidade.custo_pool : [])
     setEditSomPreset(habilidade.som_preset || '')
+    setEditRecarga(habilidade.recarga_turnos != null ? String(habilidade.recarga_turnos) : '')
+    setEditCargaMax(habilidade.carga_max != null ? String(habilidade.carga_max) : '')
+    setEditCargaRodada(habilidade.carga_por_rodada != null ? String(habilidade.carga_por_rodada) : '')
     setErro(''); setEditando(true)
   }
 
@@ -627,6 +637,31 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
                       <p className="text-purple-400 text-xs mb-1">Máximo</p>
                       <input type="number" value={editRecMax} onChange={e => setEditRecMax(e.target.value)}
                         min="1" className={`${SEL} w-20 text-center`} />
+                    </div>
+                  )}
+                </>
+              )}
+              {/* F32.2 — recarga em turnos e ultimate */}
+              {editTipo === 'ativavel' && (
+                <>
+                  <div>
+                    <p className="text-purple-400 text-xs mb-1">Recarga (turnos)</p>
+                    <input type="number" value={editRecarga} onChange={e => setEditRecarga(e.target.value)}
+                      min="0" placeholder="—" className={`${SEL} w-20 text-center`}
+                      title="Depois de usada, só volta depois deste número de turnos do dono. Vazio = sem recarga." />
+                  </div>
+                  <div>
+                    <p className="text-purple-400 text-xs mb-1">Ultimate: carga</p>
+                    <input type="number" value={editCargaMax} onChange={e => setEditCargaMax(e.target.value)}
+                      min="1" placeholder="—" className={`${SEL} w-20 text-center`}
+                      title="Carga necessária para usar. Vazio = não é ultimate." />
+                  </div>
+                  {editCargaMax !== '' && (
+                    <div>
+                      <p className="text-purple-400 text-xs mb-1">Carga por rodada</p>
+                      <input type="number" value={editCargaRodada} onChange={e => setEditCargaRodada(e.target.value)}
+                        min="0" placeholder="—" className={`${SEL} w-20 text-center`}
+                        title="Quanto enche sozinho a cada rodada de combate." />
                     </div>
                   )}
                 </>
