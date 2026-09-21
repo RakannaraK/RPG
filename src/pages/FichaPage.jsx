@@ -67,6 +67,7 @@ import { resolveActionSound } from '../engines/actionSoundEngine'
 import { podeEditarFicha } from '../lib/permissoesFicha'
 import AcessoFicha from '../components/ficha/AcessoFicha'
 import BlocoCriatura from '../components/bestiario/BlocoCriatura'
+import PainelFormas from '../components/ficha/PainelFormas'
 import { duplicarFicha, exportarFichaDoBanco } from '../lib/fichaBanco'
 import { nomeArquivoFicha } from '../lib/fichaPortatil'
 import { baixarJson } from '../lib/baixarArquivo'
@@ -1073,6 +1074,29 @@ export default function FichaPage() {
       {/* Conteúdo principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* Cabeçalho do personagem */}
+        {/* F33 — formas alternativas (só personagem tem; a forma em si não) */}
+        {ficha.tipo_ficha === 'personagem' && !ficha.forma_de_id && (
+          <PainelFormas
+            ficha={ficha}
+            mesaId={mesaId}
+            meuId={session?.user?.id}
+            isDono={isDono}
+            onAbrirFicha={id => navigate(`/mesa/${mesaId}/ficha/${id}`)}
+            onTransformar={async patch => { await updateFicha(fichaId, patch); await refetch() }}
+          />
+        )}
+
+        {/* F33 — esta ficha É uma forma: atalho de volta para a dona */}
+        {ficha.forma_de_id && (
+          <div className="rounded-2xl border border-dice-600/60 bg-dice-700/10 px-3 py-2 flex items-center gap-2 flex-wrap">
+            <span className="text-dice-200 text-sm">🐺 Esta é uma <b>forma</b> de outro personagem.</span>
+            <button
+              onClick={() => navigate(`/mesa/${mesaId}/ficha/${ficha.forma_de_id}`)}
+              className="text-dice-300 hover:text-white text-sm underline"
+            >Abrir a ficha original</button>
+          </div>
+        )}
+
         {/* F31 — criatura do bestiário: espécie, ameaça e som */}
         {ficha.tipo_ficha === 'criatura' && (
           <BlocoCriatura
@@ -1346,6 +1370,7 @@ export default function FichaPage() {
               poolsPorId={poolsPorId}
               onPagarTurno={handlePagarTurno}
               onAdicionarHabilidade={adicionarHabilidade}
+              contextoNivel={{ nivel: nivelTotal, niveisClasse }}
               onRemoverHabilidade={removerHabilidade}
               onAjustarRecurso={ajustarRecurso}
               onUsarHabilidade={handleUsarHabilidade}

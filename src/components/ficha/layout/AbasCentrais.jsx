@@ -3,6 +3,7 @@ import { useUpdateFicha } from '../../../hooks/useFicha'
 import EquipamentosTab from '../EquipamentosTab'
 import AcoesTab from './AcoesTab'
 import PainelHabilidades from './PainelHabilidades'
+import ArvoreHabilidades from '../ArvoreHabilidades'
 
 function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, onRefetch }) {
   const [valor, setValor] = useState(valorInicial)
@@ -68,6 +69,7 @@ export default function AbasCentrais({
   valoresFinais = {}, modificadoresAtivos = [], onUsarAcaoHabilidade,
   condicoesManuais = {}, condicoesManuaisDisponiveis = [], onToggleCondicao, nomesAlvos = {},
   habilidadesBloqueadas = [], // 19.5
+  contextoNivel = {}, // F33.3 — { nivel, niveisClasse } para a árvore
   poolsPorId = {}, onPagarTurno,  // 20.5
   categorias = [], // 21.1
   maestria = null, onGanharMaestria, // 21.3
@@ -84,6 +86,8 @@ export default function AbasCentrais({
     secoes.tracos     && { id: 'tracos',      label: 'Traços' },
     secoes.notas      && { id: 'notas',       label: 'Notas' },
     temHabilidades    && { id: 'habilidades', label: 'Habilidades' },
+    // F33.3 — a árvore só aparece quando o sistema liga habilidades entre si
+    habilidades.some(h => h.requer_habilidade_id) && { id: 'arvore', label: 'Árvore' },
   ].filter(Boolean)
 
   const [activeTab, setActiveTab] = useState(tabsList[0]?.id || '')
@@ -161,6 +165,16 @@ export default function AbasCentrais({
             onRefetch={onRefetch}
           />
         )}
+        {currentTab === 'arvore' && (
+          <ArvoreHabilidades
+            habilidades={habilidades}
+            habilidadesFicha={habilidadesFicha}
+            contexto={contextoNivel}
+            isDono={isDono}
+            onAdicionar={onAdicionarHabilidade}
+          />
+        )}
+
         {currentTab === 'habilidades' && (
           <PainelHabilidades
             habilidades={habilidades}

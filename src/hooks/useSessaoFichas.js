@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { fichaValendo, rotuloDaForma } from '../lib/transformacao'
 import { supabase } from '../lib/supabase'
 import { useSistema } from './useSistema'
 import { usePools } from './usePools'
@@ -346,6 +347,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
   const sisRef = useRef(sistemaBundle)
   sisRef.current = sistemaBundle
   const idsRef = useRef(new Set())
+  const cardIdsRef = useRef(new Set()) // ids que TÊM card (F33: a forma não tem)
   const carregarTudoRef = useRef(null)
   const jaConectouRef = useRef(false)
 
@@ -370,6 +372,9 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
   }, [])
 
   const recarregarFicha = useCallback(async (fichaId) => {
+    // F33 — id sem card próprio (forma ativa, ficha nova): recarrega tudo, porque
+    // o card de quem está transformado é montado com as linhas da forma.
+    if (!cardIdsRef.current.has(fichaId)) { await carregarTudoRef.current?.(); return }
     const card = await carregarCard(fichaId)
     if (!card) return
     setCards(prev => {
@@ -396,8 +401,12 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
 
       // F31: criatura do bestiário não é personagem na mesa; a CÓPIA em jogo
       // (origem_id preenchido) entra, para o mestre acompanhar o boss no card.
-      const fichas = (fichasData || []).filter(f => f.tipo_ficha !== 'criatura' || f.origem_id)
-      const ids = fichas.map(f => f.id)
+      // F33: a FORMA também não é card próprio — ela entra no lugar da ficha
+      // dona enquanto estiver ativa (o card fica com o id da dona).
+      const todas = fichasData || []
+      const fichas = todas.filter(f => (f.tipo_ficha !== 'criatura' || f.origem_id) && !f.forma_de_id)
+      // as linhas filhas da forma ativa precisam vir juntas
+      const ids = [...new Set(fichas.flatMap(f => [f.id, f.forma_ativa_id]).filter(Boolean))]
       idsRef.current = new Set(ids)
       if (ids.length === 0) { setCards([]); return }
 
@@ -424,7 +433,14 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
       const trilhasBy = groupBy(trilhasResp.data, 'ficha_id')
       const estadosBy = groupBy(estadosResp.data, 'ficha_id')
       const sis = sisRef.current || {}
-      setCards(fichas.map(f => construirCard(f, habsBy[f.id], condBy[f.id], combBy[f.id], sis, clsBy[f.id], poolsBy[f.id], slotsBy[f.id], itensBy[f.id], attrBy[f.id], trilhasBy[f.id], estadosBy[f.id])))
+      cardIdsRef.current = new Set(fichas.map(f => f.id))
+      setCards(fichas.map(base => {
+        // F33 — transformado: o card é montado com a ficha da FORMA, mas guarda
+        // o id da dona (combatentes e tokens continuam apontando para ela).
+        const f = fichaValendo(base, todas)
+        const card = construirCard(f, habsBy[f.id], condBy[f.id], combBy[f.id], sis, clsBy[f.id], poolsBy[f.id], slotsBy[f.id], itensBy[f.id], attrBy[f.id], trilhasBy[f.id], estadosBy[f.id])
+        return f.id === base.id ? card : { ...card, id: base.id, nome: rotuloDaForma(base, todas), forma: f }
+      }))
     } catch (err) {
       setError(err.message || 'Erro ao carregar fichas da sessão.')
     } finally {

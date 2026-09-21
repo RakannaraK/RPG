@@ -537,7 +537,7 @@ const INP = 'w-full px-3 py-1.5 rounded-lg bg-purple-950 border border-purple-70
 
 // Card compartilhado: usado tanto dentro da seção da raça/classe quanto na seção de avulsas.
 // Não expõe seletor de raça/classe no formulário de edição — vínculo é gerenciado pelo contexto.
-function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericias = [], classes = [], pools = [], onUpdate, onDelete, onAddMod, onRemoveMod }) {
+function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos, camposCombate, pericias = [], classes = [], pools = [], onUpdate, onDelete, onAddMod, onRemoveMod }) {
   const [expandido, setExpandido] = useState(false)
   const [editando, setEditando] = useState(false)
   const [editNome, setEditNome] = useState('')
@@ -549,6 +549,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
   const [editCustoPool, setEditCustoPool] = useState([]) // 20.5
   const [editSomPreset, setEditSomPreset] = useState('') // FV.5a
   const [editRecarga, setEditRecarga] = useState('')       // F32.2
+  const [editRequer, setEditRequer] = useState('')         // F33.3 — pré-requisito
   const [editCargaMax, setEditCargaMax] = useState('')
   const [editCargaRodada, setEditCargaRodada] = useState('')
   const [salvando, setSalvando] = useState(false)
@@ -572,6 +573,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
         som_preset: editSomPreset,
         // F32.2 — vazio = sem recarga / não é ultimate
         recarga_turnos: editRecarga === '' ? null : Math.max(0, Number(editRecarga) || 0),
+        requer_habilidade_id: editRequer || null, // F33.3
         carga_max: editCargaMax === '' ? null : Math.max(1, Number(editCargaMax) || 1),
         carga_por_rodada: editCargaRodada === '' ? null : Math.max(0, Number(editCargaRodada) || 0),
       })
@@ -599,6 +601,7 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
     setEditCustoPool(Array.isArray(habilidade.custo_pool) ? habilidade.custo_pool : [])
     setEditSomPreset(habilidade.som_preset || '')
     setEditRecarga(habilidade.recarga_turnos != null ? String(habilidade.recarga_turnos) : '')
+    setEditRequer(habilidade.requer_habilidade_id || '')
     setEditCargaMax(habilidade.carga_max != null ? String(habilidade.carga_max) : '')
     setEditCargaRodada(habilidade.carga_por_rodada != null ? String(habilidade.carga_por_rodada) : '')
     setErro(''); setEditando(true)
@@ -666,6 +669,17 @@ function HabilidadeVinculadaCard({ habilidade, atributos, camposCombate, pericia
                   )}
                 </>
               )}
+              {/* F33.3 — pré-requisito: outra habilidade (monta a árvore) */}
+              <div>
+                <p className="text-purple-400 text-xs mb-1">Exige a habilidade</p>
+                <select value={editRequer} onChange={e => setEditRequer(e.target.value)} className={`${SEL} w-44`}
+                  title="Só pode ser aprendida depois desta. Vazio = raiz da árvore.">
+                  <option value="">— nenhuma —</option>
+                  {habilidadesTodas.filter(h => h.id !== habilidade.id).map(h => (
+                    <option key={h.id} value={h.id}>{h.nome}</option>
+                  ))}
+                </select>
+              </div>
               {/* 19.5 — requisito de nível */}
               <div>
                 <p className="text-purple-400 text-xs mb-1">Nível mínimo</p>
@@ -882,6 +896,7 @@ function HabilidadesVinculadas({
         <HabilidadeVinculadaCard
           key={h.id}
           habilidade={h}
+          habilidadesTodas={habilidades}
           atributos={atributos}
           camposCombate={camposCombate}
           pericias={pericias} classes={classes} pools={pools}
@@ -1307,6 +1322,7 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
             <HabilidadeVinculadaCard
               key={h.id}
               habilidade={h}
+              habilidadesTodas={habilidades}
               atributos={atributos}
               camposCombate={camposCombate}
               pericias={pericias} classes={classes} pools={pools}

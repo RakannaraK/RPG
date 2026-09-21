@@ -19,6 +19,8 @@ export function useAplicarHp({ cards = [], encontroApi, mesaId, sessaoId = null 
       if (c.ficha_id) {
         const card = cards.find(cd => cd.id === c.ficha_id)
         if (!card) return
+        // F33 — transformado: a vida que muda é a da FORMA (card.ficha é a dela)
+        const idVida = card.ficha?.id || c.ficha_id
         const max = card.hpMax || card.hpMaxBase || 0
         const hp = card.hpAtual ?? 0
         if (delta < 0) {
@@ -31,9 +33,9 @@ export function useAplicarHp({ cards = [], encontroApi, mesaId, sessaoId = null 
             patch.vida_temp_atual = temp
           }
           patch.hp_atual = hp - dano
-          await updateFicha(c.ficha_id, patch)
+          await updateFicha(idVida, patch)
         } else {
-          await updateFicha(c.ficha_id, { hp_atual: max > 0 ? Math.min(max, hp + delta) : hp + delta })
+          await updateFicha(idVida, { hp_atual: max > 0 ? Math.min(max, hp + delta) : hp + delta })
         }
       } else {
         const hp = c.hp_atual ?? 0

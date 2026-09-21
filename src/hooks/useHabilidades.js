@@ -80,6 +80,8 @@ export function useHabilidades(sistemaId) {
       updates.custo_pool?.length ? updates.custo_pool : null
     // FV.5a — som da ação (null = sem som próprio; usa o padrão do sistema)
     if (updates.som_preset !== undefined) payload.som_preset = updates.som_preset || null
+    // F33.3 — pré-requisito na árvore (null = raiz)
+    if (updates.requer_habilidade_id !== undefined) payload.requer_habilidade_id = updates.requer_habilidade_id || null
     // F32.2 — recarga em turnos e ultimate (null = não tem)
     for (const campo of ['recarga_turnos', 'carga_max', 'carga_por_rodada']) {
       if (updates[campo] !== undefined) {
