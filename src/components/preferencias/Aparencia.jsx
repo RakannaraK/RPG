@@ -4,7 +4,7 @@ import { usePreferencias } from '../../context/PreferenciasContext'
 import { useAuth } from '../../context/AuthContext'
 import { FONTES, LIMITE_SOM, TEMAS, extensaoDoSom, validarSom } from '../../lib/personalizacao'
 
-const BUCKET = 'ficha-imagens' // mesmo bucket das imagens: pasta do próprio usuário
+const BUCKET = 'fichas-imagens' // mesmo bucket das imagens: pasta do próprio usuário
 
 /** Lê a duração do áudio no navegador (o teto é de 15 s). */
 function duracaoDoArquivo(arquivo) {

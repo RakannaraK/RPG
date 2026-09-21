@@ -127,7 +127,7 @@ export default function MapaPage() {
 
   // Gestor escolhe qual cena ver; jogador vê a ativa (o RLS só entrega ela).
   const cena = isGestor ? (mapas.find(m => m.id === vistaId) || ativo || mapas[0] || null) : ativo
-  const grade = rascunho.cenaId === cena?.id && rascunho.grade ? rascunho.grade : cena?.grade
+  const grade = cena && rascunho.cenaId === cena.id && rascunho.grade ? rascunho.grade : cena?.grade
 
   const { cards, sistema } = useCardsDaMesa(mesaId)
   const camposCombate = sistema?.config_layout?.campos_combate || [] // F31.3
@@ -194,7 +194,7 @@ export default function MapaPage() {
     }
   })
   // Memo: mantém a identidade entre quadros do pan/zoom (CamadaNevoa é memo).
-  const nevoaSalva = nevoaLocal?.cenaId === cena?.id ? nevoaLocal.nevoa : cena?.nevoa
+  const nevoaSalva = cena && nevoaLocal?.cenaId === cena.id ? nevoaLocal.nevoa : cena?.nevoa
   const nevoa = useMemo(() => normalizarNevoa(nevoaSalva), [nevoaSalva])
   // Jogador não recebe tokens sob a névoa nem ocultos (a máscara só pinta; nome e
   // barra vazariam). O próprio token segue visível para o dono.
