@@ -134,7 +134,7 @@ export default function DashboardPage() {
           <div className="text-center py-20 border border-dashed border-purple-800 rounded-2xl">
             <Ilustra nome="mapa" tamanho={80} className="mx-auto mb-4" />
             <p className="text-purple-300 text-lg font-medium mb-2">Nenhuma mesa ainda</p>
-            <p className="text-purple-500 text-sm mb-6">Crie sua primeira mesa ou entre em uma com um código de convite.</p>
+            <p className="text-accent-300 text-sm mb-6">Crie sua primeira mesa ou entre em uma com um código de convite.</p>
             <div className="flex flex-wrap gap-3 justify-center">
               <button
                 onClick={() => setShowInvite(true)}
@@ -159,7 +159,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-purple-500 text-sm py-6 text-center border border-dashed border-purple-900 rounded-2xl">
+              <p className="text-accent-300 text-sm py-6 text-center border border-dashed border-purple-900 rounded-2xl">
                 Nenhuma mesa ativa. Suas mesas arquivadas estão abaixo.
               </p>
             )}

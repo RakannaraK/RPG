@@ -1,6 +1,6 @@
 import FormulaInput from './FormulaInput'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 function novoId(prefixo) {
   return `${prefixo}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 4)}`
@@ -33,7 +33,7 @@ export default function TrilhasEditor({ trilhas = [], descansos = [], onChange }
     <div className="bg-slate-800 border border-purple-700 rounded-xl p-4 space-y-3">
       <div>
         <p className="text-purple-200 text-sm font-semibold">Trilhas (caixinhas)</p>
-        <p className="text-purple-500 text-xs mt-0.5">
+        <p className="text-accent-300 text-xs mt-0.5">
           Recursos como linha de caixinhas com tipos de marca (ex: dano superficial <span className="font-mono">/</span> e
           agravado <span className="font-mono">X</span>; sanidade; relógios). Marca mais severa sobrescreve a menos severa.
         </p>
@@ -58,7 +58,7 @@ export default function TrilhasEditor({ trilhas = [], descansos = [], onChange }
                   placeholder="tamanho: 10 ou 3 + atributo(vigor)" variaveis={['atributo(', 'nivel', ' + ']} />
               </div>
               <button onClick={() => onChange(trilhas.filter((_, j) => j !== i))}
-                className="w-6 h-6 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors shrink-0">✕</button>
+                className="w-6 h-6 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors shrink-0">✕</button>
             </div>
 
             {/* Tipos de marca */}
@@ -68,14 +68,14 @@ export default function TrilhasEditor({ trilhas = [], descansos = [], onChange }
                 <div key={tm.id} className="flex items-center gap-1.5 flex-wrap">
                   <input type="text" value={tm.nome || ''} onChange={e => setTipo(k, { nome: e.target.value })}
                     placeholder="Superficial" className={`${INP} w-28`} />
-                  <label className="text-purple-500 text-[11px] flex items-center gap-1">símbolo
+                  <label className="text-accent-300 text-[11px] flex items-center gap-1">símbolo
                     <input type="text" maxLength={2} value={tm.simbolo || ''} onChange={e => setTipo(k, { simbolo: e.target.value })}
                       placeholder="/" className={`${INP} w-10 text-center font-mono`} /></label>
-                  <label className="text-purple-500 text-[11px] flex items-center gap-1">severidade
+                  <label className="text-accent-300 text-[11px] flex items-center gap-1">severidade
                     <input type="number" min={1} value={tm.severidade ?? 1} onChange={e => setTipo(k, { severidade: Number(e.target.value) })}
                       className={`${INP} w-14 text-center`} /></label>
                   <button onClick={() => setTrilha(i, { tipos_marca: t.tipos_marca.filter((_, j) => j !== k) })}
-                    className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors">×</button>
+                    className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
                 </div>
               ))}
               <button onClick={() => setTrilha(i, { tipos_marca: [...(t.tipos_marca || []), { id: novoId('tm'), nome: '', simbolo: '', severidade: (t.tipos_marca?.length || 0) + 1 }] })}
@@ -119,7 +119,7 @@ export default function TrilhasEditor({ trilhas = [], descansos = [], onChange }
                 <p className="text-purple-400 text-[11px]">Recuperação por descanso</p>
                 {descansos.map(d => (
                   <div key={d.id} className="flex items-center gap-2 flex-wrap">
-                    <span className="text-purple-500 text-[11px] w-24 truncate" title={d.nome}>{d.nome}:</span>
+                    <span className="text-accent-300 text-[11px] w-24 truncate" title={d.nome}>{d.nome}:</span>
                     {(t.tipos_marca || []).map(tm => {
                       const regra = (rec[d.id] || {})[tm.id] || { modo: 'nada' }
                       return (

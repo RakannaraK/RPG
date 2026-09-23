@@ -70,7 +70,7 @@ export default function AcoesCombate({
 
   if (armas.length === 0) {
     return (
-      <p className="text-purple-600 text-xs">
+      <p className="text-accent-300 text-xs">
         {nome} não tem armas/ações cadastradas (adicione itens com <span className="font-mono">ataque</span>/<span className="font-mono">dano</span>).
       </p>
     )

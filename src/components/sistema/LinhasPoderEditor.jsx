@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLinhasPoder } from '../../hooks/useLinhasPoder'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 /**
  * Fase 25.3 — CRUD das linhas de poder do sistema.
@@ -30,7 +30,7 @@ export default function LinhasPoderEditor({ sistemaId }) {
   return (
     <div className="bg-slate-800 border border-purple-700 rounded-xl p-4 space-y-3">
       <p className="text-purple-200 text-sm font-semibold">Linhas de poder</p>
-      <p className="text-purple-500 text-xs">
+      <p className="text-accent-300 text-xs">
         Linhas com rating próprio (ex: uma disciplina). Cada nível do rating desbloqueia os poderes daquele nível.
       </p>
 
@@ -77,7 +77,7 @@ export default function LinhasPoderEditor({ sistemaId }) {
               </label>
               <button
                 onClick={() => removerLinha(l.id).catch(err => setErro(err.message))}
-                className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors shrink-0"
+                className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors shrink-0"
                 title="Remover linha"
               >
                 ×

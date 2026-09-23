@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { validarTabela, resultadosSemEntrada, entradaPara } from '../../lib/tabelasEngine'
 import { rolarNotacao } from '../../lib/diceNotation'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 function novaTabela() {
   return {
@@ -47,13 +47,13 @@ export default function TabelasEditor({ tabelas = [], onChange }) {
           + Nova tabela
         </button>
       </div>
-      <p className="text-purple-500 text-xs">
+      <p className="text-accent-300 text-xs">
         Rumores, loot, encontros, oráculos... O mestre rola e o resultado sai em texto.
         Opcional — sem tabelas, nada aparece.
       </p>
 
       {tabelas.length === 0 && (
-        <p className="text-purple-600 text-xs italic">Nenhuma tabela ainda.</p>
+        <p className="text-accent-300 text-xs italic">Nenhuma tabela ainda.</p>
       )}
 
       {tabelas.map((t, i) => {
@@ -95,7 +95,7 @@ export default function TabelasEditor({ tabelas = [], onChange }) {
                     type="number" value={e.de ?? ''} onChange={ev => setEntrada(i, j, { de: ev.target.value === '' ? '' : Number(ev.target.value) })}
                     placeholder="de" className={`${INP} w-14 text-center`}
                   />
-                  <span className="text-purple-600 text-xs">–</span>
+                  <span className="text-accent-300 text-xs">–</span>
                   <input
                     type="number" value={e.ate ?? ''} onChange={ev => setEntrada(i, j, { ate: ev.target.value === '' ? null : Number(ev.target.value) })}
                     placeholder="até" className={`${INP} w-14 text-center`}

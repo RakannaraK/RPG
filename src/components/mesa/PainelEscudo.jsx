@@ -92,7 +92,7 @@ export default function PainelEscudo({ mesaId, isGestor }) {
   const daVez = encontro ? ordem[Math.min(Math.max(0, encontro.turno_atual ?? 0), Math.max(0, ordem.length - 1))] : null
   const fixadas = notas.filter(n => n.fixada)
 
-  if (!isGestor) return <p className="text-purple-500 text-sm italic">O escudo é a tela do mestre.</p>
+  if (!isGestor) return <p className="text-accent-300 text-sm italic">O escudo é a tela do mestre.</p>
 
   return (
     <div className="space-y-4">
@@ -107,7 +107,7 @@ export default function PainelEscudo({ mesaId, isGestor }) {
               )}
             </div>
             {!encontro ? (
-              <p className="text-purple-500 text-xs italic">{sessaoAtiva ? 'Nenhum combate ativo.' : 'Nenhuma sessão ao vivo.'}</p>
+              <p className="text-accent-300 text-xs italic">{sessaoAtiva ? 'Nenhum combate ativo.' : 'Nenhuma sessão ao vivo.'}</p>
             ) : (
               <>
                 <p className="text-white text-sm">
@@ -117,8 +117,8 @@ export default function PainelEscudo({ mesaId, isGestor }) {
                 <ol className="text-xs space-y-0.5">
                   {ordem.map((c, i) => (
                     <li key={c.id} className={c.id === daVez?.id ? 'text-amber-300 font-semibold' : 'text-purple-300'}>
-                      {i + 1}. {c.nome} <span className="text-purple-500">{c.iniciativa ?? '—'}</span>
-                      {c.hp_maximo != null && <span className="text-purple-500"> · {c.hp_atual ?? '?'}/{c.hp_maximo}</span>}
+                      {i + 1}. {c.nome} <span className="text-accent-300">{c.iniciativa ?? '—'}</span>
+                      {c.hp_maximo != null && <span className="text-accent-300"> · {c.hp_atual ?? '?'}/{c.hp_maximo}</span>}
                     </li>
                   ))}
                 </ol>
@@ -130,7 +130,7 @@ export default function PainelEscudo({ mesaId, isGestor }) {
           <div className={CAIXA}>
             <p className={TITULO}>Vida do grupo</p>
             {cards.length === 0
-              ? <p className="text-purple-500 text-xs italic">Nenhum personagem nesta mesa.</p>
+              ? <p className="text-accent-300 text-xs italic">Nenhum personagem nesta mesa.</p>
               : <div className="space-y-1">{cards.map(c => <Vida key={c.id} card={c} />)}</div>}
           </div>
 
@@ -142,7 +142,7 @@ export default function PainelEscudo({ mesaId, isGestor }) {
           <div className={CAIXA}>
             <p className={TITULO}>Notas fixadas</p>
             {fixadas.length === 0
-              ? <p className="text-purple-500 text-xs italic">Fixe uma nota (📌) para ela aparecer aqui.</p>
+              ? <p className="text-accent-300 text-xs italic">Fixe uma nota (📌) para ela aparecer aqui.</p>
               : fixadas.map(n => (
                 <div key={n.id}>
                   <p className="text-white text-sm font-medium">{n.titulo || 'Sem título'}</p>

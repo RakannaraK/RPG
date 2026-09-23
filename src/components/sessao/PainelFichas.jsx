@@ -26,7 +26,7 @@ export function MiniTrilha({ trilha }) {
           return <span key={i} className={`w-2.5 h-2.5 rounded-[3px] ${cls}`} title={m ? porId[m]?.nome : ''} />
         })}
       </div>
-      <span className="text-purple-500 text-[10px] font-mono">{trilha.cont.marcadas}/{trilha.cont.total}</span>
+      <span className="text-accent-300 text-[10px] font-mono">{trilha.cont.marcadas}/{trilha.cont.total}</span>
       {trilha.cheiaDoMaior && trilha.rotuloCheia && (
         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-950/80 border border-red-500 text-red-200">☠ {trilha.rotuloCheia}</span>
       )}
@@ -84,7 +84,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
             <span className="text-purple-400 text-[11px] uppercase tracking-wider">Vida</span>
             <span className="text-white text-sm font-semibold">
               {card.hpAtual}
-              <span className="text-purple-500 font-normal"> / {hpMax || '?'}</span>
+              <span className="text-accent-300 font-normal"> / {hpMax || '?'}</span>
               {temModVida && card.hpMax > card.hpMaxBase && (
                 <span className="text-green-400 text-[10px] font-mono ml-1">(+{card.hpMax - card.hpMaxBase})</span>
               )}
@@ -175,7 +175,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
                 <span className="text-sky-400 text-[10px] uppercase tracking-wide">{p.nome}</span>
                 <span className={`text-sm font-bold leading-none ${vazio ? 'text-red-400' : 'text-white'}`}>
                   {p.atual}
-                  <span className="text-purple-600 font-normal">/{p.maximo}</span>
+                  <span className="text-accent-300 font-normal">/{p.maximo}</span>
                 </span>
               </div>
             )
@@ -196,7 +196,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
                 title={`Slots de ${s.circulo}º círculo`}>
                 <span className="text-amber-400 text-[10px] font-mono">{s.circulo}º</span>
                 <span className={`text-sm font-bold leading-none ${esgotado ? 'text-red-400' : 'text-white'}`}>
-                  {s.disponivel}<span className="text-purple-600 font-normal">/{s.total}</span>
+                  {s.disponivel}<span className="text-accent-300 font-normal">/{s.total}</span>
                 </span>
               </div>
             )

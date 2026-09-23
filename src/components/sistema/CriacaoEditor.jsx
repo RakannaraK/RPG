@@ -1,5 +1,5 @@
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 function novoId(prefixo) {
   return `${prefixo}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 4)}`
@@ -44,14 +44,14 @@ function EtapaGrupos({ etapa, onChange, atributos, pericias }) {
       {(etapa.valores_prioridade || []).length !== grupos.length && (
         <p className="text-amber-400/80 text-[11px]">⚠ {grupos.length} grupo(s) mas {(etapa.valores_prioridade || []).length} valor(es) de prioridade — devem ter a mesma quantidade.</p>
       )}
-      <p className="text-purple-500 text-[11px]">Grupos (o jogador ordena estes grupos; a posição decide qual valor de prioridade cada um recebe)</p>
+      <p className="text-accent-300 text-[11px]">Grupos (o jogador ordena estes grupos; a posição decide qual valor de prioridade cada um recebe)</p>
       {grupos.map((g, i) => (
         <div key={g.id} className="rounded-lg border border-purple-900/50 bg-slate-900/40 p-2 space-y-1">
           <div className="flex items-center gap-1.5 flex-wrap">
             <input type="text" value={g.nome || ''} onChange={e => setGrupo(i, { nome: e.target.value })}
               placeholder="Nome do grupo (ex: Físico)" className={`${INP} w-32`} />
             <button onClick={() => setEtapa({ grupos: grupos.filter((_, j) => j !== i) })}
-              className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors">×</button>
+              className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {catalogo.map(m => {
@@ -100,7 +100,7 @@ function EtapaTexto({ etapa, onChange }) {
   return (
     <textarea rows={2} value={etapa.descricao || ''} onChange={e => onChange({ ...etapa, descricao: e.target.value })}
       placeholder="Texto-guia (ex: Escolha Convicções e Pilares; anote-os nas seções da ficha.)"
-      className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" />
+      className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" />
   )
 }
 
@@ -119,7 +119,7 @@ export default function CriacaoEditor({ cfg = {}, onChange, atributos = [], peri
       <div className="flex items-center justify-between gap-2">
         <div>
           <p className="text-purple-200 text-sm font-semibold">Criação por prioridades</p>
-          <p className="text-purple-500 text-xs mt-0.5">
+          <p className="text-accent-300 text-xs mt-0.5">
             Assistente clássico: o jogador distribui valores entre grupos (ex: 7/5/3 entre Físico/Social/Mental),
             em etapas configuráveis. Substitui a rolagem/point-buy quando ativo.
           </p>
@@ -143,11 +143,11 @@ export default function CriacaoEditor({ cfg = {}, onChange, atributos = [], peri
               <div className="flex items-center gap-2 flex-wrap">
                 <input type="text" value={etapa.nome || ''} onChange={e => setEtapa(i, { nome: e.target.value })}
                   placeholder="Nome da etapa (ex: Atributos)" className={`${INP} w-40 font-semibold`} />
-                <span className="text-purple-600 text-[11px] uppercase tracking-wide">
+                <span className="text-accent-300 text-[11px] uppercase tracking-wide">
                   {etapa.tipo === 'prioridade_grupos' ? 'grupos por prioridade' : etapa.tipo === 'pontos_livres' ? 'pontos livres' : 'texto-guia'}
                 </span>
                 <button onClick={() => set({ etapas: etapas.filter((_, j) => j !== i) })}
-                  className="ml-auto w-6 h-6 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors">✕</button>
+                  className="ml-auto w-6 h-6 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">✕</button>
               </div>
               {etapa.tipo === 'prioridade_grupos' && (
                 <EtapaGrupos etapa={etapa} onChange={nova => setEtapa(i, nova)} atributos={atributos} pericias={pericias} />

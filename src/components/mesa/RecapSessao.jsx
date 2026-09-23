@@ -57,7 +57,7 @@ export default function RecapSessao({ mesaId }) {
         <div>
           <p className="text-purple-200 font-medium text-sm">O que aconteceu</p>
           {recap.periodo && (
-            <p className="text-purple-500 text-xs mt-0.5">
+            <p className="text-accent-300 text-xs mt-0.5">
               de {dataBr(recap.periodo.de)} até {dataBr(recap.periodo.ate)}
             </p>
           )}
@@ -71,13 +71,13 @@ export default function RecapSessao({ mesaId }) {
         </select>
       </div>
 
-      {loading && <p className="text-purple-500 text-sm py-6 text-center">Carregando resumo...</p>}
+      {loading && <p className="text-accent-300 text-sm py-6 text-center">Carregando resumo...</p>}
       {erro && <p className="text-red-400 text-sm">{erro}</p>}
 
       {!loading && !erro && recap.total === 0 && (
         <div className="py-10 text-center border border-dashed border-purple-800/50 rounded-2xl">
           <div className="text-3xl mb-2">📜</div>
-          <p className="text-purple-500 text-sm">Nada registrado nesse período.</p>
+          <p className="text-accent-300 text-sm">Nada registrado nesse período.</p>
         </div>
       )}
 
@@ -139,7 +139,7 @@ export default function RecapSessao({ mesaId }) {
               <div className="space-y-1 max-h-80 overflow-y-auto pr-1">
                 {recap.eventos.slice().reverse().map(e => (
                   <div key={e.id} className="flex items-baseline gap-2 text-xs bg-slate-800/40 border border-purple-900/40 rounded-lg px-3 py-1.5">
-                    <span className="text-purple-600 shrink-0">{dataBr(e.created_at)}</span>
+                    <span className="text-accent-300 shrink-0">{dataBr(e.created_at)}</span>
                     <span className="text-purple-200">{e.rotulo}</span>
                   </div>
                 ))}

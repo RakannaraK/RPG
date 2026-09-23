@@ -32,7 +32,7 @@ export default function MesaCreate({ onClose, onCreated }) {
               maxLength={80}
               value={nome}
               onChange={e => setNome(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="Ex: A Masmorra dos Dragões"
               autoFocus
             />
@@ -44,7 +44,7 @@ export default function MesaCreate({ onClose, onCreated }) {
               maxLength={300}
               value={descricao}
               onChange={e => setDescricao(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+              className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
               placeholder="Uma breve descrição da campanha..."
             />
           </div>

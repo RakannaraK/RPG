@@ -104,7 +104,7 @@ export default function SimuladorFicha({ config, atributos = [], pericias = [] }
 
   if (atributos.length === 0) {
     return (
-      <p className="text-purple-500 text-sm">
+      <p className="text-accent-300 text-sm">
         Crie ao menos um atributo para simular uma ficha.
       </p>
     )
@@ -114,7 +114,7 @@ export default function SimuladorFicha({ config, atributos = [], pericias = [] }
     <div className="space-y-4">
       <div>
         <p className="text-purple-200 text-sm font-semibold">Simulador</p>
-        <p className="text-purple-500 text-xs mt-0.5">
+        <p className="text-accent-300 text-xs mt-0.5">
           Prévia do sistema sem criar mesa nem personagem. Mexa nos valores e veja
           o efeito das suas fórmulas na hora. Nada aqui é salvo.
         </p>
@@ -127,7 +127,7 @@ export default function SimuladorFicha({ config, atributos = [], pericias = [] }
           onChange={e => setNivel(Number(e.target.value) || 1)}
           className="w-20 px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500"
         />
-        <span className="text-purple-500 text-xs">
+        <span className="text-accent-300 text-xs">
           modo de resolução: <span className="font-mono text-purple-300">{modo}</span>
         </span>
       </div>
@@ -180,7 +180,7 @@ export default function SimuladorFicha({ config, atributos = [], pericias = [] }
       )}
 
       {pericias.length > 0 && (
-        <p className="text-purple-600 text-xs">
+        <p className="text-accent-300 text-xs">
           {pericias.length} perícia(s) definida(s) — o total de cada uma na ficha é
           o bônus dela mais o atributo-base.
         </p>

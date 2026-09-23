@@ -76,7 +76,7 @@ export default function PreferenciasModal({ onFechar }) {
           {/* Nome de exibição (apelido global) */}
           <div>
             <p className="text-sm font-medium text-purple-200 mb-1">Nome de exibição</p>
-            <p className="text-purple-500 text-xs mb-2">É o que as outras pessoas veem (no lugar do seu e-mail). Pode trocar a qualquer hora.</p>
+            <p className="text-accent-300 text-xs mb-2">É o que as outras pessoas veem (no lugar do seu e-mail). Pode trocar a qualquer hora.</p>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -84,7 +84,7 @@ export default function PreferenciasModal({ onFechar }) {
                 onChange={e => setApelido(e.target.value)}
                 maxLength={40}
                 placeholder="Seu apelido"
-                className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
               <button
                 type="button"

@@ -220,7 +220,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
         <div className="text-center py-16 border border-dashed border-purple-800 rounded-2xl">
           <Ilustra nome="tomo" tamanho={72} className="mx-auto mb-4" />
           <p className="text-purple-300 text-lg font-medium">Nenhum sistema definido</p>
-          <p className="text-purple-500 text-sm mt-2">Aguarde o mestre configurar o sistema de regras.</p>
+          <p className="text-accent-300 text-sm mt-2">Aguarde o mestre configurar o sistema de regras.</p>
         </div>
       )
     }
@@ -232,7 +232,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
           {sistemaDB.descricao && <p className="text-purple-300 mt-1 text-sm">{sistemaDB.descricao}</p>}
         </div>
         {atributosDB.length === 0 ? (
-          <p className="text-purple-500 text-sm">Nenhum atributo definido ainda.</p>
+          <p className="text-accent-300 text-sm">Nenhum atributo definido ainda.</p>
         ) : (
           <div className="space-y-3">
             <p className="text-purple-300 text-sm font-medium">Atributos ({atributosDB.length})</p>
@@ -319,7 +319,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
             placeholder="Ex: D&D 5e, Homebrew, Call of Cthulhu..."
             value={nome}
             onChange={e => setNome(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
         <div>
@@ -329,7 +329,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
             placeholder="Uma descrição breve do sistema..."
             value={descricao}
             onChange={e => setDescricao(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
       </div>
@@ -369,7 +369,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
             </div>
 
             {atributos.length === 0 ? (
-              <div className="text-center py-10 border border-dashed border-purple-800 rounded-xl text-purple-500 text-sm">
+              <div className="text-center py-10 border border-dashed border-purple-800 rounded-xl text-accent-300 text-sm">
                 Nenhum atributo ainda. Clique em "Adicionar atributo" para começar.
               </div>
             ) : (
@@ -432,7 +432,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
               />
             </div>
           ) : (
-            <p className="text-purple-500 text-sm">Salve o sistema antes de criar recursos.</p>
+            <p className="text-accent-300 text-sm">Salve o sistema antes de criar recursos.</p>
           )
         )}
 
@@ -448,14 +448,14 @@ export default function SistemaEditor({ mesaId, isMestre }) {
                   value={configLayout.poderes_rotulo || ''}
                   onChange={e => setConfigLayout(prev => ({ ...prev, poderes_rotulo: e.target.value }))}
                   placeholder="Poderes, Magias, Técnicas..."
-                  className="flex-1 min-w-[10rem] px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 min-w-[10rem] px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
               <LinhasPoderEditor sistemaId={sistemaDB.id} />
               <PoderesEditor sistemaId={sistemaDB.id} />
             </div>
           ) : (
-            <p className="text-purple-500 text-sm">Salve o sistema antes de criar poderes.</p>
+            <p className="text-accent-300 text-sm">Salve o sistema antes de criar poderes.</p>
           )
         )}
 
@@ -468,7 +468,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
               onChange={setConfigLayout}
             />
           ) : (
-            <p className="text-purple-500 text-sm">Salve o sistema antes de configurar maestria e categorias.</p>
+            <p className="text-accent-300 text-sm">Salve o sistema antes de configurar maestria e categorias.</p>
           )
         )}
 

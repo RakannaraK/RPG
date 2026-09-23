@@ -34,7 +34,7 @@ export default function MesaInvite({ onClose, onJoined }) {
               maxLength={8}
               value={codigo}
               onChange={e => setCodigo(e.target.value.toLowerCase())}
-              className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono tracking-widest text-center text-lg uppercase"
+              className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono tracking-widest text-center text-lg uppercase"
               placeholder="ex: a1b2c3d4"
               autoFocus
             />

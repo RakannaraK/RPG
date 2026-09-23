@@ -3,7 +3,7 @@ import FormulaInput from './FormulaInput'
 import { useRacasClasses } from '../../hooks/useRacasClasses'
 import { linhaDaGrade } from '../../lib/slotsEngine'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 /**
  * Grade de uma classe: linhas por nível, colunas por círculo.
@@ -63,13 +63,13 @@ function GradeClasse({ classe, grade = {}, circuloMax, onChange }) {
                         value={grade[n]?.[c - 1] ?? ''}
                         onChange={e => setCelula(n, c, e.target.value)}
                         placeholder="0"
-                        className="w-10 px-1 py-0.5 rounded bg-purple-950 border border-purple-800 text-white text-xs text-center placeholder-purple-700 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        className="w-10 px-1 py-0.5 rounded bg-purple-950 border border-purple-800 text-white text-xs text-center placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500"
                       />
                     </td>
                   ))}
                   <td className="pl-1">
                     <button type="button" onClick={() => removerNivel(n)}
-                      className="w-5 h-5 flex items-center justify-center text-purple-600 hover:text-red-400 transition-colors"
+                      className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors"
                       title="Remover linha">×</button>
                   </td>
                 </tr>
@@ -88,7 +88,7 @@ function GradeClasse({ classe, grade = {}, circuloMax, onChange }) {
           + linha de nível
         </button>
         {niveis.length > 0 && (
-          <span className="text-purple-600 text-[11px]">
+          <span className="text-accent-300 text-[11px]">
             Nv 4 de {classe.nome} → [{(linhaDaGrade(grade, 4) || []).join(', ') || '—'}]
           </span>
         )}
@@ -126,20 +126,20 @@ export default function SlotsEditor({ sistemaId, config, onChange, descansos = [
           ativar
         </label>
       </div>
-      <p className="text-purple-500 text-xs">
+      <p className="text-accent-300 text-xs">
         Modo opcional. O <span className="text-purple-300">total</span> de cada círculo é derivado da
         grade × níveis das classes da ficha (multiclasse soma as grades) — nunca guardado.
         Sistemas sem slots deixam isso desligado.
       </p>
 
       {!slots.ativo ? (
-        <p className="text-purple-600 text-xs">Desativado: a ficha não mostra painel de slots.</p>
+        <p className="text-accent-300 text-xs">Desativado: a ficha não mostra painel de slots.</p>
       ) : (
         <>
           <div className="flex flex-wrap gap-2 items-center">
             <input type="text" value={slots.rotulo || ''} onChange={e => set({ rotulo: e.target.value })}
               placeholder="Rótulo (Espaços de Magia)" className={`${INP} flex-1 min-w-[10rem]`} />
-            <span className="text-purple-500 text-[11px]">círculo máx.</span>
+            <span className="text-accent-300 text-[11px]">círculo máx.</span>
             <input type="number" min={1} max={12} value={slots.circulo_max ?? 9}
               onChange={e => set({ circulo_max: Number(e.target.value) })}
               className={`${INP} w-14 text-center`} />
@@ -167,7 +167,7 @@ export default function SlotsEditor({ sistemaId, config, onChange, descansos = [
               Grade por classe — preencha só os níveis em que a grade muda.
             </p>
             {classes.length === 0 && (
-              <p className="text-purple-600 text-[11px]">Crie classes para montar a grade.</p>
+              <p className="text-accent-300 text-[11px]">Crie classes para montar a grade.</p>
             )}
             {classes.map(c => {
               const grade = (slots.grades || {})[c.id] || {}
@@ -177,9 +177,9 @@ export default function SlotsEditor({ sistemaId, config, onChange, descansos = [
                   <button type="button"
                     onClick={() => setClasseAberta(classeAberta === c.id ? null : c.id)}
                     className="flex items-center gap-2 w-full text-left">
-                    <span className="text-purple-500 text-xs w-4">{classeAberta === c.id ? '▾' : '▸'}</span>
+                    <span className="text-accent-300 text-xs w-4">{classeAberta === c.id ? '▾' : '▸'}</span>
                     <span className="text-white text-xs font-medium flex-1">{c.nome}</span>
-                    <span className="text-purple-600 text-[11px]">
+                    <span className="text-accent-300 text-[11px]">
                       {temLinhas ? `${Object.keys(grade).length} linha(s)` : 'sem slots'}
                     </span>
                   </button>
@@ -202,7 +202,7 @@ export default function SlotsEditor({ sistemaId, config, onChange, descansos = [
           <div className="border-t border-purple-900/50 pt-2 space-y-1.5">
             <p className="text-purple-400 text-[11px]">Recuperação por descanso</p>
             {descansos.length === 0 ? (
-              <p className="text-purple-600 text-[11px]">Configure os descansos primeiro.</p>
+              <p className="text-accent-300 text-[11px]">Configure os descansos primeiro.</p>
             ) : (
               descansos.map(d => (
                 <div key={d.id} className="flex items-center gap-2">

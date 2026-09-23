@@ -62,7 +62,7 @@ export default function SessoesHistorico({ mesaId }) {
                 className="w-full text-left flex items-center justify-between gap-2 bg-slate-800/60 border border-purple-900/50 hover:border-purple-700 rounded-lg px-3 py-2 transition-colors"
               >
                 <span className="text-purple-200 text-sm truncate">{s.titulo || 'Sessão'}</span>
-                <span className="text-purple-500 text-xs shrink-0">
+                <span className="text-accent-300 text-xs shrink-0">
                   {fmtData(s.iniciada_em)}
                   {fmtDuracao(s.iniciada_em, s.encerrada_em) && ` · ${fmtDuracao(s.iniciada_em, s.encerrada_em)}`}
                 </span>

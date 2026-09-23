@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useRelogios } from '../../hooks/useRelogios'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 /** Segmentos do relógio: preenchidos à esquerda, vazios à direita. */
 function Segmentos({ preenchido, segmentos }) {
@@ -56,13 +56,13 @@ export default function PainelRelogios({ mesaId, isGestor }) {
     <div className="space-y-3">
       <div>
         <p className="text-purple-200 font-medium text-sm">Relógios da campanha</p>
-        <p className="text-purple-500 text-xs mt-0.5">
+        <p className="text-accent-300 text-xs mt-0.5">
           O que está em andamento no mundo, entre uma sessão e outra.
         </p>
       </div>
 
       {relogios.length === 0 && (
-        <p className="text-purple-600 text-xs italic">Nenhum relógio ainda.</p>
+        <p className="text-accent-300 text-xs italic">Nenhum relógio ainda.</p>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -76,7 +76,7 @@ export default function PainelRelogios({ mesaId, isGestor }) {
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="text-white text-sm font-medium truncate">{r.nome}</p>
-                {r.descricao && <p className="text-purple-500 text-xs mt-0.5">{r.descricao}</p>}
+                {r.descricao && <p className="text-accent-300 text-xs mt-0.5">{r.descricao}</p>}
               </div>
               <span className="text-amber-400 font-mono text-sm shrink-0">
                 {r.preenchido}/{r.segmentos}

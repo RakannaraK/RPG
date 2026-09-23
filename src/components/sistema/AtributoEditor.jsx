@@ -14,13 +14,13 @@ export default function AtributoEditor({ atributo, onChange, onRemove, index }) 
     <div className="bg-slate-800 border border-purple-800 rounded-xl overflow-hidden">
       {/* Cabeçalho colapsável */}
       <div className="flex items-center gap-3 px-4 py-3">
-        <span className="text-purple-500 text-xs font-mono w-5 text-center">{index + 1}</span>
+        <span className="text-accent-300 text-xs font-mono w-5 text-center">{index + 1}</span>
         <input
           type="text"
           placeholder="Nome do atributo (ex: Força)"
           value={atributo.nome}
           onChange={e => updateField('nome', e.target.value)}
-          className="flex-1 bg-transparent text-white placeholder-purple-500 font-medium focus:outline-none text-sm"
+          className="flex-1 bg-transparent text-white placeholder-ink-dim font-medium focus:outline-none text-sm"
           onClick={e => e.stopPropagation()}
         />
         <div className="flex items-center gap-2">
@@ -68,7 +68,7 @@ export default function AtributoEditor({ atributo, onChange, onRemove, index }) 
               placeholder="Ex: Mede a força física do personagem"
               value={atributo.descricao || ''}
               onChange={e => updateField('descricao', e.target.value)}
-              className="w-full px-3 py-2 bg-purple-950 border border-purple-700 text-white placeholder-purple-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 bg-purple-950 border border-purple-700 text-white placeholder-ink-dim rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
 

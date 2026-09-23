@@ -8,7 +8,7 @@ function Verbete({ codigo, texto, exemplo, nota }) {
     <div className="py-1 border-b border-purple-900/40 last:border-0">
       <span className="font-mono text-purple-200">{codigo}</span>
       <span className="text-purple-400"> — {texto}</span>
-      {exemplo && <div className="font-mono text-purple-500 mt-0.5">{exemplo}</div>}
+      {exemplo && <div className="font-mono text-accent-300 mt-0.5">{exemplo}</div>}
       {nota && <div className="text-amber-500/90 mt-0.5">{nota}</div>}
     </div>
   )
@@ -24,11 +24,11 @@ function AjudaGramatica() {
           Uma fórmula sempre resulta num <span className="font-semibold">número</span>. Você mistura
           números fixos com valores da ficha do personagem.
         </p>
-        <p className="text-purple-500">
+        <p className="text-accent-300">
           Operadores: <span className="font-mono text-purple-300">+ − * / ( )</span> — multiplicação e
           divisão acontecem antes de soma e subtração; use parênteses para mandar na ordem.
         </p>
-        <p className="text-purple-500">
+        <p className="text-accent-300">
           Decimais usam <span className="font-mono text-purple-300">ponto</span>, não vírgula:
           escreva <span className="font-mono text-purple-300">0.5</span>.
         </p>
@@ -93,7 +93,7 @@ function AjudaGramatica() {
 
       <div>
         <p className="text-purple-200 font-semibold mb-1">Só funcionam em campos específicos</p>
-        <p className="text-purple-500 mb-1">
+        <p className="text-accent-300 mb-1">
           Estas existem apenas no campo indicado — usar em outro lugar dá erro.
         </p>
         <Verbete
@@ -108,8 +108,8 @@ function AjudaGramatica() {
 
       <div className="border-t border-purple-900 pt-2">
         <p className="text-purple-300 font-semibold mb-0.5">Como os bônus se combinam (ordem)</p>
-        <p className="text-purple-500">base → somas → <span className="text-amber-400">percentuais (somados entre si)</span> → multiplicadores → definir</p>
-        <p className="text-purple-500">Ex: base 20, +5, <span className="text-amber-400">+13% e +10% = +23%</span> → piso(25 × 1,23) = <span className="text-green-400">30</span></p>
+        <p className="text-accent-300">base → somas → <span className="text-amber-400">percentuais (somados entre si)</span> → multiplicadores → definir</p>
+        <p className="text-accent-300">Ex: base 20, +5, <span className="text-amber-400">+13% e +10% = +23%</span> → piso(25 × 1,23) = <span className="text-green-400">30</span></p>
       </div>
     </div>
   )
@@ -142,7 +142,7 @@ export default function FormulaInput({
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           spellCheck={false}
-          className={`flex-1 px-3 py-2 rounded-lg bg-purple-950 border text-white text-sm font-mono placeholder-purple-600 focus:outline-none focus:ring-2 ${
+          className={`flex-1 px-3 py-2 rounded-lg bg-purple-950 border text-white text-sm font-mono placeholder-ink-dim focus:outline-none focus:ring-2 ${
             invalida ? 'border-red-600 focus:ring-red-500' : 'border-purple-700 focus:ring-purple-500'
           }`}
         />

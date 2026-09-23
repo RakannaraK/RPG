@@ -88,7 +88,7 @@ export default function DescansosEditor({ descansos = [], onChange }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-purple-200">Tipos de descanso {descansos.length > 0 && `(${descansos.length})`}</p>
-          <p className="text-purple-500 text-xs mt-0.5">Defina como cada descanso recupera vida e recursos. Sem descansos, a funcionalidade fica oculta.</p>
+          <p className="text-accent-300 text-xs mt-0.5">Defina como cada descanso recupera vida e recursos. Sem descansos, a funcionalidade fica oculta.</p>
         </div>
         <button type="button" onClick={add} className="text-sm px-3 py-1.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg transition-colors shrink-0">
           + Adicionar descanso
@@ -96,7 +96,7 @@ export default function DescansosEditor({ descansos = [], onChange }) {
       </div>
 
       {descansos.length === 0 ? (
-        <div className="text-center py-10 border border-dashed border-purple-800 rounded-xl text-purple-500 text-sm">
+        <div className="text-center py-10 border border-dashed border-purple-800 rounded-xl text-accent-300 text-sm">
           Nenhum descanso configurado. Ex: "Descanso Curto" (vida 1d8, recursos metade) e "Descanso Longo" (vida total, recursos total).
         </div>
       ) : (

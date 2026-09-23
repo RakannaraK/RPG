@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 function novoId() {
   return `m${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`
@@ -45,13 +45,13 @@ export default function MoedasEditor({ config, onChange }) {
           ativar
         </label>
       </div>
-      <p className="text-purple-500 text-xs">
+      <p className="text-accent-300 text-xs">
         Denominações e taxas do sistema. <span className="font-mono text-purple-300">valor</span> = quanto vale
         na unidade-base (a menor). Ex: Cobre 1, Prata 10, Ouro 100. Sem moedas, a ficha não mostra carteira.
       </p>
 
       {!m.ativo ? (
-        <p className="text-purple-600 text-xs">Desativado.</p>
+        <p className="text-accent-300 text-xs">Desativado.</p>
       ) : (
         <>
           {denom.length > 0 && (
@@ -62,11 +62,11 @@ export default function MoedasEditor({ config, onChange }) {
                     className={`${INP} flex-1 min-w-[7rem]`} />
                   <input type="text" value={d.sigla} onChange={e => setDenom(i, { sigla: e.target.value })}
                     placeholder="sigla" className={`${INP} w-16 text-center`} />
-                  <span className="text-purple-500 text-[11px]">vale</span>
+                  <span className="text-accent-300 text-[11px]">vale</span>
                   <input type="number" value={d.valor} onChange={e => setDenom(i, { valor: Number(e.target.value) })}
                     className={`${INP} w-20 text-center`} />
                   <button onClick={() => remover(i)}
-                    className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors shrink-0">×</button>
+                    className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors shrink-0">×</button>
                 </div>
               ))}
             </div>

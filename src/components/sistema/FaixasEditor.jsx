@@ -74,22 +74,22 @@ export default function FaixasEditor({ spec, onChange, classes = [], valorPlaceh
         const aberta = f.ate == null || f.ate === ''
         return (
           <div key={i} className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-purple-600 text-xs">de</span>
+            <span className="text-accent-300 text-xs">de</span>
             <input
               type="number"
               value={f.de ?? ''}
               onChange={e => setFaixa(i, { de: e.target.value === '' ? '' : Number(e.target.value) })}
               className={`${inputCls} w-16 text-center`}
             />
-            <span className="text-purple-600 text-xs">até</span>
+            <span className="text-accent-300 text-xs">até</span>
             <input
               type="number"
               value={aberta ? '' : f.ate}
               onChange={e => setFaixa(i, { ate: e.target.value === '' ? null : Number(e.target.value) })}
               placeholder="∞"
-              className={`${inputCls} w-16 text-center placeholder-purple-600`}
+              className={`${inputCls} w-16 text-center placeholder-ink-dim`}
             />
-            <span className="text-purple-600 text-xs">→</span>
+            <span className="text-accent-300 text-xs">→</span>
             <input
               type="text"
               value={f.valor ?? ''}
@@ -101,7 +101,7 @@ export default function FaixasEditor({ spec, onChange, classes = [], valorPlaceh
             <button
               type="button"
               onClick={() => remover(i)}
-              className="w-6 h-6 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors"
+              className="w-6 h-6 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors"
               title="Remover faixa"
             >
               ×

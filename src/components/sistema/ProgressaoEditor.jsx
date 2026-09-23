@@ -22,7 +22,7 @@ const ALVOS_COMPRA = [
   { id: 'trilha_tamanho_bonus', nome: 'Caixinhas extras de trilha' },
 ]
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 function novoId() {
   return `cat_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 4)}`
@@ -55,7 +55,7 @@ function CategoriasCompra({ categorias = [], onChange }) {
                 <input type="number" min={1} value={c.maximo ?? ''} onChange={e => setCat(i, { maximo: e.target.value === '' ? null : Number(e.target.value) })}
                   placeholder="—" className={`${INP} w-14 text-center`} /></label>
               <button onClick={() => onChange(categorias.filter((_, j) => j !== i))}
-                className="ml-auto w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors">×</button>
+                className="ml-auto w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex-1 min-w-[10rem]">
@@ -63,7 +63,7 @@ function CategoriasCompra({ categorias = [], onChange }) {
                   placeholder="custo: ex novo_valor * 5" variaveis={['novo_valor', ' * ', ' + ']} />
               </div>
               {previa != null && (
-                <span className="text-purple-500 text-[11px] shrink-0">prévia 2→3: <span className="text-green-400 font-mono">{previa} XP</span></span>
+                <span className="text-accent-300 text-[11px] shrink-0">prévia 2→3: <span className="text-green-400 font-mono">{previa} XP</span></span>
               )}
             </div>
             {c.alvo === 'linha_poder' && (
@@ -144,7 +144,7 @@ export default function ProgressaoEditor({ progressao, onChange, modoProgressao 
               </button>
             ))}
           </div>
-          <p className="text-purple-600 text-[11px]">
+          <p className="text-accent-300 text-[11px]">
             {MODOS_PROGRESSAO.find(m => m.id === modoGeral)?.dica}. Os modos são excludentes — um por sistema.
           </p>
         </>
@@ -158,13 +158,13 @@ export default function ProgressaoEditor({ progressao, onChange, modoProgressao 
         />
       )}
       {onModoChange && modoGeral === 'nenhum' && (
-        <p className="text-purple-600 text-xs">A ficha não exibe nível, XP nem progressão.</p>
+        <p className="text-accent-300 text-xs">A ficha não exibe nível, XP nem progressão.</p>
       )}
 
       {/* Por nível (F19): a curva de sempre */}
       {(!onModoChange || modoGeral === 'nivel') && (
         <>
-      <p className="text-purple-500 text-xs">
+      <p className="text-accent-300 text-xs">
         Como o personagem sobe de nível. Subir de nível é sempre{' '}
         <span className="text-purple-300">manual e confirmado</span> — o XP só avisa quando dá.
       </p>
@@ -188,7 +188,7 @@ export default function ProgressaoEditor({ progressao, onChange, modoProgressao 
       </div>
 
       {modo === 'nenhum' && (
-        <p className="text-purple-600 text-xs">
+        <p className="text-accent-300 text-xs">
           Sistema sem XP. A ficha mostra só o botão de subir de nível, sem barra de progresso.
         </p>
       )}
@@ -204,9 +204,9 @@ export default function ProgressaoEditor({ progressao, onChange, modoProgressao 
             onChange={e => onChange({ ...prog, tabela: parseTabela(e.target.value) })}
             placeholder="0, 300, 900, 2700, 6500"
             spellCheck={false}
-            className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm font-mono placeholder-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm font-mono placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
-          <p className="text-purple-600 text-xs">
+          <p className="text-accent-300 text-xs">
             Separe por vírgula ou espaço. {(prog.tabela || []).length} nível(is) definido(s).
             Acima do último, não há próximo nível.
           </p>
@@ -231,7 +231,7 @@ export default function ProgressaoEditor({ progressao, onChange, modoProgressao 
       {erroPrevia && <p className="text-red-400 text-xs">⚠ {erroPrevia}</p>}
 
       {previa && previa.length > 0 && !erroPrevia && (
-        <div className="text-xs text-purple-500 border-t border-purple-900 pt-2">
+        <div className="text-xs text-accent-300 border-t border-purple-900 pt-2">
           <span className="text-purple-400 font-semibold">Prévia (XP acumulado):</span>{' '}
           {previa.map(p => (
             <span key={p.nivel} className="font-mono mr-2">

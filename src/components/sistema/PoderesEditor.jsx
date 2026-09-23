@@ -10,7 +10,7 @@ import {
 import { CustoEditor, EscalaEditor } from './CustoEditor'
 import FormulaInput from './FormulaInput'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 const VAZIO = {
   nome: '', descricao: '', categoria: '', circulo: '',
@@ -125,7 +125,7 @@ function PoderForm({ inicial, pools, classes, linhas = [], onSalvar, onCancelar 
           <option value="">Sem classe</option>
           {classes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
         </select>
-        <span className="text-purple-500 text-[11px]">nv mín.</span>
+        <span className="text-accent-300 text-[11px]">nv mín.</span>
         <input type="number" min={1} value={f.nivel_minimo} onChange={e => set({ nivel_minimo: e.target.value })}
           placeholder="—" className={`${INP} w-14 text-center`} />
         <select value={f.linha_id} onChange={e => set({ linha_id: e.target.value })} className={INP}>
@@ -134,7 +134,7 @@ function PoderForm({ inicial, pools, classes, linhas = [], onSalvar, onCancelar 
         </select>
         {f.linha_id && (
           <>
-            <span className="text-purple-500 text-[11px]">nv na linha</span>
+            <span className="text-accent-300 text-[11px]">nv na linha</span>
             <input type="number" min={1} value={f.nivel_linha} onChange={e => set({ nivel_linha: e.target.value })}
               placeholder="—" className={`${INP} w-14 text-center`} />
           </>
@@ -188,11 +188,11 @@ export default function PoderesEditor({ sistemaId }) {
     <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <p className="text-purple-200 text-sm font-semibold">Poderes</p>
-        <span className="text-purple-600 text-xs">
+        <span className="text-accent-300 text-xs">
           {visiveis.length} de {poderes.length}
         </span>
       </div>
-      <p className="text-purple-500 text-xs">
+      <p className="text-accent-300 text-xs">
         Cartas de poder do sistema — "Magia", "Técnica", "Oração": a categoria é sua.
         O custo pode ser em <span className="text-purple-300">recurso</span> (pool) e/ou em{' '}
         <span className="text-purple-300">slot de círculo</span>.
@@ -244,27 +244,27 @@ export default function PoderesEditor({ sistemaId }) {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="text-white text-xs font-medium">{p.nome}</span>
-                  {p.categoria && <span className="text-purple-500 text-[11px] ml-1.5">{p.categoria}</span>}
-                  {p.nivel_minimo != null && <span className="text-purple-500 text-[11px] ml-1.5">nv {p.nivel_minimo}+</span>}
-                  <span className="block text-purple-500 text-[11px]">
+                  {p.categoria && <span className="text-accent-300 text-[11px] ml-1.5">{p.categoria}</span>}
+                  {p.nivel_minimo != null && <span className="text-accent-300 text-[11px] ml-1.5">nv {p.nivel_minimo}+</span>}
+                  <span className="block text-accent-300 text-[11px]">
                     {descreverCusto(p.custo, poolsPorId)}
                     {p.efeito_notacao && <span className="font-mono text-purple-400"> · {p.efeito_notacao}{p.efeito_tipo ? ` (${p.efeito_tipo})` : ''}</span>}
                   </span>
                   {descreverEscala(p.escala_circulo) && (
-                    <span className="block text-purple-600 text-[11px]">↗ {descreverEscala(p.escala_circulo)}</span>
+                    <span className="block text-accent-300 text-[11px]">↗ {descreverEscala(p.escala_circulo)}</span>
                   )}
                 </span>
                 <button onClick={() => { setEditando(p.id); setCriando(false) }}
-                  className="text-purple-500 hover:text-white text-[11px] shrink-0">editar</button>
+                  className="text-accent-300 hover:text-white text-[11px] shrink-0">editar</button>
                 <button onClick={() => removerPoder(p.id).catch(e => setErro(e.message))}
-                  className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors shrink-0"
+                  className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors shrink-0"
                   title="Remover poder">×</button>
               </div>
             </div>
           )
         ))}
         {visiveis.length === 0 && (
-          <p className="text-purple-600 text-xs">
+          <p className="text-accent-300 text-xs">
             {poderes.length === 0 ? 'Nenhum poder cadastrado ainda.' : 'Nenhum poder bate com o filtro.'}
           </p>
         )}

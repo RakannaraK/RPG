@@ -67,10 +67,10 @@ export default function ConcederXpGrupo({ onConceder }) {
             <div className="space-y-2 mb-4">
               <input type="number" min={1} value={quantidade} onChange={e => setQuantidade(e.target.value)}
                 placeholder="Quantidade de XP" autoFocus
-                className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
               <input type="text" value={motivo} onChange={e => setMotivo(e.target.value)}
                 placeholder="Motivo (opcional, ex: Sessão 12)"
-                className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
             </div>
             {erro && <p className="text-red-400 text-xs mb-3">{erro}</p>}
             <div className="flex gap-3">

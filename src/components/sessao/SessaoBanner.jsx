@@ -132,7 +132,7 @@ export default function SessaoBanner({ mesaId, isGestor }) {
   // Jogador sem sessão ativa: estado neutro discreto
   return (
     <div className="mt-6 rounded-2xl border border-dashed border-purple-900/60 bg-slate-900/30 px-5 py-3">
-      <p className="text-purple-500 text-sm text-center">
+      <p className="text-accent-300 text-sm text-center">
         Nenhuma sessão ativa. Quando o mestre iniciar, o convite aparece aqui.
       </p>
     </div>

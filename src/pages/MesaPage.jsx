@@ -494,7 +494,7 @@ export default function MesaPage() {
                 <div className="text-center py-16 border border-dashed border-purple-800 rounded-2xl">
                   <Ilustra nome="pergaminho" tamanho={72} className="mx-auto mb-4" />
                   <p className="text-purple-300 text-lg font-medium mb-2">Nenhuma ficha criada</p>
-                  <p className="text-purple-500 text-sm mb-5">
+                  <p className="text-accent-300 text-sm mb-5">
                     {podeEscrever
                       ? 'Crie sua primeira ficha de personagem para começar a aventura!'
                       : arquivada ? 'Mesa arquivada — somente leitura.' : 'Como espectador, você não cria fichas.'}
@@ -555,7 +555,7 @@ export default function MesaPage() {
                                   {f.hp_atual ?? '?'}/{f.hp_maximo} HP
                                 </p>
                               )}
-                              <p className="text-purple-500 text-xs mt-0.5">
+                              <p className="text-accent-300 text-xs mt-0.5">
                                 {orfa ? 'ex-membro' : f.dono?.username}
                               </p>
                             </div>
@@ -589,7 +589,7 @@ export default function MesaPage() {
                     return (
                       <details key={pasta ?? ''} open className="group/pasta">
                         <summary className="cursor-pointer text-purple-300 text-sm font-medium mb-2 select-none">
-                          📁 {pasta ?? 'Sem pasta'} <span className="text-purple-500 font-normal">({daPasta.length})</span>
+                          📁 {pasta ?? 'Sem pasta'} <span className="text-accent-300 font-normal">({daPasta.length})</span>
                         </summary>
                         {cartoes}
                       </details>
@@ -693,7 +693,7 @@ export default function MesaPage() {
                       {copiado ? '✓ Copiado!' : 'Copiar'}
                     </button>
                   </div>
-                  <p className="text-purple-500 text-xs mt-2">
+                  <p className="text-accent-300 text-xs mt-2">
                     Compartilhe este código com seus jogadores para eles entrarem na mesa.
                   </p>
 
@@ -765,8 +765,8 @@ export default function MesaPage() {
                         )}
                         <span className="text-white text-sm truncate">
                           {m.apelido || m.usuario.username}
-                          {m.apelido && <span className="text-purple-600 text-xs"> ({m.usuario.username})</span>}
-                          {m.usuario.id === session?.user?.id && <span className="text-purple-500"> (você)</span>}
+                          {m.apelido && <span className="text-accent-300 text-xs"> ({m.usuario.username})</span>}
+                          {m.usuario.id === session?.user?.id && <span className="text-accent-300"> (você)</span>}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -806,7 +806,7 @@ export default function MesaPage() {
               {isCriador && membros.length > 1 && (
                 <div className="bg-slate-800 border border-amber-800/40 rounded-xl p-5">
                   <p className="text-purple-300 text-sm font-medium mb-1">Transferir posse</p>
-                  <p className="text-purple-500 text-xs mb-3">
+                  <p className="text-accent-300 text-xs mb-3">
                     Passe a mesa para outro membro. Você deixa de ser o dono e vira co-mestre.
                   </p>
                   <button
@@ -833,7 +833,7 @@ export default function MesaPage() {
               {isCriador && (
                 <div className="bg-slate-800 border border-purple-800 rounded-xl p-5">
                   <p className="text-purple-300 text-sm font-medium mb-1">{arquivada ? 'Mesa arquivada' : 'Arquivar mesa'}</p>
-                  <p className="text-purple-500 text-xs mb-3">
+                  <p className="text-accent-300 text-xs mb-3">
                     {arquivada
                       ? 'A mesa está em somente leitura. Desarquive para voltar a jogar.'
                       : 'Guarda a mesa em somente leitura (sem novas sessões, fichas ou rolagens). Some da lista principal e pode ser desarquivada depois.'}
@@ -848,7 +848,7 @@ export default function MesaPage() {
               {isCriador && (
                 <div className="bg-slate-800 border border-red-900/60 rounded-xl p-5">
                   <p className="text-red-300 text-sm font-medium mb-1">Deletar mesa</p>
-                  <p className="text-purple-500 text-xs mb-3">
+                  <p className="text-accent-300 text-xs mb-3">
                     Apaga a mesa, as fichas, o sistema e o histórico de sessões. Não tem como desfazer —
                     se a ideia é só parar de jogar, use arquivar.
                   </p>

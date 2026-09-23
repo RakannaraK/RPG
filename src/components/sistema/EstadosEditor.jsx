@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ModificadorForm, labelModificador } from './RacasClassesEditor'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 function novoId(prefixo) {
   return `${prefixo}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 4)}`
@@ -25,13 +25,13 @@ function FaixaEfeito({ faixa, onChange, onRemove, atributos, pericias, camposCom
   return (
     <div className="rounded-lg border border-purple-900/50 bg-slate-900/40 p-2 space-y-1.5">
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-purple-600 text-[11px]">de</span>
+        <span className="text-accent-300 text-[11px]">de</span>
         <input type="number" value={faixa.de ?? ''} onChange={e => set({ de: e.target.value === '' ? null : Number(e.target.value) })} placeholder="−∞" className={`${INP} w-14 text-center`} />
-        <span className="text-purple-600 text-[11px]">até</span>
+        <span className="text-accent-300 text-[11px]">até</span>
         <input type="number" value={faixa.ate ?? ''} onChange={e => set({ ate: e.target.value === '' ? null : Number(e.target.value) })} placeholder="+∞" className={`${INP} w-14 text-center`} />
         <input type="text" value={faixa.aviso || ''} onChange={e => set({ aviso: e.target.value })}
           placeholder="aviso (chip na ficha — ex: A Besta está próxima.)" className={`${INP} flex-1 min-w-[10rem]`} />
-        <button onClick={onRemove} className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors">×</button>
+        <button onClick={onRemove} className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
       </div>
       <input type="text" value={(faixa.bloqueios || []).join(', ')}
         onChange={e => set({ bloqueios: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
@@ -43,7 +43,7 @@ function FaixaEfeito({ faixa, onChange, onRemove, atributos, pericias, camposCom
           {mods.map((m, i) => (
             <span key={i} className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border bg-purple-950/70 border-purple-700 text-purple-200">
               {labelModificador(m, { atributos, pericias, camposCombate })}
-              <button onClick={() => set({ modificadores: mods.filter((_, j) => j !== i) })} className="text-purple-500 hover:text-red-400">×</button>
+              <button onClick={() => set({ modificadores: mods.filter((_, j) => j !== i) })} className="text-accent-300 hover:text-red-400">×</button>
             </span>
           ))}
         </div>
@@ -54,7 +54,7 @@ function FaixaEfeito({ faixa, onChange, onRemove, atributos, pericias, camposCom
             atributos={atributos} pericias={pericias} camposCombate={camposCombate} pools={pools}
             onAdd={payload => { set({ modificadores: [...mods, { id: novoId('m'), ...payload }] }); setAddMod(false) }}
           />
-          <button onClick={() => setAddMod(false)} className="mt-1 text-[11px] text-purple-500 hover:text-purple-300">Cancelar</button>
+          <button onClick={() => setAddMod(false)} className="mt-1 text-[11px] text-accent-300 hover:text-purple-300">Cancelar</button>
         </div>
       ) : (
         <button onClick={() => setAddMod(true)}
@@ -78,7 +78,7 @@ export default function EstadosEditor({ estados = [], onChange, atributos = [], 
     <div className="bg-slate-800 border border-purple-700 rounded-xl p-4 space-y-3">
       <div>
         <p className="text-purple-200 text-sm font-semibold">Estados com gatilhos</p>
-        <p className="text-purple-500 text-xs mt-0.5">
+        <p className="text-accent-300 text-xs mt-0.5">
           Contadores centrais do sistema (ex: Fome 0-5) com efeitos por faixa de valor. Os efeitos
           entram e saem sozinhos; avisos viram chips; bloqueios informam (a mesa arbitra).
           A variável <span className="font-mono text-purple-300">estado(nome)</span> fica disponível nas fórmulas.
@@ -97,7 +97,7 @@ export default function EstadosEditor({ estados = [], onChange, atributos = [], 
             <label className="text-purple-400 text-[11px] flex items-center gap-1">inicial
               <input type="number" value={cfg.inicial ?? 0} onChange={e => setEstado(i, { inicial: Number(e.target.value) })} className={`${INP} w-14 text-center`} /></label>
             <button onClick={() => onChange(estados.filter((_, j) => j !== i))}
-              className="ml-auto w-6 h-6 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors">✕</button>
+              className="ml-auto w-6 h-6 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">✕</button>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <label className="text-purple-300 text-[11px] flex items-center gap-1.5 cursor-pointer">

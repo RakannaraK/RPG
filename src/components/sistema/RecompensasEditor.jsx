@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useRecompensas } from '../../hooks/useRecompensas'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 /**
  * Fase 19.6 — CRUD das recompensas por nível do sistema.
@@ -36,7 +36,7 @@ export default function RecompensasEditor({ sistemaId, classes = [] }) {
   return (
     <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
       <p className="text-purple-200 text-sm font-semibold">Recompensas por nível</p>
-      <p className="text-purple-500 text-xs">
+      <p className="text-accent-300 text-xs">
         O que o personagem ganha ao chegar num nível. É um <span className="text-purple-300">checklist-guia</span>:
         o jogador aplica à mão (criar habilidade, subir atributo) e marca aqui. Deixe a classe em
         branco para valer no <span className="text-purple-300">nível total</span>.
@@ -53,11 +53,11 @@ export default function RecompensasEditor({ sistemaId, classes = [] }) {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="text-white text-xs block">{r.titulo}</span>
-                  {r.descricao && <span className="text-purple-500 text-[11px] block">{r.descricao}</span>}
+                  {r.descricao && <span className="text-accent-300 text-[11px] block">{r.descricao}</span>}
                 </span>
                 <button
                   onClick={() => removerRecompensa(r.id).catch(e => setErro(e.message))}
-                  className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors shrink-0"
+                  className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors shrink-0"
                   title="Remover recompensa"
                 >
                   ×

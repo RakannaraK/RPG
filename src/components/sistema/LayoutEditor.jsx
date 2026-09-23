@@ -12,7 +12,7 @@ import { ehRolado } from '../../lib/pontosEngine'
 import { PRESET_IDS } from '../../engines/actionSoundEngine'
 import { tocarPresetAcao } from '../../audio/actionSynth'
 
-const INP_PS = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500'
+const INP_PS = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500'
 
 /**
  * Fase 22.1 — config de pontos de status (point-buy). EXCLUDENTE com a rolagem
@@ -30,7 +30,7 @@ function PontosStatusEditor({ cfg = {}, onChange }) {
           ativar
         </label>
       </div>
-      <p className="text-purple-500 text-xs">
+      <p className="text-accent-300 text-xs">
         Point-buy: um pool inicial e ganho por nível, distribuídos nos atributos. É um modo
         <span className="text-amber-400"> alternativo</span> — não use junto com a rolagem de atributo (F3).
         Valores aceitam número, fórmula (<span className="font-mono">nivel</span>) ou notação rolada
@@ -95,7 +95,7 @@ function CriticoEditor({ cfg = {}, onChange }) {
           ativar
         </label>
       </div>
-      <p className="text-purple-500 text-xs">
+      <p className="text-accent-300 text-xs">
         Avaliado no <span className="text-purple-300">dado puro do acerto</span> (antes de bônus). O limiar
         é uma fórmula que pode usar <span className="font-mono text-purple-300">maestria</span> (nível do item).
         Ex.: d20 clássico → <span className="font-mono">20</span>; IC → <span className="font-mono">max(25, 85 - 15 * piso(maestria / 2))</span>.
@@ -131,7 +131,7 @@ function CriticoEditor({ cfg = {}, onChange }) {
               </select>
             </span>
           </div>
-          <p className="text-purple-600 text-[11px]">
+          <p className="text-accent-300 text-[11px]">
             Ordem: dados+fixos → multiplicador crítico → percentuais → piso. O multiplicador de uma
             categoria (aba Maestria & Itens) sobrescreve o padrão.
           </p>
@@ -245,7 +245,7 @@ export default function LayoutEditor({
       {/* Dado padrão dos testes */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
         <p className="text-purple-200 text-sm font-semibold">Dado padrão dos testes</p>
-        <p className="text-purple-500 text-xs">
+        <p className="text-accent-300 text-xs">
           Dado usado em testes de atributo e perícia. Aceita qualquer valor ≥ 2 (ex: d17, d1000).
         </p>
         <div className="flex items-center gap-3 flex-wrap">
@@ -281,7 +281,7 @@ export default function LayoutEditor({
       {/* Fórmula do modificador de atributo (17.3) */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
         <p className="text-purple-200 text-sm font-semibold">Modificador de atributo</p>
-        <p className="text-purple-500 text-xs">
+        <p className="text-accent-300 text-xs">
           Como o modificador de cada atributo sai do valor. Use <span className="font-mono text-purple-300">x</span> para
           o valor do atributo. Vazio = sem modificador (usa o valor puro, ex: Infinit Corridor).
           A ficha exibe o modificador calculado quando há fórmula.
@@ -300,7 +300,7 @@ export default function LayoutEditor({
       {/* Exibição de atributos — dots (24.3) */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
         <p className="text-purple-200 text-sm font-semibold">Exibição de atributos e perícias</p>
-        <p className="text-purple-500 text-xs">
+        <p className="text-accent-300 text-xs">
           <span className="text-purple-300">Dots</span> mostra bolinhas (●●●○○) em vez de número — só a
           exibição muda; fórmulas e paradas continuam lendo o número. Override por atributo na aba Atributos.
         </p>
@@ -333,7 +333,7 @@ export default function LayoutEditor({
       {/* Fórmula de proficiência (19.2) */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
         <p className="text-purple-200 text-sm font-semibold">Proficiência</p>
-        <p className="text-purple-500 text-xs">
+        <p className="text-accent-300 text-xs">
           Fórmula da variável <span className="font-mono text-purple-300">proficiencia</span> (use{' '}
           <span className="font-mono text-purple-300">nivel</span>). Vazio = sistema sem proficiência
           (a variável nem aparece). Ex: D&D no nível 13 → 5.
@@ -419,10 +419,10 @@ export default function LayoutEditor({
             value={config.rotulo_vida}
             onChange={e => onConfigChange({ ...config, rotulo_vida: e.target.value })}
             placeholder="Pontos de Vida"
-            className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
-        <p className="text-purple-600 text-xs">
+        <p className="text-accent-300 text-xs">
           Ex: "Pontos de Vida", "Vitalidade", "HP", "Sanidade"
         </p>
       </div>
@@ -437,7 +437,7 @@ export default function LayoutEditor({
 
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
         <p className="text-purple-200 text-sm font-semibold">Sons padrão (ações de combate)</p>
-        <p className="text-purple-500 text-xs">
+        <p className="text-accent-300 text-xs">
           Toca quando a arma/item ou habilidade não tem um som próprio configurado.
           Opcional — deixe em branco para não tocar nada (como hoje).
         </p>
@@ -477,7 +477,7 @@ export default function LayoutEditor({
       {/* Seções */}
       <div>
         <p className="text-purple-200 text-sm font-semibold mb-1">Seções da ficha</p>
-        <p className="text-purple-500 text-xs mb-4">
+        <p className="text-accent-300 text-xs mb-4">
           Atributos estão sempre ativos. As demais seções aparecem na ficha apenas se ativadas aqui.
         </p>
 
@@ -485,9 +485,9 @@ export default function LayoutEditor({
         <div className="flex items-center justify-between bg-slate-800/50 border border-purple-900/40 rounded-xl px-4 py-3 mb-2 opacity-60">
           <div>
             <p className="text-white text-sm font-medium">Atributos</p>
-            <p className="text-purple-500 text-xs">Valores de Força, Destreza, etc. definidos no sistema</p>
+            <p className="text-accent-300 text-xs">Valores de Força, Destreza, etc. definidos no sistema</p>
           </div>
-          <span className="text-xs text-purple-500 font-medium">Sempre ativo</span>
+          <span className="text-xs text-accent-300 font-medium">Sempre ativo</span>
         </div>
 
         <div className="space-y-2">
@@ -498,7 +498,7 @@ export default function LayoutEditor({
             >
               <div>
                 <p className="text-white text-sm font-medium">{s.label}</p>
-                <p className="text-purple-500 text-xs">{s.desc}</p>
+                <p className="text-accent-300 text-xs">{s.desc}</p>
               </div>
               <Toggle
                 checked={!!config.secoes[s.id]}
@@ -515,7 +515,7 @@ export default function LayoutEditor({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-purple-200 text-sm font-semibold">Campos de combate</p>
-              <p className="text-purple-500 text-xs mt-0.5">
+              <p className="text-accent-300 text-xs mt-0.5">
                 Cada campo é uma caixa na ficha. <span className="text-purple-400">Manual</span> = editável;{' '}
                 <span className="text-purple-400">Calculado</span> = fórmula (read-only, recalcula sozinho).
               </p>
@@ -530,7 +530,7 @@ export default function LayoutEditor({
           </div>
 
           {config.campos_combate.length === 0 ? (
-            <p className="text-purple-600 text-xs py-2">
+            <p className="text-accent-300 text-xs py-2">
               Nenhum campo ainda. Ex: Classe de Armadura, Iniciativa, Deslocamento
             </p>
           ) : (
@@ -546,7 +546,7 @@ export default function LayoutEditor({
                         value={campo.nome}
                         onChange={e => updateCampoCombate(i, { nome: e.target.value })}
                         placeholder="Ex: Classe de Armadura"
-                        className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                       />
                       <select
                         value={campo.tipo || 'manual'}
@@ -576,10 +576,10 @@ export default function LayoutEditor({
                         />
                         {previa && (
                           previa.ok
-                            ? <p className="text-purple-500 text-xs mt-1">Prévia (atributos=10, nível=5): <span className="text-green-400 font-mono">{previa.valor}</span></p>
+                            ? <p className="text-accent-300 text-xs mt-1">Prévia (atributos=10, nível=5): <span className="text-green-400 font-mono">{previa.valor}</span></p>
                             : <p className="text-red-400 text-xs mt-1">⚠ {previa.erro}</p>
                         )}
-                        <p className="text-purple-600 text-[11px] mt-1">
+                        <p className="text-accent-300 text-[11px] mt-1">
                           Pode usar atributos, mod, nível, perícias — mas não outro campo (evita ciclos).
                         </p>
                         {/* 22.7 — destacar este derivado no painel de combate */}
@@ -608,7 +608,7 @@ export default function LayoutEditor({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-purple-200 text-sm font-semibold">Perícias</p>
-              <p className="text-purple-500 text-xs mt-0.5">
+              <p className="text-accent-300 text-xs mt-0.5">
                 Defina as perícias do sistema. O bônus base pode ser ligado a um atributo.
               </p>
             </div>
@@ -622,7 +622,7 @@ export default function LayoutEditor({
           </div>
 
           {pericias.length === 0 ? (
-            <p className="text-purple-600 text-xs py-2">
+            <p className="text-accent-300 text-xs py-2">
               Nenhuma perícia ainda. Ex: Percepção, Atletismo, Furtividade, Persuasão
             </p>
           ) : (
@@ -634,7 +634,7 @@ export default function LayoutEditor({
                     value={p.nome}
                     onChange={e => onUpdatePericia(i, { ...p, nome: e.target.value })}
                     placeholder="Ex: Percepção"
-                    className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                   <select
                     value={p.atributo_base_id || ''}

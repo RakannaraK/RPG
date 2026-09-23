@@ -1,6 +1,6 @@
 import { validarFaixasDefesa } from '../../lib/defesaEngine'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 function novoId() {
   return `o${Date.now().toString(36)}${Math.random().toString(36).slice(2, 4)}`
@@ -31,7 +31,7 @@ export default function DefesaAtivaEditor({ cfg = {}, onChange }) {
           ativar
         </label>
       </div>
-      <p className="text-purple-500 text-xs">
+      <p className="text-accent-300 text-xs">
         No combate, o alvo pode reagir (rolagem oposta). A faixa é escolhida por
         <span className="font-mono text-purple-300"> defesa − ataque</span> e reduz o dano. É
         <span className="text-amber-400"> assíncrona</span>: sem resposta, o mestre resolve — nunca trava o turno.
@@ -49,7 +49,7 @@ export default function DefesaAtivaEditor({ cfg = {}, onChange }) {
                 <input type="text" value={o.notacao || ''} onChange={e => setOpcao(i, { notacao: e.target.value })}
                   placeholder="1d100 + atributo(agilidade)" className={`${INP} flex-1 min-w-[10rem] font-mono`} />
                 <button onClick={() => set({ opcoes: opcoes.filter((_, j) => j !== i) })}
-                  className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors">×</button>
+                  className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
               </div>
             ))}
             <button onClick={() => set({ opcoes: [...opcoes, { id: novoId(), nome: '', notacao: '' }] })}
@@ -63,20 +63,20 @@ export default function DefesaAtivaEditor({ cfg = {}, onChange }) {
             <p className="text-purple-400 text-[11px]">Faixas de redução (por defesa − ataque). Vazio = aberto (−∞ / +∞).</p>
             {faixas.map((f, i) => (
               <div key={i} className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-purple-600 text-[11px]">de</span>
+                <span className="text-accent-300 text-[11px]">de</span>
                 <input type="number" value={f.de ?? ''} onChange={e => setFaixa(i, { de: e.target.value === '' ? null : Number(e.target.value) })}
                   placeholder="−∞" className={`${INP} w-14 text-center`} />
-                <span className="text-purple-600 text-[11px]">até</span>
+                <span className="text-accent-300 text-[11px]">até</span>
                 <input type="number" value={f.ate ?? ''} onChange={e => setFaixa(i, { ate: e.target.value === '' ? null : Number(e.target.value) })}
                   placeholder="+∞" className={`${INP} w-14 text-center`} />
-                <span className="text-purple-600 text-[11px]">reduz</span>
+                <span className="text-accent-300 text-[11px]">reduz</span>
                 <input type="number" value={f.reducao_percentual ?? ''} onChange={e => setFaixa(i, { reducao_percentual: e.target.value === '' ? '' : Number(e.target.value) })}
                   placeholder="%" className={`${INP} w-14 text-center`} />
-                <span className="text-purple-600 text-[11px]">%</span>
+                <span className="text-accent-300 text-[11px]">%</span>
                 <input type="text" value={f.rotulo || ''} onChange={e => setFaixa(i, { rotulo: e.target.value })}
                   placeholder="rótulo" className={`${INP} flex-1 min-w-[6rem]`} />
                 <button onClick={() => set({ faixas: faixas.filter((_, j) => j !== i) })}
-                  className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors">×</button>
+                  className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
               </div>
             ))}
             <button onClick={() => set({ faixas: [...faixas, { de: null, ate: null, reducao_percentual: '', rotulo: '' }] })}
@@ -95,19 +95,19 @@ export default function DefesaAtivaEditor({ cfg = {}, onChange }) {
               o defensor sofre o dano cheio
             </label>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-purple-500 text-[11px]">aplica no atacante:</span>
+              <span className="text-accent-300 text-[11px]">aplica no atacante:</span>
               <input type="text" value={contra.condicao?.nome || ''} onChange={e => setCond({ nome: e.target.value })}
                 placeholder="Exposto" className={`${INP} w-28`} />
-              <span className="text-purple-500 text-[11px]">por</span>
+              <span className="text-accent-300 text-[11px]">por</span>
               <input type="number" min={1} value={contra.condicao?.duracao_rodadas ?? 1} onChange={e => setCond({ duracao_rodadas: Number(e.target.value) })}
                 className={`${INP} w-14 text-center`} />
-              <span className="text-purple-500 text-[11px]">rodada(s)</span>
+              <span className="text-accent-300 text-[11px]">rodada(s)</span>
             </div>
             <input type="text" value={contra.condicao?.descricao || ''} onChange={e => setCond({ descricao: e.target.value })}
               placeholder="Descrição da condição (ex: desvantagem no próximo desvio)" className={`${INP} w-full`} />
             {/* F32.5 — dano do troco: rolado pelo defensor na hora do contra-ataque */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-purple-500 text-[11px]">dano do troco:</span>
+              <span className="text-accent-300 text-[11px]">dano do troco:</span>
               <input type="text" value={contra.notacao || ''} onChange={e => setContra({ notacao: e.target.value })}
                 placeholder="Ex: 1d6+atributo(Força)" className={`${INP} w-56`}
                 title="O defensor rola isto ao contra-atacar; o resultado vira dano pendente para o mestre aplicar no atacante. Vazio = sem rolagem." />

@@ -9,7 +9,7 @@ import { baixarJson } from '../../lib/baixarArquivo'
 import ImportarFicha from '../ficha/ImportarFicha'
 import Ilustra from '../arte/Ilustra'
 
-const INP = 'px-3 py-2 rounded-lg bg-slate-900 border border-purple-800 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-3 py-2 rounded-lg bg-slate-900 border border-purple-800 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 const AMEACAS = ['Trivial', 'Fácil', 'Normal', 'Difícil', 'Mortal', 'Lendária']
 const ESPECIES = ['Fera', 'Humanoide', 'Morto-vivo', 'Aberração', 'Elemental', 'Construto', 'Dragão', 'Espírito']
 
@@ -111,7 +111,7 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
               {ocupado === 'criando' ? 'Criando…' : 'Criar e abrir a ficha'}
             </button>
             <button type="button" onClick={() => { setNovo(null); setErro('') }} className="px-3 py-1.5 text-sm text-purple-300 hover:text-white">Cancelar</button>
-            <span className="text-purple-500 text-xs">Atributos, habilidades e itens você monta na ficha.</span>
+            <span className="text-accent-300 text-xs">Atributos, habilidades e itens você monta na ficha.</span>
           </div>
         </div>
       )}
@@ -125,7 +125,7 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
           <Ilustra nome="garra" tamanho={64} className="mx-auto mb-3" />
           <p className="text-purple-300 text-sm">{doBestiario.length === 0 ? 'Bestiário vazio.' : 'Nada encontrado com esse texto.'}</p>
           {podeEscrever && doBestiario.length === 0 && (
-            <p className="text-purple-500 text-xs mt-1">Crie criaturas aqui e invoque-as no combate e no mapa.</p>
+            <p className="text-accent-300 text-xs mt-1">Crie criaturas aqui e invoque-as no combate e no mapa.</p>
           )}
         </div>
       ) : (

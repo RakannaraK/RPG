@@ -75,7 +75,7 @@ export default function MeuPerfilMesa({ mesaId, usuarioId, username, apelidoInic
             value={apelido}
             onChange={e => setApelido(e.target.value)}
             placeholder={`Apelido (padrão: ${username || 'seu nome'})`}
-            className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+            className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500"
           />
           <div className="flex items-center gap-2 flex-wrap">
             <label className="text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-purple-200 rounded-lg cursor-pointer transition-colors">

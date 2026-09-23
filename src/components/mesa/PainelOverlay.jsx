@@ -56,7 +56,7 @@ export default function PainelOverlay({ mesaId }) {
     <div className="space-y-2">
       <div>
         <p className="text-purple-200 font-medium text-sm">Overlay para transmissão (OBS)</p>
-        <p className="text-purple-500 text-xs mt-0.5">
+        <p className="text-accent-300 text-xs mt-0.5">
           Um link secreto com os retratos e a vida do grupo, com fundo transparente — entra no OBS como “fonte de navegador”.
         </p>
       </div>
@@ -107,7 +107,7 @@ export default function PainelOverlay({ mesaId }) {
               mostrar última rolagem
             </label>
           </div>
-          <p className="text-purple-600 text-[11px]">
+          <p className="text-accent-300 text-[11px]">
             Ficha privada nunca aparece no overlay; notas, chat e eventos secretos também não.
           </p>
         </>

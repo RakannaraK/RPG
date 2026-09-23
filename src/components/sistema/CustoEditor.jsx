@@ -1,7 +1,7 @@
 import { validarFormula } from '../../lib/formulaEngine'
 import { validarEscala } from '../../lib/poderes'
 
-const INP = 'px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 /**
  * Fase 20.2 — monta a lista de débitos de um poder.
@@ -33,7 +33,7 @@ export function CustoEditor({ custo = [], pools = [], onChange }) {
           <div key={i} className="flex items-center gap-1.5 flex-wrap">
             {c.tipo === 'pool' ? (
               <>
-                <span className="text-purple-500 text-[11px] w-10">gasta</span>
+                <span className="text-accent-300 text-[11px] w-10">gasta</span>
                 <input
                   type="text"
                   value={c.quantidade ?? ''}
@@ -50,7 +50,7 @@ export function CustoEditor({ custo = [], pools = [], onChange }) {
               </>
             ) : (
               <>
-                <span className="text-purple-500 text-[11px] w-10">slot</span>
+                <span className="text-accent-300 text-[11px] w-10">slot</span>
                 <span className="text-purple-400 text-[11px]">círculo mínimo</span>
                 <input
                   type="number"
@@ -62,7 +62,7 @@ export function CustoEditor({ custo = [], pools = [], onChange }) {
               </>
             )}
             <button type="button" onClick={() => remover(i)}
-              className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors"
+              className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors"
               title="Remover custo">×</button>
           </div>
         )
@@ -80,7 +80,7 @@ export function CustoEditor({ custo = [], pools = [], onChange }) {
           + slot
         </button>
       </div>
-      {custo.length === 0 && <p className="text-purple-600 text-[11px]">Sem custo.</p>}
+      {custo.length === 0 && <p className="text-accent-300 text-[11px]">Sem custo.</p>}
     </div>
   )
 }
@@ -117,27 +117,27 @@ export function EscalaEditor({ escala, onChange }) {
     <div className="space-y-1.5">
       {faixas.map((f, i) => (
         <div key={i} className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-purple-600 text-[11px]">círculo</span>
+          <span className="text-accent-300 text-[11px]">círculo</span>
           <input type="number" value={f.de ?? ''} onChange={e => set(i, { de: Number(e.target.value) })}
             className={`${INP} w-14 text-center`} />
-          <span className="text-purple-600 text-[11px]">até</span>
+          <span className="text-accent-300 text-[11px]">até</span>
           <input type="number" value={f.ate ?? ''} placeholder="∞"
             onChange={e => set(i, { ate: e.target.value === '' ? null : Number(e.target.value) })}
             className={`${INP} w-14 text-center`} />
-          <span className="text-purple-600 text-[11px]">→ +</span>
+          <span className="text-accent-300 text-[11px]">→ +</span>
           <input type="text" value={f.valor_extra_por_circulo ?? ''}
             onChange={e => set(i, { valor_extra_por_circulo: e.target.value })}
             placeholder="1d8" spellCheck={false} className={`${INP} w-20 font-mono`} />
-          <span className="text-purple-600 text-[11px]">por círculo acima</span>
+          <span className="text-accent-300 text-[11px]">por círculo acima</span>
           <button type="button" onClick={() => remover(i)}
-            className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors">×</button>
+            className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
         </div>
       ))}
       <button type="button" onClick={adicionar}
         className="text-[11px] px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
         + faixa
       </button>
-      {faixas.length === 0 && <p className="text-purple-600 text-[11px]">Não escala com o círculo.</p>}
+      {faixas.length === 0 && <p className="text-accent-300 text-[11px]">Não escala com o círculo.</p>}
       {status && !status.valida && <p className="text-red-400 text-[11px]">⚠ {status.erro}</p>}
     </div>
   )

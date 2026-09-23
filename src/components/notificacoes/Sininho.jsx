@@ -57,7 +57,7 @@ export default function Sininho() {
             </div>
 
             {notificacoes.length === 0 ? (
-              <div className="py-8 text-center text-purple-500 text-sm">Nenhuma notificação.</div>
+              <div className="py-8 text-center text-accent-300 text-sm">Nenhuma notificação.</div>
             ) : (
               <ul className="max-h-96 overflow-y-auto divide-y divide-purple-900/60">
                 {notificacoes.map(n => (
@@ -70,7 +70,7 @@ export default function Sininho() {
                         {!n.lida && <span className="w-2 h-2 rounded-full bg-purple-500 mt-1.5 shrink-0" />}
                         <div className="min-w-0 flex-1">
                           <p className={`text-sm ${n.lida ? 'text-purple-300' : 'text-white font-medium'}`}>{n.titulo}</p>
-                          {n.corpo && <p className="text-purple-500 text-xs mt-0.5 truncate">{n.corpo}</p>}
+                          {n.corpo && <p className="text-accent-300 text-xs mt-0.5 truncate">{n.corpo}</p>}
                           <p className="text-purple-700 text-[10px] mt-0.5">{tempoRel(n.created_at)}</p>
                         </div>
                       </div>

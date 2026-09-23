@@ -4,7 +4,7 @@ import { validarFormula } from '../../lib/formulaEngine'
 import { maximoPool } from '../../lib/poolEngine'
 import FormulaInput from './FormulaInput'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 const MODOS = [
   { id: 'nada', label: 'Nada' },
@@ -19,7 +19,7 @@ const CTX_EXEMPLO = { nivel: 5, niveisClasse: {}, atributos: {}, pericias: {}, r
 /** Recuperação de um pool em cada tipo de descanso (F15). */
 function RecuperacaoEditor({ descansos, recuperacao, onChange }) {
   if (!descansos.length) {
-    return <p className="text-purple-600 text-[11px]">Configure os descansos para definir a recuperação.</p>
+    return <p className="text-accent-300 text-[11px]">Configure os descansos para definir a recuperação.</p>
   }
   const rec = recuperacao || {}
   function set(descId, patch) {
@@ -104,7 +104,7 @@ export default function PoolsEditor({ sistemaId, descansos = [] }) {
   return (
     <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
       <p className="text-purple-200 text-sm font-semibold">Recursos (pools)</p>
-      <p className="text-purple-500 text-xs">
+      <p className="text-accent-300 text-xs">
         Recursos gastáveis com máximo por fórmula — "Thariuns", "Pontos de Foco", "Reserva Divina".
         O máximo é <span className="text-purple-300">sempre recalculado</span> (nunca guardado), então
         acompanha nível e atributos. Nas fórmulas dá pra usar{' '}
@@ -121,14 +121,14 @@ export default function PoolsEditor({ sistemaId, descansos = [] }) {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setExpandido(expandido === p.id ? null : p.id)}
-                  className="text-purple-500 hover:text-white text-xs shrink-0 w-4"
+                  className="text-accent-300 hover:text-white text-xs shrink-0 w-4"
                   title="Recuperação por descanso"
                 >
                   {expandido === p.id ? '▾' : '▸'}
                 </button>
                 <span className="text-white text-xs font-medium min-w-0 flex-1 truncate">
                   {p.nome}
-                  <span className="text-purple-500 font-mono ml-1.5">
+                  <span className="text-accent-300 font-mono ml-1.5">
                     {p.tipo === 'dados' ? `${p.dado} · ` : ''}máx = {p.maximo_formula}
                   </span>
                 </span>
@@ -140,7 +140,7 @@ export default function PoolsEditor({ sistemaId, descansos = [] }) {
                 </label>
                 <button
                   onClick={() => removerPool(p.id).catch(er => setErro(er.message))}
-                  className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors shrink-0"
+                  className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors shrink-0"
                   title="Remover recurso"
                 >
                   ×
@@ -194,7 +194,7 @@ export default function PoolsEditor({ sistemaId, descansos = [] }) {
             variaveis={['nivel', 'nivel(', 'atributo(', 'proficiencia', 'piso(']}
           />
           {previa != null && (
-            <p className="text-purple-600 text-[11px] mt-1">
+            <p className="text-accent-300 text-[11px] mt-1">
               Prévia (nível 5, atributos 10): <span className="font-mono text-purple-400">{previa}</span>
             </p>
           )}

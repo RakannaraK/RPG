@@ -28,7 +28,7 @@ function SliderField({ label, value, min, max, onChange, disabled }) {
         disabled={disabled}
         className="w-full accent-purple-500 disabled:opacity-40"
       />
-      <div className="flex justify-between text-xs text-purple-600 mt-0.5">
+      <div className="flex justify-between text-xs text-accent-300 mt-0.5">
         <span>{min}</span>
         <span>{max}</span>
       </div>
@@ -218,7 +218,7 @@ export default function RegraRolagem({ value, onChange }) {
             onChange={e => onChange({ ...regra, pool_total: Number(e.target.value) })}
             className="w-full px-3 py-2 bg-purple-950 border border-purple-700 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
-          <p className="text-purple-500 text-xs mt-1">Os jogadores distribuem esses pontos entre os atributos.</p>
+          <p className="text-accent-300 text-xs mt-1">Os jogadores distribuem esses pontos entre os atributos.</p>
         </div>
       )}
 
@@ -236,9 +236,9 @@ export default function RegraRolagem({ value, onChange }) {
           </p>
           <p className="text-xs text-purple-400">
             Resultados possíveis: <span className="text-white">{stats.min}</span>
-            <span className="text-purple-600"> – </span>
+            <span className="text-accent-300"> – </span>
             <span className="text-white">{stats.max}</span>
-            <span className="text-purple-500"> (média {stats.media})</span>
+            <span className="text-accent-300"> (média {stats.media})</span>
           </p>
         </div>
       )}

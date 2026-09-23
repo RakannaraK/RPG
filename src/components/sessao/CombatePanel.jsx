@@ -131,7 +131,7 @@ function PainelReserva({ reserva, emJogo, isMestre, onTrocar, onDefinirReserva }
         <div key={c.id} className="flex flex-wrap items-center gap-2">
           <span className="text-purple-200 text-sm flex-1 min-w-[6rem] truncate">
             {c.nome}
-            {c.hp_maximo != null && <span className="text-purple-500 text-xs"> · {c.hp_atual ?? '?'}/{c.hp_maximo}</span>}
+            {c.hp_maximo != null && <span className="text-accent-300 text-xs"> · {c.hp_atual ?? '?'}/{c.hp_maximo}</span>}
           </span>
           {isMestre && (
             <>
@@ -659,7 +659,7 @@ export default function CombatePanel({
       {/* 22.7 — derivados marcados "exibir no combate" do personagem ativo (todos veem) */}
       {ativo?.ficha_id && (cardsPorFicha[ativo.ficha_id]?.derivadosCombate || []).length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-purple-500 text-[11px]">{ativo.nome}:</span>
+          <span className="text-accent-300 text-[11px]">{ativo.nome}:</span>
           {cardsPorFicha[ativo.ficha_id].derivadosCombate.map(d => (
             <span key={d.id} className="text-[11px] px-2 py-0.5 rounded-md border bg-slate-900/70 border-purple-800/60 text-purple-200">
               {d.nome} <span className="text-white font-bold">{d.valor != null ? d.valor : '—'}</span>
@@ -701,7 +701,7 @@ export default function CombatePanel({
 
       {/* Lista de combatentes (ordenada por iniciativa) */}
       {combatentes.length === 0 ? (
-        <p className="text-purple-500 text-sm py-2">Nenhum combatente ainda. {isMestre && 'Adicione abaixo.'}</p>
+        <p className="text-accent-300 text-sm py-2">Nenhum combatente ainda. {isMestre && 'Adicione abaixo.'}</p>
       ) : (
         <div className="space-y-1.5">
           {ordenados.map((c, idx) => (

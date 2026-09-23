@@ -15,7 +15,7 @@ import Dice3D from '../components/dados/Dice3D'
 import { rolarNotacao, validarNotacao } from '../lib/diceNotation'
 import Ilustra from '../components/arte/Ilustra'
 
-const INP = 'px-3 py-2 rounded-lg bg-slate-900 border border-purple-800 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-3 py-2 rounded-lg bg-slate-900 border border-purple-800 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 const BTN = 'px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50'
 
 /**
@@ -124,7 +124,7 @@ function Publicar({ onPublicar, onFechar }) {
           <button type="button" onClick={() => inputRef.current?.click()} className={`${BTN} bg-slate-700 hover:bg-slate-600 text-white`}>
             {nomeArquivo ? `✓ ${nomeArquivo}` : 'Escolher arquivo exportado (.json)'}
           </button>
-          <span className="text-purple-500 text-xs">
+          <span className="text-accent-300 text-xs">
             Exporte na ficha (⬇), no bestiário (⬇) ou em Sistema → Exportar.
           </span>
         </div>
@@ -163,7 +163,7 @@ function Cartao({ p, logado, curtida, onCurtir, onObter, onDenunciar, onApagar, 
           <span title={nomeDoTipo(p.tipo)}>{iconeDoTipo(p.tipo)}</span>
           <span className="truncate">{p.titulo}</span>
         </p>
-        <p className="text-purple-500 text-xs">
+        <p className="text-accent-300 text-xs">
           por {p.autor}{p.creditos ? ` · arte de ${p.creditos}` : ''}{p.oculta ? ' · oculta por denúncias' : ''}
         </p>
         {p.descricao && <p className="text-purple-300 text-xs line-clamp-3">{p.descricao}</p>}
@@ -314,11 +314,11 @@ export default function ComunidadePage() {
 
             {etiquetas.length > 0 && (
               <div className="flex flex-wrap gap-1.5 items-center">
-                <span className="text-purple-500 text-xs">etiquetas:</span>
+                <span className="text-accent-300 text-xs">etiquetas:</span>
                 {etiqueta && <button onClick={() => setEtiqueta(null)} className="text-xs px-2 py-0.5 rounded-full bg-purple-700 text-white">{etiqueta} ✕</button>}
                 {!etiqueta && etiquetas.map(({ etiqueta: e, usos }) => (
                   <button key={e} onClick={() => setEtiqueta(e)} className="text-xs px-2 py-0.5 rounded-full bg-slate-800 border border-purple-900 text-purple-300 hover:text-white">
-                    {e} <span className="text-purple-600">{usos}</span>
+                    {e} <span className="text-accent-300">{usos}</span>
                   </button>
                 ))}
               </div>

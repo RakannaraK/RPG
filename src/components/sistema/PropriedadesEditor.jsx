@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { usePropriedades } from '../../hooks/usePropriedades'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 /** Texto curto do efeito mecânico de uma propriedade. */
 function descreverEfeito(cfg) {
@@ -52,7 +52,7 @@ export default function PropriedadesEditor({ sistemaId, categorias = [] }) {
   return (
     <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
       <p className="text-purple-200 text-sm font-semibold">Propriedades desbloqueáveis</p>
-      <p className="text-purple-500 text-xs">
+      <p className="text-accent-300 text-xs">
         Regras que "ligam" na arma ao atingir um nível de maestria — "Crítico" (req 2),
         "Dupla" (req 4). O efeito mecânico é opcional; sem ele, é texto-guia.
       </p>
@@ -67,14 +67,14 @@ export default function PropriedadesEditor({ sistemaId, categorias = [] }) {
                 <span className="text-amber-400 text-[11px] font-mono shrink-0 mt-0.5 w-14">maestria {p.maestria_minima}</span>
                 <span className="min-w-0 flex-1">
                   <span className="text-white text-xs font-medium">{p.nome}</span>
-                  {p.sigla && <span className="text-purple-500 text-[11px] ml-1.5 font-mono">[{p.sigla}]</span>}
-                  {cat && <span className="text-purple-500 text-[11px] ml-1.5">{cat.nome}</span>}
-                  {!cat && <span className="text-purple-600 text-[11px] ml-1.5">geral</span>}
-                  <span className="block text-purple-500 text-[11px]">{p.descricao}</span>
+                  {p.sigla && <span className="text-accent-300 text-[11px] ml-1.5 font-mono">[{p.sigla}]</span>}
+                  {cat && <span className="text-accent-300 text-[11px] ml-1.5">{cat.nome}</span>}
+                  {!cat && <span className="text-accent-300 text-[11px] ml-1.5">geral</span>}
+                  <span className="block text-accent-300 text-[11px]">{p.descricao}</span>
                   {ef && <span className="block text-amber-500/80 text-[11px] font-mono">↗ {ef}</span>}
                 </span>
                 <button onClick={() => removerPropriedade(p.id).catch(e => setErro(e.message))}
-                  className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors shrink-0">×</button>
+                  className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors shrink-0">×</button>
               </div>
             )
           })}
@@ -87,7 +87,7 @@ export default function PropriedadesEditor({ sistemaId, categorias = [] }) {
             placeholder="Nome (ex: Crítico)" className={`${INP} flex-1 min-w-[9rem]`} />
           <input type="text" value={f.sigla} onChange={e => set({ sigla: e.target.value })}
             placeholder="Sigla" className={`${INP} w-16`} />
-          <span className="text-purple-500 text-[11px]">req.</span>
+          <span className="text-accent-300 text-[11px]">req.</span>
           <input type="number" min={0} value={f.maestria_minima} onChange={e => set({ maestria_minima: e.target.value })}
             placeholder="0" className={`${INP} w-14 text-center`} />
           <select value={f.categoria_id} onChange={e => set({ categoria_id: e.target.value })} className={INP}>
@@ -112,7 +112,7 @@ export default function PropriedadesEditor({ sistemaId, categorias = [] }) {
             <span className="flex items-center gap-1">
               <input type="number" value={efeito.percentual_rolagem} onChange={e => setEfeito({ ...efeito, percentual_rolagem: e.target.value })}
                 placeholder="%" className={`${INP} w-14 text-center`} title="Percentual sobre o total (F18)" />
-              <span className="text-purple-500 text-[11px]">%</span>
+              <span className="text-accent-300 text-[11px]">%</span>
             </span>
             <input type="text" value={efeito.dados_extras} onChange={e => setEfeito({ ...efeito, dados_extras: e.target.value })}
               placeholder="dados (ex: 1d6)" className={`${INP} w-28 font-mono`} />

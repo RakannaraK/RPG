@@ -130,7 +130,7 @@ export default function DadosTestePage() {
           {[1, 2, 3, 4, 5, 6].map(n => (
             <div key={n} className="flex flex-col items-center gap-2">
               <Dice3D lados={6} resultado={n} rolando={false} skin={skin} />
-              <span className="text-purple-500 text-xs">{n}</span>
+              <span className="text-accent-300 text-xs">{n}</span>
             </div>
           ))}
         </div>

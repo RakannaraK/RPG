@@ -121,11 +121,11 @@ export function labelModificador(mod, atributos, camposCombate, pericias = []) {
  * `por_turno` = custo recorrente enquanto ativa (transformações).
  */
 function CustoPoolEditor({ custo = [], pools = [], onChange }) {
-  const cls = 'px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500'
+  const cls = 'px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
   const set = (i, patch) => onChange(custo.map((c, j) => (j === i ? { ...c, ...patch } : c)))
 
   if (pools.length === 0) {
-    return <p className="text-purple-600 text-[11px]">Crie recursos na aba "Recursos" para cobrar custo.</p>
+    return <p className="text-accent-300 text-[11px]">Crie recursos na aba "Recursos" para cobrar custo.</p>
   }
 
   return (
@@ -134,7 +134,7 @@ function CustoPoolEditor({ custo = [], pools = [], onChange }) {
         const invalida = String(c.quantidade ?? '').trim() && !validarFormula(c.quantidade).valida
         return (
           <div key={i} className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-purple-500 text-[11px]">gasta</span>
+            <span className="text-accent-300 text-[11px]">gasta</span>
             <input type="text" value={c.quantidade ?? ''} onChange={e => set(i, { quantidade: e.target.value })}
               placeholder="2 ou piso(nivel/4)" spellCheck={false}
               className={`${cls} w-28 font-mono ${invalida ? 'border-red-600' : ''}`} />
@@ -149,7 +149,7 @@ function CustoPoolEditor({ custo = [], pools = [], onChange }) {
               por turno
             </label>
             <button type="button" onClick={() => onChange(custo.filter((_, j) => j !== i))}
-              className="w-5 h-5 flex items-center justify-center text-purple-500 hover:text-red-400 transition-colors">×</button>
+              className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
           </div>
         )
       })}
@@ -158,7 +158,7 @@ function CustoPoolEditor({ custo = [], pools = [], onChange }) {
         className="text-[11px] px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
         + custo
       </button>
-      {custo.length === 0 && <p className="text-purple-600 text-[11px]">Sem custo de recurso.</p>}
+      {custo.length === 0 && <p className="text-accent-300 text-[11px]">Sem custo de recurso.</p>}
     </div>
   )
 }
@@ -293,10 +293,10 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
         {/* 21.5 — conversão de tipo de dano */}
         {tipo === 'converter' && (
           <>
-            <span className="text-purple-500 text-[11px]">de</span>
+            <span className="text-accent-300 text-[11px]">de</span>
             <input type="text" value={convDe} onChange={e => setConvDe(e.target.value)}
               placeholder="físico (ou * = qualquer)" className={`${ic} w-32`} />
-            <span className="text-purple-500 text-[11px]">para</span>
+            <span className="text-accent-300 text-[11px]">para</span>
             <input type="text" value={convPara} onChange={e => setConvPara(e.target.value)}
               placeholder="elétrico" className={`${ic} w-28`} />
           </>
@@ -417,7 +417,7 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
             placeholder="ex: piso(nivel/2)"
             variaveis={['nivel', 'piso(', 'recurso(', 'pericia(', ' + ', ' - ', ' / ']}
           />
-          <p className="text-purple-600 text-[11px] mt-1">
+          <p className="text-accent-300 text-[11px] mt-1">
             Pode usar <span className="font-mono">nivel</span>, <span className="font-mono">recurso()</span>,{' '}
             <span className="font-mono">pericia()</span>, <span className="font-mono">vida_*</span> — não{' '}
             <span className="font-mono">atributo()</span>/<span className="font-mono">mod()</span> (evita auto-referência).
@@ -442,16 +442,16 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
 
       {/* Nível mínimo (19.5) */}
       <div className="flex flex-wrap gap-2 items-center border-t border-purple-900/50 pt-2">
-        <span className="text-purple-500 text-[11px]">Nível mínimo:</span>
+        <span className="text-accent-300 text-[11px]">Nível mínimo:</span>
         <input type="number" min={1} value={nivelMinimo} onChange={e => setNivelMinimo(e.target.value)}
           placeholder="—" className={`${ic} w-16 text-center`}
           title="Só entra em jogo a partir deste nível (da classe de origem; raça/avulso usam o nível total). Vazio = sem requisito." />
-        <span className="text-purple-600 text-[11px]">vazio = sem requisito</span>
+        <span className="text-accent-300 text-[11px]">vazio = sem requisito</span>
       </div>
 
       {/* Condição */}
       <div className="flex flex-wrap gap-2 items-center border-t border-purple-900/50 pt-2">
-        <span className="text-purple-500 text-[11px]">Condição:</span>
+        <span className="text-accent-300 text-[11px]">Condição:</span>
         <select value={condTipo} onChange={e => setCondTipo(e.target.value)} className={ic}>
           <option value="nenhuma">Nenhuma</option>
           <option value="auto">Automática</option>
@@ -473,7 +473,7 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
             </select>
             <input type="number" value={condValor} onChange={e => setCondValor(e.target.value)}
               placeholder={condMetrica === 'vida_percent' ? '50' : '5'} className={`${ic} w-16 text-center`} />
-            {condMetrica === 'vida_percent' && <span className="text-purple-500 text-[11px]">%</span>}
+            {condMetrica === 'vida_percent' && <span className="text-accent-300 text-[11px]">%</span>}
             {condMetrica === 'formula' && (
               <div className="w-full mt-1">
                 <FormulaInput
@@ -482,7 +482,7 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
                   placeholder="ex: estado(fome)"
                   variaveis={['estado(', 'pool(', 'atributo(', 'pericia(', 'nivel', 'vida_atual']}
                 />
-                <p className="text-purple-600 text-[11px] mt-1">
+                <p className="text-accent-300 text-[11px] mt-1">
                   O efeito entra em jogo quando o resultado da fórmula satisfaz a comparação escolhida
                   acima. Ex.: <span className="font-mono">estado(fome)</span> ≥ <span className="font-mono">4</span>.
                   Usa os valores base da ficha (atributos, pools, estados) — não os já modificados.
@@ -505,9 +505,9 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
 function ModificadoresExpandido({ modificadores, onAddMod, onRemoveMod, atributos, camposCombate, pericias = [], classes = [], pools = [] }) {
   return (
     <div className="border-t border-purple-900 p-4 space-y-3">
-      <p className="text-purple-500 text-xs font-medium uppercase tracking-wider">Efeitos</p>
+      <p className="text-accent-300 text-xs font-medium uppercase tracking-wider">Efeitos</p>
       {modificadores.length === 0 ? (
-        <p className="text-purple-600 text-xs">Nenhum efeito ainda.</p>
+        <p className="text-accent-300 text-xs">Nenhum efeito ainda.</p>
       ) : (
         <div className="flex flex-wrap gap-1.5">
           {modificadores.map(mod => (
@@ -533,7 +533,7 @@ function ModificadoresExpandido({ modificadores, onAddMod, onRemoveMod, atributo
 // ──────────────────────────────────────────────────────────
 
 const SEL = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
-const INP = 'w-full px-3 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500'
+const INP = 'w-full px-3 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500'
 
 // Card compartilhado: usado tanto dentro da seção da raça/classe quanto na seção de avulsas.
 // Não expõe seletor de raça/classe no formulário de edição — vínculo é gerenciado pelo contexto.
@@ -750,20 +750,20 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
                 )}
               </div>
               {habilidade.descricao && (
-                <p className="text-purple-500 text-[11px] mt-0.5 truncate">{habilidade.descricao}</p>
+                <p className="text-accent-300 text-[11px] mt-0.5 truncate">{habilidade.descricao}</p>
               )}
             </button>
             {habilidade.modificadores.length > 0 && (
-              <span className="text-purple-600 text-[10px] shrink-0">{habilidade.modificadores.length} mod.</span>
+              <span className="text-accent-300 text-[10px] shrink-0">{habilidade.modificadores.length} mod.</span>
             )}
             <button onClick={startEdit}
-              className="p-1.5 text-purple-500 hover:text-purple-300 hover:bg-purple-900/40 rounded-lg transition-colors shrink-0"
+              className="p-1.5 text-accent-300 hover:text-purple-300 hover:bg-purple-900/40 rounded-lg transition-colors shrink-0"
               title="Editar">✎</button>
             <button onClick={handleDelete} disabled={deleting}
               className="p-1.5 text-red-600 hover:text-red-400 hover:bg-red-950/50 rounded-lg transition-colors shrink-0 disabled:opacity-50"
               title="Remover">🗑</button>
             <button onClick={() => setExpandido(!expandido)}
-              className="p-1.5 text-purple-500 hover:text-purple-300 rounded-lg transition-colors shrink-0 text-xs">
+              className="p-1.5 text-accent-300 hover:text-purple-300 rounded-lg transition-colors shrink-0 text-xs">
               {expandido ? '▲' : '▼'}
             </button>
           </>
@@ -1001,16 +1001,16 @@ function ItemCard({
               )}
             </button>
             {item.modificadores.length > 0 && (
-              <span className="text-purple-600 text-[11px] shrink-0">{item.modificadores.length} mod.</span>
+              <span className="text-accent-300 text-[11px] shrink-0">{item.modificadores.length} mod.</span>
             )}
             <button onClick={startEdit}
-              className="p-1.5 text-purple-500 hover:text-purple-300 hover:bg-purple-900/40 rounded-lg transition-colors shrink-0"
+              className="p-1.5 text-accent-300 hover:text-purple-300 hover:bg-purple-900/40 rounded-lg transition-colors shrink-0"
               title="Editar">✎</button>
             <button onClick={handleDelete} disabled={deleting}
               className="p-1.5 text-red-600 hover:text-red-400 hover:bg-red-950/50 rounded-lg transition-colors shrink-0 disabled:opacity-50"
               title="Remover">🗑</button>
             <button onClick={() => setExpandido(!expandido)}
-              className="p-1.5 text-purple-500 hover:text-purple-300 rounded-lg transition-colors shrink-0 text-xs">
+              className="p-1.5 text-accent-300 hover:text-purple-300 rounded-lg transition-colors shrink-0 text-xs">
               {expandido ? '▲' : '▼'}
             </button>
           </>
@@ -1024,18 +1024,18 @@ function ItemCard({
             <div className="mt-2 flex flex-wrap gap-2 items-center bg-slate-700/40 border border-purple-800/50 rounded-lg p-2">
               <span className="text-purple-400 text-[11px]">Pontos:</span>
               <span className="flex items-center gap-1">
-                <span className="text-purple-500 text-[11px]">inicial</span>
+                <span className="text-accent-300 text-[11px]">inicial</span>
                 <input type="text" defaultValue={pc.inicial || ''}
                   onBlur={e => { const v = e.target.value.trim(); if (v !== (pc.inicial || '')) onUpdatePontos(item.id, { ...pc, inicial: v || null }).catch(() => {}) }}
-                  placeholder="16" className="w-20 px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs font-mono placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                  placeholder="16" className="w-20 px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs font-mono placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500" />
               </span>
               <span className="flex items-center gap-1">
-                <span className="text-purple-500 text-[11px]">ganho/nível</span>
+                <span className="text-accent-300 text-[11px]">ganho/nível</span>
                 <input type="text" defaultValue={pc.ganho_por_nivel || ''}
                   onBlur={e => { const v = e.target.value.trim(); if (v !== (pc.ganho_por_nivel || '')) onUpdatePontos(item.id, { ...pc, ganho_por_nivel: v || null }).catch(() => {}) }}
-                  placeholder="1d6 + 10" className="w-24 px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs font-mono placeholder-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                  placeholder="1d6 + 10" className="w-24 px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs font-mono placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500" />
               </span>
-              <span className="text-purple-600 text-[10px]">vazio = usa o padrão do sistema</span>
+              <span className="text-accent-300 text-[10px]">vazio = usa o padrão do sistema</span>
             </div>
           )}
 
@@ -1127,7 +1127,7 @@ function SecaoRacaClasse({
     setAddingNew(false); setNovoNome(''); setNovaDesc(''); setErroNovo('')
   }
 
-  const inputClass = 'w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-purple-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500'
+  const inputClass = 'w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500'
 
   return (
     <div className="space-y-3">
@@ -1165,7 +1165,7 @@ function SecaoRacaClasse({
 
       {itens.length === 0 && !addingNew ? (
         <div className="border border-dashed border-purple-800 rounded-xl py-4 px-4">
-          <p className="text-purple-600 text-xs">
+          <p className="text-accent-300 text-xs">
             Nenhuma {descTipo} definida. Crie uma para configurar seus modificadores e habilidades.
           </p>
         </div>
@@ -1254,7 +1254,7 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-purple-200 text-sm font-semibold">Habilidades avulsas</p>
-          <p className="text-purple-600 text-xs mt-0.5">
+          <p className="text-accent-300 text-xs mt-0.5">
             Não vinculadas a raça ou classe — adicionadas manualmente às fichas.
           </p>
         </div>
@@ -1322,7 +1322,7 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
 
       {avulsas.length === 0 && !addingNew ? (
         <div className="border border-dashed border-purple-800 rounded-xl py-4 px-4">
-          <p className="text-purple-600 text-xs">
+          <p className="text-accent-300 text-xs">
             Nenhuma habilidade avulsa. Crie uma passiva ou ativável que jogadores poderão adicionar manualmente às fichas.
           </p>
         </div>
@@ -1370,8 +1370,8 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
   if (!sistemaId) {
     return (
       <div className="border border-dashed border-purple-800 rounded-xl py-6 px-4 text-center">
-        <p className="text-purple-500 text-sm">Salve o sistema antes de criar raças e classes.</p>
-        <p className="text-purple-600 text-xs mt-1">
+        <p className="text-accent-300 text-sm">Salve o sistema antes de criar raças e classes.</p>
+        <p className="text-accent-300 text-xs mt-1">
           Clique em "Salvar sistema" acima e volte a esta aba.
         </p>
       </div>
