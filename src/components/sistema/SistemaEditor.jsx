@@ -19,6 +19,7 @@ import SlotsEditor from './SlotsEditor'
 import MaestriaItensEditor from './MaestriaItensEditor'
 import SimuladorFicha from './SimuladorFicha'
 import DescansosEditor from './DescansosEditor'
+import Ilustra from '../arte/Ilustra'
 
 const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes', 'Descansos', 'Recursos', 'Poderes', 'Maestria & Itens', 'Simulador']
 
@@ -217,7 +218,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
     if (!sistemaDB) {
       return (
         <div className="text-center py-16 border border-dashed border-purple-800 rounded-2xl">
-          <div className="text-4xl mb-4">⚙️</div>
+          <Ilustra nome="tomo" tamanho={72} className="mx-auto mb-4" />
           <p className="text-purple-300 text-lg font-medium">Nenhum sistema definido</p>
           <p className="text-purple-500 text-sm mt-2">Aguarde o mestre configurar o sistema de regras.</p>
         </div>

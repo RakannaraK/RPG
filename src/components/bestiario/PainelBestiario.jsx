@@ -7,6 +7,7 @@ import { duplicarFicha, exportarFichaDoBanco } from '../../lib/fichaBanco'
 import { nomeArquivoFicha } from '../../lib/fichaPortatil'
 import { baixarJson } from '../../lib/baixarArquivo'
 import ImportarFicha from '../ficha/ImportarFicha'
+import Ilustra from '../arte/Ilustra'
 
 const INP = 'px-3 py-2 rounded-lg bg-slate-900 border border-purple-800 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500'
 const AMEACAS = ['Trivial', 'Fácil', 'Normal', 'Difícil', 'Mortal', 'Lendária']
@@ -121,7 +122,7 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[1, 2, 3].map(i => <div key={i} className="h-24 bg-slate-800 rounded-xl animate-pulse border border-purple-900" />)}</div>
       ) : lista.length === 0 ? (
         <div className="text-center py-12 border border-dashed border-purple-800 rounded-2xl">
-          <div className="text-4xl mb-3">🐾</div>
+          <Ilustra nome="garra" tamanho={64} className="mx-auto mb-3" />
           <p className="text-purple-300 text-sm">{doBestiario.length === 0 ? 'Bestiário vazio.' : 'Nada encontrado com esse texto.'}</p>
           {podeEscrever && doBestiario.length === 0 && (
             <p className="text-purple-500 text-xs mt-1">Crie criaturas aqui e invoque-as no combate e no mapa.</p>

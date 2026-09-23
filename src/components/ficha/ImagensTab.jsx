@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useImagens } from '../../hooks/useImagens'
 import ImageUpload from './ImageUpload'
+import Ilustra from '../arte/Ilustra'
 
 const TIPOS_IMAGEM = [
   { value: 'retrato', label: 'Retrato' },
@@ -132,7 +133,7 @@ export default function ImagensTab({ fichaId, donoId, isDono }) {
       {/* Galeria */}
       {imagens.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-border rounded-2xl">
-          <div className="text-4xl mb-4">🖼️</div>
+          <Ilustra nome="moldura" tamanho={72} className="mx-auto mb-4" />
           <p className="text-accent-300 text-lg font-medium mb-2">Nenhuma imagem ainda</p>
           {!isDono && (
             <p className="text-ink-dim text-sm">

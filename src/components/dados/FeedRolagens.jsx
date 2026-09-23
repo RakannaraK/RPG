@@ -9,6 +9,7 @@ import { tocarSomAcao } from '../../audio/actionSynth'
 import { deveMostrar } from '../../lib/bandejaDados'
 import Dice3D from './Dice3D'
 import { bandejaSuportada } from './BandejaDados'
+import Ilustra from '../arte/Ilustra'
 
 const COR_TXT = { verde: 'text-ok', ambar: 'text-dice-400', vermelho: 'text-harm', roxo: 'text-accent-300' }
 const COR_CARD = { verde: 'border-ok/50', ambar: 'border-dice-500/50', vermelho: 'border-harm/50', roxo: 'border-border' }
@@ -297,7 +298,7 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
   if (rolagens.length === 0) {
     return (
       <div className="py-10 text-center border border-dashed border-border rounded-2xl">
-        <div className="text-3xl mb-2">🎲</div>
+        <Ilustra nome="d20" tamanho={56} className="mx-auto mb-2" />
         <p className="text-ink-dim text-sm">Nenhuma rolagem ainda.</p>
         <p className="text-ink-dim text-xs mt-1">
           As rolagens aparecem aqui em tempo real para todos na mesa.

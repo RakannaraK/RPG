@@ -13,6 +13,7 @@ import { gravarImportacao, prepararImportacao } from '../lib/fichaBanco'
 import { importarSistemaNaMesa } from '../lib/importarSistema'
 import Dice3D from '../components/dados/Dice3D'
 import { rolarNotacao, validarNotacao } from '../lib/diceNotation'
+import Ilustra from '../components/arte/Ilustra'
 
 const INP = 'px-3 py-2 rounded-lg bg-slate-900 border border-purple-800 text-white text-sm placeholder-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500'
 const BTN = 'px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50'
@@ -327,7 +328,7 @@ export default function ComunidadePage() {
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[1, 2, 3].map(i => <div key={i} className="h-40 bg-slate-800 rounded-xl animate-pulse border border-purple-900" />)}</div>
             ) : visiveis.length === 0 ? (
               <div className="text-center py-14 border border-dashed border-purple-800 rounded-2xl">
-                <div className="text-4xl mb-3">🫙</div>
+                <Ilustra nome="bau" tamanho={68} className="mx-auto mb-3" />
                 <p className="text-purple-300 text-sm">{lista.length === 0 ? 'Ainda não tem nada publicado. Seja o primeiro!' : 'Nada encontrado com esse filtro.'}</p>
               </div>
             ) : (

@@ -14,6 +14,7 @@ import ImageUpload from './ImageUpload'
 import Dice3D from '../dados/Dice3D'
 import { PRESET_IDS, resolveActionSound } from '../../engines/actionSoundEngine'
 import { tocarPresetAcao, tocarSomAcao } from '../../audio/actionSynth'
+import Ilustra from '../arte/Ilustra'
 
 const TIPOS_ITEM = ['item', 'arma', 'armadura', 'magico', 'outro']
 
@@ -788,7 +789,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
 
       {itens.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-border rounded-2xl">
-          <div className="text-4xl mb-4">⚔️</div>
+          <Ilustra nome="espadas" tamanho={72} className="mx-auto mb-4" />
           <p className="text-accent-300 text-lg font-medium mb-2">Nenhum item ainda</p>
           {isDono ? (
             <button

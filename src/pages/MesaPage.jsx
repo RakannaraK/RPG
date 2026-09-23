@@ -24,6 +24,7 @@ import SessaoBanner from '../components/sessao/SessaoBanner'
 import SessoesHistorico from '../components/sessao/SessoesHistorico'
 import MeuPerfilMesa from '../components/mesa/MeuPerfilMesa'
 import Sininho from '../components/notificacoes/Sininho'
+import Ilustra from '../components/arte/Ilustra'
 
 const TABS = ['Fichas', 'Bestiário', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
 const TABS_GESTOR = ['Escudo'] // F34.3 — só mestre/co-mestre
@@ -494,7 +495,7 @@ export default function MesaPage() {
                 </div>
               ) : fichas.length === 0 ? (
                 <div className="text-center py-16 border border-dashed border-purple-800 rounded-2xl">
-                  <div className="text-4xl mb-4">📜</div>
+                  <Ilustra nome="pergaminho" tamanho={72} className="mx-auto mb-4" />
                   <p className="text-purple-300 text-lg font-medium mb-2">Nenhuma ficha criada</p>
                   <p className="text-purple-500 text-sm mb-5">
                     {podeEscrever

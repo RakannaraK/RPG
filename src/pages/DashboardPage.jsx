@@ -10,6 +10,7 @@ import PreferenciasModal from '../components/preferencias/PreferenciasModal'
 import Sininho from '../components/notificacoes/Sininho'
 import GuiaMestre from '../components/ajuda/GuiaMestre'
 import Marca from '../components/marca/Marca'
+import Ilustra from '../components/arte/Ilustra'
 
 export default function DashboardPage() {
   const { session, logout } = useAuth()
@@ -136,7 +137,7 @@ export default function DashboardPage() {
           </div>
         ) : ativas.length === 0 && arquivadas.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-purple-800 rounded-2xl">
-            <div className="text-5xl mb-4">🗺️</div>
+            <Ilustra nome="mapa" tamanho={80} className="mx-auto mb-4" />
             <p className="text-purple-300 text-lg font-medium mb-2">Nenhuma mesa ainda</p>
             <p className="text-purple-500 text-sm mb-6">Crie sua primeira mesa ou entre em uma com um código de convite.</p>
             <div className="flex flex-wrap gap-3 justify-center">
