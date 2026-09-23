@@ -90,3 +90,51 @@
   .bg-purple-500 { background-color: var(--accent-500) !important; }
   .ring-purple-500 { --tw-ring-color: var(--accent-500) !important; }
 }
+
+/* ── Fase 37 — o tema também pega nas classes com opacidade ─────────────
+   A F35 remapeou `bg-purple-900`, mas não `bg-purple-900/40`: são classes
+   diferentes no CSS. Dava para ver na hora — com o tema esmeralda, os campos e
+   as bordas continuavam roxos. Aqui cada tom vira uma variável e cada classe
+   realmente usada recebe a sua, preservando a transparência original.
+   ponytail: lista gerada do código; classe nova = uma linha a mais. */
+:root[data-tema] {
+  --p950: color-mix(in srgb, var(--accent-800) 25%, #000);
+  --p900: color-mix(in srgb, var(--accent-800) 55%, #000);
+  --p800: var(--accent-800);
+  --p700: var(--accent-700);
+  --p600: var(--accent-600);
+  --p500: var(--accent-500);
+  --p400: var(--accent-400);
+  --p300: var(--accent-300);
+
+  .bg-purple-950\/30 { background-color: color-mix(in srgb, var(--p950) 30%, transparent) !important; }
+  .bg-purple-950\/40 { background-color: color-mix(in srgb, var(--p950) 40%, transparent) !important; }
+  .bg-purple-950\/50 { background-color: color-mix(in srgb, var(--p950) 50%, transparent) !important; }
+  .bg-purple-950\/60 { background-color: color-mix(in srgb, var(--p950) 60%, transparent) !important; }
+  .bg-purple-950\/70 { background-color: color-mix(in srgb, var(--p950) 70%, transparent) !important; }
+  .bg-purple-900\/20 { background-color: color-mix(in srgb, var(--p900) 20%, transparent) !important; }
+  .bg-purple-900\/40 { background-color: color-mix(in srgb, var(--p900) 40%, transparent) !important; }
+  .bg-purple-900\/50 { background-color: color-mix(in srgb, var(--p900) 50%, transparent) !important; }
+  .bg-purple-900\/60 { background-color: color-mix(in srgb, var(--p900) 60%, transparent) !important; }
+  .bg-purple-800\/50 { background-color: color-mix(in srgb, var(--p800) 50%, transparent) !important; }
+  .bg-purple-800\/60 { background-color: color-mix(in srgb, var(--p800) 60%, transparent) !important; }
+  .bg-purple-700\/10 { background-color: color-mix(in srgb, var(--p700) 10%, transparent) !important; }
+  .border-purple-900\/40 { border-color: color-mix(in srgb, var(--p900) 40%, transparent) !important; }
+  .border-purple-900\/50 { border-color: color-mix(in srgb, var(--p900) 50%, transparent) !important; }
+  .border-purple-900\/60 { border-color: color-mix(in srgb, var(--p900) 60%, transparent) !important; }
+  .border-purple-900\/70 { border-color: color-mix(in srgb, var(--p900) 70%, transparent) !important; }
+  .border-purple-900\/80 { border-color: color-mix(in srgb, var(--p900) 80%, transparent) !important; }
+  .border-purple-800\/50 { border-color: color-mix(in srgb, var(--p800) 50%, transparent) !important; }
+  .border-purple-800\/60 { border-color: color-mix(in srgb, var(--p800) 60%, transparent) !important; }
+  .border-purple-800\/70 { border-color: color-mix(in srgb, var(--p800) 70%, transparent) !important; }
+  .border-purple-700\/50 { border-color: color-mix(in srgb, var(--p700) 50%, transparent) !important; }
+  .border-purple-700\/60 { border-color: color-mix(in srgb, var(--p700) 60%, transparent) !important; }
+  .border-purple-700\/70 { border-color: color-mix(in srgb, var(--p700) 70%, transparent) !important; }
+  .border-purple-600\/60 { border-color: color-mix(in srgb, var(--p600) 60%, transparent) !important; }
+
+  /* placeholder mora num pseudo-elemento: precisa da sua própria linha */
+  .placeholder-purple-400::placeholder { color: color-mix(in srgb, var(--accent-400) 70%, #000) !important; }
+  .placeholder-purple-500::placeholder { color: color-mix(in srgb, var(--accent-500) 62%, #000) !important; }
+  .placeholder-purple-600::placeholder { color: color-mix(in srgb, var(--accent-600) 62%, #000) !important; }
+  .placeholder-purple-700::placeholder { color: color-mix(in srgb, var(--accent-700) 70%, #000) !important; }
+}

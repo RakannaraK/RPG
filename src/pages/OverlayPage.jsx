@@ -41,7 +41,14 @@ export default function OverlayPage() {
     const anterior = { body: document.body.style.background, html: html.style.background }
     document.body.style.background = 'transparent'
     html.style.background = 'transparent'
-    return () => { document.body.style.background = anterior.body; html.style.background = anterior.html }
+    // F37 — desliga a camada de arte (grão, brasa e vinheta): no OBS o que
+    // vale é o que está por baixo, e textura nenhuma pode aparecer.
+    html.dataset.semArte = '1'
+    return () => {
+      document.body.style.background = anterior.body
+      html.style.background = anterior.html
+      delete html.dataset.semArte
+    }
   }, [])
 
   useEffect(() => {

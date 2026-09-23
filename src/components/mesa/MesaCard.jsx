@@ -14,7 +14,7 @@ export default function MesaCard({ mesa }) {
   return (
     <button
       onClick={() => navigate(`/mesa/${mesa.id}`)}
-      className="w-full text-left bg-slate-800 hover:bg-slate-750 border border-purple-800 hover:border-purple-600 rounded-2xl p-5 transition-all group"
+      className="w-full text-left velino moldura-cantos hover:bg-slate-750 border border-purple-800 hover:border-purple-600 rounded-2xl p-5 transition-all group"
     >
       <div className="flex items-start justify-between gap-3 mb-3">
         <h3 className="text-white font-semibold text-lg group-hover:text-purple-300 transition-colors leading-tight">

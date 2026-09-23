@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import LoginForm from '../components/auth/LoginForm'
 import RegisterForm from '../components/auth/RegisterForm'
 import Marca from '../components/marca/Marca'
-import { DESCRICAO } from '../lib/marca'
 
 export default function AuthPage() {
   const [mode, setMode] = useState('login')
@@ -18,11 +17,10 @@ export default function AuthPage() {
         {/* F37 — marca */}
         <div className="mb-8 flex flex-col items-center text-center">
           <Marca tamanho="lg" comTagline pulso />
-          <p className="mt-3 text-sm" style={{ color: 'var(--ink-dim)' }}>{DESCRICAO}</p>
         </div>
 
         {/* Card */}
-        <div className="bg-slate-900/90 backdrop-blur border border-purple-800/60 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden">
+        <div className="velino moldura-cantos moldura-cantos-g backdrop-blur border border-purple-800/60 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden">
           {/* Tabs */}
           <div className="flex border-b border-purple-900/80">
             <button

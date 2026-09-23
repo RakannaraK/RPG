@@ -3,43 +3,51 @@
  * dados). SVG puro, sem arquivo de imagem: escala sem borrar e troca de cor
  * junto com o tema, porque usa os tokens.
  *
- * `pulso` faz o selo respirar devagar — só nos cabeçalhos, e desligado sozinho
- * para quem pediu menos movimento no sistema (ver theme/rpg.css).
+ * Em tamanho pequeno o desenho se simplifica sozinho — os raios internos do
+ * dado e a nervura da pena viram sujeira abaixo de ~30px.
+ *
+ * `pulso` faz o selo respirar devagar; quem pediu menos movimento no sistema
+ * não vê animação nenhuma (ver theme/rpg.css).
  */
 export default function Selo({ tamanho = 28, pulso = false, className = '' }) {
+  const simples = tamanho < 30
+
   return (
     <svg
       width={tamanho} height={tamanho} viewBox="0 0 32 32"
       className={`${pulso ? 'selo-pulso' : ''} ${className}`}
       role="img" aria-label="Selo do Dado & Pena"
-      style={{ overflow: 'visible' }}
     >
-      {/* d20 — contorno e faces, na cor do acento do tema */}
+      {/* d20 — contorno e face, na cor do acento do tema */}
       <g
         fill="none"
         stroke="var(--accent-400, #A78BFA)"
-        strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round"
+        strokeWidth={simples ? 2 : 1.6} strokeLinejoin="round" strokeLinecap="round"
       >
         <polygon points="16,2.5 28,9.5 28,22.5 16,29.5 4,22.5 4,9.5" />
-        <polygon points="16,8.5 24.5,21 7.5,21" fill="var(--accent-800, #5B21B6)" fillOpacity=".35" />
-        <path d="M16 2.5v6M28 9.5l-3.5 11.5M4 9.5 7.5 21M16 29.5 7.5 21M16 29.5 24.5 21" strokeWidth="1.1" opacity=".75" />
+        <polygon points="16,8.5 24.5,21 7.5,21" fill="var(--accent-800, #5B21B6)" fillOpacity=".45" />
+        {!simples && (
+          <path d="M16 2.5v6M28 9.5l-3.5 11.5M4 9.5 7.5 21M16 29.5 7.5 21M16 29.5 24.5 21" strokeWidth="1" opacity=".6" />
+        )}
       </g>
 
-      {/* Pena — desenhada duas vezes: a primeira com o traço da cor do fundo,
-          que abre um vão e faz a pena parecer passar por cima do dado. */}
-      <g transform="rotate(-6 16 16)">
+      {/* Pena — cruza o canto de baixo à esquerda e deixa a face do dado à
+          vista. Desenhada duas vezes: a de baixo, com o traço da cor do fundo,
+          abre o vão que faz a pena parecer passar por cima do dado. */}
+      <g transform="rotate(-4 16 16)">
         <path
-          d="M4.5 28.5 12 21m0 0c2.4-6.2 7.2-10.9 14.6-13.6-1.4 8.2-5.4 13.4-11 16-1.7.8-3-.3-3.6-2.4z"
-          fill="none" stroke="var(--bg, #0B0812)" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"
+          d="M4 28.5 11.4 21.3m0 0c2-5 5.6-8.9 11.2-11-1 6.4-4 10.5-8.3 12.5-1.3.6-2.3-.2-2.9-1.9z"
+          fill="none" stroke="var(--bg, #0B0812)" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"
         />
-        <path d="M4.5 28.5 12 21" fill="none" stroke="var(--dice-400, #FBBF24)" strokeWidth="1.7" strokeLinecap="round" />
+        <path d="M4 28.5 11.4 21.3" fill="none" stroke="var(--dice-400, #FBBF24)" strokeWidth="1.8" strokeLinecap="round" />
         <path
-          d="M12 21c2.4-6.2 7.2-10.9 14.6-13.6-1.4 8.2-5.4 13.4-11 16-1.7.8-3-.3-3.6-2.4z"
-          fill="var(--dice-400, #FBBF24)" fillOpacity=".9"
-          stroke="var(--dice-200, #FDE68A)" strokeWidth=".8" strokeLinejoin="round"
+          d="M11.4 21.3c2-5 5.6-8.9 11.2-11-1 6.4-4 10.5-8.3 12.5-1.3.6-2.3-.2-2.9-1.9z"
+          fill="var(--dice-400, #FBBF24)" fillOpacity=".95"
+          stroke="var(--dice-200, #FDE68A)" strokeWidth=".7" strokeLinejoin="round"
         />
-        {/* nervura da pena */}
-        <path d="M13.4 21.6c3-4.6 6.8-8.2 11.7-10.8" fill="none" stroke="var(--dice-700, #B45309)" strokeWidth=".8" strokeLinecap="round" opacity=".8" />
+        {!simples && (
+          <path d="M12.6 21.6c2.3-3.7 5.2-6.6 8.9-8.7" fill="none" stroke="var(--dice-700, #B45309)" strokeWidth=".7" strokeLinecap="round" opacity=".75" />
+        )}
       </g>
     </svg>
   )

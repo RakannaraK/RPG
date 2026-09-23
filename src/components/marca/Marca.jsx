@@ -2,9 +2,9 @@ import Selo from './Selo'
 import { NOME_PARTES, TAGLINE } from '../../lib/marca'
 
 const TAMANHOS = {
-  sm: { selo: 26, texto: 'text-lg', espaco: 'gap-2' },
-  md: { selo: 34, texto: 'text-2xl', espaco: 'gap-2.5' },
-  lg: { selo: 60, texto: 'text-4xl', espaco: 'gap-3' },
+  sm: { selo: 26, texto: 'text-lg', espaco: 'gap-2', elo: 'mx-1' },
+  md: { selo: 34, texto: 'text-2xl', espaco: 'gap-2.5', elo: 'mx-1.5' },
+  lg: { selo: 60, texto: 'text-4xl', espaco: 'gap-3', elo: 'mx-2' },
 }
 
 /**
@@ -19,7 +19,7 @@ export default function Marca({ tamanho = 'sm', comTagline = false, pulso = fals
       <div className="leading-none">
         <div className={`font-bold tracking-tight text-white ${t.texto}`} style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
           {NOME_PARTES.antes}
-          <span className="mx-1" style={{ color: 'var(--dice-400)' }}>{NOME_PARTES.elo}</span>
+          <span className={t.elo} style={{ color: 'var(--dice-400)' }}>{NOME_PARTES.elo}</span>
           {NOME_PARTES.depois}
         </div>
         {comTagline && (

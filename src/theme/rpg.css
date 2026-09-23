@@ -1,0 +1,146 @@
+/* ── Fase 37 — camada visual "Dado & Pena" ───────────────────────────────────
+   Desenha POR CIMA de tokens.css: nada aqui define cor própria, tudo sai de
+   --accent-* (muda com os 5 temas), --dice-* (âmbar dos dados) e das
+   superfícies. Nenhum arquivo de imagem: as texturas e os ornamentos são SVG
+   embutido em data-URI, somando poucos KB.
+
+   Quem não quer arte nenhuma: `:root[data-sem-arte]` desliga o fundo (é o que
+   o overlay do OBS usa, porque lá o fundo precisa ser transparente de verdade).
+*/
+
+:root {
+  /* Grão de velino: ruído fino, aplicado com opacidade baixa. */
+  --velino-grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  /* Cantos de filigrana (um por rotação — máscaras, a cor vem do tema). */
+  --canto-ne: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M2 13V7a5 5 0 0 1 5-5h6'/%3E%3C/g%3E%3Ccircle cx='7' cy='7' r='1.7' fill='%23000'/%3E%3C/svg%3E");
+  --canto-no: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='rotate(90 12 12)' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M2 13V7a5 5 0 0 1 5-5h6'/%3E%3Ccircle cx='7' cy='7' r='1.7' fill='%23000' stroke='none'/%3E%3C/g%3E%3C/svg%3E");
+  --canto-se: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='rotate(270 12 12)' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M2 13V7a5 5 0 0 1 5-5h6'/%3E%3Ccircle cx='7' cy='7' r='1.7' fill='%23000' stroke='none'/%3E%3C/g%3E%3C/svg%3E");
+  --canto-so: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='rotate(180 12 12)' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M2 13V7a5 5 0 0 1 5-5h6'/%3E%3Ccircle cx='7' cy='7' r='1.7' fill='%23000' stroke='none'/%3E%3C/g%3E%3C/svg%3E");
+
+  --ornamento: color-mix(in srgb, var(--accent-400) 60%, transparent);
+}
+
+/* ── Fundo da página: brasa na cor do tema + grão + vinheta ────────────────
+   Duas camadas fixas atrás do conteúdo. Não custam repintura: não rolam junto
+   com a página. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 620px at 12% -12%, color-mix(in srgb, var(--accent-700) 34%, transparent), transparent 70%),
+    radial-gradient(760px 520px at 102% 2%,  color-mix(in srgb, var(--accent-800) 26%, transparent), transparent 72%),
+    radial-gradient(1100px 760px at 50% 118%, color-mix(in srgb, var(--dice-700) 12%, transparent), transparent 70%);
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--velino-grao),
+    radial-gradient(130% 110% at 50% 50%, transparent 55%, rgba(0, 0, 0, .55) 100%);
+  background-size: 140px 140px, cover;
+  opacity: .5;
+}
+
+/* O overlay do OBS (e qualquer tela que peça) fica limpo. */
+:root[data-sem-arte] body::before,
+:root[data-sem-arte] body::after { display: none; }
+
+/* ── Velino: superfície de painel com fibra de pergaminho ────────────────── */
+.velino {
+  background-color: var(--raised);
+  background-image:
+    var(--velino-grao),
+    repeating-linear-gradient(97deg, rgba(255, 255, 255, .010) 0 1px, transparent 1px 11px);
+  background-size: 140px 140px, auto;
+  background-blend-mode: soft-light, normal;
+}
+
+/* ── Moldura de cantos: filigrana nos quatro cantos, na cor do tema ──────── */
+.moldura-cantos { position: relative; }
+.moldura-cantos::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  pointer-events: none;
+  background-color: var(--ornamento);
+  -webkit-mask-image: var(--canto-ne), var(--canto-no), var(--canto-so), var(--canto-se);
+  -webkit-mask-position: top left, top right, bottom right, bottom left;
+  -webkit-mask-size: 18px 18px;
+  -webkit-mask-repeat: no-repeat;
+  mask-image: var(--canto-ne), var(--canto-no), var(--canto-so), var(--canto-se);
+  mask-position: top left, top right, bottom right, bottom left;
+  mask-size: 18px 18px;
+  mask-repeat: no-repeat;
+}
+.moldura-cantos-g::before { inset: 5px; -webkit-mask-size: 26px 26px; mask-size: 26px 26px; }
+
+/* ── Divisória com filigrana: <div class="divisor-rpg">{ornamento}</div> ─── */
+.divisor-rpg {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  color: var(--ornamento);
+}
+.divisor-rpg::before,
+.divisor-rpg::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+/* ── Campos: a transição de cor no foco ──────────────────────────────────────
+   As classes do Tailwind ganham do seletor de elemento na hora de pintar a
+   borda, por isso o foco leva !important — é o mesmo caminho que tokens.css já
+   usa para os temas pegarem nas telas antigas. Vale só no estado de foco. */
+input, select, textarea {
+  transition: border-color .22s ease, box-shadow .22s ease, background-color .22s ease;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent-400) !important;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent-500) 20%, transparent),
+    inset 0 0 14px color-mix(in srgb, var(--accent-700) 22%, transparent);
+  animation: campo-acende .55s ease-out;
+}
+
+@keyframes campo-acende {
+  from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--dice-400) 45%, transparent); }
+  to   { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-500) 20%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  input:focus-visible, select:focus-visible, textarea:focus-visible { animation: none; }
+}
+
+/* ── Botões principais: brilho de cima, sem brigar com a cor da classe ──────
+   Mexe só em background-IMAGE; a cor continua vindo da classe/tema. */
+button.bg-purple-600, button.bg-purple-700, button.bg-purple-800 {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .13), rgba(0, 0, 0, .10));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .10);
+}
+button.bg-purple-600:hover, button.bg-purple-700:hover, button.bg-purple-800:hover {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .20), rgba(0, 0, 0, .08));
+}
+
+/* ── Selo da marca respirando ───────────────────────────────────────────── */
+@keyframes selo-pulso {
+  0%, 100% { transform: rotate(0deg) scale(1); filter: drop-shadow(0 0 0 transparent); }
+  50%      { transform: rotate(-3deg) scale(1.05); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent-400) 55%, transparent)); }
+}
+.selo-pulso { animation: selo-pulso 5.5s ease-in-out infinite; transform-origin: 50% 60%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .selo-pulso { animation: none; }
+}
