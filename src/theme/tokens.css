@@ -70,8 +70,11 @@
 
   .text-purple-100, .text-purple-200 { color: var(--accent-300) !important; }
   .text-purple-300 { color: var(--accent-400) !important; }
-  .text-purple-400 { color: color-mix(in srgb, var(--accent-400) 75%, #fff 0%) !important; }
-  .text-purple-500, .text-purple-600 { color: color-mix(in srgb, var(--accent-500) 70%, #000) !important; }
+  /* F37 — contraste medido: estes dois reprovavam na WCAG AA (2.21:1 no carmim).
+     O `#fff 0%` derrubava a opacidade para 75%, e misturar com PRETO escurecia
+     justo o texto de 12 px. Agora sobem para o acento claro do tema. */
+  .text-purple-400 { color: var(--accent-400) !important; }
+  .text-purple-500, .text-purple-600 { color: color-mix(in srgb, var(--accent-300) 78%, #000) !important; }
   .hover\:text-purple-200:hover { color: var(--accent-300) !important; }
 
   .border-purple-600 { border-color: var(--accent-600) !important; }

@@ -51,3 +51,9 @@ personagens, campanhas, combatentes, barras, ultimates, métodos de rolagem e ch
 paga para cadastrar) continuam **não copiadas**.
 
 Fora do plano até o usuário pedir: doações/planos pagos.
+
+---
+
+## Fase 37 — Identidade visual "Dado & Pena" (2026-09-22)
+Fora do roadmap de paridade: o site trocou de nome (era "RPG Ficha", que era descrição e não marca) e ganhou camada visual temática — velino, molduras de filigrana, capas por mesa, arte de RPG em SVG e transição de cor nos campos. Zero arquivo de imagem. Detalhes e medições em `FASE37_IDENTIDADE_DADO_E_PENA.md`.
+

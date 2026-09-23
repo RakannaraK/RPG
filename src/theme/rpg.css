@@ -166,3 +166,19 @@ button.bg-purple-600:hover, button.bg-purple-700:hover, button.bg-purple-800:hov
   .moldura-pergaminho { border-radius: 12px; padding: 8px; box-shadow: none; }
   .moldura-pergaminho::before { display: none; }
 }
+
+/* ── Contraste: correção medida, não achismo ─────────────────────────────────
+   Medi a razão de contraste de todo texto visível nos 5 temas (resolvendo a cor
+   pelo canvas, que é o único jeito confiável depois que entra color-mix).
+   Dois casos reprovavam o mínimo 4.5:1 da WCAG AA:
+
+   1. `text-purple-500/600` (rótulos de 12 px, tipo o nome do dono da ficha):
+      3.7 no violeta e só 2.21 no carmim. A regra da F35 misturava o acento com
+      PRETO, escurecendo justamente o texto que já era pequeno.
+   2. `text-purple-400` no carmim: 3.63. A regra tinha `#fff 0%`, que na prática
+      só derrubava a opacidade para 75% — parecia inofensivo e não era.
+
+   Aqui os dois sobem para o acento claro do tema. Continuam secundários diante
+   do texto branco, mas agora passam em todos os cinco. */
+.text-purple-400 { color: var(--accent-400) !important; }
+.text-purple-500, .text-purple-600 { color: color-mix(in srgb, var(--accent-300) 78%, #000) !important; }

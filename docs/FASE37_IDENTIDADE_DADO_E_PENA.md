@@ -31,3 +31,21 @@ Só uma coluna, aditiva: `ALTER TABLE mesas ADD COLUMN capa TEXT;` (id do padrã
 
 ## Teste de aceitação
 Abrir o site: o nome é Dado & Pena, com selo. Trocar o tema 5 vezes: ornamento, vinheta e foco dos campos acompanham o acento, e o texto continua legível em todos. Um campo em foco mostra a transição de cor. Estado vazio mostra arte, não emoji. A ficha tem moldura; a mesa mostra a capa escolhida. `/overlay/:token` continua com fundo transparente e sem ornamento. Com "reduzir movimento" ligado no sistema, nada pulsa.
+
+## Como ficou (implementado — 37.1 … 37.5)
+
+**37.1 — marca.** `lib/marca.js` guarda nome, tagline e descrição; `components/marca/Selo.jsx` desenha o d20 cruzado pela pena e `Marca.jsx` junta selo + nome com o "&" em âmbar, em três tamanhos. Aplicada na entrada, no painel, na comunidade e no "conta criada". Título da aba, `meta description`, `theme-color` e `favicon.svg` refeitos. O selo foi redesenhado depois de ver no navegador: a pena tapava a face do dado e em 26 px virava mancha — hoje a pena é menor e abaixo de 30 px o desenho se simplifica sozinho.
+
+**37.2 — camada temática.** `theme/rpg.css`: brasa na cor do tema, grão de velino e vinheta no fundo (duas camadas fixas, fora do fluxo de rolagem); `.velino` (fibra de pergaminho), `.moldura-cantos` (filigrana nos quatro cantos, por máscara, então segue o tema), `.divisor-rpg`, brilho nos botões e o pulso do selo. Campos ganharam **transição de cor no foco**: borda no acento, anel de brilho e um acender de 0,55 s que parte do âmbar. O overlay do OBS liga `data-sem-arte` e as camadas somem — conferido: `display: none` nas duas, fundo `transparent`.
+
+**37.3 — arte.** `components/arte/Ilustra.jsx` com 12 desenhos (d20, pergaminho, mapa, baú, garra, espadas, moldura, tomo, escudo, poção, elmo, lanterna). Trocaram os emojis dos 8 estados vazios. Conferidos numa folha de contato gerada do próprio arquivo — garra, espadas e elmo não passaram de primeira e foram refeitos.
+
+**37.4 — carregado.** `mesas.capa` (SQL aditivo) + `lib/capas.js` com 8 capas; `CapaMesa.jsx` repete o motivo sobre um gradiente do tema, com as pontas escurecidas para o texto continuar legível; aparece no topo da mesa e como faixa fina no cartão do painel; `SeletorCapa.jsx` na aba Membros (dono). A ficha inteira passou a morar dentro de `.moldura-pergaminho`, com grão e filigrana nos cantos — em tela estreita vira uma linha simples.
+
+**37.5 — acessibilidade.** Contraste medido em todo texto visível nos 5 temas, resolvendo a cor pelo canvas (com `color-mix` na jogada, ler a string de `getComputedStyle` dá resultado errado: o Chrome devolve `oklab(...)` ou `color(srgb ...)` e a conta sai sem sentido — meu primeiro medidor acusou "1.06:1" em 10 textos que estavam visíveis nas capturas). Dois problemas **reais** apareceram e foram corrigidos: `text-purple-500/600` reprovava em todos os temas (2,21:1 no carmim) porque a regra da F35 misturava o acento com preto, e `text-purple-400` reprovava no carmim porque o `#fff 0%` da mesma regra derrubava a opacidade para 75%. Depois: **0 reprovações nos 5 temas**, pior razão 4,75:1. `prefers-reduced-motion` conferido — pulso do selo e acender do campo ficam em `none`.
+
+### O que ficou de fora, e por quê
+- **Nenhum arquivo de imagem.** Tudo é SVG/CSS: o repositório não ganhou peso, não há licença de terceiro e a arte acompanha os 5 temas. Ilustração pintada (bitmap) exigiria origem confiável e CDN; não entrou.
+- **A capa é um motivo repetido, não uma cena.** Desenhar cenários em SVG à mão sairia caro e envelheceria mal.
+- **`package.json` continua `rpg-ficha`.** É o nome do pacote, não do site; mexer nele só mexeria no deploy à toa.
+
