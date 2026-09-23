@@ -66,7 +66,7 @@ export default function JogoMemoria({ config, semente, onFim, onSom }) {
             {e.sequencia.map((runa, i) => (
               <div key={i} className="relative w-14 h-14 rounded-xl bg-raised border border-accent-500 flex items-center justify-center">
                 <span className="text-3xl text-ink">{runa}</span>
-                <span className="absolute -top-2 -left-2 w-5 h-5 rounded-full bg-accent-600 text-[10px] text-white flex items-center justify-center">{i + 1}</span>
+                <span className="absolute -top-2 -left-2 w-5 h-5 rounded-full bg-accent-600 text-xs text-white flex items-center justify-center">{i + 1}</span>
               </div>
             ))}
           </div>
@@ -100,7 +100,7 @@ export default function JogoMemoria({ config, semente, onFim, onSom }) {
                   }`}
                 >
                   {runa}
-                  {i < 9 && <span className="absolute bottom-0.5 right-1.5 text-[10px] text-ink-dim">{i + 1}</span>}
+                  {i < 9 && <span className="absolute bottom-0.5 right-1.5 text-xs text-ink-dim">{i + 1}</span>}
                 </button>
               )
             })}

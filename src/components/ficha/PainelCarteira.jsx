@@ -68,14 +68,14 @@ export default function PainelCarteira({ moedas, carteira = {}, isDono, onSalvar
             <div key={d.id} className="flex items-center gap-2 bg-void/40 border border-border rounded-xl px-3 py-2">
               <span className="text-accent-300 text-xs w-14 shrink-0">
                 {d.sigla || d.nome}
-                <span className="text-ink-dim text-[10px] block">×{d.valor}</span>
+                <span className="text-ink-dim text-xs block">×{d.valor}</span>
               </span>
               <span className={`text-lg font-bold font-mono flex-1 ${q < 0 ? 'text-harm' : 'text-ink'}`}>{fmt(q)}</span>
               {isDono && (
                 <span className="flex items-center gap-1 shrink-0">
                   <input type="number" value={gasto[d.id] ?? ''} onChange={e => setGasto({ ...gasto, [d.id]: e.target.value })}
                     placeholder="qtd"
-                    className="w-14 px-1.5 py-1 rounded-lg bg-void border border-border text-ink text-[11px] text-center placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                    className="w-14 px-1.5 py-1 rounded-lg bg-void border border-border text-ink text-xs text-center placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500" />
                   <button onClick={() => { transacao(d.id, -(Number(gasto[d.id]) || 1)); setGasto({ ...gasto, [d.id]: '' }) }}
                     disabled={ocupado} className="w-6 h-6 flex items-center justify-center rounded-lg border border-border text-accent-300 hover:text-ink hover:border-accent-500 transition-colors disabled:opacity-40" title="Gastar">−</button>
                   <button onClick={() => { transacao(d.id, +(Number(gasto[d.id]) || 1)); setGasto({ ...gasto, [d.id]: '' }) }}
@@ -90,20 +90,20 @@ export default function PainelCarteira({ moedas, carteira = {}, isDono, onSalvar
       {/* Conversor */}
       {isDono && denom.length > 1 && (
         <div className="flex items-center gap-1.5 flex-wrap border-t border-border/50 pt-2">
-          <span className="text-ink-dim text-[11px]">Converter</span>
+          <span className="text-ink-dim text-xs">Converter</span>
           <input type="number" value={conv.qtd} onChange={e => setConv({ ...conv, qtd: e.target.value })}
-            placeholder="qtd" className="w-14 px-1.5 py-1 rounded-lg bg-void border border-border text-ink text-[11px] text-center placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500" />
+            placeholder="qtd" className="w-14 px-1.5 py-1 rounded-lg bg-void border border-border text-ink text-xs text-center placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500" />
           <select value={conv.de} onChange={e => setConv({ ...conv, de: e.target.value })} className={selCls}>
             <option value="">de…</option>
             {denom.map(d => <option key={d.id} value={d.id}>{d.sigla || d.nome}</option>)}
           </select>
-          <span className="text-ink-dim text-[11px]">→</span>
+          <span className="text-ink-dim text-xs">→</span>
           <select value={conv.para} onChange={e => setConv({ ...conv, para: e.target.value })} className={selCls}>
             <option value="">para…</option>
             {denom.map(d => <option key={d.id} value={d.id}>{d.sigla || d.nome}</option>)}
           </select>
           <button onClick={converterMoeda} disabled={ocupado}
-            className="px-2.5 py-1 text-[11px] rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors disabled:opacity-40">
+            className="px-2.5 py-1 text-xs rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors disabled:opacity-40">
             Converter
           </button>
         </div>

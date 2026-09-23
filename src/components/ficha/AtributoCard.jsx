@@ -18,7 +18,7 @@ function AvisoVantagem({ estado }) {
     anulada:     { txt: 'Vant./Desv. anuladas', cls: 'bg-hover text-ink-dim border-border' },
   }[estado]
   return (
-    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${cfg.cls}`}>
+    <span className={`text-xs font-semibold px-1.5 py-0.5 rounded border ${cfg.cls}`}>
       {cfg.txt}
     </span>
   )
@@ -232,7 +232,7 @@ export default function AtributoCard({
         pulsando ? 'border-dice-500 ring-2 ring-dice-500/25' : 'border-border'
       }`}>
         {/* Nome */}
-        <p className="text-ink-dim text-[11px] font-medium uppercase tracking-[.12em] truncate w-full text-center mb-1">
+        <p className="text-ink-dim text-xs font-medium uppercase tracking-[.12em] truncate w-full text-center mb-1">
           {atributo.nome}
         </p>
 
@@ -253,9 +253,9 @@ export default function AtributoCard({
             </p>
           )}
           {!usaDots && (temMod ? (
-            <p className="text-ink-dim text-[10px] leading-none mt-0.5">valor {display}</p>
+            <p className="text-ink-dim text-xs leading-none mt-0.5">valor {display}</p>
           ) : fontesMod && fontesMod.length > 0 && (
-            <p className="text-ink-dim text-[9px] leading-none mt-0.5">base {valor}</p>
+            <p className="text-ink-dim text-xs leading-none mt-0.5">base {valor}</p>
           ))}
           {/* Tooltip de rastreabilidade */}
           {fontesMod && fontesMod.length > 0 && (
@@ -264,17 +264,17 @@ export default function AtributoCard({
                             transition-opacity duration-150
                             bg-void border border-accent-700/60 rounded-lg px-3 py-2
                             shadow-2xl w-max">
-              <p className="text-accent-300 text-[11px] font-semibold mb-1">{atributo.nome}</p>
-              <p className="text-ink-dim text-[10px]">Base: {valor ?? '—'}</p>
+              <p className="text-accent-300 text-xs font-semibold mb-1">{atributo.nome}</p>
+              <p className="text-ink-dim text-xs">Base: {valor ?? '—'}</p>
               {fontesMod.map((f, i) => {
                 const sinal = sinalFonte(f)
                 return (
-                  <p key={i} className="text-ink text-[10px]">
+                  <p key={i} className="text-ink text-xs">
                     {sinal} <span className="text-ink-dim">{f.fonte}</span>
                   </p>
                 )
               })}
-              <p className="text-ok text-[10px] font-semibold border-t border-border mt-1 pt-1">
+              <p className="text-ok text-xs font-semibold border-t border-border mt-1 pt-1">
                 = {display}
               </p>
             </div>
@@ -282,7 +282,7 @@ export default function AtributoCard({
         </div>
 
         {/* Fórmula */}
-        <p className="text-dice-500 text-[10px] font-mono mt-1 opacity-70">
+        <p className="text-dice-500 text-xs font-mono mt-1 opacity-70">
           {formulaTexto(regra)}
         </p>
 
@@ -303,7 +303,7 @@ export default function AtributoCard({
             <button
               type="button"
               onClick={() => { setEditando(true); setValorManual(valor !== undefined ? String(valor) : '') }}
-              className="text-[11px] text-ink-dim hover:text-accent-300 transition-colors"
+              className="text-xs text-ink-dim hover:text-accent-300 transition-colors"
               title="Editar valor"
             >
               ✎
@@ -315,13 +315,13 @@ export default function AtributoCard({
         {testeResultado && (
           <div className="w-full mt-2 border-t border-border pt-2 space-y-1.5">
             <div className="flex items-center justify-between gap-1">
-              <span className="text-ink-dim font-mono text-[10px]">{testeResultado.notacao}</span>
+              <span className="text-ink-dim font-mono text-xs">{testeResultado.notacao}</span>
               <div className="flex items-center gap-1">
                 <AvisoVantagem estado={testeVantagem} />
                 <button
                   type="button"
                   onClick={() => setTesteResultado(null)}
-                  className="text-ink-dim hover:text-ink text-[10px] transition-colors"
+                  className="text-ink-dim hover:text-ink text-xs transition-colors"
                 >
                   ✕
                 </button>
@@ -338,12 +338,12 @@ export default function AtributoCard({
               )}
             </div>
             {descTeste && <p className="text-center text-sm font-bold text-accent-300">{descTeste.texto}</p>}
-            {descTeste?.textoFaixa && <p className="text-accent-300 text-[10px] text-center italic">"{descTeste.textoFaixa}"</p>}
+            {descTeste?.textoFaixa && <p className="text-accent-300 text-xs text-center italic">"{descTeste.textoFaixa}"</p>}
             {descTeste?.marcacao && (
-              <p className="text-center text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-harm/10 border-harm/60 text-harm">⚡ {descTeste.marcacao.rotulo}</p>
+              <p className="text-center text-xs font-semibold px-1.5 py-0.5 rounded border bg-harm/10 border-harm/60 text-harm">⚡ {descTeste.marcacao.rotulo}</p>
             )}
             <RerolagemBox resultado={testeResultado} rerolagem={rerolagem} mesaId={mesaId} fichaId={fichaId} rotulo={`Teste de ${atributo.nome}`} onRerolado={setTesteResultado} />
-            {erroTeste && <p className="text-harm text-[10px] text-center">{erroTeste}</p>}
+            {erroTeste && <p className="text-harm text-xs text-center">{erroTeste}</p>}
           </div>
         )}
 
@@ -354,7 +354,7 @@ export default function AtributoCard({
             <button
               type="button"
               onClick={() => setRolando(false)}
-              className="mt-1 text-[11px] text-ink-dim hover:text-accent-300 transition-colors w-full text-center"
+              className="mt-1 text-xs text-ink-dim hover:text-accent-300 transition-colors w-full text-center"
             >
               Cancelar
             </button>
@@ -393,7 +393,7 @@ export default function AtributoCard({
               <button
                 type="button"
                 onClick={() => { setEditando(false); setRolando(true) }}
-                className="mt-1.5 w-full py-1 text-[11px] bg-dice-700 hover:bg-dice-500 text-ink rounded transition-colors"
+                className="mt-1.5 w-full py-1 text-xs bg-dice-700 hover:bg-dice-500 text-ink rounded transition-colors"
               >
                 🎲 Rolar dados
               </button>
@@ -401,7 +401,7 @@ export default function AtributoCard({
           </div>
         )}
 
-        {erro && <p className="mt-1 text-harm text-[10px] text-center">{erro}</p>}
+        {erro && <p className="mt-1 text-harm text-xs text-center">{erro}</p>}
       </div>
     )
   }
@@ -435,9 +435,9 @@ export default function AtributoCard({
               </p>
             )}
             {!usaDots && (temMod ? (
-              <p className="text-ink-dim text-[10px] leading-none">valor {display}</p>
+              <p className="text-ink-dim text-xs leading-none">valor {display}</p>
             ) : fontesMod && fontesMod.length > 0 && (
-              <p className="text-ink-dim text-[10px] leading-none">base {valor}</p>
+              <p className="text-ink-dim text-xs leading-none">base {valor}</p>
             ))}
             {fontesMod && fontesMod.length > 0 && (
               <div className="absolute right-0 bottom-full mb-1.5 z-50
@@ -445,17 +445,17 @@ export default function AtributoCard({
                               transition-opacity duration-150
                               bg-void border border-accent-700/60 rounded-lg px-3 py-2
                               shadow-2xl w-max">
-                <p className="text-accent-300 text-[11px] font-semibold mb-1">{atributo.nome}</p>
-                <p className="text-ink-dim text-[10px]">Base: {valor ?? '—'}</p>
+                <p className="text-accent-300 text-xs font-semibold mb-1">{atributo.nome}</p>
+                <p className="text-ink-dim text-xs">Base: {valor ?? '—'}</p>
                 {fontesMod.map((f, i) => {
                   const sinal = sinalFonte(f)
                   return (
-                    <p key={i} className="text-ink text-[10px]">
+                    <p key={i} className="text-ink text-xs">
                       {sinal} <span className="text-ink-dim">{f.fonte}</span>
                     </p>
                   )
                 })}
-                <p className="text-ok text-[10px] font-semibold border-t border-border mt-1 pt-1">
+                <p className="text-ok text-xs font-semibold border-t border-border mt-1 pt-1">
                   = {display}
                 </p>
               </div>
@@ -500,7 +500,7 @@ export default function AtributoCard({
                   descartado={d.descartado}
                   skin={preferencias.dado_skin}
                 />
-                {d.descartado && <span className="text-harm text-[9px]">desc.</span>}
+                {d.descartado && <span className="text-harm text-xs">desc.</span>}
               </div>
             ))}
             <div className="flex items-baseline gap-1.5 ml-1">
@@ -512,7 +512,7 @@ export default function AtributoCard({
           </div>
           {descTeste?.textoFaixa && <p className="text-accent-300 text-xs italic">"{descTeste.textoFaixa}"</p>}
           {descTeste?.marcacao && (
-            <span className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-harm/10 border-harm/60 text-harm">⚡ {descTeste.marcacao.rotulo}{descTeste.marcacao.texto ? ` — ${descTeste.marcacao.texto}` : ''}</span>
+            <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded-md border bg-harm/10 border-harm/60 text-harm">⚡ {descTeste.marcacao.rotulo}{descTeste.marcacao.texto ? ` — ${descTeste.marcacao.texto}` : ''}</span>
           )}
           <RerolagemBox resultado={testeResultado} rerolagem={rerolagem} mesaId={mesaId} fichaId={fichaId} rotulo={`Teste de ${atributo.nome}`} onRerolado={setTesteResultado} />
           {!descTeste && (testeResultado.mantidos.length > 1 || testeResultado.modificador !== 0) && (

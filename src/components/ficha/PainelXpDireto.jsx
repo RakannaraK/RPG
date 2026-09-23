@@ -75,7 +75,7 @@ export default function PainelXpDireto({
     <div className="bg-raised border border-dice-500/60 rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-3 flex-wrap">
         <div>
-          <p className="text-dice-400 text-[11px] uppercase tracking-[.12em] font-medium">Experiência</p>
+          <p className="text-dice-400 text-xs uppercase tracking-[.12em] font-medium">Experiência</p>
           <p className="text-ink font-bold text-3xl leading-tight">
             {saldo} <span className="text-dice-500/70 text-sm font-normal">XP disponível</span>
           </p>
@@ -139,7 +139,7 @@ export default function PainelXpDireto({
               )}
             </div>
           )}
-          <p className="text-ink-dim text-[11px]">Compra é definitiva (+1 por vez); correções só via ajuste do mestre.</p>
+          <p className="text-ink-dim text-xs">Compra é definitiva (+1 por vez); correções só via ajuste do mestre.</p>
         </div>
       )}
 

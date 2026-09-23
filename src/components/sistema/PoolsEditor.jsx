@@ -19,7 +19,7 @@ const CTX_EXEMPLO = { nivel: 5, niveisClasse: {}, atributos: {}, pericias: {}, r
 /** Recuperação de um pool em cada tipo de descanso (F15). */
 function RecuperacaoEditor({ descansos, recuperacao, onChange }) {
   if (!descansos.length) {
-    return <p className="text-accent-300 text-[11px]">Configure os descansos para definir a recuperação.</p>
+    return <p className="text-accent-300 text-xs">Configure os descansos para definir a recuperação.</p>
   }
   const rec = recuperacao || {}
   function set(descId, patch) {
@@ -31,7 +31,7 @@ function RecuperacaoEditor({ descansos, recuperacao, onChange }) {
         const r = rec[d.id] || { modo: 'nada' }
         return (
           <div key={d.id} className="flex items-center gap-2 flex-wrap">
-            <span className="text-purple-400 text-[11px] w-24 shrink-0 truncate">{d.nome || 'Descanso'}</span>
+            <span className="text-purple-400 text-xs w-24 shrink-0 truncate">{d.nome || 'Descanso'}</span>
             <select value={r.modo} onChange={e => set(d.id, { modo: e.target.value })} className={INP}>
               {MODOS.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
             </select>
@@ -46,7 +46,7 @@ function RecuperacaoEditor({ descansos, recuperacao, onChange }) {
                 placeholder="3 ou nivel" className={`${INP} w-24 font-mono`} />
             )}
             {r.modo === 'fixo' && (
-              <label className="text-purple-400 text-[11px] flex items-center gap-1 cursor-pointer" title="Tratar o valor como fórmula">
+              <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer" title="Tratar o valor como fórmula">
                 <input type="checkbox" checked={!!r.valor_e_formula}
                   onChange={e => set(d.id, { valor_e_formula: e.target.checked })}
                   className="accent-purple-500" />
@@ -132,7 +132,7 @@ export default function PoolsEditor({ sistemaId, descansos = [] }) {
                     {p.tipo === 'dados' ? `${p.dado} · ` : ''}máx = {p.maximo_formula}
                   </span>
                 </span>
-                <label className="text-purple-400 text-[11px] flex items-center gap-1 cursor-pointer shrink-0" title="Mostrar na ficha">
+                <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer shrink-0" title="Mostrar na ficha">
                   <input type="checkbox" checked={p.visivel_ficha !== false}
                     onChange={e => atualizarPool(p.id, { visivel_ficha: e.target.checked }).catch(er => setErro(er.message))}
                     className="accent-purple-500" />
@@ -148,7 +148,7 @@ export default function PoolsEditor({ sistemaId, descansos = [] }) {
               </div>
               {expandido === p.id && (
                 <div className="mt-2 pt-2 border-t border-purple-900/60 pl-6">
-                  <p className="text-purple-400 text-[11px] mb-1.5">Recuperação por descanso</p>
+                  <p className="text-purple-400 text-xs mb-1.5">Recuperação por descanso</p>
                   <RecuperacaoEditor
                     descansos={descansos}
                     recuperacao={p.recuperacao}
@@ -194,7 +194,7 @@ export default function PoolsEditor({ sistemaId, descansos = [] }) {
             variaveis={['nivel', 'nivel(', 'atributo(', 'proficiencia', 'piso(']}
           />
           {previa != null && (
-            <p className="text-accent-300 text-[11px] mt-1">
+            <p className="text-accent-300 text-xs mt-1">
               Prévia (nível 5, atributos 10): <span className="font-mono text-purple-400">{previa}</span>
             </p>
           )}

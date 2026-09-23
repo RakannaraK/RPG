@@ -34,7 +34,7 @@ export default function SeletorCapa({ mesaId, capaAtual, onTrocou }) {
             <button
               key={c.id} type="button" onClick={() => escolher(c.id)} disabled={salvando}
               title={c.nome}
-              className={`flex flex-col items-center gap-1 w-[84px] py-2 rounded-xl border text-[11px] transition-colors disabled:opacity-50 ${
+              className={`flex flex-col items-center gap-1 w-[84px] py-2 rounded-xl border text-xs transition-colors disabled:opacity-50 ${
                 ativa ? 'border-purple-400 bg-purple-900/40 text-white' : 'border-purple-800 text-purple-300 hover:border-purple-600'
               }`}
             >

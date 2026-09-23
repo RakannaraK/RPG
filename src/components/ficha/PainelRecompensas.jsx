@@ -64,7 +64,7 @@ export default function PainelRecompensas({
                   <span className="text-ink-dim text-xs block mt-0.5">{r.descricao}</span>
                 )}
               </span>
-              <span className="text-ink-dim text-[11px] font-mono shrink-0 mt-0.5">{escala}</span>
+              <span className="text-ink-dim text-xs font-mono shrink-0 mt-0.5">{escala}</span>
             </label>
           )
         })}

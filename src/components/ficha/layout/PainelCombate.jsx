@@ -48,15 +48,15 @@ export default function PainelCombate({ campos, fichaId, isDono, contextoFormula
                 <p className={`font-bold text-2xl leading-none ${r.ok ? 'text-ink' : 'text-harm'}`}>
                   {r.ok ? r.valor : '—'}
                 </p>
-                <p className="text-ink-dim text-[11px] text-center leading-tight">
+                <p className="text-ink-dim text-xs text-center leading-tight">
                   {campo.nome} <span className="text-ink-dim">ƒ</span>
                 </p>
                 {/* Tooltip com a fórmula/erro */}
                 <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 z-50 pointer-events-none
                                 opacity-0 group-hover/calc:opacity-100 transition-opacity
                                 bg-void border border-accent-500/80 rounded-lg px-2.5 py-1.5 shadow-2xl w-max max-w-[16rem]">
-                  <p className="text-accent-300 text-[10px] font-mono break-all">{campo.formula}</p>
-                  <p className={`text-[10px] mt-0.5 ${r.ok ? 'text-ok' : 'text-harm'}`}>
+                  <p className="text-accent-300 text-xs font-mono break-all">{campo.formula}</p>
+                  <p className={`text-xs mt-0.5 ${r.ok ? 'text-ok' : 'text-harm'}`}>
                     {r.ok ? `= ${r.valor}` : r.erro}
                   </p>
                 </div>
@@ -85,9 +85,9 @@ export default function PainelCombate({ campos, fichaId, isDono, contextoFormula
                   {getValor(campo.id) || '—'}
                 </p>
               )}
-              <p className="text-ink-dim text-[11px] text-center leading-tight">{campo.nome}</p>
+              <p className="text-ink-dim text-xs text-center leading-tight">{campo.nome}</p>
               {erros[campo.id] && (
-                <p className="text-harm text-[10px]">{erros[campo.id]}</p>
+                <p className="text-harm text-xs">{erros[campo.id]}</p>
               )}
             </div>
           )

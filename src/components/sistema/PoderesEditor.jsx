@@ -80,13 +80,13 @@ function PoderForm({ inicial, pools, classes, linhas = [], onSalvar, onCancelar 
 
       {/* Custo */}
       <div className="border-t border-purple-900/50 pt-2">
-        <p className="text-purple-400 text-[11px] mb-1.5">Custo ao usar</p>
+        <p className="text-purple-400 text-xs mb-1.5">Custo ao usar</p>
         <CustoEditor custo={f.custo} pools={pools} onChange={custo => set({ custo })} />
       </div>
 
       {/* Efeito */}
       <div className="border-t border-purple-900/50 pt-2 space-y-1.5">
-        <p className="text-purple-400 text-[11px]">Efeito (opcional)</p>
+        <p className="text-purple-400 text-xs">Efeito (opcional)</p>
         <div className="flex flex-wrap gap-2 items-center">
           <select value={f.efeito_tipo} onChange={e => set({ efeito_tipo: e.target.value })} className={INP}>
             <option value="">Só texto</option>
@@ -101,7 +101,7 @@ function PoderForm({ inicial, pools, classes, linhas = [], onSalvar, onCancelar 
 
       {/* Escala por círculo */}
       <div className="border-t border-purple-900/50 pt-2">
-        <p className="text-purple-400 text-[11px] mb-1.5">
+        <p className="text-purple-400 text-xs mb-1.5">
           Escala por círculo — a taxa <span className="text-purple-300">acumula</span>: um poder de 1º
           lançado no 3º recebe 2× o extra.
         </p>
@@ -110,7 +110,7 @@ function PoderForm({ inicial, pools, classes, linhas = [], onSalvar, onCancelar 
 
       {/* CD */}
       <div className="border-t border-purple-900/50 pt-2">
-        <p className="text-purple-400 text-[11px] mb-1">CD deste poder (vazio = herda a do sistema)</p>
+        <p className="text-purple-400 text-xs mb-1">CD deste poder (vazio = herda a do sistema)</p>
         <FormulaInput
           value={f.cd_formula}
           onChange={cd_formula => set({ cd_formula })}
@@ -125,7 +125,7 @@ function PoderForm({ inicial, pools, classes, linhas = [], onSalvar, onCancelar 
           <option value="">Sem classe</option>
           {classes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
         </select>
-        <span className="text-accent-300 text-[11px]">nv mín.</span>
+        <span className="text-accent-300 text-xs">nv mín.</span>
         <input type="number" min={1} value={f.nivel_minimo} onChange={e => set({ nivel_minimo: e.target.value })}
           placeholder="—" className={`${INP} w-14 text-center`} />
         <select value={f.linha_id} onChange={e => set({ linha_id: e.target.value })} className={INP}>
@@ -134,7 +134,7 @@ function PoderForm({ inicial, pools, classes, linhas = [], onSalvar, onCancelar 
         </select>
         {f.linha_id && (
           <>
-            <span className="text-accent-300 text-[11px]">nv na linha</span>
+            <span className="text-accent-300 text-xs">nv na linha</span>
             <input type="number" min={1} value={f.nivel_linha} onChange={e => set({ nivel_linha: e.target.value })}
               placeholder="—" className={`${INP} w-14 text-center`} />
           </>
@@ -239,23 +239,23 @@ export default function PoderesEditor({ sistemaId }) {
           ) : (
             <div key={p.id} className="bg-purple-950/40 border border-purple-800 rounded-lg px-2.5 py-1.5">
               <div className="flex items-start gap-2">
-                <span className="text-amber-400 text-[11px] font-mono shrink-0 mt-0.5 w-12">
+                <span className="text-amber-400 text-xs font-mono shrink-0 mt-0.5 w-12">
                   {p.circulo != null ? `${p.circulo}º` : '—'}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="text-white text-xs font-medium">{p.nome}</span>
-                  {p.categoria && <span className="text-accent-300 text-[11px] ml-1.5">{p.categoria}</span>}
-                  {p.nivel_minimo != null && <span className="text-accent-300 text-[11px] ml-1.5">nv {p.nivel_minimo}+</span>}
-                  <span className="block text-accent-300 text-[11px]">
+                  {p.categoria && <span className="text-accent-300 text-xs ml-1.5">{p.categoria}</span>}
+                  {p.nivel_minimo != null && <span className="text-accent-300 text-xs ml-1.5">nv {p.nivel_minimo}+</span>}
+                  <span className="block text-accent-300 text-xs">
                     {descreverCusto(p.custo, poolsPorId)}
                     {p.efeito_notacao && <span className="font-mono text-purple-400"> · {p.efeito_notacao}{p.efeito_tipo ? ` (${p.efeito_tipo})` : ''}</span>}
                   </span>
                   {descreverEscala(p.escala_circulo) && (
-                    <span className="block text-accent-300 text-[11px]">↗ {descreverEscala(p.escala_circulo)}</span>
+                    <span className="block text-accent-300 text-xs">↗ {descreverEscala(p.escala_circulo)}</span>
                   )}
                 </span>
                 <button onClick={() => { setEditando(p.id); setCriando(false) }}
-                  className="text-accent-300 hover:text-white text-[11px] shrink-0">editar</button>
+                  className="text-accent-300 hover:text-white text-xs shrink-0">editar</button>
                 <button onClick={() => removerPoder(p.id).catch(e => setErro(e.message))}
                   className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors shrink-0"
                   title="Remover poder">×</button>

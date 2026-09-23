@@ -66,7 +66,7 @@ export default function LinhasPoderEditor({ sistemaId }) {
                 className={`${INP} w-16 text-center`}
                 title="Rating máximo"
               />
-              <label className="text-purple-400 text-[11px] flex items-center gap-1 cursor-pointer">
+              <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={!!l.auto_conceder}

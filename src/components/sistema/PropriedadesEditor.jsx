@@ -64,14 +64,14 @@ export default function PropriedadesEditor({ sistemaId, categorias = [] }) {
             const ef = descreverEfeito(p.modificador_config)
             return (
               <div key={p.id} className="flex items-start gap-2 bg-purple-950/40 border border-purple-800 rounded-lg px-2.5 py-1.5">
-                <span className="text-amber-400 text-[11px] font-mono shrink-0 mt-0.5 w-14">maestria {p.maestria_minima}</span>
+                <span className="text-amber-400 text-xs font-mono shrink-0 mt-0.5 w-14">maestria {p.maestria_minima}</span>
                 <span className="min-w-0 flex-1">
                   <span className="text-white text-xs font-medium">{p.nome}</span>
-                  {p.sigla && <span className="text-accent-300 text-[11px] ml-1.5 font-mono">[{p.sigla}]</span>}
-                  {cat && <span className="text-accent-300 text-[11px] ml-1.5">{cat.nome}</span>}
-                  {!cat && <span className="text-accent-300 text-[11px] ml-1.5">geral</span>}
-                  <span className="block text-accent-300 text-[11px]">{p.descricao}</span>
-                  {ef && <span className="block text-amber-500/80 text-[11px] font-mono">↗ {ef}</span>}
+                  {p.sigla && <span className="text-accent-300 text-xs ml-1.5 font-mono">[{p.sigla}]</span>}
+                  {cat && <span className="text-accent-300 text-xs ml-1.5">{cat.nome}</span>}
+                  {!cat && <span className="text-accent-300 text-xs ml-1.5">geral</span>}
+                  <span className="block text-accent-300 text-xs">{p.descricao}</span>
+                  {ef && <span className="block text-amber-500/80 text-xs font-mono">↗ {ef}</span>}
                 </span>
                 <button onClick={() => removerPropriedade(p.id).catch(e => setErro(e.message))}
                   className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors shrink-0">×</button>
@@ -87,7 +87,7 @@ export default function PropriedadesEditor({ sistemaId, categorias = [] }) {
             placeholder="Nome (ex: Crítico)" className={`${INP} flex-1 min-w-[9rem]`} />
           <input type="text" value={f.sigla} onChange={e => set({ sigla: e.target.value })}
             placeholder="Sigla" className={`${INP} w-16`} />
-          <span className="text-accent-300 text-[11px]">req.</span>
+          <span className="text-accent-300 text-xs">req.</span>
           <input type="number" min={0} value={f.maestria_minima} onChange={e => set({ maestria_minima: e.target.value })}
             placeholder="0" className={`${INP} w-14 text-center`} />
           <select value={f.categoria_id} onChange={e => set({ categoria_id: e.target.value })} className={INP}>
@@ -99,7 +99,7 @@ export default function PropriedadesEditor({ sistemaId, categorias = [] }) {
           placeholder="A regra (o que a propriedade faz)" className={`${INP} w-full`} />
 
         {/* Efeito mecânico opcional */}
-        <label className="text-purple-400 text-[11px] flex items-center gap-1.5 cursor-pointer">
+        <label className="text-purple-400 text-xs flex items-center gap-1.5 cursor-pointer">
           <input type="checkbox" checked={temEfeito} onChange={e => setTemEfeito(e.target.checked)} className="accent-purple-500" />
           efeito mecânico ao usar a arma
         </label>
@@ -112,7 +112,7 @@ export default function PropriedadesEditor({ sistemaId, categorias = [] }) {
             <span className="flex items-center gap-1">
               <input type="number" value={efeito.percentual_rolagem} onChange={e => setEfeito({ ...efeito, percentual_rolagem: e.target.value })}
                 placeholder="%" className={`${INP} w-14 text-center`} title="Percentual sobre o total (F18)" />
-              <span className="text-accent-300 text-[11px]">%</span>
+              <span className="text-accent-300 text-xs">%</span>
             </span>
             <input type="text" value={efeito.dados_extras} onChange={e => setEfeito({ ...efeito, dados_extras: e.target.value })}
               placeholder="dados (ex: 1d6)" className={`${INP} w-28 font-mono`} />

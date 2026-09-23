@@ -84,7 +84,7 @@ export function PainelCombateMapa({ encontro, combatentes, isGestor, onProximo, 
             >
               <span className={`w-6 text-center text-xs font-mono ${i === vez ? 'text-dice-400' : 'text-ink-dim'}`}>{i === vez ? '▶' : c.iniciativa ?? '–'}</span>
               <span className={`flex-1 min-w-0 truncate text-sm ${COR_TIPO[c.tipo] || 'text-ink'}`}>{c.nome}</span>
-              {i === vez && <span className="text-[10px] text-dice-400 uppercase tracking-wider">vez</span>}
+              {i === vez && <span className="text-xs text-dice-400 uppercase tracking-wider">vez</span>}
             </button>
           </li>
         ))}
@@ -137,7 +137,7 @@ export function MenuCamadas({ camadas, onCamadas, isGestor }) {
   )
   return (
     <div className="absolute right-2 top-12 z-30 w-56 rounded-xl border border-border bg-bg/95 backdrop-blur shadow-xl py-1.5">
-      <p className="px-3 pb-1 text-ink-dim text-[11px] uppercase tracking-wider">Camadas (só para você)</p>
+      <p className="px-3 pb-1 text-ink-dim text-xs uppercase tracking-wider">Camadas (só para você)</p>
       {item('grade', 'Grade')}
       {item('desenhos', 'Desenhos')}
       {item('tokens', 'Tokens')}

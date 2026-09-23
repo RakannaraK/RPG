@@ -126,7 +126,7 @@ export default function PainelNotas({ mesaId, meuId, estreito = false }) {
                   <span className="truncate flex-1 font-medium">{n.titulo || 'Sem título'}</span>
                   <span title={n.compartilhada ? 'Compartilhada' : 'Privada'}>{n.compartilhada ? '👥' : '🔒'}</span>
                 </span>
-                {n.autor_id !== meuId && <span className="block text-[11px] text-ink-dim">de {nomeDe(n.autor_id)}</span>}
+                {n.autor_id !== meuId && <span className="block text-xs text-ink-dim">de {nomeDe(n.autor_id)}</span>}
               </button>
             </li>
           ))}

@@ -61,7 +61,7 @@ function PontosStatusEditor({ cfg = {}, onChange }) {
               <span className="text-purple-400 text-xs">ganho por nível</span>
               <input type="text" value={cfg.ganho_por_nivel || ''} onChange={e => set({ ganho_por_nivel: e.target.value })}
                 placeholder="1d6 + 10" className={`${INP_PS} w-28 font-mono`} />
-              {ehRolado(cfg.ganho_por_nivel) && <span className="text-amber-400/80 text-[11px]">🎲 rolado</span>}
+              {ehRolado(cfg.ganho_por_nivel) && <span className="text-amber-400/80 text-xs">🎲 rolado</span>}
             </span>
             <span className="flex items-center gap-1.5">
               <span className="text-purple-400 text-xs">custo por ponto</span>
@@ -131,7 +131,7 @@ function CriticoEditor({ cfg = {}, onChange }) {
               </select>
             </span>
           </div>
-          <p className="text-accent-300 text-[11px]">
+          <p className="text-accent-300 text-xs">
             Ordem: dados+fixos → multiplicador crítico → percentuais → piso. O multiplicador de uma
             categoria (aba Maestria & Itens) sobrescreve o padrão.
           </p>
@@ -579,11 +579,11 @@ export default function LayoutEditor({
                             ? <p className="text-accent-300 text-xs mt-1">Prévia (atributos=10, nível=5): <span className="text-green-400 font-mono">{previa.valor}</span></p>
                             : <p className="text-red-400 text-xs mt-1">⚠ {previa.erro}</p>
                         )}
-                        <p className="text-accent-300 text-[11px] mt-1">
+                        <p className="text-accent-300 text-xs mt-1">
                           Pode usar atributos, mod, nível, perícias — mas não outro campo (evita ciclos).
                         </p>
                         {/* 22.7 — destacar este derivado no painel de combate */}
-                        <label className="mt-1.5 flex items-center gap-1.5 text-purple-300 text-[11px] cursor-pointer">
+                        <label className="mt-1.5 flex items-center gap-1.5 text-purple-300 text-xs cursor-pointer">
                           <input
                             type="checkbox"
                             checked={!!campo.exibir_combate}

@@ -53,17 +53,17 @@ function CartaPoder({
       naoPreparado ? 'border-border/60 opacity-60' : 'border-border'
     }`}>
       <div className="flex items-start gap-2">
-        <span className="text-dice-400 text-[11px] font-mono shrink-0 mt-0.5 w-7">
+        <span className="text-dice-400 text-xs font-mono shrink-0 mt-0.5 w-7">
           {poder.circulo != null ? `${poder.circulo}º` : '—'}
         </span>
 
         <span className="min-w-0 flex-1">
           <span className="text-ink text-sm font-medium">{poder.nome}</span>
-          {poder.acao && <span className="text-ink-dim text-[11px] ml-1.5">{poder.acao}</span>}
+          {poder.acao && <span className="text-ink-dim text-xs ml-1.5">{poder.acao}</span>}
           {cd != null && (
-            <span className="text-temp text-[11px] ml-1.5 font-mono" title="Classe de Dificuldade">CD {cd}</span>
+            <span className="text-temp text-xs ml-1.5 font-mono" title="Classe de Dificuldade">CD {cd}</span>
           )}
-          <span className="block text-ink-dim text-[11px]">
+          <span className="block text-ink-dim text-xs">
             {descreverCusto(poder.custo, estado.poolsPorId)}
             {poder.efeito_notacao && (
               <span className="font-mono text-ink-dim"> · {poder.efeito_notacao}
@@ -72,15 +72,15 @@ function CartaPoder({
             )}
           </span>
           {descreverEscala(poder.escala_circulo) && (
-            <span className="block text-ink-dim text-[11px]">↗ {descreverEscala(poder.escala_circulo)}</span>
+            <span className="block text-ink-dim text-xs">↗ {descreverEscala(poder.escala_circulo)}</span>
           )}
-          {poder.descricao && <span className="block text-ink-dim text-[11px] mt-0.5">{poder.descricao}</span>}
+          {poder.descricao && <span className="block text-ink-dim text-xs mt-0.5">{poder.descricao}</span>}
         </span>
 
         {isDono && (
           <span className="flex items-center gap-1.5 shrink-0">
             {usaPreparacao && (
-              <label className="text-ink-dim text-[11px] flex items-center gap-1 cursor-pointer" title="Preparado">
+              <label className="text-ink-dim text-xs flex items-center gap-1 cursor-pointer" title="Preparado">
                 <input type="checkbox" checked={!!linha.preparado}
                   onChange={e => onPreparar(linha.id, e.target.checked).catch(x => setErro(x.message))}
                   className="accent-accent-500" />
@@ -104,12 +104,12 @@ function CartaPoder({
         )}
       </div>
 
-      {bloqueio && isDono && <p className="text-ink-dim text-[11px]">⚠ {bloqueio}</p>}
+      {bloqueio && isDono && <p className="text-ink-dim text-xs">⚠ {bloqueio}</p>}
 
       {/* Escolha do círculo */}
       {escolhendo && (
         <div className="border-t border-border/60 pt-1.5 flex flex-wrap items-center gap-1.5">
-          <span className="text-ink-dim text-[11px]">Em qual círculo?</span>
+          <span className="text-ink-dim text-xs">Em qual círculo?</span>
           {check.circulos.map(c => (
             <button key={c} onClick={() => usar(c)} disabled={ocupado}
               className="px-2 py-0.5 text-xs rounded-lg bg-void border border-border text-ink hover:border-dice-500 hover:text-dice-400 transition-colors disabled:opacity-50"
@@ -117,7 +117,7 @@ function CartaPoder({
               {c}º{c > base && <span className="text-dice-500"> ↑</span>}
             </button>
           ))}
-          <button onClick={() => setEscolhendo(false)} className="text-ink-dim hover:text-ink text-[11px] ml-1">
+          <button onClick={() => setEscolhendo(false)} className="text-ink-dim hover:text-ink text-xs ml-1">
             cancelar
           </button>
         </div>
@@ -131,7 +131,7 @@ function CartaPoder({
           </span>
           {resultado.tipo === 'cura' && onCurar && (
             <button onClick={() => { onCurar(resultado.total); setResultado(null) }}
-              className="px-2 py-0.5 text-[11px] font-medium rounded-lg bg-ok/80 hover:bg-ok text-ink transition-colors">
+              className="px-2 py-0.5 text-xs font-medium rounded-lg bg-ok/80 hover:bg-ok text-ink transition-colors">
               Aplicar à vida
             </button>
           )}
@@ -139,7 +139,7 @@ function CartaPoder({
         </div>
       )}
 
-      {erro && <p className="text-harm text-[11px]">{erro}</p>}
+      {erro && <p className="text-harm text-xs">{erro}</p>}
     </div>
   )
 }
@@ -184,18 +184,18 @@ function AdicionarPoder({ catalogo, jaTem, estado, classesIds, onAprender }) {
             onClick={() => onAprender(p.id).catch(e => setErro(e.message))}
             className="w-full flex items-center gap-2 text-left bg-void/40 border border-border rounded-lg px-2 py-1 hover:border-accent-500 transition-colors"
           >
-            <span className="text-dice-400 text-[11px] font-mono w-7 shrink-0">
+            <span className="text-dice-400 text-xs font-mono w-7 shrink-0">
               {p.circulo != null ? `${p.circulo}º` : '—'}
             </span>
             <span className="text-ink text-xs flex-1 truncate">{p.nome}</span>
-            <span className="text-ink-dim text-[11px] shrink-0">{descreverCusto(p.custo, estado.poolsPorId)}</span>
+            <span className="text-ink-dim text-xs shrink-0">{descreverCusto(p.custo, estado.poolsPorId)}</span>
           </button>
         ))}
         {elegiveis.length === 0 && (
-          <p className="text-ink-dim text-[11px]">Nenhum poder elegível — confira classe e nível mínimo.</p>
+          <p className="text-ink-dim text-xs">Nenhum poder elegível — confira classe e nível mínimo.</p>
         )}
       </div>
-      {erro && <p className="text-harm text-[11px]">{erro}</p>}
+      {erro && <p className="text-harm text-xs">{erro}</p>}
     </div>
   )
 }
@@ -244,7 +244,7 @@ export default function PainelPoderes({
         <p className="text-ink text-sm font-semibold">{rotulo}</p>
         <div className="flex items-center gap-2">
           {usaPreparacao && (
-            <span className="text-ink-dim text-[11px]">{preparados} preparado(s)</span>
+            <span className="text-ink-dim text-xs">{preparados} preparado(s)</span>
           )}
           {opcoes.circulos.length > 0 && (
             <select value={filtroCirculo} onChange={e => setFiltroCirculo(e.target.value)} className={INP}>
@@ -257,7 +257,7 @@ export default function PainelPoderes({
       </div>
 
       {usaPreparacao && isDono && (
-        <p className="text-ink-dim text-[11px]">
+        <p className="text-ink-dim text-xs">
           Trocar preparados é livre aqui — a convenção de "só em descanso" fica com a mesa.
         </p>
       )}

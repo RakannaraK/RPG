@@ -99,7 +99,7 @@ export default function AcessoFicha({ ficha, mesaId, podeCompartilhar, onSalvar,
                   </li>
                 ))}
               </ul>
-              <p className="text-ink-dim text-[11px]">Quem edita mexe em tudo como você, menos apagar a ficha e mudar o acesso.</p>
+              <p className="text-ink-dim text-xs">Quem edita mexe em tudo como você, menos apagar a ficha e mudar o acesso.</p>
             </div>
           </>
         ) : (

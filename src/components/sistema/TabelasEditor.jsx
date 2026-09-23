@@ -114,17 +114,17 @@ export default function TabelasEditor({ tabelas = [], onChange }) {
               <button
                 type="button"
                 onClick={() => set(i, { entradas: [...(t.entradas || []), { de: '', ate: null, texto: '' }] })}
-                className="text-[11px] px-2 py-1 rounded-lg border border-dashed border-purple-800 text-purple-400 hover:text-white transition-colors"
+                className="text-xs px-2 py-1 rounded-lg border border-dashed border-purple-800 text-purple-400 hover:text-white transition-colors"
               >+ Entrada</button>
             </div>
 
             {!check.valida && (
-              <ul className="text-red-400 text-[11px] space-y-0.5">
+              <ul className="text-red-400 text-xs space-y-0.5">
                 {check.erros.map((er, k) => <li key={k}>⚠ {er}</li>)}
               </ul>
             )}
             {check.valida && buracos.length > 0 && (
-              <p className="text-amber-500 text-[11px]">
+              <p className="text-amber-500 text-xs">
                 ⚠ Sem entrada para: {buracos.join(', ')}
               </p>
             )}

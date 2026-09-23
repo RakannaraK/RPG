@@ -42,7 +42,7 @@ export default function PresencaBar({ conectados = [], meuId }) {
             <div
               key={c.id}
               title={titulo}
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold border-2 ${borda} ${corDe(c.id)}`}
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold border-2 ${borda} ${corDe(c.id)}`}
             >
               {iniciais(c.nome)}
             </div>

@@ -125,7 +125,7 @@ function CustoPoolEditor({ custo = [], pools = [], onChange }) {
   const set = (i, patch) => onChange(custo.map((c, j) => (j === i ? { ...c, ...patch } : c)))
 
   if (pools.length === 0) {
-    return <p className="text-accent-300 text-[11px]">Crie recursos na aba "Recursos" para cobrar custo.</p>
+    return <p className="text-accent-300 text-xs">Crie recursos na aba "Recursos" para cobrar custo.</p>
   }
 
   return (
@@ -134,7 +134,7 @@ function CustoPoolEditor({ custo = [], pools = [], onChange }) {
         const invalida = String(c.quantidade ?? '').trim() && !validarFormula(c.quantidade).valida
         return (
           <div key={i} className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-accent-300 text-[11px]">gasta</span>
+            <span className="text-accent-300 text-xs">gasta</span>
             <input type="text" value={c.quantidade ?? ''} onChange={e => set(i, { quantidade: e.target.value })}
               placeholder="2 ou piso(nivel/4)" spellCheck={false}
               className={`${cls} w-28 font-mono ${invalida ? 'border-red-600' : ''}`} />
@@ -142,7 +142,7 @@ function CustoPoolEditor({ custo = [], pools = [], onChange }) {
               <option value="">Recurso...</option>
               {pools.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
             </select>
-            <label className="text-purple-400 text-[11px] flex items-center gap-1 cursor-pointer"
+            <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer"
               title="Custo recorrente a cada turno enquanto ativa">
               <input type="checkbox" checked={!!c.por_turno}
                 onChange={e => set(i, { por_turno: e.target.checked })} className="accent-purple-500" />
@@ -155,10 +155,10 @@ function CustoPoolEditor({ custo = [], pools = [], onChange }) {
       })}
       <button type="button"
         onClick={() => onChange([...custo, { pool_id: pools[0].id, quantidade: '1', por_turno: false }])}
-        className="text-[11px] px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
+        className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
         + custo
       </button>
-      {custo.length === 0 && <p className="text-accent-300 text-[11px]">Sem custo de recurso.</p>}
+      {custo.length === 0 && <p className="text-accent-300 text-xs">Sem custo de recurso.</p>}
     </div>
   )
 }
@@ -293,10 +293,10 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
         {/* 21.5 — conversão de tipo de dano */}
         {tipo === 'converter' && (
           <>
-            <span className="text-accent-300 text-[11px]">de</span>
+            <span className="text-accent-300 text-xs">de</span>
             <input type="text" value={convDe} onChange={e => setConvDe(e.target.value)}
               placeholder="físico (ou * = qualquer)" className={`${ic} w-32`} />
-            <span className="text-accent-300 text-[11px]">para</span>
+            <span className="text-accent-300 text-xs">para</span>
             <input type="text" value={convPara} onChange={e => setConvPara(e.target.value)}
               placeholder="elétrico" className={`${ic} w-28`} />
           </>
@@ -337,13 +337,13 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
           </span>
         )}
         {valorPodeFormula && !escalaFaixa && (
-          <label className="text-purple-400 text-[11px] flex items-center gap-1 cursor-pointer" title="Usar fórmula (ex: piso(nivel/2))">
+          <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer" title="Usar fórmula (ex: piso(nivel/2))">
             <input type="checkbox" checked={valorEhFormula} onChange={e => setValorEhFormula(e.target.checked)} className="accent-purple-500" />
             ƒ fórmula
           </label>
         )}
         {podeEscalar && (
-          <label className="text-purple-400 text-[11px] flex items-center gap-1 cursor-pointer" title="Valor diferente por faixa de nível (ex: nv 1-4: 1d10; 5-10: 2d10)">
+          <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer" title="Valor diferente por faixa de nível (ex: nv 1-4: 1d10; 5-10: 2d10)">
             <input type="checkbox" checked={escalaFaixa}
               onChange={e => { setEscalaFaixa(e.target.checked); if (e.target.checked) setValorEhFormula(false) }}
               className="accent-purple-500" />
@@ -417,7 +417,7 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
             placeholder="ex: piso(nivel/2)"
             variaveis={['nivel', 'piso(', 'recurso(', 'pericia(', ' + ', ' - ', ' / ']}
           />
-          <p className="text-accent-300 text-[11px] mt-1">
+          <p className="text-accent-300 text-xs mt-1">
             Pode usar <span className="font-mono">nivel</span>, <span className="font-mono">recurso()</span>,{' '}
             <span className="font-mono">pericia()</span>, <span className="font-mono">vida_*</span> — não{' '}
             <span className="font-mono">atributo()</span>/<span className="font-mono">mod()</span> (evita auto-referência).
@@ -442,16 +442,16 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
 
       {/* Nível mínimo (19.5) */}
       <div className="flex flex-wrap gap-2 items-center border-t border-purple-900/50 pt-2">
-        <span className="text-accent-300 text-[11px]">Nível mínimo:</span>
+        <span className="text-accent-300 text-xs">Nível mínimo:</span>
         <input type="number" min={1} value={nivelMinimo} onChange={e => setNivelMinimo(e.target.value)}
           placeholder="—" className={`${ic} w-16 text-center`}
           title="Só entra em jogo a partir deste nível (da classe de origem; raça/avulso usam o nível total). Vazio = sem requisito." />
-        <span className="text-accent-300 text-[11px]">vazio = sem requisito</span>
+        <span className="text-accent-300 text-xs">vazio = sem requisito</span>
       </div>
 
       {/* Condição */}
       <div className="flex flex-wrap gap-2 items-center border-t border-purple-900/50 pt-2">
-        <span className="text-accent-300 text-[11px]">Condição:</span>
+        <span className="text-accent-300 text-xs">Condição:</span>
         <select value={condTipo} onChange={e => setCondTipo(e.target.value)} className={ic}>
           <option value="nenhuma">Nenhuma</option>
           <option value="auto">Automática</option>
@@ -473,7 +473,7 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
             </select>
             <input type="number" value={condValor} onChange={e => setCondValor(e.target.value)}
               placeholder={condMetrica === 'vida_percent' ? '50' : '5'} className={`${ic} w-16 text-center`} />
-            {condMetrica === 'vida_percent' && <span className="text-accent-300 text-[11px]">%</span>}
+            {condMetrica === 'vida_percent' && <span className="text-accent-300 text-xs">%</span>}
             {condMetrica === 'formula' && (
               <div className="w-full mt-1">
                 <FormulaInput
@@ -482,7 +482,7 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
                   placeholder="ex: estado(fome)"
                   variaveis={['estado(', 'pool(', 'atributo(', 'pericia(', 'nivel', 'vida_atual']}
                 />
-                <p className="text-accent-300 text-[11px] mt-1">
+                <p className="text-accent-300 text-xs mt-1">
                   O efeito entra em jogo quando o resultado da fórmula satisfaz a comparação escolhida
                   acima. Ex.: <span className="font-mono">estado(fome)</span> ≥ <span className="font-mono">4</span>.
                   Usa os valores base da ficha (atributos, pools, estados) — não os já modificados.
@@ -497,7 +497,7 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
         )}
       </div>
 
-      {erro && <p className="text-red-400 text-[11px]">{erro}</p>}
+      {erro && <p className="text-red-400 text-xs">{erro}</p>}
     </div>
   )
 }
@@ -740,21 +740,21 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
             <button onClick={() => setExpandido(!expandido)} className="flex-1 text-left min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="text-white text-xs font-medium">{habilidade.nome}</p>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${tipoBadge}`}>
+                <span className={`text-xs px-1.5 py-0.5 rounded-full ${tipoBadge}`}>
                   {habilidade.tipo === 'ativavel' ? 'Ativável' : 'Passiva'}
                 </span>
                 {habilidade.tipo === 'ativavel' && habilidade.recurso_nome && (
-                  <span className="text-amber-400 text-[10px]">
+                  <span className="text-amber-400 text-xs">
                     {habilidade.recurso_nome} · {habilidade.recurso_max ?? '?'} usos
                   </span>
                 )}
               </div>
               {habilidade.descricao && (
-                <p className="text-accent-300 text-[11px] mt-0.5 truncate">{habilidade.descricao}</p>
+                <p className="text-accent-300 text-xs mt-0.5 truncate">{habilidade.descricao}</p>
               )}
             </button>
             {habilidade.modificadores.length > 0 && (
-              <span className="text-accent-300 text-[10px] shrink-0">{habilidade.modificadores.length} mod.</span>
+              <span className="text-accent-300 text-xs shrink-0">{habilidade.modificadores.length} mod.</span>
             )}
             <button onClick={startEdit}
               className="p-1.5 text-accent-300 hover:text-purple-300 hover:bg-purple-900/40 rounded-lg transition-colors shrink-0"
@@ -1001,7 +1001,7 @@ function ItemCard({
               )}
             </button>
             {item.modificadores.length > 0 && (
-              <span className="text-accent-300 text-[11px] shrink-0">{item.modificadores.length} mod.</span>
+              <span className="text-accent-300 text-xs shrink-0">{item.modificadores.length} mod.</span>
             )}
             <button onClick={startEdit}
               className="p-1.5 text-accent-300 hover:text-purple-300 hover:bg-purple-900/40 rounded-lg transition-colors shrink-0"
@@ -1022,32 +1022,32 @@ function ItemCard({
           {/* 22.2 — override de pontos de status por raça */}
           {mostraPontos && (
             <div className="mt-2 flex flex-wrap gap-2 items-center bg-slate-700/40 border border-purple-800/50 rounded-lg p-2">
-              <span className="text-purple-400 text-[11px]">Pontos:</span>
+              <span className="text-purple-400 text-xs">Pontos:</span>
               <span className="flex items-center gap-1">
-                <span className="text-accent-300 text-[11px]">inicial</span>
+                <span className="text-accent-300 text-xs">inicial</span>
                 <input type="text" defaultValue={pc.inicial || ''}
                   onBlur={e => { const v = e.target.value.trim(); if (v !== (pc.inicial || '')) onUpdatePontos(item.id, { ...pc, inicial: v || null }).catch(() => {}) }}
                   placeholder="16" className="w-20 px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs font-mono placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500" />
               </span>
               <span className="flex items-center gap-1">
-                <span className="text-accent-300 text-[11px]">ganho/nível</span>
+                <span className="text-accent-300 text-xs">ganho/nível</span>
                 <input type="text" defaultValue={pc.ganho_por_nivel || ''}
                   onBlur={e => { const v = e.target.value.trim(); if (v !== (pc.ganho_por_nivel || '')) onUpdatePontos(item.id, { ...pc, ganho_por_nivel: v || null }).catch(() => {}) }}
                   placeholder="1d6 + 10" className="w-24 px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs font-mono placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500" />
               </span>
-              <span className="text-accent-300 text-[10px]">vazio = usa o padrão do sistema</span>
+              <span className="text-accent-300 text-xs">vazio = usa o padrão do sistema</span>
             </div>
           )}
 
           {/* 25.3 — linhas nativas (a raça/classe concede a linha automaticamente) */}
           {linhasPoder.length > 0 && (
             <div className="mt-2 bg-slate-700/40 border border-purple-800/50 rounded-lg p-2 space-y-1.5">
-              <span className="text-purple-400 text-[11px]">Linhas nativas</span>
+              <span className="text-purple-400 text-xs">Linhas nativas</span>
               <div className="flex flex-wrap gap-2">
                 {linhasPoder.map(l => {
                   const marcada = (item.linhas_nativas || []).includes(l.id)
                   return (
-                    <label key={l.id} className="text-purple-300 text-[11px] flex items-center gap-1 cursor-pointer">
+                    <label key={l.id} className="text-purple-300 text-xs flex items-center gap-1 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={marcada}

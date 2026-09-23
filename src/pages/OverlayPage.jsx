@@ -17,7 +17,7 @@ function BarraVida({ atual, maximo, temp, numeros }) {
         {pctTemp > 0 && <div style={{ width: `${pctTemp}%`, background: '#38bdf8' }} title="escudo" />}
       </div>
       {numeros && (
-        <p className="text-[11px] text-white/90 text-center mt-0.5 tabular-nums" style={{ textShadow: '0 1px 2px #000' }}>
+        <p className="text-xs text-white/90 text-center mt-0.5 tabular-nums" style={{ textShadow: '0 1px 2px #000' }}>
           {textoVida({ atual, maximo, temp })}
         </p>
       )}

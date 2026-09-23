@@ -62,7 +62,7 @@ function ResultadoModo({ rolagem, animando, ehMeu, minhaSkin }) {
         <p className="text-accent-300 text-xs italic">"{desc.textoFaixa}"</p>
       )}
       {desc?.marcacao && (
-        <span className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-harm/10 border-harm/60 text-harm">
+        <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded-md border bg-harm/10 border-harm/60 text-harm">
           ⚡ {desc.marcacao.rotulo}{desc.marcacao.texto ? ` — ${desc.marcacao.texto}` : ''}
         </span>
       )}
@@ -126,7 +126,7 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
                 descartado={d.descartado}
                 skin={minhaSkin}
               />
-              {d.descartado && <span className="text-harm text-[9px]">desc.</span>}
+              {d.descartado && <span className="text-harm text-xs">desc.</span>}
             </div>
           ))
         ) : (

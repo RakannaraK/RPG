@@ -145,7 +145,7 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
                     </p>
                     <p className="text-purple-400 text-xs mt-0.5 truncate">{c.especie || 'sem espécie'}{c.hp_maximo ? ` · ${c.hp_maximo} de vida` : ''}</p>
                     {c.ameaca && (
-                      <span className={`inline-block mt-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${CorAmeaca[c.ameaca] || 'bg-purple-900 text-purple-200'}`}>{c.ameaca}</span>
+                      <span className={`inline-block mt-1 text-xs font-semibold px-1.5 py-0.5 rounded-full ${CorAmeaca[c.ameaca] || 'bg-purple-900 text-purple-200'}`}>{c.ameaca}</span>
                     )}
                   </div>
                 </button>

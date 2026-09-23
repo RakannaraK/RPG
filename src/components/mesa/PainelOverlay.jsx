@@ -107,7 +107,7 @@ export default function PainelOverlay({ mesaId }) {
               mostrar última rolagem
             </label>
           </div>
-          <p className="text-accent-300 text-[11px]">
+          <p className="text-accent-300 text-xs">
             Ficha privada nunca aparece no overlay; notas, chat e eventos secretos também não.
           </p>
         </>

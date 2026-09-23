@@ -359,7 +359,7 @@ export default function MapaPage() {
     >
       {icone} <span className="hidden lg:inline">{rotulo}</span>
       {nome === 'chat' && chat.naoLidas > 0 && painelVisivel !== 'chat' && (
-        <span className="ml-1 inline-flex items-center justify-center text-[10px] font-bold bg-accent-500 text-ink rounded-full w-4 h-4">
+        <span className="ml-1 inline-flex items-center justify-center text-xs font-bold bg-accent-500 text-ink rounded-full w-5 h-5">
           {chat.naoLidas > 9 ? '9+' : chat.naoLidas}
         </span>
       )}

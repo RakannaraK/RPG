@@ -8,7 +8,7 @@ function Chips({ itens, tipo }) {
   if (itens.length === 0) return null
   return (
     <div className="space-y-1">
-      <p className="text-ink-dim text-[10px] uppercase tracking-[.12em] font-medium">
+      <p className="text-ink-dim text-xs uppercase tracking-[.12em] font-medium">
         {tipo === 'resistencia' && 'Resistências'}
         {tipo === 'imunidade' && 'Imunidades'}
         {tipo === 'vulnerabilidade' && 'Vulnerabilidades'}
@@ -49,7 +49,7 @@ export default function PainelDefesas({
           <>
             {vidaTemp > 0 && (
               <div>
-                <p className="text-ink-dim text-[10px] uppercase tracking-[.12em] font-medium mb-1">Vida Temporária</p>
+                <p className="text-ink-dim text-xs uppercase tracking-[.12em] font-medium mb-1">Vida Temporária</p>
                 <span className="px-2.5 py-0.5 rounded-full border border-temp/60 bg-temp/60 text-temp text-xs font-medium">
                   +{vidaTemp}
                 </span>

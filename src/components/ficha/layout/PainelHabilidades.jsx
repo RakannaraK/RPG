@@ -82,7 +82,7 @@ function EstadoCombate({ hf, isDono, onUsar, onAjustarCarga, onLiberarRecarga })
         </span>
       )}
       {est.emRecarga && (
-        <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-amber-950/60 border border-amber-700/60 text-amber-300">
+        <span className="text-xs px-1.5 py-0.5 rounded-full bg-amber-950/60 border border-amber-700/60 text-amber-300">
           ⏳ {est.motivo}
         </span>
       )}
@@ -98,7 +98,7 @@ function EstadoCombate({ hf, isDono, onUsar, onAjustarCarga, onLiberarRecarga })
         >⚡ Usar</button>
       )}
       {temRecarga && !est.emRecarga && (
-        <span className="text-ink-dim text-[11px]">recarga {hab.recarga_turnos} turno{hab.recarga_turnos === 1 ? '' : 's'}</span>
+        <span className="text-ink-dim text-xs">recarga {hab.recarga_turnos} turno{hab.recarga_turnos === 1 ? '' : 's'}</span>
       )}
     </div>
   )
@@ -121,8 +121,8 @@ function MidiaHabilidade({ hab, volume }) {
 }
 
 function OrigemBadge({ origem }) {
-  if (origem === 'raca')   return <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-hover border border-accent-700/60 text-accent-400">Raça</span>
-  if (origem === 'classe') return <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-hover border border-temp/50 text-temp">Classe</span>
+  if (origem === 'raca')   return <span className="text-xs px-1.5 py-0.5 rounded-full bg-hover border border-accent-700/60 text-accent-400">Raça</span>
+  if (origem === 'classe') return <span className="text-xs px-1.5 py-0.5 rounded-full bg-hover border border-temp/50 text-temp">Classe</span>
   return null
 }
 
@@ -235,7 +235,7 @@ function ResumoEfeitos({ modificadores = [], idsAtivos, nomes = {}, emJogo }) {
         return (
           <span
             key={m.id}
-            className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md border ${base}`}
+            className={`inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md border ${base}`}
             title={cond ? (ativo ? 'Ativo agora' : 'Inativo — condição não satisfeita') : undefined}
           >
             {cond && (
@@ -270,7 +270,7 @@ function CondicoesManuais({ condicoes, estado, onToggle, isDono, nomes = {} }) {
               {isDono ? (
                 <Toggle ativa={ativa} onChange={novo => onToggle(m.id, novo)} />
               ) : (
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full shrink-0 ${
+                <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 ${
                   ativa
                     ? 'bg-ok/15 border border-ok/50 text-ok'
                     : 'bg-hover border border-border text-ink-dim'
@@ -416,7 +416,7 @@ export default function PainelHabilidades({
                       </p>
                       <OrigemBadge origem={hf.origem} />
                       {!isDono && (
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                           hf.ativa
                             ? 'bg-ok/15 border border-ok/50 text-ok'
                             : 'bg-hover border border-border text-ink-dim'
@@ -467,7 +467,7 @@ export default function PainelHabilidades({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-ink font-medium text-sm">{hab.nome}</p>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-ok/15 border border-ok/50 text-ok">
+                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-ok/15 border border-ok/50 text-ok">
                         Sempre ativa
                       </span>
                       <OrigemBadge origem={hf.origem} />
@@ -568,7 +568,7 @@ export default function PainelHabilidades({
               <button
                 onClick={handlePagarTurno}
                 disabled={pagando}
-                className="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-dice-700 hover:bg-dice-500 text-ink transition-colors disabled:opacity-50"
+                className="px-2.5 py-1 text-xs font-medium rounded-lg bg-dice-700 hover:bg-dice-500 text-ink transition-colors disabled:opacity-50"
                 title="Fora de combate. Dentro do combate, a sessão cobra ao avançar o turno."
               >
                 {pagando ? '...' : 'Pagar turno'}
@@ -576,7 +576,7 @@ export default function PainelHabilidades({
             )}
           </div>
           {comCustoTurno.map(hf => (
-            <div key={hf.id} className="flex justify-between gap-2 text-[11px]">
+            <div key={hf.id} className="flex justify-between gap-2 text-xs">
               <span className="text-accent-300 truncate">{hf.habilidade.nome}</span>
               <span className="text-dice-500/90 font-mono shrink-0">
                 {descreverCustoTurno(hf.habilidade, poolsPorId)}
@@ -597,7 +597,7 @@ export default function PainelHabilidades({
               title={`Disponível ao atingir o nível ${h.nivel_minimo}`}
             >
               <span className="text-accent-300 text-sm truncate">🔒 {h.nome}</span>
-              <span className="text-dice-500/80 text-[11px] font-mono shrink-0">nv {h.nivel_minimo}</span>
+              <span className="text-dice-500/80 text-xs font-mono shrink-0">nv {h.nivel_minimo}</span>
             </div>
           ))}
         </div>

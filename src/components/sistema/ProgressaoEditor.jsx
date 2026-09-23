@@ -51,7 +51,7 @@ function CategoriasCompra({ categorias = [], onChange }) {
               <select value={c.alvo || 'atributo'} onChange={e => setCat(i, { alvo: e.target.value })} className={INP}>
                 {ALVOS_COMPRA.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
               </select>
-              <label className="text-purple-400 text-[11px] flex items-center gap-1">máx
+              <label className="text-purple-400 text-xs flex items-center gap-1">máx
                 <input type="number" min={1} value={c.maximo ?? ''} onChange={e => setCat(i, { maximo: e.target.value === '' ? null : Number(e.target.value) })}
                   placeholder="—" className={`${INP} w-14 text-center`} /></label>
               <button onClick={() => onChange(categorias.filter((_, j) => j !== i))}
@@ -63,7 +63,7 @@ function CategoriasCompra({ categorias = [], onChange }) {
                   placeholder="custo: ex novo_valor * 5" variaveis={['novo_valor', ' * ', ' + ']} />
               </div>
               {previa != null && (
-                <span className="text-accent-300 text-[11px] shrink-0">prévia 2→3: <span className="text-green-400 font-mono">{previa} XP</span></span>
+                <span className="text-accent-300 text-xs shrink-0">prévia 2→3: <span className="text-green-400 font-mono">{previa} XP</span></span>
               )}
             </div>
             {c.alvo === 'linha_poder' && (
@@ -76,7 +76,7 @@ function CategoriasCompra({ categorias = [], onChange }) {
         )
       })}
       <button onClick={() => onChange([...categorias, { id: novoId(), nome: '', alvo: 'atributo', custo_formula: '', maximo: 5 }])}
-        className="text-[11px] px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
+        className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
         + categoria de compra
       </button>
     </div>
@@ -144,7 +144,7 @@ export default function ProgressaoEditor({ progressao, onChange, modoProgressao 
               </button>
             ))}
           </div>
-          <p className="text-accent-300 text-[11px]">
+          <p className="text-accent-300 text-xs">
             {MODOS_PROGRESSAO.find(m => m.id === modoGeral)?.dica}. Os modos são excludentes — um por sistema.
           </p>
         </>

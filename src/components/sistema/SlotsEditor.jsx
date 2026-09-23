@@ -44,9 +44,9 @@ function GradeClasse({ classe, grade = {}, circuloMax, onChange }) {
           <table className="text-xs border-collapse">
             <thead>
               <tr>
-                <th className="text-purple-400 text-[11px] font-normal px-1.5 py-1 text-left">Nv</th>
+                <th className="text-purple-400 text-xs font-normal px-1.5 py-1 text-left">Nv</th>
                 {circulos.map(c => (
-                  <th key={c} className="text-purple-400 text-[11px] font-normal px-1 py-1 w-10">{c}º</th>
+                  <th key={c} className="text-purple-400 text-xs font-normal px-1 py-1 w-10">{c}º</th>
                 ))}
                 <th />
               </tr>
@@ -84,11 +84,11 @@ function GradeClasse({ classe, grade = {}, circuloMax, onChange }) {
           onKeyDown={e => { if (e.key === 'Enter') addNivel() }}
           placeholder="Nv" className={`${INP} w-14 text-center`} />
         <button type="button" onClick={addNivel} disabled={!novoNivel}
-          className="text-[11px] px-2 py-1 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors disabled:opacity-40">
+          className="text-xs px-2 py-1 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors disabled:opacity-40">
           + linha de nível
         </button>
         {niveis.length > 0 && (
-          <span className="text-accent-300 text-[11px]">
+          <span className="text-accent-300 text-xs">
             Nv 4 de {classe.nome} → [{(linhaDaGrade(grade, 4) || []).join(', ') || '—'}]
           </span>
         )}
@@ -139,7 +139,7 @@ export default function SlotsEditor({ sistemaId, config, onChange, descansos = [
           <div className="flex flex-wrap gap-2 items-center">
             <input type="text" value={slots.rotulo || ''} onChange={e => set({ rotulo: e.target.value })}
               placeholder="Rótulo (Espaços de Magia)" className={`${INP} flex-1 min-w-[10rem]`} />
-            <span className="text-accent-300 text-[11px]">círculo máx.</span>
+            <span className="text-accent-300 text-xs">círculo máx.</span>
             <input type="number" min={1} max={12} value={slots.circulo_max ?? 9}
               onChange={e => set({ circulo_max: Number(e.target.value) })}
               className={`${INP} w-14 text-center`} />
@@ -152,7 +152,7 @@ export default function SlotsEditor({ sistemaId, config, onChange, descansos = [
           </div>
 
           <div>
-            <p className="text-purple-400 text-[11px] mb-1">CD padrão dos poderes (cada poder pode sobrescrever)</p>
+            <p className="text-purple-400 text-xs mb-1">CD padrão dos poderes (cada poder pode sobrescrever)</p>
             <FormulaInput
               value={slots.cd_formula || ''}
               onChange={cd_formula => set({ cd_formula })}
@@ -163,11 +163,11 @@ export default function SlotsEditor({ sistemaId, config, onChange, descansos = [
 
           {/* Grade por classe */}
           <div className="border-t border-purple-900/50 pt-2 space-y-1.5">
-            <p className="text-purple-400 text-[11px]">
+            <p className="text-purple-400 text-xs">
               Grade por classe — preencha só os níveis em que a grade muda.
             </p>
             {classes.length === 0 && (
-              <p className="text-accent-300 text-[11px]">Crie classes para montar a grade.</p>
+              <p className="text-accent-300 text-xs">Crie classes para montar a grade.</p>
             )}
             {classes.map(c => {
               const grade = (slots.grades || {})[c.id] || {}
@@ -179,7 +179,7 @@ export default function SlotsEditor({ sistemaId, config, onChange, descansos = [
                     className="flex items-center gap-2 w-full text-left">
                     <span className="text-accent-300 text-xs w-4">{classeAberta === c.id ? '▾' : '▸'}</span>
                     <span className="text-white text-xs font-medium flex-1">{c.nome}</span>
-                    <span className="text-accent-300 text-[11px]">
+                    <span className="text-accent-300 text-xs">
                       {temLinhas ? `${Object.keys(grade).length} linha(s)` : 'sem slots'}
                     </span>
                   </button>
@@ -200,13 +200,13 @@ export default function SlotsEditor({ sistemaId, config, onChange, descansos = [
 
           {/* Recuperação */}
           <div className="border-t border-purple-900/50 pt-2 space-y-1.5">
-            <p className="text-purple-400 text-[11px]">Recuperação por descanso</p>
+            <p className="text-purple-400 text-xs">Recuperação por descanso</p>
             {descansos.length === 0 ? (
-              <p className="text-accent-300 text-[11px]">Configure os descansos primeiro.</p>
+              <p className="text-accent-300 text-xs">Configure os descansos primeiro.</p>
             ) : (
               descansos.map(d => (
                 <div key={d.id} className="flex items-center gap-2">
-                  <span className="text-purple-400 text-[11px] w-24 shrink-0 truncate">{d.nome || 'Descanso'}</span>
+                  <span className="text-purple-400 text-xs w-24 shrink-0 truncate">{d.nome || 'Descanso'}</span>
                   <select
                     value={(slots.recuperacao || {})[d.id]?.modo || 'nada'}
                     onChange={e => setRecuperacao(d.id, e.target.value)}

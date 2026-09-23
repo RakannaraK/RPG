@@ -219,7 +219,7 @@ export default function CabecalhoPersonagem({
                 {rotuloVida}
               </p>
               {temModVida && (
-                <span className="text-ok text-[10px] font-mono">
+                <span className="text-ok text-xs font-mono">
                   (base {hpMaxBase}{vidaMaxFinal > hpMaxBase ? ` +${vidaMaxFinal - hpMaxBase}` : ` ${vidaMaxFinal - hpMaxBase}`})
                 </span>
               )}

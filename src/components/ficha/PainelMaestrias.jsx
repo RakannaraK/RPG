@@ -26,7 +26,7 @@ function MaestriaCard({ nome, sub, xp, curva, ganhos, propriedades = [], isDono,
       <div className="flex items-baseline justify-between gap-2 flex-wrap">
         <span className="min-w-0">
           <span className="text-ink text-sm font-medium">{nome}</span>
-          {sub && <span className="text-ink-dim text-[11px] ml-1.5">{sub}</span>}
+          {sub && <span className="text-ink-dim text-xs ml-1.5">{sub}</span>}
         </span>
         <span className="text-dice-400 text-sm font-mono shrink-0">Maestria {nivel}</span>
       </div>
@@ -34,13 +34,13 @@ function MaestriaCard({ nome, sub, xp, curva, ganhos, propriedades = [], isDono,
       <div className="h-2 bg-hover rounded-full overflow-hidden">
         <div className="h-full rounded-full bg-dice-500 transition-all duration-500" style={{ width: `${pct}%` }} />
       </div>
-      <p className="text-ink-dim text-[11px]">
+      <p className="text-ink-dim text-xs">
         {xpParaProximo > 0
           ? <>XP {xp} · faltam <span className="text-ink-dim">{faltam}</span> para a maestria {nivel + 1}</>
           : <>XP {xp} · nível máximo da curva</>}
       </p>
       {prox && (
-        <p className="text-dice-500/70 text-[11px]">
+        <p className="text-dice-500/70 text-xs">
           🔒 Próximo: <span className="text-dice-400">{prox.nome}</span> na maestria {prox.maestria_minima}
           {faltamProx > 0 && <> — faltam {faltamProx} XP</>}
         </p>
@@ -53,7 +53,7 @@ function MaestriaCard({ nome, sub, xp, curva, ganhos, propriedades = [], isDono,
               key={i}
               onClick={() => ganhar(Number(g.xp) || 0)}
               disabled={ocupado}
-              className="text-[11px] px-2 py-1 rounded-lg bg-void/60 hover:bg-hover text-ink hover:text-ink transition-colors disabled:opacity-40"
+              className="text-xs px-2 py-1 rounded-lg bg-void/60 hover:bg-hover text-ink hover:text-ink transition-colors disabled:opacity-40"
               title={`+${g.xp} XP`}
             >
               {g.rotulo || `+${g.xp}`} <span className="text-dice-400/80">+{g.xp}</span>
@@ -67,12 +67,12 @@ function MaestriaCard({ nome, sub, xp, curva, ganhos, propriedades = [], isDono,
               onKeyDown={e => { if (e.key === 'Enter' && manual) { ganhar(Number(manual)); setManual('') } }}
               placeholder="XP"
               disabled={ocupado}
-              className="w-14 px-1.5 py-1 rounded-lg bg-void border border-border text-ink text-[11px] text-center placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500"
+              className="w-14 px-1.5 py-1 rounded-lg bg-void border border-border text-ink text-xs text-center placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500"
             />
             <button
               onClick={() => { ganhar(Number(manual)); setManual('') }}
               disabled={ocupado || !manual}
-              className="text-[11px] px-2 py-1 rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors disabled:opacity-40"
+              className="text-xs px-2 py-1 rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors disabled:opacity-40"
             >
               +XP
             </button>

@@ -102,7 +102,7 @@ function DiceGenerico({ lados, resultado, rolando, descartado }) {
         descartado ? 'opacity-35' : '',
       ].filter(Boolean).join(' ')}
     >
-      <span className="text-[10px] opacity-50 font-mono leading-none">d{lados}</span>
+      <span className="text-xs opacity-50 font-mono leading-none">d{lados}</span>
       <span className={`font-bold leading-none mt-0.5 ${resultado >= 100 ? 'text-lg' : 'text-3xl'}`}>
         {animando ? '?' : resultado}
       </span>

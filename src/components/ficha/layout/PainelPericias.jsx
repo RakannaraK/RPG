@@ -18,7 +18,7 @@ function AvisoVantagem({ estado }) {
     anulada:     { txt: 'anuladas',      cls: 'bg-hover text-ink-dim border-border' },
   }[estado]
   return (
-    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${cfg.cls}`}>
+    <span className={`text-xs font-semibold px-1.5 py-0.5 rounded border ${cfg.cls}`}>
       {cfg.txt}
     </span>
   )
@@ -279,13 +279,13 @@ export default function PainelPericias({
                     {(() => {
                       const desc = rollAtivo.resultado.modo && rollAtivo.resultado.modo !== 'soma'
                         ? descreverResultado(rollAtivo.resultado.estruturado) : null
-                      return desc?.textoFaixa ? <p className="text-accent-300 text-[10px] italic mt-1">"{desc.textoFaixa}"</p> : null
+                      return desc?.textoFaixa ? <p className="text-accent-300 text-xs italic mt-1">"{desc.textoFaixa}"</p> : null
                     })()}
                     {(() => {
                       const desc = rollAtivo.resultado.modo && rollAtivo.resultado.modo !== 'soma'
                         ? descreverResultado(rollAtivo.resultado.estruturado) : null
                       return desc?.marcacao ? (
-                        <span className="inline-block mt-1 text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-harm/10 border-harm/60 text-harm">⚡ {desc.marcacao.rotulo}</span>
+                        <span className="inline-block mt-1 text-xs font-semibold px-1.5 py-0.5 rounded border bg-harm/10 border-harm/60 text-harm">⚡ {desc.marcacao.rotulo}</span>
                       ) : null
                     })()}
                     <RerolagemBox

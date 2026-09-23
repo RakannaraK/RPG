@@ -12,7 +12,7 @@ function DetalheModificadores({ detalhamento }) {
   const extras = (detalhamento || []).filter(d => d.fonte)
   if (extras.length === 0) return null
   return (
-    <p className="text-ink-dim text-[10px] leading-tight">
+    <p className="text-ink-dim text-xs leading-tight">
       {extras.map((d, i) => (
         <span key={i}>
           {i > 0 && ' · '}

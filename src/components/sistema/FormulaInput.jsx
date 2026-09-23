@@ -18,7 +18,7 @@ function Verbete({ codigo, texto, exemplo, nota }) {
 // base em matemática/computação: cada função tem explicação simples e exemplo.
 function AjudaGramatica() {
   return (
-    <div className="mt-1.5 bg-slate-900 border border-purple-800 rounded-lg p-3 text-[11px] space-y-3 max-h-96 overflow-y-auto">
+    <div className="mt-1.5 bg-slate-900 border border-purple-800 rounded-lg p-3 text-xs space-y-3 max-h-96 overflow-y-auto">
       <div className="space-y-1">
         <p className="text-purple-300">
           Uma fórmula sempre resulta num <span className="font-semibold">número</span>. Você mistura
@@ -182,7 +182,7 @@ export default function FormulaInput({
               key={vv}
               type="button"
               onClick={() => onChange(`${value || ''}${vv}`)}
-              className="text-[10px] font-mono px-1.5 py-0.5 bg-slate-700/60 hover:bg-slate-600 text-purple-300 rounded transition-colors"
+              className="text-xs font-mono px-1.5 py-0.5 bg-slate-700/60 hover:bg-slate-600 text-purple-300 rounded transition-colors"
               title="Inserir na fórmula"
             >
               {vv}

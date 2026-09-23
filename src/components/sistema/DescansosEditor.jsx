@@ -41,7 +41,7 @@ function RegraEditor({ label, regra, modos, onChange }) {
         <input type="text" value={regra?.valor ?? ''} onChange={e => setRegra({ valor: e.target.value })} placeholder="ex: 1d8+nivel" className={`${inputCls} w-32`} title="Notação; aceita variáveis (ex: 1d8+nivel)" />
       )}
       {modo === 'fixo' && (
-        <label className="text-purple-400 text-[11px] flex items-center gap-1 cursor-pointer pt-1.5" title="Usar fórmula (ex: 5*nivel)">
+        <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer pt-1.5" title="Usar fórmula (ex: 5*nivel)">
           <input type="checkbox" checked={ehFormula} onChange={e => setRegra({ valor_e_formula: e.target.checked })} className="accent-purple-500" />
           ƒ
         </label>

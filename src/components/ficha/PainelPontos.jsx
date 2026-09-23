@@ -68,8 +68,8 @@ function Distribuir({ atributos, disponiveis, config, onConfirmar, onCancelar })
           )
         })}
       </div>
-      {erro && <p className="text-harm text-[11px]">{erro}</p>}
-      <p className="text-ink-dim text-[11px]">O gasto é definitivo — só o mestre corrige depois (ajuste).</p>
+      {erro && <p className="text-harm text-xs">{erro}</p>}
+      <p className="text-ink-dim text-xs">O gasto é definitivo — só o mestre corrige depois (ajuste).</p>
       <div className="flex gap-2">
         <button onClick={confirmar} disabled={salvando || !check.valido}
           className="px-3 py-1.5 bg-accent-700 hover:bg-accent-600 disabled:opacity-50 text-ink text-xs rounded-lg transition-colors">
@@ -159,7 +159,7 @@ export default function PainelPontos({
             <button onClick={() => setShowAjuste(false)} className="text-ink-dim hover:text-ink text-xs">✕</button>
           </div>
         ) : (
-          <button onClick={() => setShowAjuste(true)} className="text-ink-dim hover:text-ink text-[11px] border-t border-border/50 pt-2 w-full text-left">
+          <button onClick={() => setShowAjuste(true)} className="text-ink-dim hover:text-ink text-xs border-t border-border/50 pt-2 w-full text-left">
             + Ajuste do mestre
           </button>
         )
@@ -167,7 +167,7 @@ export default function PainelPontos({
 
       {/* Histórico */}
       {log.length > 0 && (
-        <details className="text-[11px]">
+        <details className="text-xs">
           <summary className="text-ink-dim cursor-pointer hover:text-accent-300">Histórico ({log.length})</summary>
           <div className="mt-1.5 space-y-0.5 max-h-40 overflow-y-auto">
             {log.map(l => (

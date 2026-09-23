@@ -87,15 +87,15 @@ function CondicaoForm({ onAplicar, onFechar }) {
   return (
     <div className="flex flex-wrap items-center gap-2 mt-1.5 pl-6">
       <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Condição (ex: Envenenado)" className={`${inputCls} flex-1 min-w-[8rem]`} />
-      <label className="text-purple-400 text-[11px] flex items-center gap-1">
+      <label className="text-purple-400 text-xs flex items-center gap-1">
         Rodadas
         <input value={dur} onChange={e => setDur(e.target.value)} type="number" min="1" placeholder="∞" className={`${inputCls} w-14`} title="Vazio = permanente" />
       </label>
-      <label className="text-purple-400 text-[11px] flex items-center gap-1">
+      <label className="text-purple-400 text-xs flex items-center gap-1">
         CA
         <input value={caMod} onChange={e => setCaMod(e.target.value)} type="number" placeholder="0" className={`${inputCls} w-14`} title="Efeito na CA (ex: -2)" />
       </label>
-      <label className="text-purple-400 text-[11px] flex items-center gap-1">
+      <label className="text-purple-400 text-xs flex items-center gap-1">
         Por rodada
         <select value={tipoRodada} onChange={e => setTipoRodada(e.target.value)} className={`${inputCls} w-20`} title="Dano ou cura no começo do turno de quem carrega a condição">
           <option value="dano">dano</option>
@@ -182,9 +182,9 @@ function PedirDefesaForm({ combatente, sugestaoDano, onPedir, onFechar }) {
   }
   return (
     <div className="mt-1.5 ml-6 flex items-center gap-1.5 flex-wrap">
-      <label className="text-sky-300 text-[11px] flex items-center gap-1">acerto
+      <label className="text-sky-300 text-xs flex items-center gap-1">acerto
         <input type="number" value={ataque} onChange={e => setAtaque(e.target.value)} placeholder="71" className={inp} /></label>
-      <label className="text-sky-300 text-[11px] flex items-center gap-1">dano
+      <label className="text-sky-300 text-xs flex items-center gap-1">dano
         <input type="number" value={dano} onChange={e => setDano(e.target.value)} placeholder="20" className={inp} /></label>
       <button onClick={submit} disabled={busy || dano === ''} className="px-2 py-0.5 bg-sky-700 hover:bg-sky-600 disabled:opacity-50 text-white text-xs rounded transition-colors">Pedir</button>
       <button onClick={onFechar} className="px-1.5 py-0.5 text-purple-400 hover:text-white text-xs transition-colors">Cancelar</button>
@@ -204,7 +204,7 @@ function ResolverDefesaControl({ combatente, onResolver, onCancelar }) {
   async function resolver() { setBusy(true); try { await onResolver(combatente) } finally { setBusy(false) } }
   return (
     <div className="mt-1.5 ml-6 flex items-center gap-2 flex-wrap rounded-lg border border-sky-700/50 bg-sky-950/30 px-2 py-1.5">
-      <span className="text-sky-300 text-[11px]">🛡 defesa: <span className="text-sky-100 font-medium">{label}</span></span>
+      <span className="text-sky-300 text-xs">🛡 defesa: <span className="text-sky-100 font-medium">{label}</span></span>
       <button onClick={resolver} disabled={busy}
         className={`ml-auto px-2 py-0.5 text-xs rounded transition-colors disabled:opacity-50 ${r ? 'bg-sky-700 hover:bg-sky-600 text-white' : 'bg-red-800 hover:bg-red-700 text-white'}`}>
         {r ? '✓ Resolver' : 'Resolver (dano cheio)'}
@@ -295,11 +295,11 @@ function CombatenteRow({
           )}
         </div>
 
-        <span className={`text-[10px] px-1.5 py-0.5 rounded-md border shrink-0 ${estilo.badge}`}>{estilo.label}</span>
+        <span className={`text-xs px-1.5 py-0.5 rounded-md border shrink-0 ${estilo.badge}`}>{estilo.label}</span>
         <span className="text-white text-sm font-medium flex-1 min-w-0 truncate">
           {c.nome}
           {abatido && (
-            <span className="ml-1.5 text-[10px] px-1 py-0.5 rounded bg-red-950 border border-red-800 text-red-300 align-middle">
+            <span className="ml-1.5 text-xs px-1 py-0.5 rounded bg-red-950 border border-red-800 text-red-300 align-middle">
               {trilhaVida?.rotuloCheia || 'Abatido'}
             </span>
           )}
@@ -438,7 +438,7 @@ function CombatenteRow({
 
       {/* F22.6 — o defensor já respondeu e espera o mestre resolver */}
       {dp && dp.resposta && souDefensor && !isMestre && (
-        <p className="mt-1.5 ml-6 text-sky-400/80 text-[11px]">
+        <p className="mt-1.5 ml-6 text-sky-400/80 text-xs">
           🛡 {dp.resposta.opcao_id === 'nao_reagir' ? 'Você não reagiu' : `${dp.resposta.opcao_nome} (${dp.resposta.defesa_total})`} — aguardando o mestre resolver…
         </p>
       )}
@@ -449,7 +449,7 @@ function CombatenteRow({
           {condsDoComb.map(cond => {
             const rest = rodadasRestantes(cond, rodadaAtual)
             return (
-              <span key={cond.id} className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md border bg-fuchsia-900/40 border-fuchsia-600/50 text-fuchsia-200" title={cond.descricao || cond.nome}>
+              <span key={cond.id} className="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md border bg-fuchsia-900/40 border-fuchsia-600/50 text-fuchsia-200" title={cond.descricao || cond.nome}>
                 {cond.nome}{rest != null ? ` (${rest})` : ''}
                 {podeAgir && (
                   <button onClick={() => onRemoverCondicao(cond.id)} className="text-fuchsia-400 hover:text-white transition-colors" title="Remover condição">×</button>
@@ -659,9 +659,9 @@ export default function CombatePanel({
       {/* 22.7 — derivados marcados "exibir no combate" do personagem ativo (todos veem) */}
       {ativo?.ficha_id && (cardsPorFicha[ativo.ficha_id]?.derivadosCombate || []).length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-accent-300 text-[11px]">{ativo.nome}:</span>
+          <span className="text-accent-300 text-xs">{ativo.nome}:</span>
           {cardsPorFicha[ativo.ficha_id].derivadosCombate.map(d => (
-            <span key={d.id} className="text-[11px] px-2 py-0.5 rounded-md border bg-slate-900/70 border-purple-800/60 text-purple-200">
+            <span key={d.id} className="text-xs px-2 py-0.5 rounded-md border bg-slate-900/70 border-purple-800/60 text-purple-200">
               {d.nome} <span className="text-white font-bold">{d.valor != null ? d.valor : '—'}</span>
             </span>
           ))}

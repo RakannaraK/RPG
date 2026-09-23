@@ -51,15 +51,15 @@ export default function PainelLinhas({
                 size="sm"
               />
             </div>
-            {linha.descricao && <p className="text-ink-dim text-[11px]">{linha.descricao}</p>}
+            {linha.descricao && <p className="text-ink-dim text-xs">{linha.descricao}</p>}
 
             {niveis.length === 0 ? (
-              <p className="text-ink-dim text-[11px]">Nenhum poder cadastrado nesta linha.</p>
+              <p className="text-ink-dim text-xs">Nenhum poder cadastrado nesta linha.</p>
             ) : (
               <div className="space-y-1.5 pl-1">
                 {niveis.map(n => (
                   <div key={n}>
-                    <p className="text-ink-dim text-[11px] uppercase tracking-wide">{NIVEL_LABEL(n)}</p>
+                    <p className="text-ink-dim text-xs uppercase tracking-wide">{NIVEL_LABEL(n)}</p>
                     <div className="space-y-1">
                       {porNivel[n].map(poder => {
                         const desbloqueado = rating >= n
@@ -72,18 +72,18 @@ export default function PainelLinhas({
                               {poder.nome}
                             </span>
                             {aprendido ? (
-                              <span className="text-ok text-[11px] shrink-0">✓ aprendido</span>
+                              <span className="text-ok text-xs shrink-0">✓ aprendido</span>
                             ) : desbloqueado ? (
                               isDono && (
                                 <button
                                   onClick={() => onAprender(poder.id, 'linha').catch(e => setErro(e.message || 'Erro ao aprender.'))}
-                                  className="text-[11px] px-2 py-0.5 rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors shrink-0"
+                                  className="text-xs px-2 py-0.5 rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors shrink-0"
                                 >
                                   Aprender
                                 </button>
                               )
                             ) : (
-                              <span className="text-ink-dim text-[11px] shrink-0" title={`Requer ${linha.nome} ${n}`}>
+                              <span className="text-ink-dim text-xs shrink-0" title={`Requer ${linha.nome} ${n}`}>
                                 req. {linha.nome} {n}
                               </span>
                             )}
@@ -98,7 +98,7 @@ export default function PainelLinhas({
           </div>
         )
       })}
-      {erro && <p className="text-harm text-[11px]">{erro}</p>}
+      {erro && <p className="text-harm text-xs">{erro}</p>}
     </div>
   )
 }

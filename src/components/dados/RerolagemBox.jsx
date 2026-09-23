@@ -58,7 +58,7 @@ export default function RerolagemBox({ resultado, rerolagem, mesaId, fichaId, se
 
   return (
     <div className="mt-2 rounded-lg border border-temp/50 bg-temp/30 p-2 space-y-2">
-      <p className="text-temp text-[11px]">
+      <p className="text-temp text-xs">
         Rerolar até {maxDados} dado(s) gastando <span className="font-semibold">{custo} {nomePool}</span>
         {rerolagem.atual != null && <span className="text-temp"> (tem {rerolagem.atual})</span>} — clique nos dados:
       </p>
@@ -84,8 +84,8 @@ export default function RerolagemBox({ resultado, rerolagem, mesaId, fichaId, se
           className="px-2.5 py-1 text-xs bg-temp/80 hover:bg-temp disabled:opacity-40 text-ink rounded-lg transition-colors">
           {rolando ? '🎲…' : `Rerolar ${sel.size || ''}`}
         </button>
-        {semSaldo && <span className="text-dice-400 text-[11px]">Sem {nomePool} suficiente.</span>}
-        {erro && <span className="text-harm text-[11px]">{erro}</span>}
+        {semSaldo && <span className="text-dice-400 text-xs">Sem {nomePool} suficiente.</span>}
+        {erro && <span className="text-harm text-xs">{erro}</span>}
       </div>
     </div>
   )

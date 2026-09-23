@@ -405,12 +405,12 @@ export default function SessaoPage() {
               {sessao.titulo || 'Sessão'}
             </h1>
             {sessao.ativa ? (
-              <span className="inline-flex items-center gap-1.5 text-red-300 text-[11px] font-bold uppercase tracking-wider shrink-0">
+              <span className="inline-flex items-center gap-1.5 text-red-300 text-xs font-bold uppercase tracking-wider shrink-0">
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 Ao vivo
               </span>
             ) : (
-              <span className="text-slate-400 text-[11px] font-semibold uppercase tracking-wider shrink-0">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider shrink-0">
                 Encerrada
               </span>
             )}
@@ -425,7 +425,7 @@ export default function SessaoPage() {
             </button>
             <Sininho />
             <span
-              className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${
+              className={`inline-flex items-center gap-1.5 text-xs font-medium ${
                 conectado ? 'text-emerald-300' : 'text-amber-300'
               }`}
               title={conectado ? 'Tempo real conectado' : 'Reconectando ao tempo real...'}
@@ -600,7 +600,7 @@ export default function SessaoPage() {
                 >
                   {rotulo}
                   {valor === 'chat' && chat.naoLidas > 0 && lateral !== 'chat' && (
-                    <span className="ml-1.5 inline-flex items-center justify-center text-[10px] font-bold bg-amber-500 text-amber-950 rounded-full w-4 h-4">
+                    <span className="ml-1.5 inline-flex items-center justify-center text-xs font-bold bg-amber-500 text-amber-950 rounded-full w-4 h-4">
                       {chat.naoLidas > 9 ? '9+' : chat.naoLidas}
                     </span>
                   )}

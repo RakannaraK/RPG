@@ -48,12 +48,12 @@ export default function RecompensasEditor({ sistemaId, classes = [] }) {
             const classe = r.classe_id ? classes.find(c => c.id === r.classe_id) : null
             return (
               <div key={r.id} className="flex items-start gap-2 bg-purple-950/40 border border-purple-800 rounded-lg px-2.5 py-1.5">
-                <span className="text-amber-400 text-[11px] font-mono shrink-0 mt-0.5">
+                <span className="text-amber-400 text-xs font-mono shrink-0 mt-0.5">
                   {classe ? `${classe.nome} ${r.nivel}` : `nv ${r.nivel}`}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="text-white text-xs block">{r.titulo}</span>
-                  {r.descricao && <span className="text-accent-300 text-[11px] block">{r.descricao}</span>}
+                  {r.descricao && <span className="text-accent-300 text-xs block">{r.descricao}</span>}
                 </span>
                 <button
                   onClick={() => removerRecompensa(r.id).catch(e => setErro(e.message))}

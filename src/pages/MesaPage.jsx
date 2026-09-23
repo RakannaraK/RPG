@@ -447,12 +447,12 @@ export default function MesaPage() {
             >
               {tab}
               {tab === 'Dados' && novasRolagens > 0 && activeTab !== 'Dados' && (
-                <span className="ml-1.5 inline-flex items-center justify-center text-[10px] font-bold bg-accent-500 text-ink rounded-full w-4 h-4">
+                <span className="ml-1.5 inline-flex items-center justify-center text-xs font-bold bg-accent-500 text-ink rounded-full w-5 h-5">
                   {novasRolagens > 9 ? '9+' : novasRolagens}
                 </span>
               )}
               {tab === 'Chat' && chat.naoLidas > 0 && activeTab !== 'Chat' && (
-                <span className="ml-1.5 inline-flex items-center justify-center text-[10px] font-bold bg-accent-500 text-ink rounded-full w-4 h-4">
+                <span className="ml-1.5 inline-flex items-center justify-center text-xs font-bold bg-accent-500 text-ink rounded-full w-5 h-5">
                   {chat.naoLidas > 9 ? '9+' : chat.naoLidas}
                 </span>
               )}
@@ -535,10 +535,10 @@ export default function MesaPage() {
                                 {f.nome_personagem}
                                 {f.privada && <span title="Ficha privada" className="text-xs">🔒</span>}
                                 {!ehDono && podeEditarFicha(f, session?.user?.id) && (
-                                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-700/60 text-emerald-300">você edita</span>
+                                  <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-700/60 text-emerald-300">você edita</span>
                                 )}
                                 {orfa && (
-                                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-950 border border-amber-700/60 text-amber-300">
+                                  <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-amber-950 border border-amber-700/60 text-amber-300">
                                     órfã
                                   </span>
                                 )}
@@ -758,7 +758,7 @@ export default function MesaPage() {
                           <img src={m.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover border border-purple-700 shrink-0" />
                         ) : (
                           <div className="w-7 h-7 rounded-full bg-purple-950 border border-purple-800 flex items-center justify-center shrink-0">
-                            <span className="text-purple-300 text-[10px] font-bold">
+                            <span className="text-purple-300 text-xs font-bold">
                               {(m.apelido || m.usuario.username || '?').slice(0, 2).toUpperCase()}
                             </span>
                           </div>

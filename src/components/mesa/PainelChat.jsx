@@ -136,7 +136,7 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
             >{enviando ? '…' : 'Enviar'}</button>
           </div>
           {(erro || erroRolagem) && <p className="text-red-400 text-xs">{erro || erroRolagem}</p>}
-          <p className="text-ink-dim text-[11px]">Enter envia · Shift+Enter quebra linha · /r 2d6+3 rótulo rola no feed</p>
+          <p className="text-ink-dim text-xs">Enter envia · Shift+Enter quebra linha · /r 2d6+3 rótulo rola no feed</p>
         </div>
       ) : (
         <p className="text-ink-dim text-xs italic pt-3">Mesa arquivada — o chat é só leitura.</p>

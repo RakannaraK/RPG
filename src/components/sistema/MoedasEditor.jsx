@@ -62,7 +62,7 @@ export default function MoedasEditor({ config, onChange }) {
                     className={`${INP} flex-1 min-w-[7rem]`} />
                   <input type="text" value={d.sigla} onChange={e => setDenom(i, { sigla: e.target.value })}
                     placeholder="sigla" className={`${INP} w-16 text-center`} />
-                  <span className="text-accent-300 text-[11px]">vale</span>
+                  <span className="text-accent-300 text-xs">vale</span>
                   <input type="number" value={d.valor} onChange={e => setDenom(i, { valor: Number(e.target.value) })}
                     className={`${INP} w-20 text-center`} />
                   <button onClick={() => remover(i)}

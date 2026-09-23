@@ -65,7 +65,7 @@ function EnvioDeSom({ campo, campoVolume, pasta, titulo, dica, rodape }) {
       <p className="text-xs text-purple-400">
         {titulo} (até {LIMITE_SOM.segundos} s e {(LIMITE_SOM.bytes / 1_000_000).toFixed(1)} MB)
       </p>
-      {dica && <p className="text-accent-300 text-[11px]">{dica}</p>}
+      {dica && <p className="text-accent-300 text-xs">{dica}</p>}
       <input ref={inputRef} type="file" accept="audio/*" onChange={enviarSom} className="hidden" />
       <div className="flex flex-wrap items-center gap-2">
         <button
@@ -82,7 +82,7 @@ function EnvioDeSom({ campo, campoVolume, pasta, titulo, dica, rodape }) {
           </>
         )}
       </div>
-      {som && rodape && <p className="text-accent-300 text-[11px]">{rodape}</p>}
+      {som && rodape && <p className="text-accent-300 text-xs">{rodape}</p>}
       {erro && <p className="text-red-400 text-xs">{erro}</p>}
     </div>
   )

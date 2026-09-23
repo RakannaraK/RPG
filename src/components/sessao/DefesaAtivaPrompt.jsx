@@ -154,7 +154,7 @@ export default function DefesaAtivaPrompt({
           <span className="flex items-center gap-1.5">
             <select
               value={habEscolhida} onChange={e => setHabEscolhida(e.target.value)}
-              className="px-1.5 py-1 rounded bg-purple-950 border border-purple-700 text-white text-[11px]"
+              className="px-1.5 py-1 rounded bg-purple-950 border border-purple-700 text-white text-xs"
               aria-label="Responder com habilidade"
             >
               <option value="">com habilidade…</option>
@@ -182,17 +182,17 @@ export default function DefesaAtivaPrompt({
       </div>
       {erro && (
         <div className="space-y-1">
-          <p className="text-amber-400 text-[11px]">{erro}</p>
+          <p className="text-amber-400 text-xs">{erro}</p>
           <div className="flex items-center gap-1.5">
             <select value={opcaoManual} onChange={e => setOpcaoManual(e.target.value)}
-              className="px-1.5 py-1 rounded bg-purple-950 border border-purple-700 text-white text-[11px]">
+              className="px-1.5 py-1 rounded bg-purple-950 border border-purple-700 text-white text-xs">
               <option value="">reação…</option>
               {opcoes.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
             </select>
             <input type="number" value={manual} onChange={e => setManual(e.target.value)}
-              placeholder="defesa" className="w-20 px-1.5 py-1 rounded bg-purple-950 border border-purple-700 text-white text-[11px] text-center" />
+              placeholder="defesa" className="w-20 px-1.5 py-1 rounded bg-purple-950 border border-purple-700 text-white text-xs text-center" />
             <button onClick={usarManual} disabled={trabalhando || !opcaoManual || manual === ''}
-              className="px-2 py-1 text-[11px] bg-sky-800 hover:bg-sky-700 disabled:opacity-50 text-white rounded transition-colors">
+              className="px-2 py-1 text-xs bg-sky-800 hover:bg-sky-700 disabled:opacity-50 text-white rounded transition-colors">
               usar
             </button>
           </div>

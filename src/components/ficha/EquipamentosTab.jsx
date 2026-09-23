@@ -74,7 +74,7 @@ function RollResultCompact({ resultado, rotulo, rolando, onClose, skin, detalham
               descartado={d.descartado}
               skin={skin}
             />
-            {d.descartado && <span className="text-harm text-[9px]">desc.</span>}
+            {d.descartado && <span className="text-harm text-xs">desc.</span>}
           </div>
         ))}
         <div className="flex items-baseline gap-1.5 ml-1">
@@ -93,7 +93,7 @@ function RollResultCompact({ resultado, rotulo, rolando, onClose, skin, detalham
         <p className="text-harm text-xs">descartados: {descartados.join(', ')}</p>
       )}
       {extras.length > 0 && (
-        <p className="text-ink-dim text-[10px] leading-tight">
+        <p className="text-ink-dim text-xs leading-tight">
           {extras.map((d, i) => (
             <span key={i}>
               {i > 0 && ' · '}
@@ -474,12 +474,12 @@ function MaestriaGanhoInline({ item, maestria, categorias, onGanhar }) {
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap mt-1.5 pt-1.5 border-t border-border/40">
-      <span className="text-dice-400/80 text-[11px]">Maestria ({nome}):</span>
+      <span className="text-dice-400/80 text-xs">Maestria ({nome}):</span>
       {ganhos.map((g, i) => (
         <button
           key={i}
           onClick={() => onGanhar(alvo, Number(g.xp) || 0, nome)}
-          className="text-[11px] px-2 py-0.5 rounded-lg bg-dice-700/40 hover:bg-dice-700/60 text-dice-200 transition-colors"
+          className="text-xs px-2 py-0.5 rounded-lg bg-dice-700/40 hover:bg-dice-700/60 text-dice-200 transition-colors"
           title={`+${g.xp} XP de maestria`}
         >
           {g.rotulo || `+${g.xp}`} <span className="text-dice-400/70">+{g.xp}</span>
@@ -498,13 +498,13 @@ function MaestriaChips({ info }) {
     <div className="flex flex-wrap gap-1 mt-1.5">
       {desbloqueadas.map(p => (
         <span key={p.id} title={p.descricao}
-          className="text-[10px] px-1.5 py-0.5 rounded bg-dice-700/50 border border-dice-500/60 text-dice-200 cursor-help">
+          className="text-xs px-1.5 py-0.5 rounded bg-dice-700/50 border border-dice-500/60 text-dice-200 cursor-help">
           {p.sigla || p.nome}
         </span>
       ))}
       {bloqueadas.map(p => (
         <span key={p.id} title={`${p.descricao} (requer maestria ${p.maestria_minima})`}
-          className="text-[10px] px-1.5 py-0.5 rounded bg-raised border border-border/60 text-ink-dim cursor-help">
+          className="text-xs px-1.5 py-0.5 rounded bg-raised border border-border/60 text-ink-dim cursor-help">
           🔒 {p.sigla || p.nome} <span className="text-ink-dim">nv {p.maestria_minima}</span>
         </span>
       ))}
@@ -523,7 +523,7 @@ function RecursoDurabilidade({ item, isDono, onRecurso, onDurab }) {
   return (
     <div className="mt-2 space-y-1.5">
       {danificado && (
-        <span className="inline-block text-[11px] px-2 py-0.5 rounded-full bg-harm/60 border border-harm/50 text-harm">
+        <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-harm/60 border border-harm/50 text-harm">
           ⚠ Danificado — efeitos desativados até reparo
         </span>
       )}
@@ -952,7 +952,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                             {rollCritico?.itemId === item.id && !rollRolando && (
                               <div className="mt-1.5 flex items-center gap-2 flex-wrap bg-dice-700/50 border border-dice-500/60 rounded-lg px-2.5 py-1.5">
                                 <span className="text-dice-400 text-sm font-bold animate-pulse">🎯 CRÍTICO!</span>
-                                <span className="text-dice-500/80 text-[11px]">
+                                <span className="text-dice-500/80 text-xs">
                                   rolou {rollCritico.natural}, limiar {rollCritico.limiar} · dano ×{rollCritico.multiplicador} ({rollCritico.modo})
                                 </span>
                               </div>

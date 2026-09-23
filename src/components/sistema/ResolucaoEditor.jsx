@@ -70,10 +70,10 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
 
       {/* Presets neutros */}
       <div className="flex flex-wrap gap-1.5">
-        <span className="text-accent-300 text-[11px] self-center">Presets:</span>
+        <span className="text-accent-300 text-xs self-center">Presets:</span>
         {PRESETS.map(p => (
           <button key={p.rotulo} onClick={() => set({ ...p.cfg })}
-            className="text-[11px] px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
+            className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
             {p.rotulo}
           </button>
         ))}
@@ -90,10 +90,10 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
           </button>
         ))}
       </div>
-      <p className="text-accent-300 text-[11px]">{MODOS.find(m => m.id === modo)?.desc}</p>
+      <p className="text-accent-300 text-xs">{MODOS.find(m => m.id === modo)?.desc}</p>
 
       {trocou && (
-        <div className="rounded-lg border border-amber-700/70 bg-amber-950/40 px-3 py-2 text-amber-200 text-[11px]">
+        <div className="rounded-lg border border-amber-700/70 bg-amber-950/40 px-3 py-2 text-amber-200 text-xs">
           ⚠ Você trocou o modo de resolução. TODAS as rolagens do sistema passam a se resolver assim — revise as regras de rolagem dos atributos/perícias com o novo modo em mente.
         </div>
       )}
@@ -135,15 +135,15 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
           <label className="text-purple-300 text-xs flex items-center gap-1.5">
             notação base
             <input type="text" value={cfg.notacao_base ?? '2d6'} onChange={e => set({ notacao_base: e.target.value })} className={`${INP} w-24 font-mono`} />
-            <span className="text-accent-300 text-[11px]">+ modificador da rolagem</span>
+            <span className="text-accent-300 text-xs">+ modificador da rolagem</span>
           </label>
-          <p className="text-accent-300 text-[11px]">Faixas do resultado. Vazio = aberto (−∞ / +∞). Entre faixas que cobrem o total, vence a de maior "de".</p>
+          <p className="text-accent-300 text-xs">Faixas do resultado. Vazio = aberto (−∞ / +∞). Entre faixas que cobrem o total, vence a de maior "de".</p>
           {faixas.map((f, i) => (
             <div key={i} className="rounded-lg border border-purple-900/50 bg-slate-900/40 p-2 space-y-1">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-accent-300 text-[11px]">de</span>
+                <span className="text-accent-300 text-xs">de</span>
                 <input type="number" value={f.de ?? ''} onChange={e => setFaixa(i, { de: e.target.value === '' ? null : Number(e.target.value) })} placeholder="−∞" className={`${INP} w-14 text-center`} />
-                <span className="text-accent-300 text-[11px]">até</span>
+                <span className="text-accent-300 text-xs">até</span>
                 <input type="number" value={f.ate ?? ''} onChange={e => setFaixa(i, { ate: e.target.value === '' ? null : Number(e.target.value) })} placeholder="+∞" className={`${INP} w-14 text-center`} />
                 <input type="text" value={f.rotulo || ''} onChange={e => setFaixa(i, { rotulo: e.target.value })} placeholder="rótulo" className={`${INP} flex-1 min-w-[6rem]`} />
                 <select value={f.cor || 'verde'} onChange={e => setFaixa(i, { cor: e.target.value })} className={INP}>
@@ -155,7 +155,7 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
             </div>
           ))}
           <button onClick={() => set({ faixas: [...faixas, { de: null, ate: null, rotulo: '', texto: '', cor: 'verde' }] })}
-            className="text-[11px] px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
+            className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
             + faixa
           </button>
         </div>
@@ -186,7 +186,7 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
                 <input type="number" min={1} value={rerol.max_dados ?? 3} onChange={e => setRerol({ max_dados: Number(e.target.value) })} className={`${INP} w-14`} /></label>
             </div>
           )}
-          {rerol.ativo && !rerol.pool_id && <p className="text-amber-400/80 text-[11px] pl-5">Escolha o pool que a rerolagem gasta{pools.length === 0 ? ' (crie um recurso na aba Recursos primeiro).' : '.'}</p>}
+          {rerol.ativo && !rerol.pool_id && <p className="text-amber-400/80 text-xs pl-5">Escolha o pool que a rerolagem gasta{pools.length === 0 ? ' (crie um recurso na aba Recursos primeiro).' : '.'}</p>}
         </div>
       )}
 
@@ -202,7 +202,7 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
                 <label className="text-purple-300 text-xs flex items-center gap-1">quantidade (fórmula)
                   <input type="text" value={esp.quantidade_formula || ''} onChange={e => setEsp({ quantidade_formula: e.target.value })} placeholder="recurso(fome)" className={`${INP} w-40 font-mono`} /></label>
               </div>
-              <p className="text-accent-300 text-[11px]">Os N primeiros dados da parada viram especiais. Eventos com eles disparam marcações (o efeito é arbitrado pela mesa):</p>
+              <p className="text-accent-300 text-xs">Os N primeiros dados da parada viram especiais. Eventos com eles disparam marcações (o efeito é arbitrado pela mesa):</p>
               {[
                 { evento: 'critico_com_especial', rotulo: 'Crítico envolvendo dado especial', ph: 'Crítico Sujo' },
                 { evento: 'falha_com_especial', rotulo: 'Falha/botch com 1 em dado especial', ph: 'Falha Bestial' },
@@ -210,7 +210,7 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
                 const m = marc(evento)
                 return (
                   <div key={evento} className="rounded-lg border border-purple-900/50 bg-slate-900/40 p-2 space-y-1">
-                    <p className="text-purple-400 text-[11px]">{rotulo}</p>
+                    <p className="text-purple-400 text-xs">{rotulo}</p>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <input type="text" value={m.rotulo} onChange={e => setMarc(evento, { rotulo: e.target.value })} placeholder={`rótulo (ex: ${ph})`} className={`${INP} w-40`} />
                       <input type="text" value={m.texto} onChange={e => setMarc(evento, { texto: e.target.value })} placeholder="texto no feed (opcional)" className={`${INP} flex-1 min-w-[10rem]`} />
@@ -224,15 +224,15 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
       )}
 
       {/* Validação */}
-      {val.erros.map((e, i) => <p key={`e${i}`} className="text-red-400 text-[11px]">⚠ {e}</p>)}
-      {val.avisos.map((a, i) => <p key={`a${i}`} className="text-amber-400/80 text-[11px]">• {a}</p>)}
+      {val.erros.map((e, i) => <p key={`e${i}`} className="text-red-400 text-xs">⚠ {e}</p>)}
+      {val.avisos.map((a, i) => <p key={`a${i}`} className="text-amber-400/80 text-xs">• {a}</p>)}
       {modo !== 'soma' && val.valido && val.erros.length === 0 && (
-        <p className="text-green-600 text-[11px]">✓ configuração válida</p>
+        <p className="text-green-600 text-xs">✓ configuração válida</p>
       )}
 
       {/* Ajuda: vantagem por modo (23.6) */}
       {(modo === 'sucessos' || modo === 'roll_under') && (
-        <p className="text-accent-300 text-[11px] border-t border-purple-900/40 pt-2">
+        <p className="text-accent-300 text-xs border-t border-purple-900/40 pt-2">
           Vantagem/desvantagem neste modo: {modo === 'sucessos'
             ? '+2 / −2 dados na parada.'
             : 'rola duas vezes e pega a melhor / pior.'}

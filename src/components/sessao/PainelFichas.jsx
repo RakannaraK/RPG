@@ -18,7 +18,7 @@ export function MiniTrilha({ trilha }) {
   const sevMax = Math.max(0, ...(trilha.config?.tipos_marca || []).map(tm => Number(tm.severidade) || 0))
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
-      <span className="text-purple-400 text-[10px] uppercase tracking-wide">{trilha.nome}</span>
+      <span className="text-purple-400 text-xs uppercase tracking-wide">{trilha.nome}</span>
       <div className="flex flex-wrap gap-0.5">
         {trilha.exibicao.map((m, i) => {
           const cls = m == null ? 'bg-slate-700/70'
@@ -26,9 +26,9 @@ export function MiniTrilha({ trilha }) {
           return <span key={i} className={`w-2.5 h-2.5 rounded-[3px] ${cls}`} title={m ? porId[m]?.nome : ''} />
         })}
       </div>
-      <span className="text-accent-300 text-[10px] font-mono">{trilha.cont.marcadas}/{trilha.cont.total}</span>
+      <span className="text-accent-300 text-xs font-mono">{trilha.cont.marcadas}/{trilha.cont.total}</span>
       {trilha.cheiaDoMaior && trilha.rotuloCheia && (
-        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-950/80 border border-red-500 text-red-200">☠ {trilha.rotuloCheia}</span>
+        <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-red-950/80 border border-red-500 text-red-200">☠ {trilha.rotuloCheia}</span>
       )}
     </div>
   )
@@ -42,7 +42,7 @@ function ChipEstado({ chip }) {
     desvantagem:'bg-red-900/50 border-red-700/60 text-red-300',
   }[chip.tipo] || 'bg-slate-700 border-slate-600 text-slate-200'
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded-md border ${cls}`}>
+    <span className={`text-xs px-1.5 py-0.5 rounded-md border ${cls}`}>
       {chip.label}
     </span>
   )
@@ -81,12 +81,12 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
       ) : (
         <div>
           <div className="flex items-baseline justify-between mb-1">
-            <span className="text-purple-400 text-[11px] uppercase tracking-wider">Vida</span>
+            <span className="text-purple-400 text-xs uppercase tracking-wider">Vida</span>
             <span className="text-white text-sm font-semibold">
               {card.hpAtual}
               <span className="text-accent-300 font-normal"> / {hpMax || '?'}</span>
               {temModVida && card.hpMax > card.hpMaxBase && (
-                <span className="text-green-400 text-[10px] font-mono ml-1">(+{card.hpMax - card.hpMaxBase})</span>
+                <span className="text-green-400 text-xs font-mono ml-1">(+{card.hpMax - card.hpMaxBase})</span>
               )}
             </span>
           </div>
@@ -94,7 +94,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
             <div className={`h-full rounded-full transition-all duration-500 ${corVida(pct)}`} style={{ width: `${pct}%` }} />
           </div>
           {card.vidaTemp > 0 && (
-            <p className="text-sky-400 text-[11px] mt-1 font-medium">+{card.vidaTemp} vida temporária</p>
+            <p className="text-sky-400 text-xs mt-1 font-medium">+{card.vidaTemp} vida temporária</p>
           )}
         </div>
       )}
@@ -109,7 +109,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
         <div className="flex flex-wrap gap-1.5">
           {card.estados.map(e => (
             <span key={e.id}
-              className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border font-semibold ${
+              className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md border font-semibold ${
                 e.calor >= 0.99 ? 'bg-red-950/70 border-red-500 text-red-200'
                 : e.calor >= 0.75 ? 'bg-orange-950/60 border-orange-500/80 text-orange-200'
                 : e.calor >= 0.5 ? 'bg-amber-950/50 border-amber-500/70 text-amber-200'
@@ -130,7 +130,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
             const v = card.combate?.[campo.id]
             return (
               <div key={campo.id} className="flex items-center gap-1.5 bg-slate-900/60 border border-purple-900/50 rounded-lg px-2 py-1">
-                <span className="text-purple-400 text-[10px] uppercase tracking-wide">{campo.nome}</span>
+                <span className="text-purple-400 text-xs uppercase tracking-wide">{campo.nome}</span>
                 <span className="text-white text-sm font-bold leading-none">{v !== undefined ? v : '—'}</span>
               </div>
             )
@@ -145,7 +145,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
             <button
               key={t.id}
               onClick={() => onToggleCondicao?.(card.id, t.id, !t.ativo)}
-              className={`text-[11px] px-2 py-0.5 rounded-md border transition-colors ${
+              className={`text-xs px-2 py-0.5 rounded-md border transition-colors ${
                 t.ativo
                   ? 'bg-amber-800/70 border-amber-500/70 text-amber-100'
                   : 'bg-slate-900/60 border-slate-600/50 text-slate-400 hover:border-amber-600/60 hover:text-amber-200'
@@ -172,7 +172,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
                 }`}
                 title={p.tipo === 'dados' ? 'Reserva de dados' : 'Pontos'}
               >
-                <span className="text-sky-400 text-[10px] uppercase tracking-wide">{p.nome}</span>
+                <span className="text-sky-400 text-xs uppercase tracking-wide">{p.nome}</span>
                 <span className={`text-sm font-bold leading-none ${vazio ? 'text-red-400' : 'text-white'}`}>
                   {p.atual}
                   <span className="text-accent-300 font-normal">/{p.maximo}</span>
@@ -194,7 +194,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
                   esgotado ? 'bg-red-950/40 border-red-900/60' : 'bg-slate-900/60 border-amber-900/50'
                 }`}
                 title={`Slots de ${s.circulo}º círculo`}>
-                <span className="text-amber-400 text-[10px] font-mono">{s.circulo}º</span>
+                <span className="text-amber-400 text-xs font-mono">{s.circulo}º</span>
                 <span className={`text-sm font-bold leading-none ${esgotado ? 'text-red-400' : 'text-white'}`}>
                   {s.disponivel}<span className="text-accent-300 font-normal">/{s.total}</span>
                 </span>
@@ -210,7 +210,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
           {card.chips.map(chip => <ChipEstado key={chip.key} chip={chip} />)}
         </div>
       ) : (
-        <p className="text-purple-700 text-[11px] pt-1 border-t border-purple-900/40">Sem estados ativos</p>
+        <p className="text-purple-700 text-xs pt-1 border-t border-purple-900/40">Sem estados ativos</p>
       )}
     </div>
   )

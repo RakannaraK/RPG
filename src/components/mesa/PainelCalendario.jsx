@@ -261,7 +261,7 @@ export default function PainelCalendario({ mesaId, isGestor, sessaoId = null, re
           <table className="w-full table-fixed text-center text-sm">
             {cal.dias_semana.length > 0 && (
               <thead>
-                <tr>{cal.dias_semana.map((d, i) => <th key={i} className="text-ink-dim text-[11px] font-normal pb-1" title={d}>{abreviar(d)}</th>)}</tr>
+                <tr>{cal.dias_semana.map((d, i) => <th key={i} className="text-ink-dim text-xs font-normal pb-1" title={d}>{abreviar(d)}</th>)}</tr>
               </thead>
             )}
             <tbody>

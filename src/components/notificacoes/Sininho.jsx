@@ -37,7 +37,7 @@ export default function Sininho() {
       >
         🔔
         {naoLidas > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[10px] font-bold bg-red-500 text-white rounded-full">
+          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-xs font-bold bg-red-500 text-white rounded-full">
             {naoLidas > 9 ? '9+' : naoLidas}
           </span>
         )}
@@ -71,7 +71,7 @@ export default function Sininho() {
                         <div className="min-w-0 flex-1">
                           <p className={`text-sm ${n.lida ? 'text-purple-300' : 'text-white font-medium'}`}>{n.titulo}</p>
                           {n.corpo && <p className="text-accent-300 text-xs mt-0.5 truncate">{n.corpo}</p>}
-                          <p className="text-purple-700 text-[10px] mt-0.5">{tempoRel(n.created_at)}</p>
+                          <p className="text-purple-700 text-xs mt-0.5">{tempoRel(n.created_at)}</p>
                         </div>
                       </div>
                     </button>

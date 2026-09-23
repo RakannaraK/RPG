@@ -34,13 +34,13 @@ function Estado({ cfg, valor, isDono, onSet }) {
           <button onClick={() => onSet(cfg, v + 1)} disabled={noMax}
             className="w-5 h-5 flex items-center justify-center rounded bg-void/60 hover:bg-raised disabled:opacity-30 text-sm leading-none transition-colors">+</button>
         )}
-        <span className="text-[10px] opacity-60 font-mono">/{cfg.max ?? 10}</span>
+        <span className="text-xs opacity-60 font-mono">/{cfg.max ?? 10}</span>
       </div>
       {faixa?.aviso && (
-        <p className="text-[11px] mt-1 font-medium animate-pulse">⚠ {faixa.aviso}</p>
+        <p className="text-xs mt-1 font-medium animate-pulse">⚠ {faixa.aviso}</p>
       )}
       {(faixa?.bloqueios || []).map((b, i) => (
-        <span key={i} className="inline-block mt-1 mr-1 text-[10px] font-semibold px-1.5 py-0.5 rounded border bg-harm/80 border-harm text-harm">
+        <span key={i} className="inline-block mt-1 mr-1 text-xs font-semibold px-1.5 py-0.5 rounded border bg-harm/80 border-harm text-harm">
           ⛔ {b}
         </span>
       ))}

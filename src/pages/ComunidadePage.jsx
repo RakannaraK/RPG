@@ -169,7 +169,7 @@ function Cartao({ p, logado, curtida, onCurtir, onObter, onDenunciar, onApagar, 
         {p.descricao && <p className="text-purple-300 text-xs line-clamp-3">{p.descricao}</p>}
         {(p.etiquetas || []).length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {p.etiquetas.map(e => <span key={e} className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-900 border border-purple-900 text-purple-300">{e}</span>)}
+            {p.etiquetas.map(e => <span key={e} className="text-xs px-1.5 py-0.5 rounded-full bg-slate-900 border border-purple-900 text-purple-300">{e}</span>)}
           </div>
         )}
         {msg && <p className="text-amber-300 text-xs">{msg}</p>}

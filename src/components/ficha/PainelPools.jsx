@@ -101,7 +101,7 @@ function PoolCard({ pool, atual, maximo, erro, isDono, onDefinirAtual, onRolagem
           <button
             onClick={() => aplicar(maximo)}
             disabled={ocupado || atual >= maximo}
-            className="px-2 py-1 text-[11px] text-ink-dim hover:text-ink transition-colors disabled:opacity-40"
+            className="px-2 py-1 text-xs text-ink-dim hover:text-ink transition-colors disabled:opacity-40"
             title="Encher o pool"
           >
             encher
@@ -118,7 +118,7 @@ function PoolCard({ pool, atual, maximo, erro, isDono, onDefinirAtual, onRolagem
           {onCurar && (
             <button
               onClick={() => { onCurar(rolagem.total); setRolagem(null) }}
-              className="px-2 py-0.5 text-[11px] font-medium rounded-lg bg-ok/80 hover:bg-ok text-ink transition-colors"
+              className="px-2 py-0.5 text-xs font-medium rounded-lg bg-ok/80 hover:bg-ok text-ink transition-colors"
             >
               Aplicar à vida
             </button>

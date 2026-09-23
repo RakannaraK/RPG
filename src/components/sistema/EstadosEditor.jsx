@@ -25,9 +25,9 @@ function FaixaEfeito({ faixa, onChange, onRemove, atributos, pericias, camposCom
   return (
     <div className="rounded-lg border border-purple-900/50 bg-slate-900/40 p-2 space-y-1.5">
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-accent-300 text-[11px]">de</span>
+        <span className="text-accent-300 text-xs">de</span>
         <input type="number" value={faixa.de ?? ''} onChange={e => set({ de: e.target.value === '' ? null : Number(e.target.value) })} placeholder="−∞" className={`${INP} w-14 text-center`} />
-        <span className="text-accent-300 text-[11px]">até</span>
+        <span className="text-accent-300 text-xs">até</span>
         <input type="number" value={faixa.ate ?? ''} onChange={e => set({ ate: e.target.value === '' ? null : Number(e.target.value) })} placeholder="+∞" className={`${INP} w-14 text-center`} />
         <input type="text" value={faixa.aviso || ''} onChange={e => set({ aviso: e.target.value })}
           placeholder="aviso (chip na ficha — ex: A Besta está próxima.)" className={`${INP} flex-1 min-w-[10rem]`} />
@@ -41,7 +41,7 @@ function FaixaEfeito({ faixa, onChange, onRemove, atributos, pericias, camposCom
       {mods.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {mods.map((m, i) => (
-            <span key={i} className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border bg-purple-950/70 border-purple-700 text-purple-200">
+            <span key={i} className="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded border bg-purple-950/70 border-purple-700 text-purple-200">
               {labelModificador(m, { atributos, pericias, camposCombate })}
               <button onClick={() => set({ modificadores: mods.filter((_, j) => j !== i) })} className="text-accent-300 hover:text-red-400">×</button>
             </span>
@@ -54,11 +54,11 @@ function FaixaEfeito({ faixa, onChange, onRemove, atributos, pericias, camposCom
             atributos={atributos} pericias={pericias} camposCombate={camposCombate} pools={pools}
             onAdd={payload => { set({ modificadores: [...mods, { id: novoId('m'), ...payload }] }); setAddMod(false) }}
           />
-          <button onClick={() => setAddMod(false)} className="mt-1 text-[11px] text-accent-300 hover:text-purple-300">Cancelar</button>
+          <button onClick={() => setAddMod(false)} className="mt-1 text-xs text-accent-300 hover:text-purple-300">Cancelar</button>
         </div>
       ) : (
         <button onClick={() => setAddMod(true)}
-          className="text-[11px] px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
+          className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
           + efeito (modificador)
         </button>
       )}
@@ -90,31 +90,31 @@ export default function EstadosEditor({ estados = [], onChange, atributos = [], 
           <div className="flex items-center gap-2 flex-wrap">
             <input type="text" value={cfg.nome || ''} onChange={e => setEstado(i, { nome: e.target.value })}
               placeholder="Nome (ex: Fome)" className={`${INP} w-32 font-semibold`} />
-            <label className="text-purple-400 text-[11px] flex items-center gap-1">min
+            <label className="text-purple-400 text-xs flex items-center gap-1">min
               <input type="number" value={cfg.min ?? 0} onChange={e => setEstado(i, { min: Number(e.target.value) })} className={`${INP} w-14 text-center`} /></label>
-            <label className="text-purple-400 text-[11px] flex items-center gap-1">max
+            <label className="text-purple-400 text-xs flex items-center gap-1">max
               <input type="number" value={cfg.max ?? 5} onChange={e => setEstado(i, { max: Number(e.target.value) })} className={`${INP} w-14 text-center`} /></label>
-            <label className="text-purple-400 text-[11px] flex items-center gap-1">inicial
+            <label className="text-purple-400 text-xs flex items-center gap-1">inicial
               <input type="number" value={cfg.inicial ?? 0} onChange={e => setEstado(i, { inicial: Number(e.target.value) })} className={`${INP} w-14 text-center`} /></label>
             <button onClick={() => onChange(estados.filter((_, j) => j !== i))}
               className="ml-auto w-6 h-6 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">✕</button>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <label className="text-purple-300 text-[11px] flex items-center gap-1.5 cursor-pointer">
+            <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" checked={cfg.destaque !== false} onChange={e => setEstado(i, { destaque: e.target.checked })} className="accent-purple-500" />
               destaque (cabeçalho da ficha + card de sessão)
             </label>
-            <label className="text-purple-300 text-[11px] flex items-center gap-1.5 cursor-pointer">
+            <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" checked={cfg.feed !== false} onChange={e => setEstado(i, { feed: e.target.checked })} className="accent-purple-500" />
               registrar mudanças no feed
             </label>
-            <label className="text-purple-300 text-[11px] flex items-center gap-1.5 cursor-pointer">
+            <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" checked={!!cfg.alimenta_dados_especiais} onChange={e => setEstado(i, { alimenta_dados_especiais: e.target.checked })} className="accent-purple-500" />
               alimenta os dados especiais (F23): quantidade = valor deste estado
             </label>
           </div>
 
-          <p className="text-purple-400 text-[11px]">Efeitos por faixa de valor</p>
+          <p className="text-purple-400 text-xs">Efeitos por faixa de valor</p>
           {(cfg.efeitos_por_faixa || []).map((f, k) => (
             <FaixaEfeito key={k} faixa={f}
               onChange={nova => setEstado(i, { efeitos_por_faixa: cfg.efeitos_por_faixa.map((x, j) => (j === k ? nova : x)) })}
@@ -123,7 +123,7 @@ export default function EstadosEditor({ estados = [], onChange, atributos = [], 
             />
           ))}
           <button onClick={() => setEstado(i, { efeitos_por_faixa: [...(cfg.efeitos_por_faixa || []), { de: null, ate: null, aviso: '', bloqueios: [], modificadores: [] }] })}
-            className="text-[11px] px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
+            className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
             + faixa
           </button>
         </div>

@@ -27,7 +27,7 @@ function ResultadoDisplay({ resultado, rotulo, rolando, skin }) {
         {dados.map((d, i) => (
           <div key={i} className="flex flex-col items-center gap-1">
             <Dice3D lados={d.lados} resultado={d.valor} rolando={rolando} descartado={d.descartado} skin={skin} />
-            {d.descartado && <span className="text-harm text-[10px] leading-none">descartado</span>}
+            {d.descartado && <span className="text-harm text-xs leading-none">descartado</span>}
           </div>
         ))}
       </div>
