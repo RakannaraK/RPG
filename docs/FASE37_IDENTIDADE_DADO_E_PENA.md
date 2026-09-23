@@ -49,3 +49,22 @@ Abrir o site: o nome é Dado & Pena, com selo. Trocar o tema 5 vezes: ornamento,
 - **A capa é um motivo repetido, não uma cena.** Desenhar cenários em SVG à mão sairia caro e envelheceria mal.
 - **`package.json` continua `rpg-ficha`.** É o nome do pacote, não do site; mexer nele só mexeria no deploy à toa.
 
+---
+
+## Varredura de design (2026-09-22) — o que foi corrigido
+
+Varri o site logado, em 1440×900 e 375×844, medindo alvos de toque, tamanhos de fonte, transbordo e estilos de botão, mais um inventário do código. Corrigido na ordem de impacto:
+
+1. **Combate no celular** (`CombatePanel.jsx`) — a linha do combatente era um flex de uma linha com ~10 filhos `shrink-0` e o nome como único flexível: a soma passava da largura da tela, o **nome era esmagado até desaparecer** e os botões ▲▼ ⇣ ✕ vazavam para fora do card. Agora quebra em duas faixas até `sm`. Alvos de toque: eram 14 abaixo de 24 px (▲▼ tinham 9×10, ⇣ 6×16, ✕ 11×20); sobrou 0 na tela.
+2. **`components/ui/Botao.jsx`** — a varredura achou **9 estilos visuais de botão numa tela** e 10+ combinações de padding, porque não existia componente. Seis variantes copiando os estilos que já dominavam o código. Adotado onde a hierarquia estava errada: "Próximo turno" virou primário no acento (era um bloco âmbar competindo com outro âmbar), e "Rolar iniciativa" virou a variante `dado`, discreta. O resto migra por tela.
+3. **Mesa** — "deletar mesa" saiu da barra de cima (ficava a 24 px da engrenagem) e foi para a aba Membros, com texto explicando o que apaga; no celular o nome da mesa voltou a caber inteiro (era "Mes…"); a barra de rolagem das abas deixou de ser um bloco branco.
+4. Dois plurais feitos na mão que apareciam na tela: **"2 rolagemns"** e **"2 itemns"**.
+
+### Achado e ainda não corrigido (fila)
+- **Quatro sistemas de cor convivendo:** `purple-*` (1596 usos), `accent-*` (335), `slate-*` (230), mais fugas de `violet-*`/`indigo-*`. O remapeamento de tema é curativo; a cura é migrar para `accent-*` por tela.
+- **42 arquivos usam emoji como ícone** (⚔ 🗺 📜 🔔 ⚙ 🚪 🐾) enquanto existe a biblioteca SVG da 37.3. Emoji em botão sem rótulo também não tem nome acessível.
+- **1.088 usos de texto ≤ 12 px**, incluindo `text-[9px]` e `text-[10px]` fora da escala.
+- **Âmbar fora do lugar:** selo "Mestre" e badge do Chat usam a cor que os tokens reservam para dados.
+- **Cabeçalho x conteúdo desalinhados:** painel e sessão usam cabeçalho de borda a borda; mesa e ficha usam coluna centralizada.
+- **Ficha:** "? / ?" nos pontos de vida quando o sistema não tem atributos; e o estado vazio de imagens tem mais peso visual que o título do painel.
+
