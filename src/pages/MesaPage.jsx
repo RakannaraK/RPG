@@ -384,25 +384,25 @@ export default function MesaPage() {
             <Sininho />
             <button
               onClick={() => navigate(`/mesa/${id}/mapa`)}
-              title="Mapa da mesa"
+              title="Mapa da mesa" aria-label="Mapa da mesa"
               className="p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
             >
-              🗺
+              <Ilustra nome="mapa" tamanho={20} />
             </button>
             <button
               onClick={() => setShowPrefs(true)}
-              title="Preferências"
+              title="Preferências" aria-label="Preferências"
               className="p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
             >
-              ⚙
+              <Ilustra nome="engrenagem" tamanho={20} />
             </button>
             {!isCriador && (
               <button
                 onClick={() => { setLeaveError(''); setDeletarFichas(false); setShowLeave(true) }}
                 className="p-2 text-purple-300 hover:text-red-400 hover:bg-red-950/40 rounded-lg transition-colors"
-                title="Sair da mesa"
+                title="Sair da mesa" aria-label="Sair da mesa"
               >
-                🚪
+                <Ilustra nome="porta" tamanho={20} />
               </button>
             )}
             {/* "Deletar mesa" saiu daqui: ficava a 24 px da engrenagem, fácil de

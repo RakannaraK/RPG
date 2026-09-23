@@ -71,7 +71,7 @@ export default function DashboardPage() {
             onClick={() => navigate('/comunidade')}
             title="Comunidade: fichas, criaturas, sistemas e artes compartilhados"
             className="p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
-          >🌍</button>
+          ><Ilustra nome="globo" tamanho={20} /></button>
           <Sininho />
           <button
             onClick={() => setShowGuia(true)}
@@ -85,7 +85,7 @@ export default function DashboardPage() {
             title="Preferências"
             className="p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
           >
-            ⚙
+            <Ilustra nome="engrenagem" tamanho={20} />
           </button>
           <button
             onClick={handleLogout}
@@ -173,7 +173,7 @@ export default function DashboardPage() {
                   onClick={() => setShowArquivadas(a => !a)}
                   className="text-purple-400 hover:text-purple-200 text-sm transition-colors"
                 >
-                  {showArquivadas ? '▾' : '▸'} 📦 Arquivadas ({arquivadas.length})
+                  {showArquivadas ? '▾' : '▸'} Arquivadas ({arquivadas.length})
                 </button>
                 {showArquivadas && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3 opacity-75">

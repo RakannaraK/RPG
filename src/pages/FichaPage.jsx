@@ -38,6 +38,7 @@ import PainelSlots from '../components/ficha/PainelSlots'
 import { podeUsarPoder, montarNotacaoUso, custoDeSlot, frasesDeUso } from '../lib/poderes'
 import { usePoderes } from '../hooks/usePoderes'
 import { usePoderesFicha } from '../hooks/usePoderesFicha'
+import Ilustra from '../components/arte/Ilustra'
 import { useLinhasPoder, useLinhasFicha } from '../hooks/useLinhasPoder'
 import PainelPoderes from '../components/ficha/PainelPoderes'
 import PainelLinhas from '../components/ficha/PainelLinhas'
@@ -1037,7 +1038,7 @@ export default function FichaPage() {
               </span>
             )}
             {ficha.privada && (
-              <span className="text-xs text-ink-dim" title="Ficha privada">🔒</span>
+              <Ilustra nome="cadeado" tamanho={16} className="opacity-80" aria-label="Ficha privada" />
             )}
             <button
               onClick={handleExportar}

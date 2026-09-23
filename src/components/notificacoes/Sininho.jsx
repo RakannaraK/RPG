@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useNotificacoes } from '../../hooks/useNotificacoes'
+import Ilustra from '../arte/Ilustra'
 
 /**
  * Fase 16.7 — sininho de notificações (inline no header). Contador de não lidas,
@@ -35,7 +36,7 @@ export default function Sininho() {
         title="Notificações"
         className="relative p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
       >
-        🔔
+        <Ilustra nome="sino" tamanho={20} />
         {naoLidas > 0 && (
           <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-xs font-bold bg-red-500 text-white rounded-full">
             {naoLidas > 9 ? '9+' : naoLidas}

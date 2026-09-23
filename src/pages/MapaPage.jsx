@@ -26,6 +26,7 @@ import PainelChat from '../components/mesa/PainelChat'
 import PainelNotas from '../components/mesa/PainelNotas'
 import { useChatMesa } from '../hooks/useChatMesa'
 import { podeEditarFicha } from '../lib/permissoesFicha'
+import Ilustra from '../components/arte/Ilustra'
 
 const BTN_ICONE = 'h-9 min-w-9 px-2 rounded-lg text-sm transition-colors'
 const telaCheiaDisponivel = typeof document !== 'undefined' && document.fullscreenEnabled
@@ -402,7 +403,7 @@ export default function MapaPage() {
           {isGestor && !indisponivel && (
             <>
               {botaoPainel('tokens', '●', 'Tokens', { disabled: !cena })}
-              {botaoPainel('cenas', '🗺', 'Cenas')}
+              {botaoPainel('cenas', <Ilustra nome="mapa" tamanho={18} />, 'Cenas')}
             </>
           )}
         </div>
@@ -488,7 +489,7 @@ export default function MapaPage() {
                     comMapa={!!cena}
                     onInvocar={invocarNoMapa}
                     className="w-full py-2 rounded-lg bg-hover text-ink text-sm hover:bg-border transition-colors"
-                    rotulo="🐾 Invocar do bestiário"
+                    rotulo={<span className="inline-flex items-center justify-center gap-2 w-full"><Ilustra nome="garra" tamanho={18} /> Invocar do bestiário</span>}
                   />
                 )}
               />

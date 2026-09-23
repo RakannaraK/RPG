@@ -87,6 +87,99 @@ const DESENHOS = {
     </>
   ),
 
+  /* ── Ícones de interface (F38) — entraram no lugar de emoji em botão sem
+     rótulo: emoji colorido virava borrão em 16 px e não tem nome acessível. ── */
+  sino: (
+    <>
+      <path d="M13 20a11 11 0 0 1 22 0v9l3 5H10l3-5z" />
+      <path d="M20 38a4 4 0 0 0 8 0" />
+      <path d="M24 9v-3" stroke={A} />
+    </>
+  ),
+  engrenagem: (
+    <>
+      {/* dentes grossos e curtos: com traço fino o desenho virava um sol */}
+      <path d="M24 8v6M24 34v6M8 24h6M34 24h6M12.5 12.5l4.2 4.2M31.3 31.3l4.2 4.2M35.5 12.5l-4.2 4.2M16.7 31.3l-4.2 4.2" strokeWidth="3.6" />
+      <circle cx="24" cy="24" r="9.5" strokeWidth="2.4" />
+      <circle cx="24" cy="24" r="3.6" fill={A} stroke={A} />
+    </>
+  ),
+  porta: (
+    <>
+      <path d="M26 8H12v32h14" />
+      <path d="M33 24H20" stroke={A} />
+      <path d="m28 18 6 6-6 6" stroke={A} />
+    </>
+  ),
+  lixeira: (
+    <>
+      <path d="M9 14h30M19 14V9h10v5M13 14l2 26h18l2-26" />
+      <path d="M21 21v12M27 21v12" stroke={A} />
+    </>
+  ),
+  globo: (
+    <>
+      <circle cx="24" cy="24" r="17" />
+      <path d="M7 24h34M24 7c5 5 5 29 0 34M24 7c-5 5-5 29 0 34" opacity=".75" />
+      <path d="M11 14c8 4 18 4 26 0M11 34c8-4 18-4 26 0" stroke={A} opacity=".8" />
+    </>
+  ),
+  cadeado: (
+    <>
+      <rect x="10" y="21" width="28" height="19" rx="3" />
+      <path d="M16 21v-5a8 8 0 0 1 16 0v5" />
+      <circle cx="24" cy="30" r="2.4" fill={A} stroke={A} />
+    </>
+  ),
+  calendario: (
+    <>
+      <rect x="8" y="12" width="32" height="28" rx="3" />
+      <path d="M8 20h32M17 12V8M31 12V8" />
+      <path d="M16 27h5M27 27h5M16 34h5" stroke={A} opacity=".9" />
+    </>
+  ),
+  nota: (
+    <>
+      <path d="M12 8h16l8 8v24H12z" />
+      <path d="M28 8v8h8" opacity=".7" />
+      <path d="M18 24h12M18 30h12M18 36h7" stroke={A} opacity=".9" />
+    </>
+  ),
+  jogo: (
+    <>
+      <path d="M15 17h18a9 9 0 0 1 8 13l-2 5a4 4 0 0 1-6 1l-3-3H18l-3 3a4 4 0 0 1-6-1l-2-5a9 9 0 0 1 8-13z" />
+      <path d="M17 26h6M20 23v6" stroke={A} />
+      <circle cx="31" cy="26" r="2" fill={A} stroke={A} />
+    </>
+  ),
+  alvo: (
+    <>
+      <circle cx="24" cy="24" r="16" />
+      <circle cx="24" cy="24" r="9" opacity=".7" />
+      <circle cx="24" cy="24" r="2.5" fill={A} stroke={A} />
+    </>
+  ),
+  som: (
+    <>
+      <path d="M10 19h7l9-7v24l-9-7h-7z" />
+      <path d="M31 18a9 9 0 0 1 0 12M36 14a15 15 0 0 1 0 20" stroke={A} />
+    </>
+  ),
+  pessoas: (
+    <>
+      <circle cx="18" cy="17" r="6" />
+      <path d="M8 40c0-6 4.5-10 10-10s10 4 10 10" />
+      <circle cx="33" cy="19" r="5" opacity=".8" stroke={A} />
+      <path d="M28 40c0-5.5 3-9 8-9 4 0 6 2.5 6 6" stroke={A} opacity=".8" />
+    </>
+  ),
+  relogio: (
+    <>
+      <circle cx="24" cy="24" r="16" />
+      <path d="M24 14v10l7 5" stroke={A} />
+    </>
+  ),
+
   /* escudo, poção, elmo, lanterna — motivos das capas de mesa (37.4) */
   escudo: (
     <>

@@ -6,6 +6,7 @@ import { ordenarPorIniciativa } from '../../lib/iniciativa'
 import { estadoDaHabilidade } from '../../lib/combateAvancado'
 import { podeEditarFicha } from '../../lib/permissoesFicha'
 import Botao from '../ui/Botao'
+import Ilustra from '../arte/Ilustra'
 
 /**
  * Fase 14 — painel de combate dentro da SessaoPage.
@@ -395,7 +396,7 @@ function CombatenteRow({
               className="px-2 py-0.5 bg-amber-700 hover:bg-amber-600 text-white text-xs rounded transition-colors font-medium animate-pulse"
               title={`Aplicar ${sugestaoDano.valor} de dano${sugestaoDano.origem ? ` (${sugestaoDano.origem})` : ''} neste alvo`}
             >
-              ⚔ −{sugestaoDano.valor}
+              <Ilustra nome="espadas" tamanho={15} /> −{sugestaoDano.valor}
             </button>
           )}
           {/* F22.6 — em vez de aplicar direto, pedir defesa ativa ao alvo */}
@@ -588,7 +589,7 @@ export default function CombatePanel({
     return (
       <div className="mb-6 rounded-2xl border border-purple-800/60 bg-slate-800/40 px-5 py-4 flex items-center gap-3 flex-wrap">
         <div className="flex-1 min-w-0">
-          <p className="text-white font-semibold leading-tight">⚔️ Combate</p>
+          <p className="text-white font-semibold leading-tight flex items-center gap-2"><Ilustra nome="espadas" tamanho={18} /> Combate</p>
           <p className="text-purple-400 text-xs">Inicie um encontro para rastrear iniciativa, turnos e condições.</p>
         </div>
         <button
@@ -596,7 +597,7 @@ export default function CombatePanel({
           disabled={busy}
           className="px-4 py-2 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors shrink-0"
         >
-          {busy ? 'Iniciando...' : '⚔️ Iniciar combate'}
+          {busy ? 'Iniciando...' : <><Ilustra nome="espadas" tamanho={18} /> Iniciar combate</>}
         </button>
         {erro && <p className="text-red-400 text-xs w-full">{erro}</p>}
       </div>

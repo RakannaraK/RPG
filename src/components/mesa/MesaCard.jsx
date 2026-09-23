@@ -36,7 +36,6 @@ export default function MesaCard({ mesa }) {
 
       <div className="flex items-center gap-4 text-purple-400 text-xs">
         <span>👥 {mesa.totalMembros} {mesa.totalMembros === 1 ? 'membro' : 'membros'}</span>
-        {mesa.role === 'mestre' && <span className="text-amber-500">⚔️ Você é o Mestre</span>}
         {mesa.role === 'co-mestre' && <span className="text-orange-400">🛡 Co-mestre</span>}
         {mesa.arquivada && <span className="text-accent-300">📦 Arquivada</span>}
       </div>

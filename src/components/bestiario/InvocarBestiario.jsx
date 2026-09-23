@@ -5,6 +5,7 @@ import { defesaSugerida } from '../../lib/invocacao'
 import { invocarCriatura, valoresCombateDaCriatura } from '../../lib/invocarBanco'
 import { tocarPresetAcao } from '../../audio/actionSynth'
 import { usePreferencias } from '../../context/PreferenciasContext'
+import Ilustra from '../arte/Ilustra'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-1 focus:ring-accent-500'
 const TIPOS = [['inimigo', 'Inimigo'], ['aliado', 'Aliado'], ['npc', 'NPC']]
@@ -76,7 +77,7 @@ function Dialogo({ criatura, camposCombate, comMapa, onConfirmar, onFechar }) {
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onFechar} className="px-3 py-1.5 rounded-lg bg-hover text-ink text-sm hover:bg-border">Cancelar</button>
         <button type="button" onClick={confirmar} disabled={ocupado} className="px-3 py-1.5 rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-white text-sm font-semibold">
-          {ocupado ? 'Invocando…' : '⚔ Invocar'}
+          {ocupado ? 'Invocando…' : <><Ilustra nome="espadas" tamanho={16} /> Invocar</>}
         </button>
       </div>
     </div>
@@ -89,7 +90,7 @@ function Dialogo({ criatura, camposCombate, comMapa, onConfirmar, onFechar }) {
  * prontas e decide o que fazer com elas (sessão insere no encontro; o mapa
  * insere e ainda cria os tokens).
  */
-export default function InvocarBestiario({ mesaId, meuId, isGestor, camposCombate = [], nomesExistentes = [], comMapa = false, onInvocar, rotulo = '🐾 Bestiário', className = '' }) {
+export default function InvocarBestiario({ mesaId, meuId, isGestor, camposCombate = [], nomesExistentes = [], comMapa = false, onInvocar, rotulo = <><Ilustra nome="garra" tamanho={18} /> Bestiário</>, className = '' }) {
   const { preferencias } = usePreferencias()
   const [aberto, setAberto] = useState(false)
   const [criatura, setCriatura] = useState(null)
@@ -134,7 +135,7 @@ export default function InvocarBestiario({ mesaId, meuId, isGestor, camposCombat
                   type="button" onClick={() => setCriatura(c)}
                   className="flex-1 py-1.5 text-dice-300 hover:text-white hover:bg-purple-900/40 transition-colors"
                   title="Invocar no combate"
-                >⚔</button>
+                 aria-label="Invocar esta criatura"><Ilustra nome="espadas" tamanho={16} /></button>
               )}
             />
           </div>

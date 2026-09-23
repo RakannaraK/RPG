@@ -5,6 +5,7 @@ import {
   PRESETS_CALENDARIO, avancarDias, eventosDoDia, formatarData, gradeDoMes, limitarData,
   normalizarCalendario, proximosEventos, textoPassagem,
 } from '../../lib/calendarioEngine'
+import Ilustra from '../arte/Ilustra'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 const BTN = 'px-2.5 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50'
@@ -199,7 +200,7 @@ export default function PainelCalendario({ mesaId, isGestor, sessaoId = null, re
 
   const envolver = conteudo => (recolhivel ? (
     <details className="mb-6 rounded-xl border border-purple-900 bg-slate-900/60">
-      <summary className="cursor-pointer px-4 py-3 text-purple-200 text-sm font-medium">📅 {existe ? formatarData(hoje, cal) : 'Calendário'}</summary>
+      <summary className="cursor-pointer px-4 py-3 text-purple-200 text-sm font-medium"><span className="inline-flex items-center gap-2 align-middle"><Ilustra nome="calendario" tamanho={18} /> {existe ? formatarData(hoje, cal) : 'Calendário'}</span></summary>
       <div className="px-4 pb-4">{conteudo}</div>
     </details>
   ) : conteudo)
@@ -234,7 +235,7 @@ export default function PainelCalendario({ mesaId, isGestor, sessaoId = null, re
     <div className="space-y-4">
       <div>
         {!recolhivel && <p className="text-ink-dim text-xs">{cal.nome}</p>}
-        <p className="text-ink text-lg font-semibold">📅 {formatarData(hoje, cal)}</p>
+        <p className="text-ink text-lg font-semibold flex items-center gap-2"><Ilustra nome="calendario" tamanho={20} /> {formatarData(hoje, cal)}</p>
       </div>
 
       {isGestor && (

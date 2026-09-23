@@ -27,6 +27,7 @@ import PainelNotas from '../components/mesa/PainelNotas'
 import PainelCalendario from '../components/mesa/PainelCalendario'
 import { useChatMesa } from '../hooks/useChatMesa'
 import Sininho from '../components/notificacoes/Sininho'
+import Ilustra from '../components/arte/Ilustra'
 
 /**
  * Fase 13 — tela da sessão ao vivo.
@@ -421,7 +422,7 @@ export default function SessaoPage() {
               className="px-2.5 py-1.5 text-sm text-purple-200 hover:text-white bg-purple-900/50 hover:bg-purple-800/60 rounded-lg transition-colors"
               title="Abrir o mapa da mesa"
             >
-              🗺 <span className="hidden sm:inline">Mapa</span>
+              <Ilustra nome="mapa" tamanho={18} /> <span className="hidden sm:inline">Mapa</span>
             </button>
             <Sininho />
             <span
@@ -495,7 +496,7 @@ export default function SessaoPage() {
                 nomesExistentes={encontroApi.combatentes.map(c => c.nome)}
                 onInvocar={linhas => encontroApi.adicionarCombatentes(linhas)}
                 className="w-full py-2 bg-slate-700 hover:bg-slate-600 text-purple-200 hover:text-white text-sm rounded-lg transition-colors"
-                rotulo="🐾 Invocar do bestiário"
+                rotulo={<span className="inline-flex items-center justify-center gap-2 w-full"><Ilustra nome="garra" tamanho={18} /> Invocar do bestiário</span>}
               />
             }
             onRemoverCombatente={encontroApi.removerCombatente}
@@ -537,7 +538,7 @@ export default function SessaoPage() {
 
         {/* F29.3 — notas (o plano do mestre à mão durante a sessão) */}
         <details className="mb-6 rounded-xl border border-purple-900 bg-slate-900/60">
-          <summary className="cursor-pointer px-4 py-3 text-purple-200 text-sm font-medium">📝 Notas</summary>
+          <summary className="cursor-pointer px-4 py-3 text-purple-200 text-sm font-medium"><span className="inline-flex items-center gap-2 align-middle"><Ilustra nome="nota" tamanho={18} /> Notas</span></summary>
           <div className="px-4 pb-4">
             <PainelNotas mesaId={mesaId} meuId={session?.user?.id} />
           </div>
@@ -546,7 +547,7 @@ export default function SessaoPage() {
         {/* F28.5 — desafios de minigame durante a sessão */}
         {sessao.ativa && (
           <details className="mb-6 rounded-xl border border-purple-900 bg-slate-900/60">
-            <summary className="cursor-pointer px-4 py-3 text-purple-200 text-sm font-medium">🎮 Desafios de minigame</summary>
+            <summary className="cursor-pointer px-4 py-3 text-purple-200 text-sm font-medium"><span className="inline-flex items-center gap-2 align-middle"><Ilustra nome="jogo" tamanho={18} /> Desafios de minigame</span></summary>
             <div className="px-4 pb-4">
               <PainelDesafios mesaId={mesaId} meuId={session?.user?.id} isGestor={isMestre} sessaoId={sessaoId} />
             </div>
@@ -600,7 +601,7 @@ export default function SessaoPage() {
                 >
                   {rotulo}
                   {valor === 'chat' && chat.naoLidas > 0 && lateral !== 'chat' && (
-                    <span className="ml-1.5 inline-flex items-center justify-center text-xs font-bold bg-amber-500 text-amber-950 rounded-full w-4 h-4">
+                    <span className="ml-1.5 inline-flex items-center justify-center text-xs font-bold bg-accent-500 text-ink rounded-full w-5 h-5">
                       {chat.naoLidas > 9 ? '9+' : chat.naoLidas}
                     </span>
                   )}
