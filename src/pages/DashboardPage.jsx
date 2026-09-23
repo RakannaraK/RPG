@@ -11,6 +11,7 @@ import Sininho from '../components/notificacoes/Sininho'
 import GuiaMestre from '../components/ajuda/GuiaMestre'
 import Marca from '../components/marca/Marca'
 import Ilustra from '../components/arte/Ilustra'
+import Botao from '../components/ui/Botao'
 
 export default function DashboardPage() {
   const { session, logout } = useAuth()
@@ -104,18 +105,12 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex gap-2 sm:gap-3">
-            <button
-              onClick={() => setShowInvite(true)}
-              className="flex-1 sm:flex-none px-4 py-2 text-sm border border-purple-600 hover:border-purple-400 text-purple-300 hover:text-white rounded-lg transition-colors"
-            >
+            <Botao variante="contorno" onClick={() => setShowInvite(true)} className="flex-1 sm:flex-none">
               Entrar com código
-            </button>
-            <button
-              onClick={() => setShowCreate(true)}
-              className="flex-1 sm:flex-none px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors"
-            >
+            </Botao>
+            <Botao variante="primario" onClick={() => setShowCreate(true)} className="flex-1 sm:flex-none font-semibold">
               + Nova mesa
-            </button>
+            </Botao>
           </div>
         </div>
 

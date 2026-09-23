@@ -5,6 +5,7 @@ import { MiniTrilha } from './PainelFichas'
 import { ordenarPorIniciativa } from '../../lib/iniciativa'
 import { estadoDaHabilidade } from '../../lib/combateAvancado'
 import { podeEditarFicha } from '../../lib/permissoesFicha'
+import Botao from '../ui/Botao'
 
 /**
  * Fase 14 — painel de combate dentro da SessaoPage.
@@ -646,18 +647,12 @@ export default function CombatePanel({
       {/* Controles de turno (mestre) */}
       {isMestre && combatentes.length > 0 && (
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => onTurnoAnterior()}
-            className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-purple-200 text-sm rounded-lg transition-colors"
-          >
-            ◀ Anterior
-          </button>
-          <button
-            onClick={() => onProximoTurno()}
-            className="flex-1 px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-white text-sm font-semibold rounded-lg transition-colors"
-          >
+          <Botao variante="secundario" onClick={() => onTurnoAnterior()}>◀ Anterior</Botao>
+          {/* avançar turno é A ação da tela: fica no acento do tema, não em
+              âmbar — âmbar é dos dados, e dois blocos âmbar grandes competiam */}
+          <Botao variante="primario" onClick={() => onProximoTurno()} className="flex-1 font-semibold">
             Próximo turno ▶
-          </button>
+          </Botao>
         </div>
       )}
 
@@ -761,25 +756,27 @@ export default function CombatePanel({
 
       {/* Rolar iniciativa de todos (mestre) */}
       {isMestre && combatentes.length > 0 && (
-        <button
+        <Botao
+          variante="dado" tamanho="sm"
           onClick={async () => { setBusy(true); setErro(''); try { await onRolarIniciativaTodos() } catch (e) { setErro(e.message || 'Erro') } finally { setBusy(false) } }}
           disabled={busy}
-          className="w-full py-1.5 text-xs bg-amber-800/70 hover:bg-amber-700 text-amber-100 rounded-lg transition-colors disabled:opacity-50"
+          className="w-full"
         >
           🎲 Rolar iniciativa de todos
-        </button>
+        </Botao>
       )}
 
       {/* Controles do mestre para adicionar */}
       {isMestre && (
         <div className="space-y-2 pt-1">
-          <button
+          <Botao
+            variante="secundario"
             onClick={async () => { setErro(''); try { await onAdicionarJogadores(ausentes) } catch (e) { setErro(e.message || 'Erro') } }}
             disabled={ausentes.length === 0}
-            className="w-full py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-purple-200 hover:text-white text-sm rounded-lg transition-colors"
+            className="w-full"
           >
             {ausentes.length === 0 ? 'Todos os personagens já estão no combate' : `+ Adicionar personagens da mesa (${ausentes.length})`}
-          </button>
+          </Botao>
           {acoesBestiario}
           <FormInimigo onAdicionar={onAdicionarInimigos} />
           {erro && <p className="text-red-400 text-xs">{erro}</p>}

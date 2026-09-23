@@ -27,6 +27,7 @@ import Sininho from '../components/notificacoes/Sininho'
 import Ilustra from '../components/arte/Ilustra'
 import CapaMesa from '../components/mesa/CapaMesa'
 import SeletorCapa from '../components/mesa/SeletorCapa'
+import Botao from '../components/ui/Botao'
 
 const TABS = ['Fichas', 'Bestiário', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
 const TABS_GESTOR = ['Escudo'] // F34.3 — só mestre/co-mestre
@@ -481,12 +482,9 @@ export default function MesaPage() {
                       mesaId={id} donoId={session?.user?.id}
                       onImportada={novoId => { refetchFichas(); navigate(`/mesa/${id}/ficha/${novoId}`) }}
                     />
-                    <button
-                      onClick={() => setShowFichaCreate(true)}
-                      className="text-sm px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-lg transition-colors"
-                    >
+                    <Botao variante="primario" onClick={() => setShowFichaCreate(true)}>
                       + Nova ficha
-                    </button>
+                    </Botao>
                   </div>
                 )}
               </div>
