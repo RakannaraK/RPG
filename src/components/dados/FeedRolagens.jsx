@@ -310,7 +310,7 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-ink-dim text-xs">{rolagens.length} rolagem{rolagens.length > 1 ? 'ns' : ''}</span>
+        <span className="text-ink-dim text-xs">{rolagens.length} {rolagens.length === 1 ? 'rolagem' : 'rolagens'}</span>
         <button
           type="button"
           onClick={() => setRolagens([])}

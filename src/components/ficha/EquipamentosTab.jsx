@@ -774,7 +774,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
       <div className="flex items-center justify-between">
         <p className="text-accent-300 text-sm">
           {itens.length > 0
-            ? `${itens.length} item${itens.length > 1 ? 'ns' : ''}`
+            ? `${itens.length} ${itens.length === 1 ? 'item' : 'itens'}`
             : 'Nenhum item'}
         </p>
         {isDono && (

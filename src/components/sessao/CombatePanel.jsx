@@ -237,6 +237,11 @@ function CombatenteRow({
   // F22.6 — defesa ativa: pedido pendente neste combatente e papéis na cena
   const dp = c.defesa_pendente || null
   const defAtiva = defesaAtiva?.ativo && (defesaAtiva.opcoes?.length > 0)
+  // F38.1 — alvo de toque mínimo de 24 px (WCAG 2.2 AA 2.5.8). O ícone continua
+  // pequeno; o que cresce é a área clicável — no celular esses botões tinham
+  // 9x10 px e eram impossíveis de acertar no meio do combate.
+  const ICONE = 'inline-flex items-center justify-center min-w-[24px] min-h-[24px] rounded transition-colors'
+
   const podePedirDefesa = defAtiva && isMestre && !dp && hp.atual != null
   const mostrarPromptDefensor = dp && !dp.resposta && souDefensor
 
@@ -265,7 +270,10 @@ function CombatenteRow({
       : ativo ? 'bg-amber-950/40 border-amber-500/70 ring-1 ring-amber-500/40'
       : 'bg-slate-800/70 border-purple-900/50'
     }`}>
-      <div className="flex items-center gap-2 sm:gap-3">
+      {/* F38.1 — no celular a linha quebra em duas faixas: identidade em cima,
+          estado e controles embaixo. Antes tudo ficava numa linha só, o nome do
+          combatente era esmagado até desaparecer e o ✕ saía fora do card. */}
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:flex-nowrap">
         <span className={`shrink-0 w-3 text-amber-400 ${ativo ? 'opacity-100' : 'opacity-0'}`} title="Agindo agora">▶</span>
         {/* Iniciativa */}
         <div className="flex items-center gap-1 shrink-0 w-[4.5rem]">
@@ -276,10 +284,10 @@ function CombatenteRow({
                 value={c.iniciativa ?? ''}
                 onChange={e => onSetIniciativa(c.id, e.target.value)}
                 placeholder="—"
-                className="w-9 px-1 py-0.5 bg-purple-950 border border-purple-700 text-white text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="w-9 px-1 py-1 bg-purple-950 border border-purple-700 text-white text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
                 title="Iniciativa"
               />
-              <button onClick={rolar} disabled={rolando} className="text-amber-500 hover:text-amber-300 disabled:opacity-40 transition-colors text-base leading-none" title="Rolar iniciativa">🎲</button>
+              <button onClick={rolar} disabled={rolando} className={`${ICONE} text-amber-500 hover:text-amber-300 hover:bg-amber-950/40 disabled:opacity-40 text-base leading-none`} title="Rolar iniciativa">🎲</button>
             </>
           ) : (
             <span className="w-9 text-center text-white text-sm font-bold" title="Iniciativa">{c.iniciativa ?? '—'}</span>
@@ -295,6 +303,9 @@ function CombatenteRow({
             </span>
           )}
         </span>
+
+        {/* segunda faixa no celular; na mesma linha a partir de sm */}
+        <div className="flex items-center gap-2 sm:gap-3 basis-full sm:basis-auto justify-end sm:justify-start">
         {trilhaVida ? (
           <span className={`text-xs font-mono shrink-0 ${abatido ? 'text-red-400' : 'text-purple-300'}`}
             title={`${trilhaVida.nome}: ${trilhaVida.cont.marcadas}/${trilhaVida.cont.total} marcadas`}>
@@ -311,24 +322,26 @@ function CombatenteRow({
           </span>
         )}
         {podeAgir && (
-          <button onClick={() => setAddCond(v => !v)} className="text-fuchsia-400 hover:text-fuchsia-200 transition-colors shrink-0 text-xs border border-fuchsia-800/60 rounded px-1" title="Aplicar condição">cond</button>
+          <button onClick={() => setAddCond(v => !v)} className={`${ICONE} text-fuchsia-400 hover:text-fuchsia-200 hover:bg-fuchsia-950/40 shrink-0 text-xs border border-fuchsia-800/60 px-1.5`} title="Aplicar condição">cond</button>
         )}
+        {/* setas lado a lado, não empilhadas: empilhada, cada uma tinha 10 px de altura */}
         {isMestre && (
-          <div className="flex flex-col leading-none shrink-0">
-            <button onClick={() => onMover(c.id, -1)} disabled={!podeSubir} className="text-purple-500 hover:text-white disabled:opacity-20 transition-colors text-[10px]" title="Subir (desempate)">▲</button>
-            <button onClick={() => onMover(c.id, +1)} disabled={!podeDescer} className="text-purple-500 hover:text-white disabled:opacity-20 transition-colors text-[10px]" title="Descer (desempate)">▼</button>
+          <div className="flex items-center leading-none shrink-0">
+            <button onClick={() => onMover(c.id, -1)} disabled={!podeSubir} className={`${ICONE} text-purple-400 hover:text-white hover:bg-purple-900/50 disabled:opacity-20 text-xs`} title="Subir (desempate)">▲</button>
+            <button onClick={() => onMover(c.id, +1)} disabled={!podeDescer} className={`${ICONE} text-purple-400 hover:text-white hover:bg-purple-900/50 disabled:opacity-20 text-xs`} title="Descer (desempate)">▼</button>
           </div>
         )}
         {isMestre && onDefinirReserva && (
           <button
             onClick={() => onDefinirReserva(c.id, true)}
-            className="text-purple-500 hover:text-white transition-colors shrink-0 text-xs"
+            className={`${ICONE} text-purple-400 hover:text-white hover:bg-purple-900/50 shrink-0 text-sm`}
             title="Mandar para a reserva (sai da ordem de turnos, sem perder nada)"
           >⇣</button>
         )}
         {isMestre && (
-          <button onClick={() => onRemover(c.id)} className="text-red-800 hover:text-red-500 transition-colors shrink-0 text-sm" title="Remover do combate">✕</button>
+          <button onClick={() => onRemover(c.id)} className={`${ICONE} text-red-700 hover:text-red-400 hover:bg-red-950/40 shrink-0 text-sm`} title="Remover do combate">✕</button>
         )}
+        </div>
       </div>
 
       {/* 24.2 — alvo com trilha-vida: dano/cura viram marcar/curar caixinhas */}
@@ -370,10 +383,10 @@ function CombatenteRow({
             onChange={e => setDc(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') aplicarHp(-1) }}
             placeholder="0"
-            className="w-14 px-1.5 py-0.5 bg-purple-950 border border-purple-700 text-white text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+            className="w-14 px-1.5 py-1 bg-purple-950 border border-purple-700 text-white text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
           />
-          <button onClick={() => aplicarHp(-1)} className="px-2 py-0.5 bg-red-800 hover:bg-red-700 text-white text-xs rounded transition-colors" title="Aplicar dano">− Dano</button>
-          <button onClick={() => aplicarHp(+1)} className="px-2 py-0.5 bg-green-800 hover:bg-green-700 text-white text-xs rounded transition-colors" title="Aplicar cura">＋ Cura</button>
+          <button onClick={() => aplicarHp(-1)} className="px-2.5 py-1 min-h-[24px] bg-red-800 hover:bg-red-700 text-white text-xs rounded transition-colors" title="Aplicar dano">− Dano</button>
+          <button onClick={() => aplicarHp(+1)} className="px-2.5 py-1 min-h-[24px] bg-green-800 hover:bg-green-700 text-white text-xs rounded transition-colors" title="Aplicar cura">＋ Cura</button>
           {/* F14.6 — aplicar o dano de poder pendente neste alvo */}
           {sugestaoDano && (
             <button
