@@ -34,7 +34,7 @@ const TABS_GESTOR = ['Escudo'] // F34.3 — só mestre/co-mestre
 
 // Fase 16 — rótulo/cor por papel (mestre/co-mestre/jogador/espectador)
 const ROLE_INFO = {
-  mestre:      { label: 'Mestre',     cls: 'bg-amber-500 text-amber-950' },
+  mestre:      { label: 'Mestre',     cls: 'bg-accent-600 text-ink' },
   'co-mestre': { label: 'Co-mestre',  cls: 'bg-orange-500 text-orange-950' },
   jogador:     { label: 'Jogador',    cls: 'bg-purple-700 text-white' },
   espectador:  { label: 'Espectador', cls: 'bg-slate-600 text-slate-100' },
@@ -362,10 +362,10 @@ export default function MesaPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
       <CapaMesa capa={mesa?.capa} altura={104} className="border-b border-purple-800">
-      <header className="px-4 sm:px-6 py-4">
+      <header className="py-4">
         {/* No celular o nome ficava reduzido a "Mes…" para caber cinco ícones na
             mesma linha. Agora título e ações ficam em faixas separadas até sm. */}
-        <div className="max-w-4xl mx-auto flex flex-wrap items-center gap-x-4 gap-y-2 sm:flex-nowrap">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-wrap items-center gap-x-4 gap-y-2 sm:flex-nowrap">
           <div className="flex items-center gap-3 min-w-0 basis-full sm:basis-auto sm:flex-1">
             <Botao variante="fantasma" tamanho="sm" onClick={() => navigate('/dashboard')} className="shrink-0">
               ← Voltar
@@ -447,12 +447,12 @@ export default function MesaPage() {
             >
               {tab}
               {tab === 'Dados' && novasRolagens > 0 && activeTab !== 'Dados' && (
-                <span className="ml-1.5 inline-flex items-center justify-center text-[10px] font-bold bg-amber-500 text-amber-950 rounded-full w-4 h-4">
+                <span className="ml-1.5 inline-flex items-center justify-center text-[10px] font-bold bg-accent-500 text-ink rounded-full w-4 h-4">
                   {novasRolagens > 9 ? '9+' : novasRolagens}
                 </span>
               )}
               {tab === 'Chat' && chat.naoLidas > 0 && activeTab !== 'Chat' && (
-                <span className="ml-1.5 inline-flex items-center justify-center text-[10px] font-bold bg-amber-500 text-amber-950 rounded-full w-4 h-4">
+                <span className="ml-1.5 inline-flex items-center justify-center text-[10px] font-bold bg-accent-500 text-ink rounded-full w-4 h-4">
                   {chat.naoLidas > 9 ? '9+' : chat.naoLidas}
                 </span>
               )}

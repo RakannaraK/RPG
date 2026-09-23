@@ -3,7 +3,7 @@ import CapaMesa from './CapaMesa'
 
 const ROLE_LABELS = { mestre: 'Mestre', 'co-mestre': 'Co-mestre', jogador: 'Jogador', espectador: 'Espectador' }
 const ROLE_COLORS = {
-  mestre: 'bg-amber-500 text-amber-950',
+  mestre: 'bg-accent-600 text-ink',
   'co-mestre': 'bg-orange-500 text-orange-950',
   jogador: 'bg-purple-600 text-white',
   espectador: 'bg-slate-600 text-slate-100',

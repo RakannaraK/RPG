@@ -123,7 +123,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
           </>
         ) : (
           <p className="text-white text-lg font-semibold">
-            {ficha.hp_atual ?? '?'} / {ficha.hp_maximo ?? '?'}
+            {ficha.hp_atual ?? '—'} / {ficha.hp_maximo ?? '—'}
           </p>
         )}
 

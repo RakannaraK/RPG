@@ -268,10 +268,16 @@ export default function CabecalhoPersonagem({
                   {hpSalvo ? '✓ Salvo' : 'Salvar HP'}
                 </button>
               </div>
+            ) : ficha.hp_atual == null && !hpMaxDisplay ? (
+              /* Antes aparecia "? / ?" sem explicação — quem olhava não sabia se
+                 era erro, se faltava dado ou se a ficha estava quebrada. */
+              <p className="text-ink-dim text-sm">
+                Vida ainda não definida neste sistema.
+              </p>
             ) : (
               <p className="text-ink text-lg font-semibold font-mono">
-                {ficha.hp_atual ?? '?'}
-                <span className="text-ink-dim font-normal text-sm"> / {hpMaxDisplay || '?'}</span>
+                {ficha.hp_atual ?? '—'}
+                <span className="text-ink-dim font-normal text-sm"> / {hpMaxDisplay || '—'}</span>
               </p>
             )}
 

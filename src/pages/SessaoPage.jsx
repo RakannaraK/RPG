@@ -392,8 +392,8 @@ export default function SessaoPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
       {/* Cabeçalho */}
-      <header className="border-b border-purple-800 px-4 sm:px-6 py-4 sticky top-0 z-20 bg-slate-950/80 backdrop-blur">
-        <div className="max-w-7xl mx-auto flex items-center gap-4 flex-wrap">
+      <header className="border-b border-purple-800 py-4 sticky top-0 z-20 bg-slate-950/80 backdrop-blur">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-4 flex-wrap">
           <button
             onClick={() => navigate(`/mesa/${mesaId}`)}
             className="text-purple-400 hover:text-white transition-colors text-sm shrink-0"

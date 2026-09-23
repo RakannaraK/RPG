@@ -264,8 +264,8 @@ export default function ComunidadePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
-      <header className="border-b border-purple-900 px-4 sm:px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center gap-3 flex-wrap">
+      <header className="border-b border-purple-900 py-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-3 flex-wrap">
           <button onClick={() => navigate(logado ? '/dashboard' : '/')} className="text-purple-400 hover:text-white text-sm">← Voltar</button>
           <Marca tamanho="sm" className="hidden sm:flex" />
           <h1 className="text-white font-bold text-xl">Comunidade</h1>

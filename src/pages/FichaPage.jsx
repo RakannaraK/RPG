@@ -1017,8 +1017,8 @@ export default function FichaPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-void via-void to-black">
       {/* Barra de navegação */}
-      <header className="border-b border-border px-4 sm:px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center gap-4">
+      <header className="border-b border-border py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-4">
           <button
             onClick={() => navigate(`/mesa/${mesaId}`)}
             className="text-ink-dim hover:text-ink transition-colors text-sm shrink-0"

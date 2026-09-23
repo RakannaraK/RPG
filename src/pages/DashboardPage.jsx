@@ -61,7 +61,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
-      <header className="border-b border-purple-800 px-4 sm:px-6 py-4 flex items-center justify-between">
+      <header className="border-b border-purple-800 py-4">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex items-center justify-between">
         <Marca tamanho="sm" pulso />
         <div className="flex items-center gap-4">
           <span className="text-purple-300 text-sm hidden sm:block">{meuApelido || '—'}</span>
@@ -94,6 +95,7 @@ export default function DashboardPage() {
             {logoutLoading ? 'Saindo...' : 'Sair'}
           </button>
         </div>
+      </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
