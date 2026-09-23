@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import Selo from '../marca/Selo'
 
 export default function RegisterForm({ onSwitchToLogin }) {
   const { register } = useAuth()
@@ -35,8 +36,8 @@ export default function RegisterForm({ onSwitchToLogin }) {
   if (success) {
     return (
       <div className="space-y-5 text-center py-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-800/40 border border-purple-600/40 rounded-2xl">
-          <span className="text-3xl">🎲</span>
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl moldura-cantos" style={{ background: 'var(--raised)' }}>
+          <Selo tamanho={34} />
         </div>
         <div>
           <h3 className="text-white font-semibold text-lg">Conta criada!</h3>

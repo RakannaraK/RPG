@@ -9,6 +9,7 @@ import MesaInvite from '../components/mesa/MesaInvite'
 import PreferenciasModal from '../components/preferencias/PreferenciasModal'
 import Sininho from '../components/notificacoes/Sininho'
 import GuiaMestre from '../components/ajuda/GuiaMestre'
+import Marca from '../components/marca/Marca'
 
 export default function DashboardPage() {
   const { session, logout } = useAuth()
@@ -59,10 +60,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
       <header className="border-b border-purple-800 px-4 sm:px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">🎲</span>
-          <span className="text-white font-bold text-lg">RPG Ficha</span>
-        </div>
+        <Marca tamanho="sm" pulso />
         <div className="flex items-center gap-4">
           <span className="text-purple-300 text-sm hidden sm:block">{meuApelido || '—'}</span>
           {/* F36 — vitrine da comunidade */}

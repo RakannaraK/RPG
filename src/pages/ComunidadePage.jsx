@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useComunidade } from '../hooks/useComunidade'
 import { useMesas } from '../hooks/useMesa'
+import Marca from '../components/marca/Marca'
 import { supabase } from '../lib/supabase'
 import {
   TIPOS_PUBLICACAO, etiquetasPopulares, filtrarVitrine, iconeDoTipo,
@@ -265,6 +266,7 @@ export default function ComunidadePage() {
       <header className="border-b border-purple-900 px-4 sm:px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center gap-3 flex-wrap">
           <button onClick={() => navigate(logado ? '/dashboard' : '/')} className="text-purple-400 hover:text-white text-sm">← Voltar</button>
+          <Marca tamanho="sm" className="hidden sm:flex" />
           <h1 className="text-white font-bold text-xl">Comunidade</h1>
           <p className="text-purple-400 text-sm">fichas, criaturas, sistemas e artes que a galera compartilha</p>
           {logado && (
