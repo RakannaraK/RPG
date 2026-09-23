@@ -363,20 +363,21 @@ export default function MesaPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
       <CapaMesa capa={mesa?.capa} altura={104} className="border-b border-purple-800">
       <header className="px-4 sm:px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="text-purple-400 hover:text-white transition-colors text-sm shrink-0"
-          >
-            ← Voltar
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-white font-bold text-xl leading-tight truncate">{mesa?.nome}</h1>
-            {mesa?.descricao && (
-              <p className="text-purple-400 text-sm mt-0.5 truncate">{mesa.descricao}</p>
-            )}
+        {/* No celular o nome ficava reduzido a "Mes…" para caber cinco ícones na
+            mesma linha. Agora título e ações ficam em faixas separadas até sm. */}
+        <div className="max-w-4xl mx-auto flex flex-wrap items-center gap-x-4 gap-y-2 sm:flex-nowrap">
+          <div className="flex items-center gap-3 min-w-0 basis-full sm:basis-auto sm:flex-1">
+            <Botao variante="fantasma" tamanho="sm" onClick={() => navigate('/dashboard')} className="shrink-0">
+              ← Voltar
+            </Botao>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-white font-bold text-xl leading-tight truncate">{mesa?.nome}</h1>
+              {mesa?.descricao && (
+                <p className="text-purple-400 text-sm mt-0.5 truncate">{mesa.descricao}</p>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 ml-auto">
             <span className={`text-xs font-semibold px-2 py-1 rounded-full ${roleInfo(meuRole).cls}`}>
               {roleInfo(meuRole).label}
             </span>
@@ -404,15 +405,9 @@ export default function MesaPage() {
                 🚪
               </button>
             )}
-            {isCriador && (
-              <button
-                onClick={() => setShowDeleteMesa(true)}
-                className="p-2 text-red-500 hover:text-red-400 hover:bg-red-950/50 rounded-lg transition-colors"
-                title="Deletar mesa"
-              >
-                🗑
-              </button>
-            )}
+            {/* "Deletar mesa" saiu daqui: ficava a 24 px da engrenagem, fácil de
+                errar o toque. Mora na aba Membros, junto de arquivar e
+                transferir posse — onde as outras ações graves já estavam. */}
           </div>
         </div>
       </header>
@@ -843,12 +838,23 @@ export default function MesaPage() {
                       ? 'A mesa está em somente leitura. Desarquive para voltar a jogar.'
                       : 'Guarda a mesa em somente leitura (sem novas sessões, fichas ou rolagens). Some da lista principal e pode ser desarquivada depois.'}
                   </p>
-                  <button
-                    onClick={() => handleArquivar(!arquivada)}
-                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-purple-100 text-sm rounded-lg transition-colors"
-                  >
+                  <Botao variante="secundario" onClick={() => handleArquivar(!arquivada)}>
                     {arquivada ? 'Desarquivar mesa' : 'Arquivar mesa'}
-                  </button>
+                  </Botao>
+                </div>
+              )}
+
+              {/* Deletar mesa — veio da barra de cima (varredura de design) */}
+              {isCriador && (
+                <div className="bg-slate-800 border border-red-900/60 rounded-xl p-5">
+                  <p className="text-red-300 text-sm font-medium mb-1">Deletar mesa</p>
+                  <p className="text-purple-500 text-xs mb-3">
+                    Apaga a mesa, as fichas, o sistema e o histórico de sessões. Não tem como desfazer —
+                    se a ideia é só parar de jogar, use arquivar.
+                  </p>
+                  <Botao variante="perigo" onClick={() => setShowDeleteMesa(true)}>
+                    Deletar esta mesa
+                  </Botao>
                 </div>
               )}
             </div>

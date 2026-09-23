@@ -182,3 +182,17 @@ button.bg-purple-600:hover, button.bg-purple-700:hover, button.bg-purple-800:hov
    do texto branco, mas agora passam em todos os cinco. */
 .text-purple-400 { color: var(--accent-400) !important; }
 .text-purple-500, .text-purple-600 { color: color-mix(in srgb, var(--accent-300) 78%, #000) !important; }
+
+/* ── Barra de rolagem das faixas de abas ──────────────────────────────────────
+   A barra padrão do Chrome é branca e grossa: no celular, na mesa, ela ficava
+   mais chamativa que as próprias abas. Fina e na cor do tema. */
+.overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--accent-700) 75%, transparent) transparent;
+}
+.overflow-x-auto::-webkit-scrollbar { height: 6px; }
+.overflow-x-auto::-webkit-scrollbar-track { background: transparent; }
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--accent-700) 75%, transparent);
+  border-radius: 999px;
+}
