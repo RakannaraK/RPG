@@ -23,7 +23,8 @@ export function useMesas() {
             descricao,
             codigo_convite,
             created_at,
-            arquivada
+            arquivada,
+            capa
           )
         `)
         .eq('usuario_id', session.user.id)

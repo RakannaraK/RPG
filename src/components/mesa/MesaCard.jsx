@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import CapaMesa from './CapaMesa'
 
 const ROLE_LABELS = { mestre: 'Mestre', 'co-mestre': 'Co-mestre', jogador: 'Jogador', espectador: 'Espectador' }
 const ROLE_COLORS = {
@@ -14,8 +15,12 @@ export default function MesaCard({ mesa }) {
   return (
     <button
       onClick={() => navigate(`/mesa/${mesa.id}`)}
-      className="w-full text-left velino moldura-cantos hover:bg-slate-750 border border-purple-800 hover:border-purple-600 rounded-2xl p-5 transition-all group"
+      className="w-full text-left velino moldura-cantos hover:bg-slate-750 border border-purple-800 hover:border-purple-600 rounded-2xl overflow-hidden transition-all group"
     >
+      {/* F37.4 — faixa da capa escolhida pelo dono (sem capa, não ocupa nada) */}
+      <CapaMesa capa={mesa.capa} altura={56} />
+
+      <div className="p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <h3 className="text-white font-semibold text-lg group-hover:text-purple-300 transition-colors leading-tight">
           {mesa.nome}
@@ -34,6 +39,7 @@ export default function MesaCard({ mesa }) {
         {mesa.role === 'mestre' && <span className="text-amber-500">⚔️ Você é o Mestre</span>}
         {mesa.role === 'co-mestre' && <span className="text-orange-400">🛡 Co-mestre</span>}
         {mesa.arquivada && <span className="text-purple-500">📦 Arquivada</span>}
+      </div>
       </div>
     </button>
   )

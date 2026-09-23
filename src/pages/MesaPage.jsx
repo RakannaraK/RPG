@@ -25,6 +25,8 @@ import SessoesHistorico from '../components/sessao/SessoesHistorico'
 import MeuPerfilMesa from '../components/mesa/MeuPerfilMesa'
 import Sininho from '../components/notificacoes/Sininho'
 import Ilustra from '../components/arte/Ilustra'
+import CapaMesa from '../components/mesa/CapaMesa'
+import SeletorCapa from '../components/mesa/SeletorCapa'
 
 const TABS = ['Fichas', 'Bestiário', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
 const TABS_GESTOR = ['Escudo'] // F34.3 — só mestre/co-mestre
@@ -358,7 +360,8 @@ export default function MesaPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
-      <header className="border-b border-purple-800 px-4 sm:px-6 py-4">
+      <CapaMesa capa={mesa?.capa} altura={104} className="border-b border-purple-800">
+      <header className="px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard')}
@@ -412,6 +415,7 @@ export default function MesaPage() {
           </div>
         </div>
       </header>
+      </CapaMesa>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         {/* Arquivada (16.8) — somente leitura */}
@@ -818,6 +822,17 @@ export default function MesaPage() {
                   >
                     Transferir posse da mesa
                   </button>
+                </div>
+              )}
+
+              {/* Capa da mesa (37.4) — só o dono */}
+              {isCriador && (
+                <div className="bg-slate-800 border border-purple-800 rounded-xl p-5">
+                  <SeletorCapa
+                    mesaId={id}
+                    capaAtual={mesa?.capa || null}
+                    onTrocou={capa => setMesa(prev => ({ ...prev, capa }))}
+                  />
                 </div>
               )}
 

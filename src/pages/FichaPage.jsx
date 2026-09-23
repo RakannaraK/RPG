@@ -1080,7 +1080,8 @@ export default function FichaPage() {
       </header>
 
       {/* Conteúdo principal */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div className="moldura-pergaminho moldura-cantos moldura-cantos-g space-y-6">
         {/* Cabeçalho do personagem */}
         {/* F33 — formas alternativas (só personagem tem; a forma em si não) */}
         {ficha.tipo_ficha === 'personagem' && !ficha.forma_de_id && (
@@ -1437,6 +1438,7 @@ export default function FichaPage() {
             </div>
           )}
 
+        </div>
         </div>
       </div>
 
