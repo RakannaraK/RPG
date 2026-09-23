@@ -28,6 +28,7 @@ import PainelCalendario from '../components/mesa/PainelCalendario'
 import { useChatMesa } from '../hooks/useChatMesa'
 import Sininho from '../components/notificacoes/Sininho'
 import Ilustra from '../components/arte/Ilustra'
+import Botao from '../components/ui/Botao'
 
 /**
  * Fase 13 — tela da sessão ao vivo.
@@ -395,12 +396,9 @@ export default function SessaoPage() {
       {/* Cabeçalho */}
       <header className="border-b border-purple-800 py-4 sticky top-0 z-20 bg-slate-950/80 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-4 flex-wrap">
-          <button
-            onClick={() => navigate(`/mesa/${mesaId}`)}
-            className="text-purple-400 hover:text-white transition-colors text-sm shrink-0"
-          >
+          <Botao variante="fantasma" tamanho="sm" onClick={() => navigate(`/mesa/${mesaId}`)} className="shrink-0">
             ← Sair da sessão
-          </button>
+          </Botao>
           <div className="flex items-center gap-3 min-w-0">
             <h1 className="text-white font-bold text-xl leading-tight truncate">
               {sessao.titulo || 'Sessão'}

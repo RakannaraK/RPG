@@ -43,6 +43,7 @@ import { useLinhasPoder, useLinhasFicha } from '../hooks/useLinhasPoder'
 import PainelPoderes from '../components/ficha/PainelPoderes'
 import PainelLinhas from '../components/ficha/PainelLinhas'
 import { podeAtivarHabilidade, planejarTurno } from '../lib/custoHabilidade'
+import Botao from '../components/ui/Botao'
 import { useCategorias } from '../hooks/useCategorias'
 import { useMaestrias } from '../hooks/useMaestrias'
 import { usePropriedades } from '../hooks/usePropriedades'
@@ -1020,12 +1021,9 @@ export default function FichaPage() {
       {/* Barra de navegação */}
       <header className="border-b border-border py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-4">
-          <button
-            onClick={() => navigate(`/mesa/${mesaId}`)}
-            className="text-ink-dim hover:text-ink transition-colors text-sm shrink-0"
-          >
+          <Botao variante="fantasma" tamanho="sm" onClick={() => navigate(`/mesa/${mesaId}`)} className="shrink-0">
             ← Voltar
-          </button>
+          </Botao>
           <div className="flex-1 min-w-0">
             <h1 className="text-ink font-bold text-xl leading-tight truncate">
               {ficha.nome_personagem}

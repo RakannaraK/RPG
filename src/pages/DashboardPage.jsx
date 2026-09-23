@@ -62,9 +62,9 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
       <header className="border-b border-purple-800 py-4">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-y-3">
         <Marca tamanho="sm" pulso />
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 ml-auto">
           <span className="text-purple-300 text-sm hidden sm:block">{meuApelido || '—'}</span>
           {/* F36 — vitrine da comunidade */}
           <button
@@ -85,7 +85,7 @@ export default function DashboardPage() {
             title="Preferências"
             className="p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
           >
-            <Ilustra nome="engrenagem" tamanho={20} />
+            <Ilustra nome="ajustes" tamanho={20} />
           </button>
           <button
             onClick={handleLogout}

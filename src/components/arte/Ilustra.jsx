@@ -96,6 +96,14 @@ const DESENHOS = {
       <path d="M24 9v-3" stroke={A} />
     </>
   ),
+  ajustes: (
+    <>
+      <path d="M8 14h32M8 24h32M8 34h32" strokeWidth="2.2" />
+      <circle cx="18" cy="14" r="4" fill={A} stroke={A} />
+      <circle cx="30" cy="24" r="4" fill={A} stroke={A} />
+      <circle cx="16" cy="34" r="4" fill={A} stroke={A} />
+    </>
+  ),
   engrenagem: (
     <>
       {/* dentes grossos e curtos: com traço fino o desenho virava um sol */}

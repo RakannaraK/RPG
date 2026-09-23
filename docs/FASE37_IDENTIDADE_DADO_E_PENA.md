@@ -60,11 +60,17 @@ Varri o site logado, em 1440×900 e 375×844, medindo alvos de toque, tamanhos d
 3. **Mesa** — "deletar mesa" saiu da barra de cima (ficava a 24 px da engrenagem) e foi para a aba Membros, com texto explicando o que apaga; no celular o nome da mesa voltou a caber inteiro (era "Mes…"); a barra de rolagem das abas deixou de ser um bloco branco.
 4. Dois plurais feitos na mão que apareciam na tela: **"2 rolagemns"** e **"2 itemns"**.
 
-### Achado e ainda não corrigido (fila)
-- **Quatro sistemas de cor convivendo:** `purple-*` (1596 usos), `accent-*` (335), `slate-*` (230), mais fugas de `violet-*`/`indigo-*`. O remapeamento de tema é curativo; a cura é migrar para `accent-*` por tela.
-- **42 arquivos usam emoji como ícone** (⚔ 🗺 📜 🔔 ⚙ 🚪 🐾) enquanto existe a biblioteca SVG da 37.3. Emoji em botão sem rótulo também não tem nome acessível.
-- **1.088 usos de texto ≤ 12 px**, incluindo `text-[9px]` e `text-[10px]` fora da escala.
-- **Âmbar fora do lugar:** selo "Mestre" e badge do Chat usam a cor que os tokens reservam para dados.
-- **Cabeçalho x conteúdo desalinhados:** painel e sessão usam cabeçalho de borda a borda; mesa e ficha usam coluna centralizada.
-- **Ficha:** "? / ?" nos pontos de vida quando o sistema não tem atributos; e o estado vazio de imagens tem mais peso visual que o título do painel.
+### A fila foi zerada (2026-09-23)
 
+Tudo o que a varredura deixou anotado foi corrigido:
+
+1. **Quatro sistemas de cor → um.** `purple-*` (1596 usos) e `slate-*` (230) agora **são** os tokens, mapeados em `tailwind.config.js`. O bloco de ~60 regras com `!important` em `tokens.css` saiu. Bug invisível achado no caminho: as cores de token estavam declaradas como `var(--x)` puro, formato em que o Tailwind v3 **não gera** variante de opacidade — 224 usos de `bg-void/40`, `border-border/50`, `bg-harm/10` e companhia não existiam no CSS final (fundo nenhum; borda caindo em `currentColor`). Cada token ganhou o canal RGB (`--void-c: 18 13 30`) e a cor virou `rgb(var(--void-c) / <alpha-value>)`.
+2. **Emoji como ícone.** Biblioteca de arte ampliada com 14 ícones de interface; trocados todos os botões só-ícone e cabeçalhos de seção, com `aria-label` em cada um. A engrenagem foi refeita e depois **substituída por controles deslizantes** nos botões de preferências: com dentes finos ela virava um sol em 20 px. Emoji dentro de frase e em botão com rótulo escrito ficaram de propósito.
+3. **Texto minúsculo.** 361 usos de `text-[9px]/[10px]/[11px]` viraram `text-xs`. O menor texto da interface é 12 px, medido em todas as telas. Os contadores de não lidas subiram de 16 px para 20 px de diâmetro para o número caber.
+4. **Âmbar fora do lugar.** Selo de papel e contador de mensagens foram para o acento. As barras de vida em âmbar ficaram: ali é aviso, semântica legítima.
+5. **Cabeçalhos desalinhados.** O padding lateral passou para dentro do container de largura máxima em todas as páginas; o painel ganhou o container que não tinha. Cabeçalho e conteúdo começam no mesmo x.
+6. **"? / ?" na ficha.** Virou "Vida ainda não definida neste sistema".
+
+**Medições depois de tudo** (1280 px e 375 px, logado): 0 reprovações de contraste nos 5 temas (pior razão 4,94 na ficha, 5,38 na mesa), menor fonte 12 px, **0 alvos de toque abaixo de 24 px** em painel, mesa, ficha, sessão e comunidade, nenhuma rolagem lateral, 0 erro no console.
+
+**Regressões que eu mesmo causei e corrigi na hora, por medir:** `flex` no `<summary>` apaga o triângulo nativo de abrir/fechar; ícone em botão de largura cheia fica solto na ponta; e o cabeçalho do painel passou a transbordar 41 px no celular (marca + 5 ícones em 375 px) — as ações foram para a segunda faixa.

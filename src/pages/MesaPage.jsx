@@ -394,7 +394,7 @@ export default function MesaPage() {
               title="Preferências" aria-label="Preferências"
               className="p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
             >
-              <Ilustra nome="engrenagem" tamanho={20} />
+              <Ilustra nome="ajustes" tamanho={20} />
             </button>
             {!isCriador && (
               <button
