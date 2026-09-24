@@ -62,7 +62,7 @@ export default function PainelOverlay({ mesaId }) {
       </div>
 
       {!token ? (
-        <button type="button" onClick={() => salvar(cfg, true)} disabled={!!ocupado} className={`${BTN} bg-purple-700 hover:bg-purple-600 text-white`}>
+        <button type="button" onClick={() => salvar(cfg, true)} disabled={!!ocupado} className={`${BTN} bg-purple-700 hover:bg-purple-600 text-sobre-acento`}>
           {ocupado ? 'Gerando…' : 'Gerar link do overlay'}
         </button>
       ) : (

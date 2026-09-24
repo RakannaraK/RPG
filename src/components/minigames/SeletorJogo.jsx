@@ -19,7 +19,7 @@ const PARAMETROS = {
 }
 
 const BTN = 'px-3 py-1.5 rounded-lg text-sm transition-colors'
-const ativo = on => (on ? 'bg-accent-600 text-white' : 'bg-hover text-ink hover:bg-border')
+const ativo = on => (on ? 'bg-accent-600 text-sobre-acento' : 'bg-hover text-sobre-acento hover:bg-border')
 
 /**
  * Fase 28 — escolha de jogo, dificuldade e (na Personalizada) todos os

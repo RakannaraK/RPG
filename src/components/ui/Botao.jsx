@@ -14,7 +14,7 @@
  */
 
 const VARIANTES = {
-  primario:   'bg-purple-600 hover:bg-purple-500 text-white',
+  primario:   'bg-purple-600 hover:bg-purple-500 text-sobre-acento',
   secundario: 'bg-slate-700 hover:bg-slate-600 text-purple-100',
   contorno:   'border border-purple-700 hover:border-purple-500 text-purple-200 hover:text-white',
   perigo:     'bg-red-800 hover:bg-red-700 text-white',

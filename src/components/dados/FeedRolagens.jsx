@@ -314,7 +314,7 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
         <button
           type="button"
           onClick={() => setRolagens([])}
-          className="text-xs text-ink-dim hover:text-ink transition-colors"
+          className="text-xs text-ink-dim hover:text-ink transition-colors px-1 py-1 min-h-[24px]"
         >
           Limpar visualização
         </button>

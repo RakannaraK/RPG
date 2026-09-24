@@ -93,7 +93,7 @@ function Trilha({ t, marcasRaw, salvar, contextoFormula, isDono, onEventos, bonu
             {tipos.map(tm => (
               <button key={tm.id} onClick={() => setTipoSel(tm.id)}
                 className={`text-xs px-1.5 py-0.5 rounded-lg border font-mono transition-colors ${
-                  tipoSel === tm.id ? 'bg-accent-700 border-accent-400 text-ink' : 'bg-void border-border text-ink-dim hover:border-accent-500'
+                  tipoSel === tm.id ? 'bg-accent-700 border-accent-400 text-sobre-acento' : 'bg-void border-border text-ink-dim hover:border-accent-500'
                 }`}
                 title={`Marcar ${tm.nome}`}>
                 {tm.simbolo || tm.nome}

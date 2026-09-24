@@ -210,7 +210,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
           {card.chips.map(chip => <ChipEstado key={chip.key} chip={chip} />)}
         </div>
       ) : (
-        <p className="text-purple-700 text-xs pt-1 border-t border-purple-900/40">Sem estados ativos</p>
+        <p className="text-ink-dim text-xs pt-1 border-t border-purple-900/40">Sem estados ativos</p>
       )}
     </div>
   )

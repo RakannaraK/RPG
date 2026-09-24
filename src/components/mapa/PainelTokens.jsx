@@ -93,7 +93,7 @@ function Secao({ titulo, vazio, itens, nome, imagem, cor, onUm, onTodos }) {
             ))}
           </ul>
           {itens.length > 1 && (
-            <button onClick={executar(onTodos)} disabled={ocupado} className={`${BTN} w-full bg-accent-700 hover:bg-accent-600 text-white`}>
+            <button onClick={executar(onTodos)} disabled={ocupado} className={`${BTN} w-full bg-accent-700 hover:bg-accent-600 text-sobre-acento`}>
               Pôr todos no mapa ({itens.length})
             </button>
           )}
@@ -152,7 +152,7 @@ function TokenAvulso({ onAdicionar, onEnviarImagem }) {
         onChange={e => setArquivo(e.target.files?.[0] || null)}
         className="block w-full text-sm text-ink-dim file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-hover file:text-ink hover:file:bg-border"
       />
-      <button onClick={adicionar} disabled={ocupado} className={`${BTN} w-full bg-accent-700 hover:bg-accent-600 text-white`}>
+      <button onClick={adicionar} disabled={ocupado} className={`${BTN} w-full bg-accent-700 hover:bg-accent-600 text-sobre-acento`}>
         {ocupado ? 'Adicionando…' : 'Pôr no mapa'}
       </button>
       {erro && <p className="text-harm text-sm">{erro}</p>}

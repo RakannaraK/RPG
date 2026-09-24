@@ -18,6 +18,7 @@ export default {
         raised: cor('raised'),
         hover: cor('hover'),
         border: cor('border'),
+        'sobre-acento': 'var(--sobre-acento)',
         ink: {
           DEFAULT: cor('ink'),
           dim: 'var(--ink-dim)',

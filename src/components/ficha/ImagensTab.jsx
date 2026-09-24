@@ -122,7 +122,7 @@ export default function ImagensTab({ fichaId, donoId, isDono }) {
             <button
               onClick={handleUpload}
               disabled={uploading || !selectedFile}
-              className="w-full py-2.5 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed text-ink font-semibold rounded-lg text-sm transition-colors"
+              className="w-full py-2.5 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed text-sobre-acento font-semibold rounded-lg text-sm transition-colors"
             >
               {uploading ? 'Enviando...' : 'Fazer upload'}
             </button>

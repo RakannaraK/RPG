@@ -113,7 +113,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
                 className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${
                   hpSalvo
                     ? 'bg-green-700 text-green-100'
-                    : 'bg-purple-700 hover:bg-purple-600 text-white'
+                    : 'bg-purple-700 hover:bg-purple-600 text-sobre-acento'
                 }`}
               >
                 {hpSalvo ? '✓ Salvo' : 'Salvar'}
@@ -171,7 +171,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
               className={`text-xs px-3 py-1 rounded-lg transition-colors disabled:opacity-50 ${
                 notasSalvas
                   ? 'bg-green-700 text-green-100'
-                  : 'bg-purple-800 hover:bg-purple-700 text-white'
+                  : 'bg-purple-800 hover:bg-purple-700 text-sobre-acento'
               }`}
             >
               {notasSalvas ? '✓ Salvo' : 'Salvar'}

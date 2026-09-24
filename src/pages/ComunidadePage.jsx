@@ -44,7 +44,7 @@ function DemoRolador() {
           onKeyDown={e => { if (e.key === 'Enter') rolar() }}
           className={`${INP} w-32`} aria-label="Notação do dado"
         />
-        <button type="button" onClick={() => rolar()} className={`${BTN} bg-purple-700 hover:bg-purple-600 text-white font-semibold`}>🎲 Rolar</button>
+        <button type="button" onClick={() => rolar()} className={`${BTN} bg-purple-700 hover:bg-purple-600 text-sobre-acento font-semibold`}>🎲 Rolar</button>
         {['1d20', '2d6+3', '4d6kh3', '1d100'].map(atalho => (
           <button key={atalho} type="button" onClick={() => rolar(atalho)} className={`${BTN} bg-slate-800 hover:bg-slate-700 text-purple-200 text-xs`}>{atalho}</button>
         ))}
@@ -109,7 +109,7 @@ function Publicar({ onPublicar, onFechar }) {
         {TIPOS_PUBLICACAO.map(t => (
           <button
             key={t.id} type="button" onClick={() => setTipo(t.id)}
-            className={`${BTN} ${tipo === t.id ? 'bg-purple-700 text-white' : 'bg-slate-800 text-purple-300 hover:bg-slate-700'}`}
+            className={`${BTN} ${tipo === t.id ? 'bg-purple-700 text-sobre-acento' : 'bg-slate-800 text-purple-300 hover:bg-slate-700'}`}
           >{t.icone} {t.nome}</button>
         ))}
       </div>
@@ -138,7 +138,7 @@ function Publicar({ onPublicar, onFechar }) {
       {erro && <p className="text-red-400 text-xs">{erro}</p>}
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onFechar} className={`${BTN} text-purple-300 hover:text-white`}>Cancelar</button>
-        <button type="button" onClick={enviar} disabled={ocupado} className={`${BTN} bg-purple-700 hover:bg-purple-600 text-white font-semibold`}>
+        <button type="button" onClick={enviar} disabled={ocupado} className={`${BTN} bg-purple-700 hover:bg-purple-600 text-sobre-acento font-semibold`}>
           {ocupado ? 'Publicando…' : 'Publicar'}
         </button>
       </div>
@@ -272,7 +272,7 @@ export default function ComunidadePage() {
           <h1 className="text-white font-bold text-xl">Comunidade</h1>
           <p className="text-purple-400 text-sm">fichas, criaturas, sistemas e artes que a galera compartilha</p>
           {logado && (
-            <button onClick={() => setPublicando(v => !v)} className={`${BTN} ml-auto bg-purple-700 hover:bg-purple-600 text-white`}>
+            <button onClick={() => setPublicando(v => !v)} className={`${BTN} ml-auto bg-purple-700 hover:bg-purple-600 text-sobre-acento`}>
               {publicando ? 'Fechar' : '+ Publicar'}
             </button>
           )}
@@ -287,7 +287,7 @@ export default function ComunidadePage() {
               Este rolador é de verdade — o mesmo do site. Nada aqui é gravado. Para ter mesa, ficha, mapa e o resto, crie uma conta.
             </p>
             <DemoRolador />
-            <button onClick={() => navigate('/')} className={`${BTN} bg-purple-700 hover:bg-purple-600 text-white`}>Criar conta grátis</button>
+            <button onClick={() => navigate('/')} className={`${BTN} bg-purple-700 hover:bg-purple-600 text-sobre-acento`}>Criar conta grátis</button>
           </div>
         )}
 
@@ -304,9 +304,9 @@ export default function ComunidadePage() {
                 <option value="curtidas">mais curtidas</option>
               </select>
               <div className="flex flex-wrap gap-1.5">
-                <button onClick={() => setTipo(null)} className={`${BTN} ${!tipo ? 'bg-purple-700 text-white' : 'bg-slate-800 text-purple-300'}`}>tudo</button>
+                <button onClick={() => setTipo(null)} className={`${BTN} ${!tipo ? 'bg-purple-700 text-sobre-acento' : 'bg-slate-800 text-purple-300'}`}>tudo</button>
                 {TIPOS_PUBLICACAO.map(t => (
-                  <button key={t.id} onClick={() => setTipo(t.id)} className={`${BTN} ${tipo === t.id ? 'bg-purple-700 text-white' : 'bg-slate-800 text-purple-300 hover:bg-slate-700'}`}>
+                  <button key={t.id} onClick={() => setTipo(t.id)} className={`${BTN} ${tipo === t.id ? 'bg-purple-700 text-sobre-acento' : 'bg-slate-800 text-purple-300 hover:bg-slate-700'}`}>
                     {t.icone} {t.nome}
                   </button>
                 ))}
@@ -316,7 +316,7 @@ export default function ComunidadePage() {
             {etiquetas.length > 0 && (
               <div className="flex flex-wrap gap-1.5 items-center">
                 <span className="text-accent-300 text-xs">etiquetas:</span>
-                {etiqueta && <button onClick={() => setEtiqueta(null)} className="text-xs px-2.5 py-1 min-h-[24px] inline-flex items-center rounded-full bg-purple-700 text-white">{etiqueta} ✕</button>}
+                {etiqueta && <button onClick={() => setEtiqueta(null)} className="text-xs px-2.5 py-1 min-h-[24px] inline-flex items-center rounded-full bg-purple-700 text-sobre-acento">{etiqueta} ✕</button>}
                 {!etiqueta && etiquetas.map(({ etiqueta: e, usos }) => (
                   <button key={e} onClick={() => setEtiqueta(e)} className="text-xs px-2.5 py-1 min-h-[24px] inline-flex items-center rounded-full bg-slate-800 border border-purple-900 text-purple-300 hover:text-white">
                     {e} <span className="text-accent-300">{usos}</span>

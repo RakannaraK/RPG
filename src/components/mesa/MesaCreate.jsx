@@ -66,7 +66,7 @@ export default function MesaCreate({ onClose, onCreated }) {
             <button
               type="submit"
               disabled={loading || !nome.trim()}
-              className="flex-1 py-2 px-4 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
+              className="flex-1 py-2 px-4 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-sobre-acento font-semibold rounded-lg transition-colors"
             >
               {loading ? 'Criando...' : 'Criar mesa'}
             </button>

@@ -77,7 +77,7 @@ export default function PainelLinhas({
                               isDono && (
                                 <button
                                   onClick={() => onAprender(poder.id, 'linha').catch(e => setErro(e.message || 'Erro ao aprender.'))}
-                                  className="text-xs px-2 py-0.5 rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors shrink-0"
+                                  className="text-xs px-2 py-0.5 rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors shrink-0"
                                 >
                                   Aprender
                                 </button>

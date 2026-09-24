@@ -89,7 +89,7 @@ export default function PainelXpDireto({
           )}
           {(isDono || souGestor) && (
             <button onClick={() => setAba(aba === 'conceder' ? null : 'conceder')}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${aba === 'conceder' ? 'bg-accent-600 text-ink' : 'bg-hover hover:bg-accent-700 text-ink'}`}>
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${aba === 'conceder' ? 'bg-accent-600 text-sobre-acento' : 'bg-hover hover:bg-accent-700 text-sobre-acento'}`}>
               + Conceder
             </button>
           )}
@@ -149,7 +149,7 @@ export default function PainelXpDireto({
           <input type="number" min={1} value={qtd} onChange={e => setQtd(e.target.value)} placeholder="XP" className={`${INP} w-20`} />
           <input type="text" value={motivo} onChange={e => setMotivo(e.target.value)} placeholder="motivo (ex: Sessão 12)" className={`${INP} flex-1 min-w-[10rem]`} />
           <button onClick={confirmarConcessao} disabled={busy || !Number(qtd)}
-            className="px-3 py-1.5 text-sm bg-accent-700 hover:bg-accent-600 disabled:opacity-50 text-ink rounded-lg transition-colors">
+            className="px-3 py-1.5 text-sm bg-accent-700 hover:bg-accent-600 disabled:opacity-50 text-sobre-acento rounded-lg transition-colors">
             Conceder
           </button>
         </div>

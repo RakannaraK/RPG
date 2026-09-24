@@ -100,7 +100,7 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
               </div>
               <p className={`mt-0.5 rounded-xl px-3 py-2 text-sm whitespace-pre-wrap break-words ${
                 sussurro ? 'bg-violet-950/70 border border-violet-800 text-violet-100 italic'
-                  : minha ? 'bg-accent-600 text-white' : 'bg-raised text-ink'
+                  : minha ? 'bg-accent-600 text-sobre-acento' : 'bg-raised text-sobre-acento'
               }`}>{m.texto}</p>
             </li>
           )
@@ -132,7 +132,7 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
             />
             <button
               type="button" onClick={aoEnviar} disabled={enviando || !texto.trim()}
-              className="px-3 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-white text-sm font-semibold"
+              className="px-3 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-sobre-acento text-sm font-semibold"
             >{enviando ? '…' : 'Enviar'}</button>
           </div>
           {(erro || erroRolagem) && <p className="text-red-400 text-xs">{erro || erroRolagem}</p>}

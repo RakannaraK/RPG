@@ -382,7 +382,7 @@ export default function SessaoPage() {
           <p className="text-red-400 mb-4">{error || 'Sessão não encontrada.'}</p>
           <button
             onClick={() => navigate(`/mesa/${mesaId}`)}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-sobre-acento rounded-lg transition-colors"
           >
             Voltar à mesa
           </button>
@@ -548,7 +548,7 @@ export default function SessaoPage() {
           <button
             onClick={() => setAbaMobile('fichas')}
             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-              abaMobile === 'fichas' ? 'bg-purple-700 text-white' : 'bg-slate-800 text-purple-300'
+              abaMobile === 'fichas' ? 'bg-purple-700 text-sobre-acento' : 'bg-slate-800 text-purple-300'
             }`}
           >
             Personagens
@@ -558,7 +558,7 @@ export default function SessaoPage() {
               key={valor}
               onClick={() => { setAbaMobile('feed'); setLateral(valor) }}
               className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                abaMobile === 'feed' && lateral === valor ? 'bg-purple-700 text-white' : 'bg-slate-800 text-purple-300'
+                abaMobile === 'feed' && lateral === valor ? 'bg-purple-700 text-sobre-acento' : 'bg-slate-800 text-purple-300'
               }`}
             >
               {rotulo}{valor === 'chat' && chat.naoLidas > 0 && lateral !== 'chat' ? ` (${chat.naoLidas})` : ''}
@@ -586,7 +586,7 @@ export default function SessaoPage() {
               {[['feed', sessao.ativa ? 'Rolagens' : 'Rolagens da sessão'], ['chat', 'Chat']].map(([valor, rotulo]) => (
                 <button
                   key={valor} onClick={() => setLateral(valor)}
-                  className={`text-sm font-medium transition-colors ${lateral === valor ? 'text-white' : 'text-purple-400 hover:text-purple-200'}`}
+                  className={`text-sm font-medium transition-colors px-1 py-1 min-h-[24px] ${lateral === valor ? 'text-white' : 'text-purple-400 hover:text-purple-200'}`}
                 >
                   {rotulo}
                   {valor === 'chat' && chat.naoLidas > 0 && lateral !== 'chat' && (

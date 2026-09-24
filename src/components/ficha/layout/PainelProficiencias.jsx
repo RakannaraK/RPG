@@ -29,7 +29,7 @@ export default function PainelProficiencias({ ficha, isDono, onRefetch }) {
             className={`text-xs px-2.5 py-1 rounded-lg transition-colors ${
               salvo
                 ? 'bg-ok text-green-100'
-                : 'bg-hover hover:bg-accent-700 text-ink'
+                : 'bg-hover hover:bg-accent-700 text-sobre-acento'
             }`}
           >
             {salvo ? '✓' : 'Salvar'}

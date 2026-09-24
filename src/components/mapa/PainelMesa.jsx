@@ -67,7 +67,7 @@ export function PainelCombateMapa({ encontro, combatentes, isGestor, onProximo, 
       {isGestor && (
         <div className="flex gap-2">
           <button onClick={executar(onAnterior)} disabled={ocupado} className={`${BTN} bg-hover text-ink hover:bg-border`}>◀</button>
-          <button onClick={executar(onProximo)} disabled={ocupado || ordem.length === 0} className={`${BTN} flex-1 bg-accent-600 hover:bg-accent-500 text-white`}>
+          <button onClick={executar(onProximo)} disabled={ocupado || ordem.length === 0} className={`${BTN} flex-1 bg-accent-600 hover:bg-accent-500 text-sobre-acento`}>
             Próximo turno ▶
           </button>
         </div>

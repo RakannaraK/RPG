@@ -137,7 +137,7 @@ export default function RoladorGenerico({ mesaId, fichaId = null }) {
           {ATALHOS.map(a => (
             <button key={a.label} onClick={() => { setNotacao(a.notacao); setErroLocal('') }}
               className={`px-3 py-1.5 text-sm font-mono font-semibold rounded-lg border transition-colors ${
-                notacao === a.notacao ? 'bg-accent-600 border-accent-500 text-ink' : 'bg-void/50 border-border text-accent-300 hover:border-accent-500 hover:text-ink'
+                notacao === a.notacao ? 'bg-accent-600 border-accent-500 text-sobre-acento' : 'bg-void/50 border-border text-accent-300 hover:border-accent-500 hover:text-sobre-acento'
               }`}>{a.label}</button>
           ))}
         </div>
@@ -147,7 +147,7 @@ export default function RoladorGenerico({ mesaId, fichaId = null }) {
               onKeyDown={e => e.key === 'Enter' && handleRolarSoma()} placeholder="Ex: 2d6+3, 4d6kh3, 1d20"
               className={`${INP} flex-1 font-mono`} />
             <button onClick={handleRolarSoma} disabled={rolando || salvando}
-              className="px-6 py-3 bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-ink font-bold rounded-xl transition-colors shadow-lg shadow-void/40">
+              className="px-6 py-3 bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-sobre-acento font-bold rounded-xl transition-colors shadow-lg shadow-void/40">
               {rolando ? '🎲' : 'Rolar'}
             </button>
           </div>
@@ -198,7 +198,7 @@ export default function RoladorGenerico({ mesaId, fichaId = null }) {
           </label>
         )}
         <button onClick={handleRolarModo} disabled={rolando || salvando}
-          className="px-6 py-3 bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-ink font-bold rounded-xl transition-colors shadow-lg shadow-void/40">
+          className="px-6 py-3 bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-sobre-acento font-bold rounded-xl transition-colors shadow-lg shadow-void/40">
           {rolando ? '🎲' : 'Rolar'}
         </button>
       </div>

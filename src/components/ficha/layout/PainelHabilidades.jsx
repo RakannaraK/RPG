@@ -93,7 +93,7 @@ function EstadoCombate({ hf, isDono, onUsar, onAjustarCarga, onLiberarRecarga })
         <button
           onClick={() => onUsar?.(hf)}
           disabled={!est.pronta}
-          className="px-2 py-1 text-xs rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold"
+          className="px-2 py-1 text-xs rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-40 disabled:cursor-not-allowed text-sobre-acento font-semibold"
           title={est.pronta ? 'Usar (entra em recarga / gasta a carga)' : est.motivo}
         >⚡ Usar</button>
       )}
@@ -550,7 +550,7 @@ export default function PainelHabilidades({
             <button
               onClick={handleAdicionar}
               disabled={adicionando || !selecionada}
-              className="px-3 py-1.5 bg-accent-700 hover:bg-accent-600 disabled:opacity-50 text-ink text-sm rounded-lg transition-colors shrink-0"
+              className="px-3 py-1.5 bg-accent-700 hover:bg-accent-600 disabled:opacity-50 text-sobre-acento text-sm rounded-lg transition-colors shrink-0"
             >
               {adicionando ? '...' : '+ Adicionar'}
             </button>

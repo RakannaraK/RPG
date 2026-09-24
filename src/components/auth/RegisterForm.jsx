@@ -47,7 +47,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
         </div>
         <button
           onClick={onSwitchToLogin}
-          className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-purple-900/50 text-base"
+          className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 text-sobre-acento font-semibold rounded-xl transition-colors shadow-lg shadow-purple-900/50 text-base"
         >
           Ir para o login
         </button>
@@ -101,7 +101,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors shadow-lg shadow-purple-900/50 text-base"
+        className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-sobre-acento font-semibold rounded-xl transition-colors shadow-lg shadow-purple-900/50 text-base"
       >
         {loading ? 'Criando conta...' : 'Criar conta'}
       </button>

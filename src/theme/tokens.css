@@ -35,6 +35,12 @@
   --hover-c: 35 23 56;
   --border-c: 42 33 64;
   --ink-c: 233 228 245;
+
+  /* Cor do texto que senta SOBRE o acento cheio (botao primario).
+     Medido: branco sobre accent-600 da 6,7:1 no violeta e 4,8 no carmim,
+     mas 3,8 no esmeralda, 3,2 no ambar e 4,1 no gelo. Nesses tres, texto
+     escuro passa. Entao quem senta no acento tem cor de tema, nao fixa. */
+  --sobre-acento: #FFFFFF;
   --accent-300-c: 196 181 253; --accent-400-c: 167 139 250; --accent-500-c: 139 92 246;
   --accent-600-c: 124 58 237; --accent-700-c: 109 40 217; --accent-800-c: 91 33 182;
   --p900-c: 50 18 100; --p950-c: 23 8 46;
@@ -50,6 +56,7 @@
   --accent-300-c: 110 231 183; --accent-400-c: 52 211 153; --accent-500-c: 16 185 129;
   --accent-600-c: 5 150 105; --accent-700-c: 4 120 87; --accent-800-c: 6 95 70;
   --p900-c: 3 52 38; --p950-c: 2 24 18;
+  --sobre-acento: #0B0812;
 }
 :root[data-tema="carmim"] {
   --accent-300: #FDA4AF; --accent-400: #FB7185; --accent-500: #F43F5E;
@@ -57,6 +64,7 @@
   --accent-300-c: 253 164 175; --accent-400-c: 251 113 133; --accent-500-c: 244 63 94;
   --accent-600-c: 225 29 72; --accent-700-c: 190 18 60; --accent-800-c: 159 18 57;
   --p900-c: 87 10 31; --p950-c: 40 4 14;
+  --sobre-acento: #FFFFFF;
 }
 :root[data-tema="ambar"] {
   --accent-300: #FCD34D; --accent-400: #FBBF24; --accent-500: #F59E0B;
@@ -64,6 +72,7 @@
   --accent-300-c: 252 211 77; --accent-400-c: 251 191 36; --accent-500-c: 245 158 11;
   --accent-600-c: 217 119 6; --accent-700-c: 180 83 9; --accent-800-c: 146 64 14;
   --p900-c: 80 35 8; --p950-c: 36 16 4;
+  --sobre-acento: #0B0812;
 }
 :root[data-tema="gelo"] {
   --accent-300: #7DD3FC; --accent-400: #38BDF8; --accent-500: #0EA5E9;
@@ -71,6 +80,7 @@
   --accent-300-c: 125 211 252; --accent-400-c: 56 189 248; --accent-500-c: 14 165 233;
   --accent-600-c: 2 132 199; --accent-700-c: 3 105 161; --accent-800-c: 7 89 133;
   --p900-c: 4 49 73; --p950-c: 2 22 33;
+  --sobre-acento: #0B0812;
 }
 
 /* ── Fase 35 — fontes ───────────────────────────────────────────────────── */

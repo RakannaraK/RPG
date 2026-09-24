@@ -118,7 +118,7 @@ export default function BarraXp({
               <button
                 onClick={() => aplicarXp(delta)}
                 disabled={ocupado || !delta}
-                className="px-2.5 py-1 text-xs font-medium rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors disabled:opacity-40"
+                className="px-2.5 py-1 text-xs font-medium rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors disabled:opacity-40"
                 title="Adicionar XP (use negativo para remover)"
               >
                 + XP

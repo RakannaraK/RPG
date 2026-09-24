@@ -151,7 +151,7 @@ export default function FormulaInput({
           onClick={() => setAjuda(a => !a)}
           title="Referência da gramática"
           className={`w-7 h-7 shrink-0 rounded-lg border text-sm transition-colors ${
-            ajuda ? 'bg-purple-700 border-purple-500 text-white' : 'border-purple-700 text-purple-400 hover:text-white'
+            ajuda ? 'bg-purple-700 border-purple-500 text-sobre-acento' : 'border-purple-700 text-purple-400 hover:text-sobre-acento'
           }`}
         >
           ?

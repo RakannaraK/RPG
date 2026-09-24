@@ -118,7 +118,7 @@ export default function DescansoBar({
               <button
                 onClick={confirmar}
                 disabled={aplicando}
-                className="flex-1 py-2.5 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 text-ink font-semibold rounded-xl text-sm transition-colors"
+                className="flex-1 py-2.5 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 text-sobre-acento font-semibold rounded-xl text-sm transition-colors"
               >
                 {aplicando ? 'Aplicando...' : 'Confirmar descanso'}
               </button>

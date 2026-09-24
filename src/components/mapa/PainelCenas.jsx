@@ -82,12 +82,12 @@ function NovaCena({ onCriar }) {
         type="file"
         accept="image/*"
         onChange={e => setArquivo(e.target.files?.[0] || null)}
-        className="block w-full text-sm text-ink-dim file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-accent-700 file:text-ink hover:file:bg-accent-600"
+        className="block w-full text-sm text-ink-dim file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-accent-700 file:text-sobre-acento hover:file:bg-accent-600"
       />
       {arquivo && (
         <>
           <input className={INP} placeholder="Nome da cena (opcional)" value={nome} onChange={e => setNome(e.target.value)} />
-          <button onClick={enviar} disabled={enviando} className={`${BTN} w-full bg-accent-600 hover:bg-accent-500 text-white`}>
+          <button onClick={enviar} disabled={enviando} className={`${BTN} w-full bg-accent-600 hover:bg-accent-500 text-sobre-acento`}>
             {enviando ? 'Enviando…' : 'Enviar mapa'}
           </button>
         </>
@@ -121,7 +121,7 @@ function ItemCena({ mapa, aberta, onVer, onAtivar, onRemover }) {
       <div className="flex gap-1.5 mt-2">
         <button
           onClick={tentar(onAtivar)}
-          className={`${BTN} flex-1 ${mapa.ativo ? 'bg-hover text-ink hover:bg-border' : 'bg-accent-700 text-white hover:bg-accent-600'}`}
+          className={`${BTN} flex-1 ${mapa.ativo ? 'bg-hover text-sobre-acento hover:bg-border' : 'bg-accent-700 text-sobre-acento hover:bg-accent-600'}`}
         >
           {mapa.ativo ? 'Esconder dos jogadores' : 'Mostrar aos jogadores'}
         </button>
@@ -249,7 +249,7 @@ function EditorCena({ cena, onAtualizar, onRascunhoGrade }) {
 
       {alterada && (
         <div className="flex gap-2">
-          <button onClick={salvar} disabled={salvando} className={`${BTN} flex-1 bg-accent-600 hover:bg-accent-500 text-white`}>
+          <button onClick={salvar} disabled={salvando} className={`${BTN} flex-1 bg-accent-600 hover:bg-accent-500 text-sobre-acento`}>
             {salvando ? 'Salvando…' : 'Salvar grade'}
           </button>
           <button onClick={descartar} className={`${BTN} bg-hover text-ink hover:bg-border`}>Descartar</button>

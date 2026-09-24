@@ -93,7 +93,7 @@ function PoolCard({ pool, atual, maximo, erro, isDono, onDefinirAtual, onRolagem
           <button
             onClick={handleGastar}
             disabled={ocupado || !qtd}
-            className="px-2.5 py-1 text-xs font-medium rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors disabled:opacity-40"
+            className="px-2.5 py-1 text-xs font-medium rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors disabled:opacity-40"
           >
             {ehDados ? 'Gastar e rolar' : 'Gastar'}
           </button>

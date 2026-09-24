@@ -268,7 +268,7 @@ export default function LayoutEditor({
                 onClick={() => onConfigChange({ ...config, dado_padrao: lados })}
                 className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition-colors ${
                   config.dado_padrao === lados
-                    ? 'bg-purple-600 text-white'
+                    ? 'bg-purple-600 text-sobre-acento'
                     : 'bg-purple-900/60 text-purple-300 hover:bg-purple-800 hover:text-white'
                 }`}
               >

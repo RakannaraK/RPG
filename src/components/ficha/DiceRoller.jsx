@@ -70,7 +70,7 @@ export default function DiceRoller({ regra, onConfirmar }) {
                 d.tipo === 'animando'
                   ? 'bg-hover border-accent-500 text-ink'
                   : d.tipo === 'mantido'
-                  ? 'bg-accent-700 border-accent-400 text-ink'
+                  ? 'bg-accent-700 border-accent-400 text-sobre-acento'
                   : 'bg-raised border-border text-ink-dim line-through opacity-40'
               }`}
             >

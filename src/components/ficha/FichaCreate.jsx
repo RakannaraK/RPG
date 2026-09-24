@@ -373,7 +373,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
               <button
                 type="button"
                 onClick={irParaStep1}
-                className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-ink font-semibold rounded-lg text-sm transition-colors"
+                className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-sobre-acento font-semibold rounded-lg text-sm transition-colors"
               >
                 Próximo →
               </button>
@@ -391,7 +391,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                 type="button"
                 onClick={handleSalvar}
                 disabled={criando}
-                className="px-6 py-2 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed text-ink font-semibold rounded-lg text-sm transition-colors"
+                className="px-6 py-2 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed text-sobre-acento font-semibold rounded-lg text-sm transition-colors"
               >
                 {criando ? 'Salvando...' : 'Salvar ficha'}
               </button>

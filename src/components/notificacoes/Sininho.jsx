@@ -72,7 +72,7 @@ export default function Sininho() {
                         <div className="min-w-0 flex-1">
                           <p className={`text-sm ${n.lida ? 'text-purple-300' : 'text-white font-medium'}`}>{n.titulo}</p>
                           {n.corpo && <p className="text-accent-300 text-xs mt-0.5 truncate">{n.corpo}</p>}
-                          <p className="text-purple-700 text-xs mt-0.5">{tempoRel(n.created_at)}</p>
+                          <p className="text-ink-dim text-xs mt-0.5">{tempoRel(n.created_at)}</p>
                         </div>
                       </div>
                     </button>

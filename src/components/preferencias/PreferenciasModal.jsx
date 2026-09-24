@@ -91,7 +91,7 @@ export default function PreferenciasModal({ onFechar }) {
                 type="button"
                 onClick={salvarApelido}
                 disabled={salvandoApelido}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${apelidoSalvo ? 'bg-green-700 text-green-100' : 'bg-purple-700 hover:bg-purple-600 text-white'}`}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${apelidoSalvo ? 'bg-green-700 text-green-100' : 'bg-purple-700 hover:bg-purple-600 text-sobre-acento'}`}
               >
                 {apelidoSalvo ? '✓ Salvo' : salvandoApelido ? '...' : 'Salvar'}
               </button>

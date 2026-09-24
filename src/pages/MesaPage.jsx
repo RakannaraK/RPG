@@ -34,9 +34,9 @@ const TABS_GESTOR = ['Escudo'] // F34.3 — só mestre/co-mestre
 
 // Fase 16 — rótulo/cor por papel (mestre/co-mestre/jogador/espectador)
 const ROLE_INFO = {
-  mestre:      { label: 'Mestre',     cls: 'bg-accent-600 text-ink' },
+  mestre:      { label: 'Mestre',     cls: 'bg-accent-600 text-sobre-acento' },
   'co-mestre': { label: 'Co-mestre',  cls: 'bg-orange-500 text-orange-950' },
-  jogador:     { label: 'Jogador',    cls: 'bg-purple-700 text-white' },
+  jogador:     { label: 'Jogador',    cls: 'bg-purple-700 text-sobre-acento' },
   espectador:  { label: 'Espectador', cls: 'bg-slate-600 text-slate-100' },
 }
 const roleInfo = role => ROLE_INFO[role] || ROLE_INFO.jogador
@@ -309,7 +309,7 @@ export default function MesaPage() {
           <p className="text-red-400 mb-4">{error}</p>
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg"
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-sobre-acento rounded-lg"
           >
             Voltar ao dashboard
           </button>
@@ -502,7 +502,7 @@ export default function MesaPage() {
                   {podeEscrever && (
                     <button
                       onClick={() => setShowFichaCreate(true)}
-                      className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors"
+                      className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-sobre-acento rounded-lg text-sm transition-colors"
                     >
                       + Criar ficha
                     </button>
@@ -687,7 +687,7 @@ export default function MesaPage() {
                     <button
                       onClick={copiarCodigo}
                       className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                        copiado ? 'bg-green-700 text-green-100' : 'bg-purple-700 hover:bg-purple-600 text-white'
+                        copiado ? 'bg-green-700 text-green-100' : 'bg-purple-700 hover:bg-purple-600 text-sobre-acento'
                       }`}
                     >
                       {copiado ? '✓ Copiado!' : 'Copiar'}

@@ -107,7 +107,7 @@ export default function PainelFormas({ ficha, mesaId, meuId, isDono, onAbrirFich
                   <>
                     <button
                       type="button" onClick={() => transformar(estaAtiva ? null : f.id)} disabled={!!ocupado}
-                      className={`${BTN} ${estaAtiva ? 'bg-hover text-ink hover:bg-border' : 'bg-accent-600 hover:bg-accent-500 text-white font-semibold'}`}
+                      className={`${BTN} ${estaAtiva ? 'bg-hover text-sobre-acento hover:bg-border' : 'bg-accent-600 hover:bg-accent-500 text-sobre-acento font-semibold'}`}
                     >{estaAtiva ? '↩ Voltar ao normal' : '🐺 Transformar'}</button>
                     <button type="button" onClick={() => apagar(f)} disabled={!!ocupado} className="text-ink-dim hover:text-red-400 text-sm px-1" title="Apagar forma">✕</button>
                   </>

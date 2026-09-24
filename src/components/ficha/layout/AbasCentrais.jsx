@@ -32,7 +32,7 @@ function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, on
             className={`text-xs px-3 py-1 rounded-lg transition-colors ${
               salvo
                 ? 'bg-ok text-green-100'
-                : 'bg-hover hover:bg-accent-700 text-ink'
+                : 'bg-hover hover:bg-accent-700 text-sobre-acento'
             }`}
           >
             {salvo ? '✓ Salvo' : 'Salvar'}

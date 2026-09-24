@@ -899,7 +899,7 @@ function HabilidadesVinculadas({
       )}
 
       {vinculadas.length === 0 && !addingNew && (
-        <p className="text-purple-700 text-xs italic">Nenhuma habilidade vinculada ainda.</p>
+        <p className="text-ink-dim text-xs italic">Nenhuma habilidade vinculada ainda.</p>
       )}
       {vinculadas.map(h => (
         <HabilidadeVinculadaCard
@@ -1134,7 +1134,7 @@ function SecaoRacaClasse({
         <p className="text-purple-200 text-sm font-semibold">{titulo}</p>
         {!addingNew && (
           <button onClick={() => setAddingNew(true)}
-            className="text-sm px-3 py-1.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg transition-colors">
+            className="text-sm px-3 py-1.5 bg-purple-800 hover:bg-purple-700 text-sobre-acento rounded-lg transition-colors">
             + Adicionar
           </button>
         )}
@@ -1257,7 +1257,7 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
         </div>
         {!addingNew && (
           <button onClick={() => setAddingNew(true)}
-            className="text-sm px-3 py-1.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg transition-colors shrink-0">
+            className="text-sm px-3 py-1.5 bg-purple-800 hover:bg-purple-700 text-sobre-acento rounded-lg transition-colors shrink-0">
             + Adicionar
           </button>
         )}

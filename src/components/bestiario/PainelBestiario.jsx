@@ -91,7 +91,7 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
             />
             <button
               type="button" onClick={() => setNovo({ nome: '', especie: '', ameaca: '', vida: '' })}
-              className="text-sm px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-lg transition-colors"
+              className="text-sm px-4 py-2 bg-purple-700 hover:bg-purple-600 text-sobre-acento rounded-lg transition-colors"
             >+ Nova criatura</button>
           </>
         )}

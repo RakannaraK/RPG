@@ -75,7 +75,7 @@ export default function JogoMinigame({ tipo, dificuldade, config, semente, titul
           <>
             <p className="text-ink text-sm leading-relaxed text-center">{INSTRUCOES[tipo]}</p>
             <div className="flex gap-2">
-              <button onClick={() => setFase('contagem')} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-white`} autoFocus>Começar</button>
+              <button onClick={() => setFase('contagem')} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-sobre-acento`} autoFocus>Começar</button>
               <button onClick={onFechar} className={`${BTN} bg-hover text-ink hover:bg-border`}>Agora não</button>
             </div>
           </>
@@ -100,7 +100,7 @@ export default function JogoMinigame({ tipo, dificuldade, config, semente, titul
             )}
             <div className="flex gap-2">
               {onJogarDeNovo && (
-                <button onClick={onJogarDeNovo} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-white`}>Jogar de novo</button>
+                <button onClick={onJogarDeNovo} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-sobre-acento`}>Jogar de novo</button>
               )}
               <button onClick={onFechar} className={`${BTN} bg-hover text-ink hover:bg-border`} autoFocus={!onJogarDeNovo}>Fechar</button>
             </div>

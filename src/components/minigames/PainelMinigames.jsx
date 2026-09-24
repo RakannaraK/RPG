@@ -32,7 +32,7 @@ export default function PainelMinigames({ mesaId, meuId, sessaoId = null, podeJo
       <SeletorJogo tipo={tipo} onTipo={setTipo} dificuldade={dificuldade} onDificuldade={setDificuldade} config={config} onParametro={mudarParametro} />
 
       {podeJogar ? (
-        <button onClick={() => setPartida({ semente: novaSemente() })} className="w-full py-2.5 rounded-xl bg-accent-600 hover:bg-accent-500 text-white font-semibold">
+        <button onClick={() => setPartida({ semente: novaSemente() })} className="w-full py-2.5 rounded-xl bg-accent-600 hover:bg-accent-500 text-sobre-acento font-semibold">
           🎮 Jogar {JOGOS[tipo].nome}
         </button>
       ) : (

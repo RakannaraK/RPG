@@ -64,7 +64,7 @@ function EtapaGrupos({ etapa, onChange, atributos, pericias }) {
                 </label>
               )
             })}
-            {catalogo.length === 0 && <span className="text-purple-700 text-xs">Cadastre {etapa.alvo === 'pericia' ? 'perícias' : 'atributos'} primeiro.</span>}
+            {catalogo.length === 0 && <span className="text-ink-dim text-xs">Cadastre {etapa.alvo === 'pericia' ? 'perícias' : 'atributos'} primeiro.</span>}
           </div>
         </div>
       ))}

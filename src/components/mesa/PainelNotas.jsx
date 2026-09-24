@@ -110,7 +110,7 @@ export default function PainelNotas({ mesaId, meuId, estreito = false }) {
       <div className="space-y-2">
         <button
           type="button" onClick={nova}
-          className="w-full px-3 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-white text-sm font-semibold"
+          className="w-full px-3 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-sobre-acento text-sm font-semibold"
         >+ Nova nota</button>
         {erro && <p className="text-red-400 text-xs">{erro}</p>}
         {notas.length === 0 && <p className="text-ink-dim text-xs italic">Nenhuma nota ainda.</p>}

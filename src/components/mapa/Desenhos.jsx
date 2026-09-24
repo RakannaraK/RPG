@@ -143,7 +143,7 @@ export function CamadaPings({ ctx, pings }) {
 }
 
 const BTN = 'px-2.5 py-1.5 rounded-lg text-sm transition-colors whitespace-nowrap'
-const ativoCls = on => (on ? 'bg-accent-600 text-white' : 'bg-hover text-ink hover:bg-border')
+const ativoCls = on => (on ? 'bg-accent-600 text-sobre-acento' : 'bg-hover text-sobre-acento hover:bg-border')
 
 /** Barra flutuante do desenho. */
 export function BarraDesenho({ config, onConfig, isGestor, jogadoresDesenham, onAlternarJogadores, onLimpar, onFechar }) {

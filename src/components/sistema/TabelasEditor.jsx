@@ -42,7 +42,7 @@ export default function TabelasEditor({ tabelas = [], onChange }) {
         <button
           type="button"
           onClick={() => onChange([...tabelas, novaTabela()])}
-          className="text-xs px-3 py-1.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg transition-colors"
+          className="text-xs px-3 py-1.5 bg-purple-800 hover:bg-purple-700 text-sobre-acento rounded-lg transition-colors"
         >
           + Nova tabela
         </button>

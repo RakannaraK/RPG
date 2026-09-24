@@ -76,7 +76,7 @@ function Dialogo({ criatura, camposCombate, comMapa, onConfirmar, onFechar }) {
       {erro && <p className="text-red-400 text-xs">{erro}</p>}
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onFechar} className="px-3 py-1.5 rounded-lg bg-hover text-ink text-sm hover:bg-border">Cancelar</button>
-        <button type="button" onClick={confirmar} disabled={ocupado} className="px-3 py-1.5 rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-white text-sm font-semibold">
+        <button type="button" onClick={confirmar} disabled={ocupado} className="px-3 py-1.5 rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-sobre-acento text-sm font-semibold">
           {ocupado ? 'Invocando…' : <><Ilustra nome="espadas" tamanho={16} /> Invocar</>}
         </button>
       </div>

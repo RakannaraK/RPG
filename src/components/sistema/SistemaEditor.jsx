@@ -282,7 +282,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
         {!sistemaDB && (
           <div className="flex items-center gap-3 flex-wrap bg-slate-800 border border-purple-800 rounded-xl px-4 py-3">
             <span className="text-purple-300 text-sm">Comece do zero abaixo, ou importe um sistema pronto:</span>
-            <label className={`text-sm px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${importando ? 'bg-purple-900 text-purple-400 cursor-wait' : 'bg-purple-700 hover:bg-purple-600 text-white'}`}>
+            <label className={`text-sm px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${importando ? 'bg-purple-900 text-purple-400 cursor-wait' : 'bg-purple-700 hover:bg-purple-600 text-sobre-acento'}`}>
               {importando ? 'Importando...' : '⬆ Importar sistema (.json)'}
               <input
                 type="file"

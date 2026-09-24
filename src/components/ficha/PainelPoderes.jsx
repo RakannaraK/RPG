@@ -91,7 +91,7 @@ function CartaPoder({
               onClick={iniciar}
               disabled={ocupado || !!bloqueio}
               title={bloqueio || 'Usar o poder'}
-              className="px-2.5 py-1 text-xs font-medium rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-2.5 py-1 text-xs font-medium rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Usar
             </button>

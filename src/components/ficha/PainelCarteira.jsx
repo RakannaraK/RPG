@@ -103,7 +103,7 @@ export default function PainelCarteira({ moedas, carteira = {}, isDono, onSalvar
             {denom.map(d => <option key={d.id} value={d.id}>{d.sigla || d.nome}</option>)}
           </select>
           <button onClick={converterMoeda} disabled={ocupado}
-            className="px-2.5 py-1 text-xs rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors disabled:opacity-40">
+            className="px-2.5 py-1 text-xs rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors disabled:opacity-40">
             Converter
           </button>
         </div>

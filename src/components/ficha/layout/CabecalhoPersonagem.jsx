@@ -262,7 +262,7 @@ export default function CabecalhoPersonagem({
                   className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                     hpSalvo
                       ? 'bg-ok/20 text-ok'
-                      : 'bg-accent-700 hover:bg-accent-600 text-ink'
+                      : 'bg-accent-700 hover:bg-accent-600 text-sobre-acento'
                   }`}
                 >
                   {hpSalvo ? '✓ Salvo' : 'Salvar HP'}

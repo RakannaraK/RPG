@@ -136,7 +136,7 @@ export default function ProgressaoEditor({ progressao, onChange, modoProgressao 
                 title={m.dica}
                 className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
                   modoGeral === m.id
-                    ? 'bg-purple-700 border-purple-500 text-white'
+                    ? 'bg-purple-700 border-purple-500 text-sobre-acento'
                     : 'bg-purple-950 border-purple-800 text-purple-300 hover:text-white hover:border-purple-600'
                 }`}
               >
@@ -178,7 +178,7 @@ export default function ProgressaoEditor({ progressao, onChange, modoProgressao 
             title={m.dica}
             className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
               modo === m.id
-                ? 'bg-purple-700 border-purple-500 text-white'
+                ? 'bg-purple-700 border-purple-500 text-sobre-acento'
                 : 'bg-purple-950 border-purple-800 text-purple-300 hover:text-white hover:border-purple-600'
             }`}
           >

@@ -31,7 +31,7 @@ function CriarCalendario({ onCriar }) {
         <button
           type="button"
           onClick={() => onCriar({ config: PRESETS_CALENDARIO[modelo], ano: Math.trunc(Number(ano)) || 1, mes: 1, dia: 1 }).catch(e => setErro(e.message))}
-          className={`${BTN} bg-accent-600 hover:bg-accent-500 text-white font-semibold`}
+          className={`${BTN} bg-accent-600 hover:bg-accent-500 text-sobre-acento font-semibold`}
         >Criar calendário</button>
       </div>
       {erro && <p className="text-red-400 text-xs">{erro}</p>}
@@ -116,7 +116,7 @@ function EditorCalendario({ cal, hoje, onSalvar }) {
       </div>
 
       <div className="flex items-center gap-3">
-        <button type="button" onClick={salvar} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-white font-semibold`}>Salvar calendário</button>
+        <button type="button" onClick={salvar} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-sobre-acento font-semibold`}>Salvar calendário</button>
         <span className="text-ink-dim text-xs" aria-live="polite">{estado}</span>
       </div>
     </div>
@@ -171,7 +171,7 @@ function DiaEscolhido({ dia, cal, eventos, isGestor, ehHoje, onTornarHoje, onCri
           <div className="flex flex-wrap items-center gap-3 text-xs text-ink-dim">
             <label className="flex items-center gap-1.5"><input type="checkbox" checked={anual} onChange={e => setAnual(e.target.checked)} /> Repete todo ano</label>
             <label className="flex items-center gap-1.5"><input type="checkbox" checked={secreto} onChange={e => setSecreto(e.target.checked)} /> Secreto (só mestres)</label>
-            <button type="button" onClick={adicionar} className={`${BTN} ml-auto bg-accent-600 hover:bg-accent-500 text-white text-xs font-semibold`}>Adicionar</button>
+            <button type="button" onClick={adicionar} className={`${BTN} ml-auto bg-accent-600 hover:bg-accent-500 text-sobre-acento text-xs font-semibold`}>Adicionar</button>
           </div>
           {erro && <p className="text-red-400 text-xs">{erro}</p>}
         </div>
@@ -245,7 +245,7 @@ export default function PainelCalendario({ mesaId, isGestor, sessaoId = null, re
             <button key={n} type="button" disabled={ocupado} onClick={() => passar(n)} className={`${BTN} bg-hover text-ink hover:bg-border`}>{n > 0 ? `+${n}` : n} {Math.abs(n) === 1 ? 'dia' : 'dias'}</button>
           ))}
           <input type="number" value={nDias} onChange={e => setNDias(e.target.value)} className={`${INP} w-20`} aria-label="Quantos dias" />
-          <button type="button" disabled={ocupado} onClick={() => passar(Math.trunc(Number(nDias)) || 0)} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-white`}>Passar</button>
+          <button type="button" disabled={ocupado} onClick={() => passar(Math.trunc(Number(nDias)) || 0)} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-sobre-acento`}>Passar</button>
         </div>
       )}
       {erro && <p className="text-red-400 text-xs">{erro}</p>}
@@ -277,7 +277,7 @@ export default function PainelCalendario({ mesaId, isGestor, sessaoId = null, re
                         <button
                           type="button" onClick={() => setEscolhido(mesmoDia(escolhido, d) ? null : d)}
                           className={`relative w-full aspect-square max-h-10 rounded-lg transition-colors ${
-                            mesmoDia(d, hoje) ? 'bg-accent-600 text-white font-bold'
+                            mesmoDia(d, hoje) ? 'bg-accent-600 text-sobre-acento font-bold'
                               : mesmoDia(d, escolhido) ? 'bg-hover text-ink ring-1 ring-accent-500' : 'text-ink hover:bg-hover'
                           }`}
                           aria-label={`${formatarData(d, cal)}${temEvento ? ' — tem evento' : ''}`}

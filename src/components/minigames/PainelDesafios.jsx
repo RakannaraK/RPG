@@ -147,7 +147,7 @@ function NovoDesafio({ membros, meuId, onCriar }) {
           <legend className="text-ink-dim text-xs mb-1">Participantes ({participantes.length})</legend>
           <div className="flex flex-wrap gap-1.5">
             {podemJogar.map(m => (
-              <label key={m.usuario_id} className={`${BTN} cursor-pointer ${participantes.includes(m.usuario_id) ? 'bg-accent-700 text-white' : 'bg-hover text-ink'}`}>
+              <label key={m.usuario_id} className={`${BTN} cursor-pointer ${participantes.includes(m.usuario_id) ? 'bg-accent-700 text-sobre-acento' : 'bg-hover text-sobre-acento'}`}>
                 <input type="checkbox" className="sr-only" checked={participantes.includes(m.usuario_id)} onChange={() => alternar(m.usuario_id)} />
                 {m.nome}{m.usuario_id === meuId ? ' (você)' : ''}
               </label>
@@ -158,7 +158,7 @@ function NovoDesafio({ membros, meuId, onCriar }) {
           <span className="text-ink-dim text-xs">Meta de pontos (opcional)</span>
           <input type="number" min="0" className={INP} value={meta} onChange={e => setMeta(e.target.value)} placeholder="sem meta" />
         </label>
-        <button onClick={lancar} disabled={ocupado || participantes.length === 0} className={`${BTN} w-full bg-accent-600 hover:bg-accent-500 text-white font-semibold`}>
+        <button onClick={lancar} disabled={ocupado || participantes.length === 0} className={`${BTN} w-full bg-accent-600 hover:bg-accent-500 text-sobre-acento font-semibold`}>
           {ocupado ? 'Lançando…' : `Lançar para ${participantes.length} ${participantes.length === 1 ? 'pessoa' : 'pessoas'}`}
         </button>
         {erro && <p className="text-harm text-sm">{erro}</p>}
@@ -195,7 +195,7 @@ function CartaoDesafio({ desafio, situacao, nomeDe, isGestor, possoJogar, onJoga
       </ol>
       <div className="flex flex-wrap gap-1.5">
         {possoJogar && (
-          <button onClick={onJogar} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-white font-semibold`}>🎮 Jogar agora</button>
+          <button onClick={onJogar} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-sobre-acento font-semibold`}>🎮 Jogar agora</button>
         )}
         {isGestor && (
           <button onClick={() => onEncerrar(situacao)} className={`${BTN} bg-hover text-ink hover:bg-border`}>

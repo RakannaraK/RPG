@@ -83,7 +83,7 @@ export default function PainelProjetos({ fichaId, isDono }) {
                   >−</button>
                   <button
                     type="button" onClick={() => progredir(p, +1)}
-                    className="w-6 h-6 rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors text-xs"
+                    className="w-6 h-6 rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors text-xs"
                   >+</button>
                   <button
                     type="button" onClick={() => remover(p.id)}
@@ -111,7 +111,7 @@ export default function PainelProjetos({ fichaId, isDono }) {
           />
           <button
             type="button" onClick={handleCriar} disabled={criando}
-            className="px-2.5 py-1.5 text-xs bg-accent-700 hover:bg-accent-600 disabled:opacity-50 text-ink rounded-lg transition-colors"
+            className="px-2.5 py-1.5 text-xs bg-accent-700 hover:bg-accent-600 disabled:opacity-50 text-sobre-acento rounded-lg transition-colors"
           >
             {criando ? '...' : '+ Criar'}
           </button>

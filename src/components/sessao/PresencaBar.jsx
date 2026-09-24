@@ -11,8 +11,9 @@ function iniciais(nome) {
 // Cor determinística a partir do id, para o avatar
 function corDe(id) {
   const cores = [
-    'bg-purple-600', 'bg-blue-600', 'bg-emerald-600', 'bg-amber-600',
-    'bg-rose-600', 'bg-cyan-600', 'bg-indigo-600', 'bg-teal-600',
+    // tons -700/-800: com -600 a inicial branca dava 3,74:1
+    'bg-purple-700', 'bg-blue-700', 'bg-emerald-700', 'bg-amber-800',
+    'bg-rose-700', 'bg-cyan-800', 'bg-indigo-700', 'bg-teal-700',
   ]
   let h = 0
   for (let i = 0; i < (id || '').length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0

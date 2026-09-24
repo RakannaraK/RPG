@@ -72,7 +72,7 @@ function Distribuir({ atributos, disponiveis, config, onConfirmar, onCancelar })
       <p className="text-ink-dim text-xs">O gasto é definitivo — só o mestre corrige depois (ajuste).</p>
       <div className="flex gap-2">
         <button onClick={confirmar} disabled={salvando || !check.valido}
-          className="px-3 py-1.5 bg-accent-700 hover:bg-accent-600 disabled:opacity-50 text-ink text-xs rounded-lg transition-colors">
+          className="px-3 py-1.5 bg-accent-700 hover:bg-accent-600 disabled:opacity-50 text-sobre-acento text-xs rounded-lg transition-colors">
           {salvando ? '...' : 'Confirmar'}
         </button>
         <button onClick={onCancelar} className="px-3 py-1.5 bg-hover hover:bg-border text-ink text-xs rounded-lg transition-colors">
@@ -131,7 +131,7 @@ export default function PainelPontos({
       {isDono && jaRecebeuInicial && !distribuindo && (
         <div className="flex gap-2">
           <button onClick={() => setDistribuindo(true)} disabled={disponiveis <= 0}
-            className="px-3 py-1.5 bg-accent-700 hover:bg-accent-600 disabled:opacity-40 text-ink text-xs rounded-lg transition-colors">
+            className="px-3 py-1.5 bg-accent-700 hover:bg-accent-600 disabled:opacity-40 text-sobre-acento text-xs rounded-lg transition-colors">
             Distribuir {disponiveis > 0 ? `(${disponiveis})` : ''}
           </button>
         </div>
@@ -155,7 +155,7 @@ export default function PainelPontos({
               placeholder="±" className="w-16 px-2 py-1 rounded-lg bg-void border border-border text-ink text-xs text-center focus:outline-none focus:ring-1 focus:ring-accent-500" />
             <input type="text" value={ajuste.motivo} onChange={e => setAjuste({ ...ajuste, motivo: e.target.value })}
               placeholder="motivo" className="flex-1 min-w-[8rem] px-2 py-1 rounded-lg bg-void border border-border text-ink text-xs placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500" />
-            <button onClick={aplicarAjuste} className="px-2.5 py-1 text-xs rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors">Ajustar</button>
+            <button onClick={aplicarAjuste} className="px-2.5 py-1 text-xs rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors">Ajustar</button>
             <button onClick={() => setShowAjuste(false)} className="text-ink-dim hover:text-ink text-xs">✕</button>
           </div>
         ) : (

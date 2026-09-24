@@ -55,7 +55,7 @@ function SimulacaoDados({ resultado }) {
               key={i}
               className={`w-9 h-9 flex items-center justify-center rounded-lg font-bold text-sm border-2 ${
                 isMantido
-                  ? 'bg-purple-700 border-purple-400 text-white'
+                  ? 'bg-purple-700 border-purple-400 text-sobre-acento'
                   : 'bg-slate-800 border-slate-600 text-slate-400 line-through opacity-50'
               }`}
             >
@@ -129,7 +129,7 @@ export default function RegraRolagem({ value, onChange }) {
               onClick={() => mudarTipo(tipo)}
               className={`px-3 py-1.5 text-xs rounded-lg border transition-colors capitalize ${
                 regra.tipo === tipo
-                  ? 'bg-purple-700 border-purple-500 text-white font-semibold'
+                  ? 'bg-purple-700 border-purple-500 text-sobre-acento font-semibold'
                   : 'bg-slate-800 border-purple-800 text-purple-400 hover:border-purple-600'
               }`}
             >

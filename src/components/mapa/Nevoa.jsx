@@ -81,7 +81,7 @@ export function EditorNevoa({ ctx, largura, altura, config, onRascunho, onConclu
 }
 
 const BTN = 'px-2.5 py-1.5 rounded-lg text-sm transition-colors whitespace-nowrap'
-const ativoCls = on => (on ? 'bg-accent-600 text-white' : 'bg-hover text-ink hover:bg-border')
+const ativoCls = on => (on ? 'bg-accent-600 text-sobre-acento' : 'bg-hover text-sobre-acento hover:bg-border')
 
 /** Barra flutuante da ferramenta de névoa (mestre). */
 export function BarraNevoa({ nevoa, config, onConfig, onAlternar, onTudo, onFechar, tamanhoGrade }) {

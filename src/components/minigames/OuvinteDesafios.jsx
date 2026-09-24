@@ -39,7 +39,7 @@ function AvisosDaMesa({ mesaId, meuId }) {
               {d.motivo && <p className="text-ink-dim text-sm">{d.motivo}</p>}
               {d.meta != null && <p className="text-ink-dim text-xs">Meta: {d.meta} pontos · uma tentativa</p>}
               <div className="flex gap-2 mt-2">
-                <button onClick={() => setJogando(d)} className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-accent-600 hover:bg-accent-500 text-white">
+                <button onClick={() => setJogando(d)} className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-accent-600 hover:bg-accent-500 text-sobre-acento">
                   Jogar agora
                 </button>
                 <button onClick={() => setAdiados(a => [...a, d.id])} className="px-3 py-1.5 rounded-lg text-sm bg-hover text-ink hover:bg-border">

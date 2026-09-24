@@ -84,7 +84,7 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
         {MODOS.map(m => (
           <button key={m.id} onClick={() => set({ modo: m.id })} title={m.desc}
             className={`px-2 py-1.5 rounded-lg text-xs border text-left transition-colors ${
-              modo === m.id ? 'bg-purple-700 border-purple-500 text-white' : 'bg-purple-950 border-purple-800 text-purple-300 hover:border-purple-600'
+              modo === m.id ? 'bg-purple-700 border-purple-500 text-sobre-acento' : 'bg-purple-950 border-purple-800 text-purple-300 hover:border-purple-600'
             }`}>
             <span className="font-semibold block">{m.nome}</span>
           </button>

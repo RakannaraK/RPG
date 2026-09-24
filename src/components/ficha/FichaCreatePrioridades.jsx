@@ -260,7 +260,7 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
                         <button key={g.id} type="button"
                           onClick={() => setEstadoDe(etapaAtual.id, { ordem: pos === -1 ? [...ordem, g.id] : ordem.filter(x => x !== g.id) })}
                           className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
-                            pos !== -1 ? 'bg-accent-700 border-accent-500 text-ink' : 'bg-void border-border text-accent-300 hover:border-accent-500'
+                            pos !== -1 ? 'bg-accent-700 border-accent-500 text-sobre-acento' : 'bg-void border-border text-accent-300 hover:border-accent-500'
                           }`}>
                           {pos !== -1 && <span className="font-mono mr-1">{pos + 1}º</span>}{g.nome}
                         </button>
@@ -379,12 +379,12 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
           )}
           {fase === totalFases - 1 ? (
             <button type="button" onClick={finalizar} disabled={criando}
-              className="px-6 py-2 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 text-ink font-semibold rounded-lg text-sm transition-colors">
+              className="px-6 py-2 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 text-sobre-acento font-semibold rounded-lg text-sm transition-colors">
               {criando ? 'Salvando...' : 'Finalizar'}
             </button>
           ) : (
             <button type="button" onClick={irProxima}
-              className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-ink font-semibold rounded-lg text-sm transition-colors">
+              className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-sobre-acento font-semibold rounded-lg text-sm transition-colors">
               Próximo →
             </button>
           )}

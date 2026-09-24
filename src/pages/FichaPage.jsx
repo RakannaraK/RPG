@@ -387,7 +387,7 @@ export default function FichaPage() {
           <p className="text-harm mb-4">{error || 'Ficha não encontrada.'}</p>
           <button
             onClick={() => navigate(`/mesa/${mesaId}`)}
-            className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-ink rounded-lg transition-colors"
+            className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-sobre-acento rounded-lg transition-colors"
           >
             Voltar à mesa
           </button>

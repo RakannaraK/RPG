@@ -72,7 +72,7 @@ function MaestriaCard({ nome, sub, xp, curva, ganhos, propriedades = [], isDono,
             <button
               onClick={() => { ganhar(Number(manual)); setManual('') }}
               disabled={ocupado || !manual}
-              className="text-xs px-2 py-1 rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors disabled:opacity-40"
+              className="text-xs px-2 py-1 rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors disabled:opacity-40"
             >
               +XP
             </button>

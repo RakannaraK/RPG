@@ -451,7 +451,7 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
           <button
             onClick={handleSalvar}
             disabled={salvando}
-            className="px-6 py-2 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed text-ink font-semibold rounded-lg text-sm transition-colors"
+            className="px-6 py-2 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed text-sobre-acento font-semibold rounded-lg text-sm transition-colors"
           >
             {salvando ? 'Salvando...' : 'Salvar'}
           </button>
@@ -780,7 +780,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
         {isDono && (
           <button
             onClick={() => { setEditingItem(null); setShowForm(true) }}
-            className="text-sm px-4 py-2 bg-accent-700 hover:bg-accent-600 text-ink rounded-lg transition-colors"
+            className="text-sm px-4 py-2 bg-accent-700 hover:bg-accent-600 text-sobre-acento rounded-lg transition-colors"
           >
             + Adicionar item
           </button>
@@ -794,7 +794,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
           {isDono ? (
             <button
               onClick={() => setShowForm(true)}
-              className="mt-2 px-5 py-2 bg-accent-600 hover:bg-accent-700 text-ink rounded-lg text-sm transition-colors"
+              className="mt-2 px-5 py-2 bg-accent-600 hover:bg-accent-700 text-sobre-acento rounded-lg text-sm transition-colors"
             >
               + Adicionar item
             </button>
