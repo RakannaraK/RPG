@@ -126,7 +126,7 @@ export default function CabecalhoPersonagem({
   const inputCls  = 'px-2 py-1 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-1 focus:ring-accent-500'
 
   return (
-    <div className="bg-raised border border-border rounded-2xl p-5">
+    <div className="bg-void border border-border rounded-2xl p-5">
       <div className="flex gap-5 items-start">
 
         {/* Avatar */}

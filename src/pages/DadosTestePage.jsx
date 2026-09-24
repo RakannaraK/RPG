@@ -9,6 +9,7 @@ import { enfileirarLancamento, separarExcedente } from '../lib/bandejaDados'
 import JogoMinigame from '../components/minigames/JogoMinigame'
 import { JOGOS, NOMES_DIFICULDADE, configDoJogo, resumoResultado, rotuloFeed } from '../lib/minigames/resultado'
 import { novaSemente } from '../lib/minigames/semente'
+import Botao from '../components/ui/Botao'
 
 const TIPOS = [4, 6, 8, 10, 12, 20, 100]
 const SKINS = listarSkins()
@@ -151,13 +152,11 @@ export default function DadosTestePage() {
         </div>
       </div>
 
-      <button
+      <Botao variante="primario" tamanho="lg"
         onClick={rolarTodos}
-        disabled={rolando}
-        className="px-8 py-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-lg transition-colors shadow-lg shadow-purple-900/50"
-      >
+        disabled={rolando} className="font-bold text-lg shadow-lg shadow-purple-900/50">
         {rolando ? '🎲 Rolando...' : '🎲 Rolar tudo'}
-      </button>
+      </Botao>
 
       {/* F27 — bandeja: dados com física por cima da tela */}
       <div className="border-t border-purple-900 pt-8 flex flex-col items-center gap-3">

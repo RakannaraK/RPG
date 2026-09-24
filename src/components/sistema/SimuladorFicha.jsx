@@ -125,7 +125,7 @@ export default function SimuladorFicha({ config, atributos = [], pericias = [] }
         <input
           type="number" min={1} value={nivel}
           onChange={e => setNivel(Number(e.target.value) || 1)}
-          className="w-20 px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500"
+          className="w-20 px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500"
         />
         <span className="text-accent-300 text-xs">
           modo de resolução: <span className="font-mono text-purple-300">{modo}</span>
@@ -148,13 +148,13 @@ export default function SimuladorFicha({ config, atributos = [], pericias = [] }
             ? tentar(config.formula_modificador, { ...ctx, _x: valor })
             : { ok: true, valor: null }
           return (
-            <div key={a.id ?? a.nome} className="flex items-center gap-3 flex-wrap bg-slate-800 border border-purple-800 rounded-xl px-3 py-2">
+            <div key={a.id ?? a.nome} className="flex items-center gap-3 flex-wrap bg-void border border-border rounded-xl px-3 py-2">
               <span className="text-white text-sm font-medium min-w-[7rem]">{a.nome || '(sem nome)'}</span>
               <input
                 type="number"
                 value={valores[a.id ?? a.nome] ?? 10}
                 onChange={e => setValores(v => ({ ...v, [a.id ?? a.nome]: e.target.value }))}
-                className="w-20 px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="w-20 px-2 py-1 rounded-lg bg-void border border-border text-white text-sm text-center focus:outline-none focus:ring-1 focus:ring-purple-500"
               />
               {mod.ok && mod.valor != null && (
                 <span className="text-purple-300 text-xs">

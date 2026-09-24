@@ -64,7 +64,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
           required
           value={email}
           onChange={e => setEmail(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl bg-purple-950/70 border border-purple-700/70 text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+          className="w-full px-4 py-3 rounded-xl bg-void border border-border text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
           placeholder="seu@email.com"
         />
       </div>
@@ -75,7 +75,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
           required
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl bg-purple-950/70 border border-purple-700/70 text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+          className="w-full px-4 py-3 rounded-xl bg-void border border-border text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
           placeholder="Mínimo 6 caracteres"
         />
       </div>
@@ -86,7 +86,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
           required
           value={confirm}
           onChange={e => setConfirm(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl bg-purple-950/70 border border-purple-700/70 text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+          className="w-full px-4 py-3 rounded-xl bg-void border border-border text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
           placeholder="••••••••"
         />
       </div>

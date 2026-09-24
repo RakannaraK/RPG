@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useRelogios } from '../../hooks/useRelogios'
+import Botao from '../ui/Botao'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 /** Segmentos do relógio: preenchidos à esquerda, vazios à direita. */
 function Segmentos({ preenchido, segmentos }) {
@@ -12,7 +13,7 @@ function Segmentos({ preenchido, segmentos }) {
       {Array.from({ length: total }, (_, i) => (
         <span
           key={i}
-          className={`w-4 h-4 rounded-sm border transition-colors ${
+          className={`w-4 h-4 rounded-lg border transition-colors ${
             i < cheio ? 'bg-amber-500 border-amber-400' : 'bg-slate-900 border-purple-800'
           }`}
         />
@@ -122,12 +123,10 @@ export default function PainelRelogios({ mesaId, isGestor }) {
             onChange={e => setSegmentos(Number(e.target.value) || 6)}
             className={`${INP} w-16 text-center`} title="Segmentos"
           />
-          <button
-            type="button" onClick={handleCriar} disabled={criando}
-            className="px-3 py-1.5 text-sm bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white rounded-lg transition-colors"
-          >
+          <Botao variante="primario" tamanho="sm"
+            type="button" onClick={handleCriar} disabled={criando}>
             {criando ? '...' : '+ Criar'}
-          </button>
+          </Botao>
           {erro && <p className="text-red-400 text-xs w-full">{erro}</p>}
         </div>
       )}

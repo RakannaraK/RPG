@@ -7,6 +7,7 @@ import { usePreferencias } from '../../context/PreferenciasContext'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import Aparencia from './Aparencia'
+import Botao from '../ui/Botao'
 
 const SKINS = listarSkins()
 
@@ -84,7 +85,7 @@ export default function PreferenciasModal({ onFechar }) {
                 onChange={e => setApelido(e.target.value)}
                 maxLength={40}
                 placeholder="Seu apelido"
-                className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="flex-1 px-3 py-2 rounded-lg bg-void border border-border text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
               <button
                 type="button"
@@ -226,12 +227,10 @@ export default function PreferenciasModal({ onFechar }) {
 
         {/* Rodapé */}
         <div className="px-6 py-4 border-t border-purple-900 flex justify-end shrink-0">
-          <button
-            onClick={onFechar}
-            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg text-sm transition-colors"
-          >
+          <Botao variante="primario" tamanho="md"
+            onClick={onFechar} className="font-semibold">
             Concluído
-          </button>
+          </Botao>
         </div>
       </div>
     </div>

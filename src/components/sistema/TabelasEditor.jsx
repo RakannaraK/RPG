@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { validarTabela, resultadosSemEntrada, entradaPara } from '../../lib/tabelasEngine'
 import { rolarNotacao } from '../../lib/diceNotation'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 function novaTabela() {
   return {

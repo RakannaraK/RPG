@@ -45,7 +45,7 @@ function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, on
           onChange={e => setValor(e.target.value)}
           placeholder={placeholder}
           rows={10}
-          className="w-full px-3 py-2.5 rounded-lg bg-hover border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-1 focus:ring-accent-500 resize-none"
+          className="w-full px-3 py-2.5 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-1 focus:ring-accent-500 resize-none"
         />
       ) : valor ? (
         <p className="text-ink text-sm whitespace-pre-wrap min-h-[6rem] px-3 py-2.5 bg-hover rounded-lg border border-border">

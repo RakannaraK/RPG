@@ -65,7 +65,7 @@ function ResultadoModoDisplay({ resultado, rotulo, rolando, skin }) {
       {desc && <p className={`text-lg font-bold ${cor}`}>{desc.texto}</p>}
       {desc?.textoFaixa && <p className="text-accent-300 text-sm italic">"{desc.textoFaixa}"</p>}
       {desc?.marcacao && (
-        <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded-md border bg-harm/10 border-harm/60 text-harm">
+        <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded-lg border bg-harm/10 border-harm/60 text-harm">
           ⚡ {desc.marcacao.rotulo}{desc.marcacao.texto ? ` — ${desc.marcacao.texto}` : ''}
         </span>
       )}
@@ -73,7 +73,7 @@ function ResultadoModoDisplay({ resultado, rotulo, rolando, skin }) {
   )
 }
 
-const INP = 'px-3 py-2 rounded-xl bg-void/70 border border-border/70 text-ink placeholder-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500'
+const INP = 'px-3 py-2 rounded-xl bg-void border border-border text-ink placeholder:text-ink-dim focus:outline-none focus:ring-2 focus:ring-accent-500'
 const ROTULOS_VALOR = { sucessos: 'Parada (nº de dados)', roll_under: 'Alvo', faixas: 'Modificador' }
 
 /**

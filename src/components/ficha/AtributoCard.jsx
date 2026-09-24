@@ -18,7 +18,7 @@ function AvisoVantagem({ estado }) {
     anulada:     { txt: 'Vant./Desv. anuladas', cls: 'bg-hover text-ink-dim border-border' },
   }[estado]
   return (
-    <span className={`text-xs font-semibold px-1.5 py-0.5 rounded border ${cfg.cls}`}>
+    <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-lg border ${cfg.cls}`}>
       {cfg.txt}
     </span>
   )
@@ -294,7 +294,7 @@ export default function AtributoCard({
               onClick={handleTestar}
               disabled={testando}
               title={`Teste de ${atributo.nome}`}
-              className="text-xs text-dice-500 hover:text-dice-400 disabled:opacity-40 transition-colors px-1.5 py-0.5 rounded hover:bg-dice-700/20"
+              className="text-xs text-dice-500 hover:text-dice-400 disabled:opacity-40 transition-colors px-1.5 py-0.5 rounded-lg hover:bg-dice-700/20"
             >
               🎲 Testar
             </button>
@@ -340,7 +340,7 @@ export default function AtributoCard({
             {descTeste && <p className="text-center text-sm font-bold text-accent-300">{descTeste.texto}</p>}
             {descTeste?.textoFaixa && <p className="text-accent-300 text-xs text-center italic">"{descTeste.textoFaixa}"</p>}
             {descTeste?.marcacao && (
-              <p className="text-center text-xs font-semibold px-1.5 py-0.5 rounded border bg-harm/10 border-harm/60 text-harm">⚡ {descTeste.marcacao.rotulo}</p>
+              <p className="text-center text-xs font-semibold px-1.5 py-0.5 rounded-lg border bg-harm/10 border-harm/60 text-harm">⚡ {descTeste.marcacao.rotulo}</p>
             )}
             <RerolagemBox resultado={testeResultado} rerolagem={rerolagem} mesaId={mesaId} fichaId={fichaId} rotulo={`Teste de ${atributo.nome}`} onRerolado={setTesteResultado} />
             {erroTeste && <p className="text-harm text-xs text-center">{erroTeste}</p>}
@@ -371,20 +371,20 @@ export default function AtributoCard({
                 onChange={e => setValorManual(e.target.value)}
                 placeholder={valor !== undefined ? String(valor) : '0'}
                 autoFocus
-                className="flex-1 px-2 py-1 bg-void border border-border text-ink rounded text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500"
+                className="flex-1 px-2 py-1 bg-void border border-border text-ink rounded-lg text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500"
               />
               <button
                 type="button"
                 onClick={handleSalvarManual}
                 disabled={salvando}
-                className="px-2 py-1 bg-ok/80 hover:bg-ok disabled:opacity-50 text-ink text-sm rounded transition-colors"
+                className="px-2 py-1 bg-ok/80 hover:bg-ok disabled:opacity-50 text-ink text-sm rounded-lg transition-colors"
               >
                 ✓
               </button>
               <button
                 type="button"
                 onClick={() => { setEditando(false); setValorManual('') }}
-                className="px-2 py-1 bg-hover hover:bg-border text-ink text-sm rounded transition-colors"
+                className="px-2 py-1 bg-hover hover:bg-border text-ink text-sm rounded-lg transition-colors"
               >
                 ✕
               </button>
@@ -393,7 +393,7 @@ export default function AtributoCard({
               <button
                 type="button"
                 onClick={() => { setEditando(false); setRolando(true) }}
-                className="mt-1.5 w-full py-1 text-xs bg-dice-700 hover:bg-dice-500 text-ink rounded transition-colors"
+                className="mt-1.5 w-full py-1 text-xs bg-dice-700 hover:bg-dice-500 text-ink rounded-lg transition-colors"
               >
                 🎲 Rolar dados
               </button>
@@ -467,7 +467,7 @@ export default function AtributoCard({
               onClick={handleTestar}
               disabled={testando}
               title={`Teste de ${atributo.nome}`}
-              className="text-xs text-dice-500 hover:text-dice-400 disabled:opacity-40 transition-colors px-2 py-0.5 rounded hover:bg-dice-700/20"
+              className="text-xs text-dice-500 hover:text-dice-400 disabled:opacity-40 transition-colors px-2 py-0.5 rounded-lg hover:bg-dice-700/20"
             >
               🎲 Testar
             </button>
@@ -512,7 +512,7 @@ export default function AtributoCard({
           </div>
           {descTeste?.textoFaixa && <p className="text-accent-300 text-xs italic">"{descTeste.textoFaixa}"</p>}
           {descTeste?.marcacao && (
-            <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded-md border bg-harm/10 border-harm/60 text-harm">⚡ {descTeste.marcacao.rotulo}{descTeste.marcacao.texto ? ` — ${descTeste.marcacao.texto}` : ''}</span>
+            <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded-lg border bg-harm/10 border-harm/60 text-harm">⚡ {descTeste.marcacao.rotulo}{descTeste.marcacao.texto ? ` — ${descTeste.marcacao.texto}` : ''}</span>
           )}
           <RerolagemBox resultado={testeResultado} rerolagem={rerolagem} mesaId={mesaId} fichaId={fichaId} rotulo={`Teste de ${atributo.nome}`} onRerolado={setTesteResultado} />
           {!descTeste && (testeResultado.mantidos.length > 1 || testeResultado.modificador !== 0) && (

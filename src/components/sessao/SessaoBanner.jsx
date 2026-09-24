@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSessoes } from '../../hooks/useSessoes'
+import Botao from '../ui/Botao'
 
 /**
  * Fase 13.1 — banner de sessão no topo da MesaPage.
@@ -52,7 +53,7 @@ export default function SessaoBanner({ mesaId, isGestor }) {
   // ---- Sessão ativa ----
   if (sessaoAtiva) {
     return (
-      <div className="mt-6 rounded-2xl border border-red-700/60 bg-gradient-to-r from-red-950/60 to-slate-900/60 px-5 py-4">
+      <div className="mt-6 rounded-2xl border border-purple-700/60 bg-gradient-to-r from-purple-950/60 to-slate-900/60 px-5 py-4">
         <div className="flex items-center gap-3 flex-wrap">
           <span className="inline-flex items-center gap-1.5 text-red-300 text-xs font-bold uppercase tracking-wider shrink-0">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -62,15 +63,13 @@ export default function SessaoBanner({ mesaId, isGestor }) {
             <p className="text-white font-semibold leading-tight truncate">
               {sessaoAtiva.titulo || 'Sessão em andamento'}
             </p>
-            <p className="text-red-300/70 text-xs">Sessão em andamento nesta mesa</p>
+            <p className="text-purple-300/80 text-xs">Sessão em andamento nesta mesa</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={entrar}
-              className="px-4 py-2 bg-red-700 hover:bg-red-600 text-white text-sm font-semibold rounded-lg transition-colors"
-            >
+            <Botao variante="primario" tamanho="md"
+              onClick={entrar} className="font-semibold">
               Entrar na sessão →
-            </button>
+            </Botao>
             {isGestor && !confirmEncerrar && (
               <button
                 onClick={() => setConfirmEncerrar(true)}
@@ -82,13 +81,11 @@ export default function SessaoBanner({ mesaId, isGestor }) {
             )}
             {isGestor && confirmEncerrar && (
               <div className="flex items-center gap-1.5">
-                <button
+                <Botao variante="perigo" tamanho="md"
                   onClick={handleEncerrar}
-                  disabled={busy}
-                  className="px-3 py-2 bg-red-800 hover:bg-red-700 text-white rounded-lg text-sm transition-colors disabled:opacity-50"
-                >
+                  disabled={busy}>
                   {busy ? '...' : 'Confirmar'}
-                </button>
+                </Botao>
                 <button
                   onClick={() => setConfirmEncerrar(false)}
                   disabled={busy}
@@ -116,13 +113,11 @@ export default function SessaoBanner({ mesaId, isGestor }) {
               Inicie uma sessão ao vivo para reunir as fichas e o feed num painel compartilhado.
             </p>
           </div>
-          <button
+          <Botao variante="primario" tamanho="md"
             onClick={handleIniciar}
-            disabled={busy}
-            className="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 shrink-0"
-          >
+            disabled={busy} className="font-semibold shrink-0">
             {busy ? 'Iniciando...' : '▶ Iniciar sessão'}
-          </button>
+          </Botao>
         </div>
         {erroAcao && <p className="text-red-400 text-xs mt-2">{erroAcao}</p>}
       </div>

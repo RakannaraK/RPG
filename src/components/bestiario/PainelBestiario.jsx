@@ -8,8 +8,9 @@ import { nomeArquivoFicha } from '../../lib/fichaPortatil'
 import { baixarJson } from '../../lib/baixarArquivo'
 import ImportarFicha from '../ficha/ImportarFicha'
 import Ilustra from '../arte/Ilustra'
+import Botao from '../ui/Botao'
 
-const INP = 'px-3 py-2 rounded-lg bg-slate-900 border border-purple-800 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 const AMEACAS = ['Trivial', 'Fácil', 'Normal', 'Difícil', 'Mortal', 'Lendária']
 const ESPECIES = ['Fera', 'Humanoide', 'Morto-vivo', 'Aberração', 'Elemental', 'Construto', 'Dragão', 'Espírito']
 
@@ -107,9 +108,9 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
           <datalist id="especies-bestiario">{ESPECIES.map(e => <option key={e} value={e} />)}</datalist>
           <datalist id="ameacas-bestiario">{AMEACAS.map(a => <option key={a} value={a} />)}</datalist>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={criar} disabled={ocupado === 'criando'} className="px-3 py-1.5 text-sm bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white rounded-lg">
+            <Botao variante="primario" tamanho="sm" type="button" onClick={criar} disabled={ocupado === 'criando'}>
               {ocupado === 'criando' ? 'Criando…' : 'Criar e abrir a ficha'}
-            </button>
+            </Botao>
             <button type="button" onClick={() => { setNovo(null); setErro('') }} className="px-3 py-1.5 text-sm text-purple-300 hover:text-white">Cancelar</button>
             <span className="text-accent-300 text-xs">Atributos, habilidades e itens você monta na ficha.</span>
           </div>

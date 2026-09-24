@@ -143,7 +143,7 @@ export function MenuToken({ ctx, token, isGestor, onAtualizar, onRemover, onAbri
     const pos = ctx.grade.ativa ? encaixar(token, ctx.grade, novo) : {}
     return tentar(() => onAtualizar(token.id, { tamanho: novo, ...pos }))
   }
-  const BTN = 'h-8 min-w-8 px-2 rounded-md text-sm text-ink hover:bg-hover transition-colors'
+  const BTN = 'h-8 min-w-8 px-2 rounded-lg text-sm text-ink hover:bg-hover transition-colors'
 
   return (
     <div

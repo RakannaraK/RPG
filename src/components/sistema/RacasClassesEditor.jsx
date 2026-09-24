@@ -13,6 +13,7 @@ import FaixasEditor from './FaixasEditor'
 import RecompensasEditor from './RecompensasEditor'
 import { PRESET_IDS } from '../../engines/actionSoundEngine'
 import { tocarPresetAcao } from '../../audio/actionSynth'
+import Botao from '../ui/Botao'
 
 // Fase 12.5 — vocabulário ampliado de efeitos. `grupo` só organiza o dropdown.
 const TIPOS_MOD = [
@@ -402,10 +403,9 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
           </>
         )}
 
-        <button onClick={handleAdd} disabled={salvando}
-          className="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors">
+        <Botao variante="primario" tamanho="sm" onClick={handleAdd} disabled={salvando}>
           {salvando ? '...' : '+ Adicionar'}
-        </button>
+        </Botao>
       </div>
 
       {/* Fórmula do valor (17.5) — só nivel/recurso/perícia/vida (sem atributo/mod) */}
@@ -532,8 +532,8 @@ function ModificadoresExpandido({ modificadores, onAddMod, onRemoveMod, atributo
 // Habilidades
 // ──────────────────────────────────────────────────────────
 
-const SEL = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
-const INP = 'w-full px-3 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500'
+const SEL = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'w-full px-3 py-1.5 rounded-lg bg-void border border-border text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500'
 
 // Card compartilhado: usado tanto dentro da seção da raça/classe quanto na seção de avulsas.
 // Não expõe seletor de raça/classe no formulário de edição — vínculo é gerenciado pelo contexto.
@@ -847,7 +847,7 @@ function HabilidadesVinculadas({
       </div>
 
       {addingNew && (
-        <div className="bg-slate-800 border border-purple-800 rounded-lg p-3 space-y-2">
+        <div className="bg-void border border-border rounded-lg p-3 space-y-2">
           <input type="text" value={novoNome} onChange={e => setNovoNome(e.target.value)}
             placeholder="Nome da habilidade *" autoFocus onKeyDown={e => e.key === 'Enter' && handleCreate()}
             className={INP} />
@@ -887,10 +887,9 @@ function HabilidadesVinculadas({
           </div>
           {erroNovo && <p className="text-red-400 text-xs">{erroNovo}</p>}
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={criando}
-              className="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors">
+            <Botao variante="primario" tamanho="sm" onClick={handleCreate} disabled={criando}>
               {criando ? 'Criando...' : 'Criar'}
-            </button>
+            </Botao>
             <button onClick={() => { setAddingNew(false); resetNovo() }}
               className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded-lg transition-colors">
               Cancelar
@@ -976,10 +975,10 @@ function ItemCard({
           <div className="flex-1 space-y-2">
             <input type="text" value={editNome} onChange={e => setEditNome(e.target.value)}
               placeholder="Nome" autoFocus
-              className="w-full px-3 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+              className="w-full px-3 py-1.5 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
             <input type="text" value={editDesc} onChange={e => setEditDesc(e.target.value)}
               placeholder="Descrição (opcional)"
-              className="w-full px-3 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+              className="w-full px-3 py-1.5 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
             {erro && <p className="text-red-400 text-xs">{erro}</p>}
             <div className="flex gap-2">
               <button onClick={handleUpdate} disabled={salvando}
@@ -1027,13 +1026,13 @@ function ItemCard({
                 <span className="text-accent-300 text-xs">inicial</span>
                 <input type="text" defaultValue={pc.inicial || ''}
                   onBlur={e => { const v = e.target.value.trim(); if (v !== (pc.inicial || '')) onUpdatePontos(item.id, { ...pc, inicial: v || null }).catch(() => {}) }}
-                  placeholder="16" className="w-20 px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs font-mono placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                  placeholder="16" className="w-20 px-2 py-1 rounded-lg bg-void border border-border text-white text-xs font-mono placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500" />
               </span>
               <span className="flex items-center gap-1">
                 <span className="text-accent-300 text-xs">ganho/nível</span>
                 <input type="text" defaultValue={pc.ganho_por_nivel || ''}
                   onBlur={e => { const v = e.target.value.trim(); if (v !== (pc.ganho_por_nivel || '')) onUpdatePontos(item.id, { ...pc, ganho_por_nivel: v || null }).catch(() => {}) }}
-                  placeholder="1d6 + 10" className="w-24 px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs font-mono placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                  placeholder="1d6 + 10" className="w-24 px-2 py-1 rounded-lg bg-void border border-border text-white text-xs font-mono placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500" />
               </span>
               <span className="text-accent-300 text-xs">vazio = usa o padrão do sistema</span>
             </div>
@@ -1142,7 +1141,7 @@ function SecaoRacaClasse({
       </div>
 
       {addingNew && (
-        <div className="bg-slate-800 border border-purple-700 rounded-xl p-4 space-y-3">
+        <div className="bg-void border border-border rounded-xl p-4 space-y-3">
           <p className="text-purple-300 text-xs font-medium">Nova {descTipo}</p>
           <input type="text" value={novoNome} onChange={e => setNovoNome(e.target.value)}
             placeholder={`Nome da ${descTipo} *`} autoFocus
@@ -1151,14 +1150,12 @@ function SecaoRacaClasse({
             placeholder="Descrição (opcional)" className={inputClass} />
           {erroNovo && <p className="text-red-400 text-xs">{erroNovo}</p>}
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={criando}
-              className="px-4 py-2 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-sm rounded-lg transition-colors">
+            <Botao variante="primario" tamanho="md" onClick={handleCreate} disabled={criando}>
               {criando ? 'Criando...' : 'Criar'}
-            </button>
-            <button onClick={cancelarNovo}
-              className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg transition-colors">
+            </Botao>
+            <Botao variante="secundario" tamanho="md" onClick={cancelarNovo}>
               Cancelar
-            </button>
+            </Botao>
           </div>
         </div>
       )}
@@ -1267,7 +1264,7 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
       </div>
 
       {addingNew && (
-        <div className="bg-slate-800 border border-purple-700 rounded-xl p-4 space-y-3">
+        <div className="bg-void border border-border rounded-xl p-4 space-y-3">
           <p className="text-purple-300 text-xs font-medium">Nova habilidade avulsa</p>
           <input type="text" value={novoNome} onChange={e => setNovoNome(e.target.value)}
             placeholder="Nome da habilidade *" autoFocus onKeyDown={e => e.key === 'Enter' && handleCreate()}
@@ -1308,10 +1305,9 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
           </div>
           {erroNovo && <p className="text-red-400 text-xs">{erroNovo}</p>}
           <div className="flex gap-2">
-            <button onClick={handleCreate} disabled={criando}
-              className="px-4 py-2 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-sm rounded-lg transition-colors">
+            <Botao variante="primario" tamanho="md" onClick={handleCreate} disabled={criando}>
               {criando ? 'Criando...' : 'Criar'}
-            </button>
+            </Botao>
             <button onClick={() => { setAddingNew(false); resetNovo() }}
               className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg transition-colors">
               Cancelar

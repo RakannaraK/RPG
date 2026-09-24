@@ -73,7 +73,7 @@ export default function ClassesFicha({
             <span className="flex items-center gap-1 pl-1">
               <button
                 onClick={() => { onRemove(cf.id, cf.classe_id, cf.classe?.nome); setConfirmando(null) }}
-                className="text-xs px-1.5 py-0.5 bg-harm hover:bg-harm text-ink rounded"
+                className="text-xs px-1.5 py-0.5 bg-harm hover:bg-harm text-ink rounded-lg"
                 title="Remover classe e as habilidades concedidas por ela"
               >
                 remover

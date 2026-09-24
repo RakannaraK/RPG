@@ -1,5 +1,5 @@
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 function novoId(prefixo) {
   return `${prefixo}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 4)}`
@@ -100,7 +100,7 @@ function EtapaTexto({ etapa, onChange }) {
   return (
     <textarea rows={2} value={etapa.descricao || ''} onChange={e => onChange({ ...etapa, descricao: e.target.value })}
       placeholder="Texto-guia (ex: Escolha Convicções e Pilares; anote-os nas seções da ficha.)"
-      className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" />
+      className="w-full px-3 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" />
   )
 }
 

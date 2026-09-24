@@ -18,7 +18,7 @@ function AvisoVantagem({ estado }) {
     anulada:     { txt: 'anuladas',      cls: 'bg-hover text-ink-dim border-border' },
   }[estado]
   return (
-    <span className={`text-xs font-semibold px-1.5 py-0.5 rounded border ${cfg.cls}`}>
+    <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-lg border ${cfg.cls}`}>
       {cfg.txt}
     </span>
   )
@@ -215,7 +215,7 @@ export default function PainelPericias({
                         setLocalBonus(prev => ({ ...prev, [pericia.id]: e.target.value }))
                       }
                       onBlur={e => handleBonusBlur(pericia.id, e.target.value)}
-                      className="w-12 px-1 py-0.5 bg-void border border-border text-ink text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-accent-500 shrink-0"
+                      className="w-12 px-1 py-0.5 bg-void border border-border text-ink text-center rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-accent-500 shrink-0"
                     />
                   ) : (
                     <span
@@ -285,7 +285,7 @@ export default function PainelPericias({
                       const desc = rollAtivo.resultado.modo && rollAtivo.resultado.modo !== 'soma'
                         ? descreverResultado(rollAtivo.resultado.estruturado) : null
                       return desc?.marcacao ? (
-                        <span className="inline-block mt-1 text-xs font-semibold px-1.5 py-0.5 rounded border bg-harm/10 border-harm/60 text-harm">⚡ {desc.marcacao.rotulo}</span>
+                        <span className="inline-block mt-1 text-xs font-semibold px-1.5 py-0.5 rounded-lg border bg-harm/10 border-harm/60 text-harm">⚡ {desc.marcacao.rotulo}</span>
                       ) : null
                     })()}
                     <RerolagemBox

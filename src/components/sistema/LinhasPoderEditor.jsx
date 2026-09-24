@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useLinhasPoder } from '../../hooks/useLinhasPoder'
+import Botao from '../ui/Botao'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 /**
  * Fase 25.3 — CRUD das linhas de poder do sistema.
@@ -37,7 +38,7 @@ export default function LinhasPoderEditor({ sistemaId }) {
       {linhas.length > 0 && (
         <div className="space-y-1.5">
           {linhas.map(l => (
-            <div key={l.id} className="bg-purple-950/40 border border-purple-800 rounded-lg px-2.5 py-1.5 flex flex-wrap items-center gap-2">
+            <div key={l.id} className="bg-void border border-border rounded-lg px-2.5 py-1.5 flex flex-wrap items-center gap-2">
               <input
                 type="text"
                 defaultValue={l.nome}
@@ -87,13 +88,11 @@ export default function LinhasPoderEditor({ sistemaId }) {
         </div>
       )}
 
-      <button
+      <Botao variante="contorno" tamanho="sm"
         onClick={handleAdicionar}
-        disabled={salvando}
-        className="text-xs px-3 py-1.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 disabled:opacity-50 transition-colors"
-      >
+        disabled={salvando}>
         + Adicionar linha
-      </button>
+      </Botao>
 
       {erro && <p className="text-red-400 text-xs">{erro}</p>}
     </div>

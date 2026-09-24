@@ -7,7 +7,7 @@ import SeletorJogo from './SeletorJogo'
 import JogoMinigame from './JogoMinigame'
 
 const BTN = 'px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
-const INP = 'w-full bg-bg border border-border rounded-lg px-2.5 py-1.5 text-sm text-ink'
+const INP = 'w-full bg-void border border-border rounded-lg px-2.5 py-1.5 text-sm text-ink'
 
 /**
  * Fase 28.5 — desafios da mesa. Gestor lança (jogo, dificuldade, participantes,

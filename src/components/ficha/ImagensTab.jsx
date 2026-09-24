@@ -134,7 +134,7 @@ export default function ImagensTab({ fichaId, donoId, isDono }) {
       {imagens.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-border rounded-2xl">
           <Ilustra nome="moldura" tamanho={72} className="mx-auto mb-4" />
-          <p className="text-accent-300 text-lg font-medium mb-2">Nenhuma imagem ainda</p>
+          <p className="text-ink text-base font-medium mb-1">Nenhuma imagem ainda</p>
           {!isDono && (
             <p className="text-ink-dim text-sm">
               O dono do personagem ainda não adicionou imagens.

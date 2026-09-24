@@ -3,8 +3,9 @@ import { usePools } from '../../hooks/usePools'
 import { validarFormula } from '../../lib/formulaEngine'
 import { maximoPool } from '../../lib/poolEngine'
 import FormulaInput from './FormulaInput'
+import Botao from '../ui/Botao'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 const MODOS = [
   { id: 'nada', label: 'Nada' },
@@ -173,10 +174,9 @@ export default function PoolsEditor({ sistemaId, descansos = [] }) {
             <input type="text" value={dado} onChange={e => setDado(e.target.value)}
               placeholder="d12" className={`${INP} w-16 text-center font-mono`} />
           )}
-          <button onClick={handleCriar} disabled={salvando}
-            className="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors">
+          <Botao variante="primario" tamanho="sm" onClick={handleCriar} disabled={salvando}>
             {salvando ? '...' : '+ Adicionar'}
-          </button>
+          </Botao>
         </div>
 
         <div>

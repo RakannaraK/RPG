@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ModificadorForm, labelModificador } from './RacasClassesEditor'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 function novoId(prefixo) {
   return `${prefixo}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 4)}`
@@ -41,7 +41,7 @@ function FaixaEfeito({ faixa, onChange, onRemove, atributos, pericias, camposCom
       {mods.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {mods.map((m, i) => (
-            <span key={i} className="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded border bg-purple-950/70 border-purple-700 text-purple-200">
+            <span key={i} className="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-lg border bg-purple-950/70 border-purple-700 text-purple-200">
               {labelModificador(m, { atributos, pericias, camposCombate })}
               <button onClick={() => set({ modificadores: mods.filter((_, j) => j !== i) })} className="text-accent-300 hover:text-red-400">×</button>
             </span>

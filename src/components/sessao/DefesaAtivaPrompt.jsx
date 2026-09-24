@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useRolagem } from '../../hooks/useRolagem'
 import { resolverNotacaoFormula, validarNotacao } from '../../lib/diceNotation'
 import { calcularValoresFinais } from '../../lib/modifierEngine'
+import Botao from '../ui/Botao'
 
 /**
  * Fase 22.6 — prompt de defesa ativa para o DEFENSOR (dono do alvo; o mestre
@@ -154,7 +155,7 @@ export default function DefesaAtivaPrompt({
           <span className="flex items-center gap-1.5">
             <select
               value={habEscolhida} onChange={e => setHabEscolhida(e.target.value)}
-              className="px-1.5 py-1 rounded bg-purple-950 border border-purple-700 text-white text-xs"
+              className="px-1.5 py-1 rounded-lg bg-void border border-border text-white text-xs"
               aria-label="Responder com habilidade"
             >
               <option value="">com habilidade…</option>
@@ -172,27 +173,25 @@ export default function DefesaAtivaPrompt({
             >✨ Usar</button>
           </span>
         )}
-        <button
+        <Botao variante="secundario" tamanho="sm"
           onClick={naoReagir}
-          disabled={trabalhando}
-          className="px-2 py-1 text-xs bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-slate-200 rounded-lg transition-colors"
-        >
+          disabled={trabalhando} className="text-slate-200">
           Não reagir
-        </button>
+        </Botao>
       </div>
       {erro && (
         <div className="space-y-1">
           <p className="text-amber-400 text-xs">{erro}</p>
           <div className="flex items-center gap-1.5">
             <select value={opcaoManual} onChange={e => setOpcaoManual(e.target.value)}
-              className="px-1.5 py-1 rounded bg-purple-950 border border-purple-700 text-white text-xs">
+              className="px-1.5 py-1 rounded-lg bg-void border border-border text-white text-xs">
               <option value="">reação…</option>
               {opcoes.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
             </select>
             <input type="number" value={manual} onChange={e => setManual(e.target.value)}
-              placeholder="defesa" className="w-20 px-1.5 py-1 rounded bg-purple-950 border border-purple-700 text-white text-xs text-center" />
+              placeholder="defesa" className="w-20 px-1.5 py-1 rounded-lg bg-void border border-border text-white text-xs text-center" />
             <button onClick={usarManual} disabled={trabalhando || !opcaoManual || manual === ''}
-              className="px-2 py-1 text-xs bg-sky-800 hover:bg-sky-700 disabled:opacity-50 text-white rounded transition-colors">
+              className="px-2 py-1 text-xs bg-sky-800 hover:bg-sky-700 disabled:opacity-50 text-white rounded-lg transition-colors">
               usar
             </button>
           </div>

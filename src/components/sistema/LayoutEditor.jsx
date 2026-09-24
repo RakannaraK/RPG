@@ -11,6 +11,7 @@ import { avaliarFormula } from '../../lib/formulaEngine'
 import { ehRolado } from '../../lib/pontosEngine'
 import { PRESET_IDS } from '../../engines/actionSoundEngine'
 import { tocarPresetAcao } from '../../audio/actionSynth'
+import Botao from '../ui/Botao'
 
 const INP_PS = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500'
 
@@ -120,12 +121,12 @@ function CriticoEditor({ cfg = {}, onChange }) {
               <span className="text-purple-400 text-xs">multiplicador padrão</span>
               <input type="number" min={1} step="0.5" value={cfg.multiplicador_padrao ?? 2}
                 onChange={e => set({ multiplicador_padrao: Number(e.target.value) })}
-                className="w-16 px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                className="w-16 px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-purple-500" />
             </span>
             <span className="flex items-center gap-1.5">
               <span className="text-purple-400 text-xs">modo</span>
               <select value={cfg.modo_multiplicador || 'total'} onChange={e => set({ modo_multiplicador: e.target.value })}
-                className="px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                className="px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
                 <option value="total">total (dobra tudo)</option>
                 <option value="dados">dados (só os dados)</option>
               </select>
@@ -256,7 +257,7 @@ export default function LayoutEditor({
               min="2"
               value={config.dado_padrao ?? 20}
               onChange={e => handleDadoPadrao(e.target.value)}
-              className="w-20 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-20 px-3 py-2 rounded-lg bg-void border border-border text-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
           <div className="flex gap-1.5 flex-wrap">
@@ -310,7 +311,7 @@ export default function LayoutEditor({
             <select
               value={config.exibicao_atributos || 'numero'}
               onChange={e => onConfigChange({ ...config, exibicao_atributos: e.target.value })}
-              className="px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+              className="px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
             >
               <option value="numero">Número</option>
               <option value="dots">Dots (bolinhas)</option>
@@ -323,7 +324,7 @@ export default function LayoutEditor({
                 type="number" min={1} max={10}
                 value={config.maximo_dots ?? 5}
                 onChange={e => onConfigChange({ ...config, maximo_dots: Math.max(1, Math.min(10, Number(e.target.value) || 5)) })}
-                className="w-16 px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs text-center focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="w-16 px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs text-center focus:outline-none focus:ring-1 focus:ring-purple-500"
               />
             </label>
           )}
@@ -419,7 +420,7 @@ export default function LayoutEditor({
             value={config.rotulo_vida}
             onChange={e => onConfigChange({ ...config, rotulo_vida: e.target.value })}
             placeholder="Pontos de Vida"
-            className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="flex-1 px-3 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
         <p className="text-accent-300 text-xs">
@@ -520,13 +521,11 @@ export default function LayoutEditor({
                 <span className="text-purple-400">Calculado</span> = fórmula (read-only, recalcula sozinho).
               </p>
             </div>
-            <button
+            <Botao variante="primario" tamanho="sm"
               type="button"
-              onClick={addCampoCombate}
-              className="text-sm px-3 py-1.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg transition-colors"
-            >
+              onClick={addCampoCombate}>
               + Adicionar
-            </button>
+            </Botao>
           </div>
 
           {config.campos_combate.length === 0 ? (
@@ -539,19 +538,19 @@ export default function LayoutEditor({
                 const calculado = campo.tipo === 'calculado'
                 const previa = calculado ? previaCampo(campo.formula) : null
                 return (
-                  <div key={campo.id} className="bg-slate-900/40 border border-purple-900/50 rounded-xl p-3 space-y-2">
+                  <div key={campo.id} className="bg-void border border-border rounded-xl p-3 space-y-2">
                     <div className="flex gap-2 items-center">
                       <input
                         type="text"
                         value={campo.nome}
                         onChange={e => updateCampoCombate(i, { nome: e.target.value })}
                         placeholder="Ex: Classe de Armadura"
-                        className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="flex-1 px-3 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                       />
                       <select
                         value={campo.tipo || 'manual'}
                         onChange={e => updateCampoCombate(i, { tipo: e.target.value })}
-                        className="px-2 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="px-2 py-2 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                         title="Tipo do campo"
                       >
                         <option value="manual">Manual</option>
@@ -612,13 +611,11 @@ export default function LayoutEditor({
                 Defina as perícias do sistema. O bônus base pode ser ligado a um atributo.
               </p>
             </div>
-            <button
+            <Botao variante="primario" tamanho="sm"
               type="button"
-              onClick={onAddPericia}
-              className="text-sm px-3 py-1.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg transition-colors"
-            >
+              onClick={onAddPericia}>
               + Adicionar
-            </button>
+            </Botao>
           </div>
 
           {pericias.length === 0 ? (
@@ -634,7 +631,7 @@ export default function LayoutEditor({
                     value={p.nome}
                     onChange={e => onUpdatePericia(i, { ...p, nome: e.target.value })}
                     placeholder="Ex: Percepção"
-                    className="flex-1 px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="flex-1 px-3 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                   <select
                     value={p.atributo_base_id || ''}

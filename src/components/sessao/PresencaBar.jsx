@@ -19,12 +19,18 @@ function corDe(id) {
   return cores[h % cores.length]
 }
 
-export default function PresencaBar({ conectados = [], meuId }) {
+export default function PresencaBar({ conectados = [], meuId, conectado = true }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="inline-flex items-center gap-1.5 text-emerald-300 text-xs font-medium shrink-0">
-        <span className="w-2 h-2 rounded-full bg-emerald-400" />
-        {conectados.length} online
+      {/* F38: um indicador só. Antes havia "Conectado ●" no cabeçalho e
+          "● N online" aqui — dois pontos verdes colados dizendo coisas
+          diferentes. O ponto agora é o estado da conexão; o texto, quem está. */}
+      <span
+        className={`inline-flex items-center gap-1.5 text-xs font-medium shrink-0 ${conectado ? 'text-emerald-300' : 'text-amber-300'}`}
+        title={conectado ? 'Tempo real conectado' : 'Reconectando ao tempo real…'}
+      >
+        <span className={`w-2 h-2 rounded-full ${conectado ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
+        {conectado ? `${conectados.length} online` : 'reconectando…'}
       </span>
       <div className="flex -space-x-2">
         {conectados.map(c => {

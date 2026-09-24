@@ -40,13 +40,13 @@ function RecursoCounter({ hf, onAjustar, isDono }) {
       <button
         onClick={() => onAjustar(hf.id, -1)}
         disabled={atual <= 0}
-        className="w-5 h-5 rounded bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs flex items-center justify-center transition-colors"
+        className="w-5 h-5 rounded-lg bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs flex items-center justify-center transition-colors"
       >−</button>
       <span className="text-ink text-sm font-mono min-w-[2.5rem] text-center">{atual}/{max}</span>
       <button
         onClick={() => onAjustar(hf.id, +1)}
         disabled={atual >= max}
-        className="w-5 h-5 rounded bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs flex items-center justify-center transition-colors"
+        className="w-5 h-5 rounded-lg bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs flex items-center justify-center transition-colors"
       >+</button>
     </div>
   )
@@ -74,9 +74,9 @@ function EstadoCombate({ hf, isDono, onUsar, onAjustarCarga, onLiberarRecarga })
           {isDono && (
             <>
               <button onClick={() => onAjustarCarga?.(hf.id, -1)} disabled={est.carga <= 0}
-                className="w-5 h-5 rounded bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs" title="Menos carga">−</button>
+                className="w-5 h-5 rounded-lg bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs" title="Menos carga">−</button>
               <button onClick={() => onAjustarCarga?.(hf.id, +1)} disabled={est.carga >= est.cargaMax}
-                className="w-5 h-5 rounded bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs" title="Mais carga">+</button>
+                className="w-5 h-5 rounded-lg bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs" title="Mais carga">+</button>
             </>
           )}
         </span>
@@ -235,7 +235,7 @@ function ResumoEfeitos({ modificadores = [], idsAtivos, nomes = {}, emJogo }) {
         return (
           <span
             key={m.id}
-            className={`inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md border ${base}`}
+            className={`inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-lg border ${base}`}
             title={cond ? (ativo ? 'Ativo agora' : 'Inativo — condição não satisfeita') : undefined}
           >
             {cond && (

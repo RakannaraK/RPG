@@ -62,7 +62,7 @@ function ResultadoModo({ rolagem, animando, ehMeu, minhaSkin }) {
         <p className="text-accent-300 text-xs italic">"{desc.textoFaixa}"</p>
       )}
       {desc?.marcacao && (
-        <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded-md border bg-harm/10 border-harm/60 text-harm">
+        <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded-lg border bg-harm/10 border-harm/60 text-harm">
           ⚡ {desc.marcacao.rotulo}{desc.marcacao.texto ? ` — ${desc.marcacao.texto}` : ''}
         </span>
       )}

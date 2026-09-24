@@ -79,11 +79,11 @@ export default function PainelProjetos({ fichaId, isDono }) {
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button" onClick={() => progredir(p, -1)}
-                    className="w-6 h-6 rounded border border-border text-ink-dim hover:text-ink transition-colors text-xs"
+                    className="w-6 h-6 rounded-lg border border-border text-ink-dim hover:text-ink transition-colors text-xs"
                   >−</button>
                   <button
                     type="button" onClick={() => progredir(p, +1)}
-                    className="w-6 h-6 rounded bg-accent-700 hover:bg-accent-600 text-ink transition-colors text-xs"
+                    className="w-6 h-6 rounded-lg bg-accent-700 hover:bg-accent-600 text-ink transition-colors text-xs"
                   >+</button>
                   <button
                     type="button" onClick={() => remover(p.id)}

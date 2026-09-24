@@ -1,4 +1,5 @@
 // Guia do mestre — onboarding. Conceitos + primeiros passos + dicas.
+import Botao from '../ui/Botao'
 export default function GuiaMestre({ onFechar }) {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onFechar}>
@@ -39,7 +40,7 @@ export default function GuiaMestre({ onFechar }) {
           </section>
         </div>
         <div className="px-6 py-4 border-t border-purple-900 flex justify-end shrink-0">
-          <button onClick={onFechar} className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg text-sm transition-colors">Entendi</button>
+          <Botao variante="primario" tamanho="md" onClick={onFechar} className="font-semibold">Entendi</Botao>
         </div>
       </div>
     </div>

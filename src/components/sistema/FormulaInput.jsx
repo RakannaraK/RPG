@@ -182,7 +182,7 @@ export default function FormulaInput({
               key={vv}
               type="button"
               onClick={() => onChange(`${value || ''}${vv}`)}
-              className="text-xs font-mono px-1.5 py-0.5 bg-slate-700/60 hover:bg-slate-600 text-purple-300 rounded transition-colors"
+              className="text-xs font-mono px-1.5 py-0.5 bg-slate-700/60 hover:bg-slate-600 text-purple-300 rounded-lg transition-colors"
               title="Inserir na fórmula"
             >
               {vv}

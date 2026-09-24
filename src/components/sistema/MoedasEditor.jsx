@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import Botao from '../ui/Botao'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 function novoId() {
   return `m${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`
@@ -57,7 +58,7 @@ export default function MoedasEditor({ config, onChange }) {
           {denom.length > 0 && (
             <div className="space-y-1.5">
               {denom.map((d, i) => (
-                <div key={d.id} className="flex items-center gap-2 bg-purple-950/40 border border-purple-800 rounded-lg px-2.5 py-1.5">
+                <div key={d.id} className="flex items-center gap-2 bg-void border border-border rounded-lg px-2.5 py-1.5">
                   <input type="text" value={d.nome} onChange={e => setDenom(i, { nome: e.target.value })}
                     className={`${INP} flex-1 min-w-[7rem]`} />
                   <input type="text" value={d.sigla} onChange={e => setDenom(i, { sigla: e.target.value })}
@@ -79,10 +80,9 @@ export default function MoedasEditor({ config, onChange }) {
               placeholder="PO" className={`${INP} w-16 text-center`} />
             <input type="number" value={valor} onChange={e => setValor(e.target.value)}
               placeholder="valor" className={`${INP} w-20 text-center`} />
-            <button onClick={adicionar}
-              className="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-white text-xs rounded-lg transition-colors">
+            <Botao variante="primario" tamanho="sm" onClick={adicionar}>
               + Adicionar
-            </button>
+            </Botao>
           </div>
           {erro && <p className="text-red-400 text-xs">{erro}</p>}
         </>

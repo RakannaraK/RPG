@@ -69,7 +69,7 @@ export default function SeletorJogo({ tipo, onTipo, dificuldade, onDificuldade, 
                   step={passo}
                   value={config[chave]}
                   onChange={e => onParametro(chave, Math.max(minimo, Number(e.target.value) || minimo))}
-                  className="w-full bg-bg border border-border rounded-lg px-2 py-1 text-sm text-ink"
+                  className="w-full bg-void border border-border rounded-lg px-2 py-1 text-sm text-ink"
                 />
               </label>
             )

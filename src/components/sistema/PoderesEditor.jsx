@@ -9,8 +9,9 @@ import {
 } from '../../lib/poderes'
 import { CustoEditor, EscalaEditor } from './CustoEditor'
 import FormulaInput from './FormulaInput'
+import Botao from '../ui/Botao'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 const VAZIO = {
   nome: '', descricao: '', categoria: '', circulo: '',
@@ -56,7 +57,7 @@ function PoderForm({ inicial, pools, classes, linhas = [], onSalvar, onCancelar 
   }
 
   return (
-    <div className="bg-slate-700/40 border border-purple-800/60 rounded-lg p-3 space-y-2.5">
+    <div className="bg-void border border-border rounded-lg p-3 space-y-2.5">
       <div className="flex flex-wrap gap-2">
         <input type="text" value={f.nome} onChange={e => set({ nome: e.target.value })}
           placeholder="Nome do poder" className={`${INP} flex-1 min-w-[10rem]`} />
@@ -146,14 +147,12 @@ function PoderForm({ inicial, pools, classes, linhas = [], onSalvar, onCancelar 
       {erro && <p className="text-red-400 text-xs">{erro}</p>}
 
       <div className="flex gap-2">
-        <button onClick={salvar} disabled={salvando}
-          className="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors">
+        <Botao variante="primario" tamanho="sm" onClick={salvar} disabled={salvando}>
           {salvando ? '...' : 'Salvar'}
-        </button>
-        <button onClick={onCancelar}
-          className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded-lg transition-colors">
+        </Botao>
+        <Botao variante="secundario" tamanho="sm" onClick={onCancelar}>
           Cancelar
-        </button>
+        </Botao>
       </div>
     </div>
   )

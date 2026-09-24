@@ -16,7 +16,7 @@ import { rolarNotacao, validarNotacao } from '../lib/diceNotation'
 import Ilustra from '../components/arte/Ilustra'
 import Botao from '../components/ui/Botao'
 
-const INP = 'px-3 py-2 rounded-lg bg-slate-900 border border-purple-800 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-3 py-2 rounded-lg bg-void border border-border text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 const BTN = 'px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50 inline-flex items-center min-h-[28px]'
 
 /**

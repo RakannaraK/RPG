@@ -111,7 +111,7 @@ function ItemCena({ mapa, aberta, onVer, onAtivar, onRemover }) {
     <li className={`rounded-xl border p-2 ${aberta ? 'border-accent-500 bg-raised' : 'border-border bg-void'}`}>
       <div className="flex items-center gap-2">
         <button onClick={onVer} className="shrink-0" title="Abrir na tela">
-          <img src={mapa.imagem_url} alt="" className="w-14 h-10 object-cover rounded-md bg-bg" />
+          <img src={mapa.imagem_url} alt="" className="w-14 h-10 object-cover rounded-lg bg-bg" />
         </button>
         <button onClick={onVer} className="flex-1 min-w-0 text-left">
           <p className="text-ink text-sm font-medium truncate">{mapa.nome}</p>

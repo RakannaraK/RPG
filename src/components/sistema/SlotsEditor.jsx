@@ -2,8 +2,9 @@ import { useState } from 'react'
 import FormulaInput from './FormulaInput'
 import { useRacasClasses } from '../../hooks/useRacasClasses'
 import { linhaDaGrade } from '../../lib/slotsEngine'
+import Botao from '../ui/Botao'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 /**
  * Grade de uma classe: linhas por nível, colunas por círculo.
@@ -63,7 +64,7 @@ function GradeClasse({ classe, grade = {}, circuloMax, onChange }) {
                         value={grade[n]?.[c - 1] ?? ''}
                         onChange={e => setCelula(n, c, e.target.value)}
                         placeholder="0"
-                        className="w-10 px-1 py-0.5 rounded bg-purple-950 border border-purple-800 text-white text-xs text-center placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        className="w-10 px-1 py-0.5 rounded-lg bg-void border border-border text-white text-xs text-center placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500"
                       />
                     </td>
                   ))}
@@ -83,10 +84,9 @@ function GradeClasse({ classe, grade = {}, circuloMax, onChange }) {
         <input type="number" min={1} value={novoNivel} onChange={e => setNovoNivel(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') addNivel() }}
           placeholder="Nv" className={`${INP} w-14 text-center`} />
-        <button type="button" onClick={addNivel} disabled={!novoNivel}
-          className="text-xs px-2 py-1 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors disabled:opacity-40">
+        <Botao variante="contorno" tamanho="sm" type="button" onClick={addNivel} disabled={!novoNivel}>
           + linha de nível
-        </button>
+        </Botao>
         {niveis.length > 0 && (
           <span className="text-accent-300 text-xs">
             Nv 4 de {classe.nome} → [{(linhaDaGrade(grade, 4) || []).join(', ') || '—'}]

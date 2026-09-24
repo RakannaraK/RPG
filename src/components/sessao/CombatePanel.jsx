@@ -66,7 +66,7 @@ function CondicaoForm({ onAplicar, onFechar }) {
   const [porRodada, setPorRodada] = useState('') // F32.3 — dano/cura por rodada (valor ou notação)
   const [tipoRodada, setTipoRodada] = useState('dano')
   const [busy, setBusy] = useState(false)
-  const inputCls = 'px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-500'
+  const inputCls = 'px-2 py-1 rounded-lg bg-void border border-border text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-500'
 
   async function submit() {
     if (!nome.trim()) return
@@ -104,7 +104,7 @@ function CondicaoForm({ onAplicar, onFechar }) {
         </select>
         <input value={porRodada} onChange={e => setPorRodada(e.target.value)} placeholder="1d4 ou 3" className={`${inputCls} w-20`} title="Vazio = sem efeito por rodada" />
       </label>
-      <button onClick={submit} disabled={busy || !nome.trim()} className="px-2 py-1 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors">Aplicar</button>
+      <Botao variante="primario" tamanho="sm" onClick={submit} disabled={busy || !nome.trim()}>Aplicar</Botao>
       <button onClick={onFechar} className="px-2 py-1 text-purple-400 hover:text-white text-xs transition-colors">Cancelar</button>
     </div>
   )
@@ -139,7 +139,7 @@ function PainelReserva({ reserva, emJogo, isMestre, onTrocar, onDefinirReserva }
               <select
                 value={escolha[c.id] || ''}
                 onChange={e => setEscolha(prev => ({ ...prev, [c.id]: e.target.value }))}
-                className="px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs"
+                className="px-2 py-1 rounded-lg bg-void border border-border text-white text-xs"
                 aria-label={`Trocar ${c.nome} por`}
               >
                 <option value="">entra no lugar de…</option>
@@ -174,7 +174,7 @@ function PedirDefesaForm({ combatente, sugestaoDano, onPedir, onFechar }) {
   const [ataque, setAtaque] = useState('')
   const [dano, setDano] = useState(sugestaoDano ? String(sugestaoDano.valor) : '')
   const [busy, setBusy] = useState(false)
-  const inp = 'w-16 px-1.5 py-0.5 bg-purple-950 border border-purple-700 text-white text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-sky-500'
+  const inp = 'w-16 px-1.5 py-0.5 bg-void border border-border text-white text-center rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-sky-500'
   async function submit() {
     if (dano === '') return
     setBusy(true)
@@ -187,7 +187,7 @@ function PedirDefesaForm({ combatente, sugestaoDano, onPedir, onFechar }) {
         <input type="number" value={ataque} onChange={e => setAtaque(e.target.value)} placeholder="71" className={inp} /></label>
       <label className="text-sky-300 text-xs flex items-center gap-1">dano
         <input type="number" value={dano} onChange={e => setDano(e.target.value)} placeholder="20" className={inp} /></label>
-      <button onClick={submit} disabled={busy || dano === ''} className="px-2 py-0.5 bg-sky-700 hover:bg-sky-600 disabled:opacity-50 text-white text-xs rounded transition-colors">Pedir</button>
+      <button onClick={submit} disabled={busy || dano === ''} className="px-2 py-0.5 bg-sky-700 hover:bg-sky-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors">Pedir</button>
       <button onClick={onFechar} className="px-1.5 py-0.5 text-purple-400 hover:text-white text-xs transition-colors">Cancelar</button>
     </div>
   )
@@ -207,7 +207,7 @@ function ResolverDefesaControl({ combatente, onResolver, onCancelar }) {
     <div className="mt-1.5 ml-6 flex items-center gap-2 flex-wrap rounded-lg border border-sky-700/50 bg-sky-950/30 px-2 py-1.5">
       <span className="text-sky-300 text-xs">🛡 defesa: <span className="text-sky-100 font-medium">{label}</span></span>
       <button onClick={resolver} disabled={busy}
-        className={`ml-auto px-2 py-0.5 text-xs rounded transition-colors disabled:opacity-50 ${r ? 'bg-sky-700 hover:bg-sky-600 text-white' : 'bg-red-800 hover:bg-red-700 text-white'}`}>
+        className={`ml-auto px-2 py-0.5 text-xs rounded-lg transition-colors disabled:opacity-50 ${r ? 'bg-sky-700 hover:bg-sky-600 text-white' : 'bg-red-800 hover:bg-red-700 text-white'}`}>
         {r ? '✓ Resolver' : 'Resolver (dano cheio)'}
       </button>
       <button onClick={() => onCancelar(combatente)} disabled={busy} className="text-purple-400 hover:text-white text-xs transition-colors" title="Cancelar pedido">✕</button>
@@ -242,7 +242,7 @@ function CombatenteRow({
   // F38.1 — alvo de toque mínimo de 24 px (WCAG 2.2 AA 2.5.8). O ícone continua
   // pequeno; o que cresce é a área clicável — no celular esses botões tinham
   // 9x10 px e eram impossíveis de acertar no meio do combate.
-  const ICONE = 'inline-flex items-center justify-center min-w-[24px] min-h-[24px] rounded transition-colors'
+  const ICONE = 'inline-flex items-center justify-center min-w-[24px] min-h-[24px] rounded-lg transition-colors'
 
   const podePedirDefesa = defAtiva && isMestre && !dp && hp.atual != null
   const mostrarPromptDefensor = dp && !dp.resposta && souDefensor
@@ -286,7 +286,7 @@ function CombatenteRow({
                 value={c.iniciativa ?? ''}
                 onChange={e => onSetIniciativa(c.id, e.target.value)}
                 placeholder="—"
-                className="w-9 px-1 py-1 bg-purple-950 border border-purple-700 text-white text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="w-9 px-1 py-1 bg-void border border-border text-white text-center rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
                 title="Iniciativa"
               />
               <button onClick={rolar} disabled={rolando} className={`${ICONE} text-amber-500 hover:text-amber-300 hover:bg-amber-950/40 disabled:opacity-40 text-base leading-none`} title="Rolar iniciativa">🎲</button>
@@ -296,11 +296,11 @@ function CombatenteRow({
           )}
         </div>
 
-        <span className={`text-xs px-1.5 py-0.5 rounded-md border shrink-0 ${estilo.badge}`}>{estilo.label}</span>
+        <span className={`text-xs px-1.5 py-0.5 rounded-lg border shrink-0 ${estilo.badge}`}>{estilo.label}</span>
         <span className="text-white text-sm font-medium flex-1 min-w-0 truncate">
           {c.nome}
           {abatido && (
-            <span className="ml-1.5 text-xs px-1 py-0.5 rounded bg-red-950 border border-red-800 text-red-300 align-middle">
+            <span className="ml-1.5 text-xs px-1 py-0.5 rounded-lg bg-red-950 border border-red-800 text-red-300 align-middle">
               {trilhaVida?.rotuloCheia || 'Abatido'}
             </span>
           )}
@@ -326,6 +326,8 @@ function CombatenteRow({
         {podeAgir && (
           <button onClick={() => setAddCond(v => !v)} className={`${ICONE} text-fuchsia-400 hover:text-fuchsia-200 hover:bg-fuchsia-950/40 shrink-0 text-xs border border-fuchsia-800/60 px-1.5`} title="Aplicar condição">cond</button>
         )}
+        {/* divisória: separa o estado do combatente das ações do mestre */}
+        {isMestre && <span className="w-px h-5 bg-border shrink-0" aria-hidden="true" />}
         {/* setas lado a lado, não empilhadas: empilhada, cada uma tinha 10 px de altura */}
         {isMestre && (
           <div className="flex items-center leading-none shrink-0">
@@ -354,20 +356,20 @@ function CombatenteRow({
             <div className="flex items-center gap-1.5 flex-wrap">
               <input
                 type="number" min="1" value={dc} onChange={e => setDc(e.target.value)} placeholder="1"
-                className="w-12 px-1.5 py-0.5 bg-purple-950 border border-purple-700 text-white text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="w-12 px-1.5 py-0.5 bg-void border border-border text-white text-center rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
                 title="Quantas caixinhas"
               />
               {(trilhaVida.config.tipos_marca || []).map(tm => (
                 <button key={tm.id}
                   onClick={() => { onMarcarTrilha?.(c, tm.id, Math.max(1, Math.abs(Number(dc) || 1))); setDc('') }}
-                  className="px-2 py-0.5 bg-red-800 hover:bg-red-700 text-white text-xs rounded transition-colors font-mono"
+                  className="px-2 py-0.5 bg-red-800 hover:bg-red-700 text-white text-xs rounded-lg transition-colors font-mono"
                   title={`Marcar ${tm.nome}`}>
                   − {tm.simbolo || tm.nome}
                 </button>
               ))}
               <button
                 onClick={() => { onCurarTrilha?.(c, Math.max(1, Math.abs(Number(dc) || 1))); setDc('') }}
-                className="px-2 py-0.5 bg-green-800 hover:bg-green-700 text-white text-xs rounded transition-colors"
+                className="px-2 py-0.5 bg-green-800 hover:bg-green-700 text-white text-xs rounded-lg transition-colors"
                 title="Curar caixinhas (menos severas primeiro)">
                 ＋ Cura
               </button>
@@ -385,15 +387,15 @@ function CombatenteRow({
             onChange={e => setDc(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') aplicarHp(-1) }}
             placeholder="0"
-            className="w-14 px-1.5 py-1 bg-purple-950 border border-purple-700 text-white text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+            className="w-14 px-1.5 py-1 bg-void border border-border text-white text-center rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
           />
-          <button onClick={() => aplicarHp(-1)} className="px-2.5 py-1 min-h-[24px] bg-red-800 hover:bg-red-700 text-white text-xs rounded transition-colors" title="Aplicar dano">− Dano</button>
-          <button onClick={() => aplicarHp(+1)} className="px-2.5 py-1 min-h-[24px] bg-green-800 hover:bg-green-700 text-white text-xs rounded transition-colors" title="Aplicar cura">＋ Cura</button>
+          <button onClick={() => aplicarHp(-1)} className="px-2.5 py-1 min-h-[24px] bg-red-800 hover:bg-red-700 text-white text-xs rounded-lg transition-colors" title="Aplicar dano">− Dano</button>
+          <button onClick={() => aplicarHp(+1)} className="px-2.5 py-1 min-h-[24px] bg-green-800 hover:bg-green-700 text-white text-xs rounded-lg transition-colors" title="Aplicar cura">＋ Cura</button>
           {/* F14.6 — aplicar o dano de poder pendente neste alvo */}
           {sugestaoDano && (
             <button
               onClick={() => onAplicarSugestao?.(c)}
-              className="px-2 py-0.5 bg-amber-700 hover:bg-amber-600 text-white text-xs rounded transition-colors font-medium animate-pulse"
+              className="px-2 py-0.5 bg-amber-700 hover:bg-amber-600 text-white text-xs rounded-lg transition-colors font-medium animate-pulse"
               title={`Aplicar ${sugestaoDano.valor} de dano${sugestaoDano.origem ? ` (${sugestaoDano.origem})` : ''} neste alvo`}
             >
               <Ilustra nome="espadas" tamanho={15} /> −{sugestaoDano.valor}
@@ -403,7 +405,7 @@ function CombatenteRow({
           {podePedirDefesa && (
             <button
               onClick={() => setPedindoDef(v => !v)}
-              className="px-2 py-0.5 bg-sky-800 hover:bg-sky-700 text-white text-xs rounded transition-colors"
+              className="px-2 py-0.5 bg-sky-800 hover:bg-sky-700 text-white text-xs rounded-lg transition-colors"
               title="Pedir defesa ativa (rolagem oposta)"
             >
               🛡 Pedir defesa
@@ -450,7 +452,7 @@ function CombatenteRow({
           {condsDoComb.map(cond => {
             const rest = rodadasRestantes(cond, rodadaAtual)
             return (
-              <span key={cond.id} className="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md border bg-fuchsia-900/40 border-fuchsia-600/50 text-fuchsia-200" title={cond.descricao || cond.nome}>
+              <span key={cond.id} className="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-lg border bg-fuchsia-900/40 border-fuchsia-600/50 text-fuchsia-200" title={cond.descricao || cond.nome}>
                 {cond.nome}{rest != null ? ` (${rest})` : ''}
                 {podeAgir && (
                   <button onClick={() => onRemoverCondicao(cond.id)} className="text-fuchsia-400 hover:text-white transition-colors" title="Remover condição">×</button>
@@ -487,10 +489,10 @@ function FormInimigo({ onAdicionar }) {
     }
   }
 
-  const inputCls = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
+  const inputCls = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
 
   return (
-    <div className="bg-slate-900/50 border border-purple-900/50 rounded-xl p-3 space-y-2">
+    <div className="bg-void border border-border rounded-xl p-3 space-y-2">
       <p className="text-purple-400 text-xs font-medium uppercase tracking-wider">Adicionar inimigo/NPC</p>
       <div className="flex flex-wrap gap-2">
         <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Nome (ex: Goblin)" className={`${inputCls} flex-1 min-w-[8rem]`} />
@@ -507,13 +509,11 @@ function FormInimigo({ onAdicionar }) {
           Qtd
           <input value={qtd} onChange={e => setQtd(e.target.value)} type="number" min="1" className={`${inputCls} w-16`} />
         </label>
-        <button
+        <Botao variante="primario" tamanho="sm"
           onClick={submit}
-          disabled={busy || !nome.trim()}
-          className="ml-auto px-3 py-1.5 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
-        >
+          disabled={busy || !nome.trim()} className="ml-auto">
           + Adicionar
-        </button>
+        </Botao>
       </div>
     </div>
   )
@@ -595,7 +595,7 @@ export default function CombatePanel({
         <button
           onClick={async () => { setBusy(true); setErro(''); try { await onIniciar() } catch (e) { setErro(e.message || 'Erro') } finally { setBusy(false) } }}
           disabled={busy}
-          className="px-4 py-2 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors shrink-0"
+          className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors shrink-0 inline-flex items-center gap-2"
         >
           {busy ? 'Iniciando...' : <><Ilustra nome="espadas" tamanho={18} /> Iniciar combate</>}
         </button>
@@ -626,22 +626,13 @@ export default function CombatePanel({
     <div className="mb-6 rounded-2xl border border-red-800/50 bg-gradient-to-b from-red-950/30 to-slate-900/40 p-4 space-y-3">
       <div className="flex items-center gap-3 flex-wrap">
         <span className="inline-flex items-center gap-1.5 text-red-300 text-xs font-bold uppercase tracking-wider">
-          ⚔️ {encontro.titulo || 'Combate'}
+          <Ilustra nome="espadas" tamanho={15} /> {encontro.titulo || 'Combate'}
         </span>
         <span className="text-white text-sm font-semibold">Rodada {encontro.rodada}</span>
         {ativo && (
           <span className="text-amber-300 text-xs">
             Vez de <span className="font-semibold">{ativo.nome}</span>
           </span>
-        )}
-        {isMestre && (
-          <button
-            onClick={async () => { setBusy(true); try { await onEncerrar() } finally { setBusy(false) } }}
-            disabled={busy}
-            className="ml-auto px-3 py-1.5 text-red-300 hover:text-white border border-red-800 hover:border-red-600 rounded-lg text-sm transition-colors disabled:opacity-50"
-          >
-            Encerrar combate
-          </button>
         )}
       </div>
 
@@ -662,7 +653,7 @@ export default function CombatePanel({
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-accent-300 text-xs">{ativo.nome}:</span>
           {cardsPorFicha[ativo.ficha_id].derivadosCombate.map(d => (
-            <span key={d.id} className="text-xs px-2 py-0.5 rounded-md border bg-slate-900/70 border-purple-800/60 text-purple-200">
+            <span key={d.id} className="text-xs px-2 py-0.5 rounded-lg border bg-slate-900/70 border-purple-800/60 text-purple-200">
               {d.nome} <span className="text-white font-bold">{d.valor != null ? d.valor : '—'}</span>
             </span>
           ))}
@@ -781,6 +772,20 @@ export default function CombatePanel({
           {acoesBestiario}
           <FormInimigo onAdicionar={onAdicionarInimigos} />
           {erro && <p className="text-red-400 text-xs">{erro}</p>}
+
+          {/* F38 — encerrar combate veio do topo do painel, onde ficava colado
+              no título e no "Próximo turno". Ação que desmonta o encontro fica
+              no fim, discreta, longe do caminho do dedo. */}
+          <div className="pt-2 flex">
+            <Botao
+              variante="fantasma" tamanho="sm"
+              onClick={async () => { setBusy(true); try { await onEncerrar() } finally { setBusy(false) } }}
+              disabled={busy}
+              className="ml-auto text-red-300 hover:text-white hover:bg-red-950/40"
+            >
+              Encerrar combate
+            </Botao>
+          </div>
         </div>
       )}
     </div>

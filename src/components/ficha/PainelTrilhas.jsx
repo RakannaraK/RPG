@@ -82,7 +82,7 @@ function Trilha({ t, marcasRaw, salvar, contextoFormula, isDono, onEventos, bonu
         <p className="text-ink text-sm font-semibold">{t.nome || 'Trilha'}</p>
         <span className="text-ink-dim text-xs font-mono">{cont.marcadas}/{cont.total}</span>
         {cheiaDoMaior && t.ao_encher_do_maior?.rotulo && (
-          <span className="text-xs font-bold px-2 py-0.5 rounded-md border bg-harm/80 border-harm text-harm animate-pulse"
+          <span className="text-xs font-bold px-2 py-0.5 rounded-lg border bg-harm/80 border-harm text-harm animate-pulse"
             title={t.ao_encher_do_maior.descricao || ''}>
             ☠ {t.ao_encher_do_maior.rotulo}
           </span>
@@ -92,7 +92,7 @@ function Trilha({ t, marcasRaw, salvar, contextoFormula, isDono, onEventos, bonu
           <div className="ml-auto flex gap-1">
             {tipos.map(tm => (
               <button key={tm.id} onClick={() => setTipoSel(tm.id)}
-                className={`text-xs px-1.5 py-0.5 rounded border font-mono transition-colors ${
+                className={`text-xs px-1.5 py-0.5 rounded-lg border font-mono transition-colors ${
                   tipoSel === tm.id ? 'bg-accent-700 border-accent-400 text-ink' : 'bg-void border-border text-ink-dim hover:border-accent-500'
                 }`}
                 title={`Marcar ${tm.nome}`}>
@@ -107,7 +107,7 @@ function Trilha({ t, marcasRaw, salvar, contextoFormula, isDono, onEventos, bonu
       <div className="flex flex-wrap gap-1">
         {exibicao.map((m, i) => (
           <button key={i} onClick={() => clicarCaixinha(m)} disabled={!isDono}
-            className={`w-7 h-7 rounded border text-sm font-bold font-mono transition-all duration-200 ${corCaixa(m)} ${isDono ? 'cursor-pointer' : 'cursor-default'}`}
+            className={`w-7 h-7 rounded-lg border text-sm font-bold font-mono transition-all duration-200 ${corCaixa(m)} ${isDono ? 'cursor-pointer' : 'cursor-default'}`}
             title={m == null ? (isDono ? `Marcar ${porId[tipoSel]?.nome || ''}` : '') : `${porId[m]?.nome || m}${isDono ? ' — clique para curar' : ''}`}>
             {m == null ? '' : (porId[m]?.simbolo || '•')}
           </button>
@@ -115,7 +115,7 @@ function Trilha({ t, marcasRaw, salvar, contextoFormula, isDono, onEventos, bonu
         {/* Trilha cheia: marcar aplica o transbordo */}
         {isDono && cont.livres === 0 && marcas.length > 0 && !cheiaDoMaior && (
           <button onClick={marcarTransbordo}
-            className="h-7 px-2 rounded border border-dashed border-harm/50 text-harm text-xs hover:bg-harm/50 transition-colors"
+            className="h-7 px-2 rounded-lg border border-dashed border-harm/50 text-harm text-xs hover:bg-harm/50 transition-colors"
             title={t.regra_transbordo === 'ignorar' ? 'Trilha cheia (transbordo ignorado)' : 'Trilha cheia — marcar converte a marca mais antiga'}>
             +{porId[tipoSel]?.simbolo || ''}
           </button>
@@ -129,7 +129,7 @@ function Trilha({ t, marcasRaw, salvar, contextoFormula, isDono, onEventos, bonu
             A fórmula reduziu a trilha para {tamanho} caixinhas — ajustar removeria {ajuste.removidas.length} marca(s).
           </span>
           <button onClick={() => persistir(ajuste.marcas)}
-            className="px-2 py-0.5 text-xs bg-dice-700 hover:bg-dice-500 text-ink rounded transition-colors">
+            className="px-2 py-0.5 text-xs bg-dice-700 hover:bg-dice-500 text-ink rounded-lg transition-colors">
             Ajustar mesmo assim
           </button>
         </div>

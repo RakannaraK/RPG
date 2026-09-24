@@ -27,12 +27,12 @@ function Estado({ cfg, valor, isDono, onSet }) {
         <span className="text-xs font-semibold uppercase tracking-[.12em]">{cfg.nome || 'Estado'}</span>
         {isDono && (
           <button onClick={() => onSet(cfg, v - 1)} disabled={noMin}
-            className="w-5 h-5 flex items-center justify-center rounded bg-void/60 hover:bg-raised disabled:opacity-30 text-sm leading-none transition-colors">−</button>
+            className="w-5 h-5 flex items-center justify-center rounded-lg bg-void/60 hover:bg-raised disabled:opacity-30 text-sm leading-none transition-colors">−</button>
         )}
         <span className="text-xl font-bold leading-none min-w-[1.5rem] text-center">{v}</span>
         {isDono && (
           <button onClick={() => onSet(cfg, v + 1)} disabled={noMax}
-            className="w-5 h-5 flex items-center justify-center rounded bg-void/60 hover:bg-raised disabled:opacity-30 text-sm leading-none transition-colors">+</button>
+            className="w-5 h-5 flex items-center justify-center rounded-lg bg-void/60 hover:bg-raised disabled:opacity-30 text-sm leading-none transition-colors">+</button>
         )}
         <span className="text-xs opacity-60 font-mono">/{cfg.max ?? 10}</span>
       </div>
@@ -40,7 +40,7 @@ function Estado({ cfg, valor, isDono, onSet }) {
         <p className="text-xs mt-1 font-medium animate-pulse">⚠ {faixa.aviso}</p>
       )}
       {(faixa?.bloqueios || []).map((b, i) => (
-        <span key={i} className="inline-block mt-1 mr-1 text-xs font-semibold px-1.5 py-0.5 rounded border bg-harm/80 border-harm text-harm">
+        <span key={i} className="inline-block mt-1 mr-1 text-xs font-semibold px-1.5 py-0.5 rounded-lg border bg-harm/80 border-harm text-harm">
           ⛔ {b}
         </span>
       ))}

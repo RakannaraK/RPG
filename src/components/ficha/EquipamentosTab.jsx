@@ -407,19 +407,19 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
                       placeholder="Propriedade"
                       value={p.chave}
                       onChange={e => updatePair(i, 'chave', e.target.value)}
-                      className="flex-1 px-2 py-1.5 rounded bg-void border border-border text-ink placeholder-accent-600 text-xs focus:outline-none focus:ring-1 focus:ring-accent-500"
+                      className="flex-1 px-2 py-1.5 rounded-lg bg-void border border-border text-ink placeholder-accent-600 text-xs focus:outline-none focus:ring-1 focus:ring-accent-500"
                     />
                     <input
                       type="text"
                       placeholder="Valor"
                       value={p.valor}
                       onChange={e => updatePair(i, 'valor', e.target.value)}
-                      className="flex-1 px-2 py-1.5 rounded bg-void border border-border text-ink placeholder-accent-600 text-xs focus:outline-none focus:ring-1 focus:ring-accent-500"
+                      className="flex-1 px-2 py-1.5 rounded-lg bg-void border border-border text-ink placeholder-accent-600 text-xs focus:outline-none focus:ring-1 focus:ring-accent-500"
                     />
                     <button
                       type="button"
                       onClick={() => removePair(i)}
-                      className="text-harm hover:text-harm text-xs px-2 rounded transition-colors"
+                      className="text-harm hover:text-harm text-xs px-2 rounded-lg transition-colors"
                     >
                       ✕
                     </button>
@@ -498,13 +498,13 @@ function MaestriaChips({ info }) {
     <div className="flex flex-wrap gap-1 mt-1.5">
       {desbloqueadas.map(p => (
         <span key={p.id} title={p.descricao}
-          className="text-xs px-1.5 py-0.5 rounded bg-dice-700/50 border border-dice-500/60 text-dice-200 cursor-help">
+          className="text-xs px-1.5 py-0.5 rounded-lg bg-dice-700/50 border border-dice-500/60 text-dice-200 cursor-help">
           {p.sigla || p.nome}
         </span>
       ))}
       {bloqueadas.map(p => (
         <span key={p.id} title={`${p.descricao} (requer maestria ${p.maestria_minima})`}
-          className="text-xs px-1.5 py-0.5 rounded bg-raised border border-border/60 text-ink-dim cursor-help">
+          className="text-xs px-1.5 py-0.5 rounded-lg bg-raised border border-border/60 text-ink-dim cursor-help">
           🔒 {p.sigla || p.nome} <span className="text-ink-dim">nv {p.maestria_minima}</span>
         </span>
       ))}
@@ -790,7 +790,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
       {itens.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-border rounded-2xl">
           <Ilustra nome="espadas" tamanho={72} className="mx-auto mb-4" />
-          <p className="text-accent-300 text-lg font-medium mb-2">Nenhum item ainda</p>
+          <p className="text-ink text-base font-medium mb-1">Nenhum item ainda</p>
           {isDono ? (
             <button
               onClick={() => setShowForm(true)}

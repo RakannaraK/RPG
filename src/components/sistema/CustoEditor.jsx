@@ -1,7 +1,8 @@
 import { validarFormula } from '../../lib/formulaEngine'
 import { validarEscala } from '../../lib/poderes'
+import Botao from '../ui/Botao'
 
-const INP = 'px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 /**
  * Fase 20.2 — monta a lista de débitos de um poder.
@@ -69,16 +70,16 @@ export function CustoEditor({ custo = [], pools = [], onChange }) {
       })}
 
       <div className="flex gap-1.5">
-        <button type="button" onClick={addPool} disabled={pools.length === 0}
-          className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors disabled:opacity-40"
+        <Botao variante="contorno" tamanho="sm" type="button" onClick={addPool} disabled={pools.length === 0}
+         
           title={pools.length === 0 ? 'Crie um recurso na aba Recursos' : 'Custo em recurso'}>
           + recurso
-        </button>
-        <button type="button" onClick={addSlot} disabled={temSlot}
-          className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors disabled:opacity-40"
+        </Botao>
+        <Botao variante="contorno" tamanho="sm" type="button" onClick={addSlot} disabled={temSlot}
+         
           title={temSlot ? 'Só um custo de slot por poder' : 'Custo em slot de círculo'}>
           + slot
-        </button>
+        </Botao>
       </div>
       {custo.length === 0 && <p className="text-accent-300 text-xs">Sem custo.</p>}
     </div>
@@ -133,10 +134,9 @@ export function EscalaEditor({ escala, onChange }) {
             className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
         </div>
       ))}
-      <button type="button" onClick={adicionar}
-        className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
+      <Botao variante="contorno" tamanho="sm" type="button" onClick={adicionar}>
         + faixa
-      </button>
+      </Botao>
       {faixas.length === 0 && <p className="text-accent-300 text-xs">Não escala com o círculo.</p>}
       {status && !status.valida && <p className="text-red-400 text-xs">⚠ {status.erro}</p>}
     </div>

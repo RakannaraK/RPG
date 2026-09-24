@@ -289,7 +289,7 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
                             <span className="text-accent-300 text-xs flex-1">{nomePorId[m] || m}</span>
                             <span className="text-ink-dim text-xs">{valorFinalMembro(etapaAtual.base_por_membro, alocacao[m])}</span>
                             <input type="number" min={0} value={alocacao[m] ?? 0} onChange={e => setPonto(m, e.target.value)}
-                              className="w-16 px-2 py-1 bg-void border border-border text-ink text-center rounded text-xs focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                              className="w-16 px-2 py-1 bg-void border border-border text-ink text-center rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-accent-500" />
                           </div>
                         ))}
                       </div>
@@ -319,7 +319,7 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
                   <div key={id} className="flex items-center gap-2">
                     <span className="text-accent-300 text-sm flex-1">{nomePorId[id] || id}</span>
                     <input type="number" min={0} value={alocacao[id] ?? 0} onChange={e => setPonto(id, e.target.value)}
-                      className="w-16 px-2 py-1 bg-void border border-border text-ink text-center rounded text-sm focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                      className="w-16 px-2 py-1 bg-void border border-border text-ink text-center rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent-500" />
                   </div>
                 ))}
               </div>

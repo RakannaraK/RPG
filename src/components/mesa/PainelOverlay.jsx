@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-slate-900 border border-purple-800 text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
 const BTN = 'px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50'
 const PADRAO = { mostrar_vida: 'barra', mostrar_turno: true, mostrar_rolagem: false, direcao: 'horizontal', escala: 1 }
 

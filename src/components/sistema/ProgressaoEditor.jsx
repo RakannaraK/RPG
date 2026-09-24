@@ -22,7 +22,7 @@ const ALVOS_COMPRA = [
   { id: 'trilha_tamanho_bonus', nome: 'Caixinhas extras de trilha' },
 ]
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 function novoId() {
   return `cat_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 4)}`
@@ -204,7 +204,7 @@ export default function ProgressaoEditor({ progressao, onChange, modoProgressao 
             onChange={e => onChange({ ...prog, tabela: parseTabela(e.target.value) })}
             placeholder="0, 300, 900, 2700, 6500"
             spellCheck={false}
-            className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm font-mono placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-3 py-2 rounded-lg bg-void border border-border text-white text-sm font-mono placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
           <p className="text-accent-300 text-xs">
             Separe por vírgula ou espaço. {(prog.tabela || []).length} nível(is) definido(s).

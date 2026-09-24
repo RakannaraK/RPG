@@ -94,7 +94,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
                   type="number"
                   value={hpAtual}
                   onChange={e => setHpAtual(e.target.value)}
-                  className="w-20 px-2 py-1.5 bg-purple-950 border border-purple-700 text-white text-center rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-20 px-2 py-1.5 bg-void border border-border text-white text-center rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
               <span className="text-accent-300 text-lg">/</span>
@@ -104,7 +104,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
                   type="number"
                   value={hpMaximo}
                   onChange={e => setHpMaximo(e.target.value)}
-                  className="w-20 px-2 py-1.5 bg-purple-950 border border-purple-700 text-white text-center rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-20 px-2 py-1.5 bg-void border border-border text-white text-center rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
               <button
@@ -184,7 +184,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
             onChange={e => setNotas(e.target.value)}
             placeholder="Histórico, personalidade, segredos, equipamentos, anotações..."
             rows={6}
-            className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-purple-800 text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+            className="w-full px-4 py-3 rounded-xl bg-void border border-border text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
           />
         ) : (
           <div className="px-4 py-3 rounded-xl bg-slate-800 border border-purple-800 min-h-[6rem]">

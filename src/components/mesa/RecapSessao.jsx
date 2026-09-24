@@ -65,7 +65,7 @@ export default function RecapSessao({ mesaId }) {
         <select
           value={janela}
           onChange={e => setJanela(e.target.value)}
-          className="px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+          className="px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
         >
           {JANELAS.map(j => <option key={j.id} value={j.id}>{j.label}</option>)}
         </select>

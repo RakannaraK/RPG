@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { usePropriedades } from '../../hooks/usePropriedades'
+import Botao from '../ui/Botao'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 /** Texto curto do efeito mecânico de uma propriedade. */
 function descreverEfeito(cfg) {
@@ -121,10 +122,9 @@ export default function PropriedadesEditor({ sistemaId, categorias = [] }) {
           </div>
         )}
 
-        <button onClick={adicionar} disabled={salvando}
-          className="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors">
+        <Botao variante="primario" tamanho="sm" onClick={adicionar} disabled={salvando}>
           {salvando ? '...' : '+ Adicionar propriedade'}
-        </button>
+        </Botao>
       </div>
 
       {erro && <p className="text-red-400 text-xs">{erro}</p>}

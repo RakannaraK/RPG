@@ -155,7 +155,7 @@ export default function RegraRolagem({ value, onChange }) {
               <select
                 value={regra.lados}
                 onChange={e => update('lados', Number(e.target.value))}
-                className="w-full px-3 py-2 bg-purple-950 border border-purple-700 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 bg-void border border-border text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
                 {LADOS_OPCOES.map(l => (
                   <option key={l} value={l}>d{l}</option>
@@ -202,7 +202,7 @@ export default function RegraRolagem({ value, onChange }) {
             max={100}
             value={regra.valor ?? 10}
             onChange={e => onChange({ ...regra, valor: Number(e.target.value) })}
-            className="w-full px-3 py-2 bg-purple-950 border border-purple-700 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-3 py-2 bg-void border border-border text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
       )}
@@ -216,7 +216,7 @@ export default function RegraRolagem({ value, onChange }) {
             max={200}
             value={regra.pool_total ?? 27}
             onChange={e => onChange({ ...regra, pool_total: Number(e.target.value) })}
-            className="w-full px-3 py-2 bg-purple-950 border border-purple-700 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-3 py-2 bg-void border border-border text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
           <p className="text-accent-300 text-xs mt-1">Os jogadores distribuem esses pontos entre os atributos.</p>
         </div>

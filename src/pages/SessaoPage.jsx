@@ -423,16 +423,7 @@ export default function SessaoPage() {
               <Ilustra nome="mapa" tamanho={18} /> <span className="hidden sm:inline">Mapa</span>
             </button>
             <Sininho />
-            <span
-              className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-                conectado ? 'text-emerald-300' : 'text-amber-300'
-              }`}
-              title={conectado ? 'Tempo real conectado' : 'Reconectando ao tempo real...'}
-            >
-              <span className={`w-2 h-2 rounded-full ${conectado ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
-              <span className="hidden sm:inline">{conectado ? 'Conectado' : 'Reconectando…'}</span>
-            </span>
-            <PresencaBar conectados={conectados} meuId={session?.user?.id} />
+            <PresencaBar conectados={conectados} meuId={session?.user?.id} conectado={conectado} />
           </div>
         </div>
       </header>

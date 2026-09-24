@@ -30,14 +30,14 @@ export default function AtributoEditor({ atributo, onChange, onRemove, index }) 
           <button
             type="button"
             onClick={() => setExpanded(v => !v)}
-            className="text-purple-400 hover:text-white text-xs px-2 py-1 rounded transition-colors"
+            className="text-purple-400 hover:text-white text-xs px-2 py-1 rounded-lg transition-colors"
           >
             {expanded ? '▲ Fechar' : '▼ Editar'}
           </button>
           <button
             type="button"
             onClick={onRemove}
-            className="text-red-500 hover:text-red-400 text-xs px-2 py-1 rounded transition-colors"
+            className="text-red-500 hover:text-red-400 text-xs px-2 py-1 rounded-lg transition-colors"
             title="Remover atributo"
           >
             ✕
@@ -53,7 +53,7 @@ export default function AtributoEditor({ atributo, onChange, onRemove, index }) 
             <select
               value={atributo.exibicao || ''}
               onChange={e => updateField('exibicao', e.target.value || null)}
-              className="px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+              className="px-2 py-1 rounded-lg bg-void border border-border text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
             >
               <option value="">Padrão do sistema</option>
               <option value="numero">Número</option>
@@ -68,7 +68,7 @@ export default function AtributoEditor({ atributo, onChange, onRemove, index }) 
               placeholder="Ex: Mede a força física do personagem"
               value={atributo.descricao || ''}
               onChange={e => updateField('descricao', e.target.value)}
-              className="w-full px-3 py-2 bg-purple-950 border border-purple-700 text-white placeholder-ink-dim rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 bg-void border border-border text-white placeholder-ink-dim rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
 

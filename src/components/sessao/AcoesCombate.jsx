@@ -86,7 +86,7 @@ export default function AcoesCombate({
         <select
           value={alvoId}
           onChange={e => setAlvoId(e.target.value)}
-          className="flex-1 px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
+          className="flex-1 px-2 py-1 rounded-lg bg-void border border-border text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
         >
           <option value="">Nenhum (só rolar)</option>
           {alvos.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}

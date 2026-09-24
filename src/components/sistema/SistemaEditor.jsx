@@ -20,6 +20,7 @@ import MaestriaItensEditor from './MaestriaItensEditor'
 import SimuladorFicha from './SimuladorFicha'
 import DescansosEditor from './DescansosEditor'
 import Ilustra from '../arte/Ilustra'
+import Botao from '../ui/Botao'
 
 const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes', 'Descansos', 'Recursos', 'Poderes', 'Maestria & Itens', 'Simulador']
 
@@ -219,7 +220,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
       return (
         <div className="text-center py-16 border border-dashed border-purple-800 rounded-2xl">
           <Ilustra nome="tomo" tamanho={72} className="mx-auto mb-4" />
-          <p className="text-purple-300 text-lg font-medium">Nenhum sistema definido</p>
+          <p className="text-ink text-base font-medium">Nenhum sistema definido</p>
           <p className="text-accent-300 text-sm mt-2">Aguarde o mestre configurar o sistema de regras.</p>
         </div>
       )
@@ -319,7 +320,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
             placeholder="Ex: D&D 5e, Homebrew, Call of Cthulhu..."
             value={nome}
             onChange={e => setNome(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-4 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
         <div>
@@ -329,7 +330,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
             placeholder="Uma descrição breve do sistema..."
             value={descricao}
             onChange={e => setDescricao(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-4 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
       </div>
@@ -359,13 +360,11 @@ export default function SistemaEditor({ mesaId, isMestre }) {
               <p className="text-sm font-medium text-purple-200">
                 Atributos {atributos.length > 0 && `(${atributos.length})`}
               </p>
-              <button
+              <Botao variante="primario" tamanho="sm"
                 type="button"
-                onClick={addAtributo}
-                className="text-sm px-3 py-1.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg transition-colors"
-              >
+                onClick={addAtributo}>
                 + Adicionar atributo
-              </button>
+              </Botao>
             </div>
 
             {atributos.length === 0 ? (
@@ -441,14 +440,14 @@ export default function SistemaEditor({ mesaId, isMestre }) {
           sistemaDB?.id ? (
             <div className="space-y-3">
               {/* 20.6 — rótulo do painel na ficha (o mestre nomeia) */}
-              <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 flex items-center gap-3 flex-wrap">
+              <div className="bg-void border border-border rounded-xl p-4 flex items-center gap-3 flex-wrap">
                 <label className="text-purple-300 text-sm shrink-0">Nome do painel na ficha</label>
                 <input
                   type="text"
                   value={configLayout.poderes_rotulo || ''}
                   onChange={e => setConfigLayout(prev => ({ ...prev, poderes_rotulo: e.target.value }))}
                   placeholder="Poderes, Magias, Técnicas..."
-                  className="flex-1 min-w-[10rem] px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 min-w-[10rem] px-3 py-2 rounded-lg bg-void border border-border text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
               <LinhasPoderEditor sistemaId={sistemaDB.id} />
@@ -483,25 +482,22 @@ export default function SistemaEditor({ mesaId, isMestre }) {
 
       {/* Botão salvar */}
       <div className="border-t border-purple-900 pt-4 flex items-center gap-4">
-        <button
+        <Botao variante="primario" tamanho="md"
           type="button"
           onClick={handleSave}
-          disabled={saving}
-          className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
-        >
+          disabled={saving} className="font-semibold">
           {saving ? 'Salvando...' : 'Salvar sistema'}
-        </button>
+        </Botao>
 
         {sistemaDB?.id && (
-          <button
+          <Botao variante="contorno" tamanho="md"
             type="button"
             onClick={handleExportar}
             disabled={exportando || saving}
-            className="px-4 py-2.5 border border-purple-700 text-purple-200 hover:bg-purple-900/40 disabled:opacity-50 rounded-lg transition-colors text-sm"
-            title="Baixa um .json com todo o sistema (backup ou importar em outra mesa)"
-          >
+           
+            title="Baixa um .json com todo o sistema (backup ou importar em outra mesa)">
             {exportando ? 'Exportando...' : '⬇ Exportar sistema'}
-          </button>
+          </Botao>
         )}
 
         {saveSuccess && (

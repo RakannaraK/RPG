@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import { useAuth } from '../../context/AuthContext'
 import { FONTES, LIMITE_SOM, TEMAS, extensaoDoSom, validarSom } from '../../lib/personalizacao'
+import Botao from '../ui/Botao'
 
 const BUCKET = 'fichas-imagens' // mesmo bucket das imagens: pasta do próprio usuário
 
@@ -74,7 +75,7 @@ function EnvioDeSom({ campo, campoVolume, pasta, titulo, dica, rodape }) {
         >{enviando ? 'Enviando…' : som ? 'Trocar som' : 'Enviar som'}</button>
         {som && (
           <>
-            <button type="button" onClick={ouvir} className="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm">🔊 Ouvir</button>
+            <Botao variante="secundario" tamanho="sm" type="button" onClick={ouvir}>🔊 Ouvir</Botao>
             <button
               type="button" onClick={() => salvarPreferencias({ [campo]: null })}
               className="px-2 py-1.5 text-red-400 hover:text-red-300 text-sm"
@@ -126,7 +127,7 @@ export default function Aparencia() {
         <span className="text-xs text-purple-400">Fonte</span>
         <select
           value={fonte} onChange={e => salvarPreferencias({ fonte: e.target.value })}
-          className="mt-1 w-full px-2 py-1.5 rounded-lg bg-slate-900 border border-purple-800 text-white text-sm"
+          className="mt-1 w-full px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm"
         >
           {FONTES.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
         </select>

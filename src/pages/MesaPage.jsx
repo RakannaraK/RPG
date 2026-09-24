@@ -493,7 +493,7 @@ export default function MesaPage() {
               ) : fichas.length === 0 ? (
                 <div className="text-center py-16 border border-dashed border-purple-800 rounded-2xl">
                   <Ilustra nome="pergaminho" tamanho={72} className="mx-auto mb-4" />
-                  <p className="text-purple-300 text-lg font-medium mb-2">Nenhuma ficha criada</p>
+                  <p className="text-ink text-base font-medium mb-1">Nenhuma ficha criada</p>
                   <p className="text-accent-300 text-sm mb-5">
                     {podeEscrever
                       ? 'Crie sua primeira ficha de personagem para começar a aventura!'
@@ -712,13 +712,11 @@ export default function MesaPage() {
                           O código antigo <strong>deixará de funcionar</strong>. Quem já é membro continua na mesa.
                         </p>
                         <div className="flex items-center gap-2">
-                          <button
+                          <Botao variante="primario" tamanho="sm"
                             onClick={handleRegenerarConvite}
-                            disabled={regenerating}
-                            className="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors"
-                          >
+                            disabled={regenerating}>
                             {regenerating ? 'Gerando...' : 'Confirmar novo código'}
-                          </button>
+                          </Botao>
                           <button
                             onClick={() => { setConfirmandoRegen(false); setRegenError('') }}
                             disabled={regenerating}
@@ -775,7 +773,7 @@ export default function MesaPage() {
                           <select
                             value={m.role}
                             onChange={e => handleDefinirRole(m.usuario.id, e.target.value)}
-                            className="text-xs px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            className="text-xs px-2 py-1 rounded-lg bg-void border border-border text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
                             title="Papel na mesa"
                           >
                             <option value="co-mestre">Co-mestre</option>
@@ -809,12 +807,12 @@ export default function MesaPage() {
                   <p className="text-accent-300 text-xs mb-3">
                     Passe a mesa para outro membro. Você deixa de ser o dono e vira co-mestre.
                   </p>
-                  <button
+                  <Botao
+                    variante="contorno"
                     onClick={() => { setTransferError(''); setNovoDonoId(''); setShowTransferir(true) }}
-                    className="px-4 py-2 bg-amber-800/70 hover:bg-amber-700 text-amber-50 text-sm rounded-lg transition-colors"
                   >
                     Transferir posse da mesa
-                  </button>
+                  </Botao>
                 </div>
               )}
 
@@ -884,13 +882,11 @@ export default function MesaPage() {
               >
                 Cancelar
               </button>
-              <button
+              <Botao variante="perigo" tamanho="md"
                 onClick={handleDeleteMesa}
-                disabled={deletingMesa}
-                className="flex-1 py-2.5 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors"
-              >
+                disabled={deletingMesa} className="flex-1 font-semibold">
                 {deletingMesa ? 'Deletando...' : 'Deletar'}
-              </button>
+              </Botao>
             </div>
           </div>
         </div>
@@ -1011,13 +1007,11 @@ export default function MesaPage() {
               >
                 Cancelar
               </button>
-              <button
+              <Botao variante="perigo" tamanho="md"
                 onClick={handleExpulsar}
-                disabled={expelling}
-                className="flex-1 py-2.5 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors"
-              >
+                disabled={expelling} className="flex-1 font-semibold">
                 {expelling ? 'Expulsando...' : 'Expulsar'}
-              </button>
+              </Botao>
             </div>
           </div>
         </div>
@@ -1037,7 +1031,7 @@ export default function MesaPage() {
             <select
               value={novoDonoId}
               onChange={e => setNovoDonoId(e.target.value)}
-              className="w-full px-3 py-2 mb-4 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+              className="w-full px-3 py-2 mb-4 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
             >
               <option value="">Selecionar membro...</option>
               {membros

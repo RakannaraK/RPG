@@ -87,13 +87,11 @@ export default function DashboardPage() {
           >
             <Ilustra nome="ajustes" tamanho={20} />
           </button>
-          <button
+          <Botao variante="primario" tamanho="sm"
             onClick={handleLogout}
-            disabled={logoutLoading}
-            className="px-4 py-1.5 text-sm bg-purple-800 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg transition-colors"
-          >
+            disabled={logoutLoading}>
             {logoutLoading ? 'Saindo...' : 'Sair'}
-          </button>
+          </Botao>
         </div>
       </div>
       </header>
@@ -126,16 +124,16 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[1, 2, 3].map(i => (
               <div key={i} className="bg-slate-800 border border-purple-900 rounded-2xl p-5 animate-pulse">
-                <div className="h-5 bg-purple-900 rounded w-3/4 mb-3" />
-                <div className="h-4 bg-purple-900 rounded w-full mb-2" />
-                <div className="h-4 bg-purple-900 rounded w-1/2" />
+                <div className="h-5 bg-purple-900 rounded-lg w-3/4 mb-3" />
+                <div className="h-4 bg-purple-900 rounded-lg w-full mb-2" />
+                <div className="h-4 bg-purple-900 rounded-lg w-1/2" />
               </div>
             ))}
           </div>
         ) : ativas.length === 0 && arquivadas.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-purple-800 rounded-2xl">
             <Ilustra nome="mapa" tamanho={80} className="mx-auto mb-4" />
-            <p className="text-purple-300 text-lg font-medium mb-2">Nenhuma mesa ainda</p>
+            <p className="text-ink text-base font-medium mb-1">Nenhuma mesa ainda</p>
             <p className="text-accent-300 text-sm mb-6">Crie sua primeira mesa ou entre em uma com um código de convite.</p>
             <div className="flex flex-wrap gap-3 justify-center">
               <button

@@ -28,7 +28,7 @@ export function MiniTrilha({ trilha }) {
       </div>
       <span className="text-accent-300 text-xs font-mono">{trilha.cont.marcadas}/{trilha.cont.total}</span>
       {trilha.cheiaDoMaior && trilha.rotuloCheia && (
-        <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-red-950/80 border border-red-500 text-red-200">☠ {trilha.rotuloCheia}</span>
+        <span className="text-xs font-bold px-1.5 py-0.5 rounded-lg bg-red-950/80 border border-red-500 text-red-200">☠ {trilha.rotuloCheia}</span>
       )}
     </div>
   )
@@ -42,7 +42,7 @@ function ChipEstado({ chip }) {
     desvantagem:'bg-red-900/50 border-red-700/60 text-red-300',
   }[chip.tipo] || 'bg-slate-700 border-slate-600 text-slate-200'
   return (
-    <span className={`text-xs px-1.5 py-0.5 rounded-md border ${cls}`}>
+    <span className={`text-xs px-1.5 py-0.5 rounded-lg border ${cls}`}>
       {chip.label}
     </span>
   )
@@ -84,7 +84,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
             <span className="text-purple-400 text-xs uppercase tracking-wider">Vida</span>
             <span className="text-white text-sm font-semibold">
               {card.hpAtual}
-              <span className="text-accent-300 font-normal"> / {hpMax || '?'}</span>
+              <span className="text-accent-300 font-normal"> / {hpMax || '—'}</span>
               {temModVida && card.hpMax > card.hpMaxBase && (
                 <span className="text-green-400 text-xs font-mono ml-1">(+{card.hpMax - card.hpMaxBase})</span>
               )}
@@ -109,7 +109,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
         <div className="flex flex-wrap gap-1.5">
           {card.estados.map(e => (
             <span key={e.id}
-              className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md border font-semibold ${
+              className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-lg border font-semibold ${
                 e.calor >= 0.99 ? 'bg-red-950/70 border-red-500 text-red-200'
                 : e.calor >= 0.75 ? 'bg-orange-950/60 border-orange-500/80 text-orange-200'
                 : e.calor >= 0.5 ? 'bg-amber-950/50 border-amber-500/70 text-amber-200'
@@ -145,7 +145,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
             <button
               key={t.id}
               onClick={() => onToggleCondicao?.(card.id, t.id, !t.ativo)}
-              className={`text-xs px-2 py-0.5 rounded-md border transition-colors ${
+              className={`text-xs px-2 py-0.5 rounded-lg border transition-colors ${
                 t.ativo
                   ? 'bg-amber-800/70 border-amber-500/70 text-amber-100'
                   : 'bg-slate-900/60 border-slate-600/50 text-slate-400 hover:border-amber-600/60 hover:text-amber-200'

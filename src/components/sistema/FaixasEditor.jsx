@@ -1,7 +1,8 @@
 import { validarFaixas } from '../../lib/faixas'
+import Botao from '../ui/Botao'
 
 const inputCls =
-  'px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
+  'px-2 py-1 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 /**
  * Fase 19.4 — edita o escalonamento por faixa de um modificador.
@@ -110,13 +111,11 @@ export default function FaixasEditor({ spec, onChange, classes = [], valorPlaceh
         )
       })}
 
-      <button
+      <Botao variante="contorno" tamanho="sm"
         type="button"
-        onClick={adicionar}
-        className="text-xs px-2 py-1 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors"
-      >
+        onClick={adicionar}>
         + Faixa
-      </button>
+      </Botao>
 
       {status && !status.valida && <p className="text-red-400 text-xs">⚠ {status.erro}</p>}
       {status && status.valida && (

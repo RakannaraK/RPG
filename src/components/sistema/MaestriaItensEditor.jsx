@@ -3,8 +3,9 @@ import FormulaInput from './FormulaInput'
 import { useCategorias } from '../../hooks/useCategorias'
 import PropriedadesEditor from './PropriedadesEditor'
 import MoedasEditor from './MoedasEditor'
+import Botao from '../ui/Botao'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
+const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 // "100, 300, 600" → [100, 300, 600]
 function parseTabela(texto) {
@@ -38,7 +39,7 @@ function CategoriasEditor({ categorias, criarCategoria, atualizarCategoria, remo
       {categorias.length > 0 && (
         <div className="space-y-1.5">
           {categorias.map(c => (
-            <div key={c.id} className="flex items-center gap-2 bg-purple-950/40 border border-purple-800 rounded-lg px-2.5 py-1.5">
+            <div key={c.id} className="flex items-center gap-2 bg-void border border-border rounded-lg px-2.5 py-1.5">
               <input
                 type="text"
                 defaultValue={c.nome}
@@ -84,10 +85,9 @@ function CategoriasEditor({ categorias, criarCategoria, atualizarCategoria, remo
           placeholder="Nova categoria (ex: Machados)" className={`${INP} flex-1 min-w-[10rem]`} />
         <input type="text" value={descricao} onChange={e => setDescricao(e.target.value)}
           placeholder="Descrição" className={`${INP} w-40`} />
-        <button onClick={adicionar}
-          className="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 text-white text-xs rounded-lg transition-colors">
+        <Botao variante="primario" tamanho="sm" onClick={adicionar}>
           + Adicionar
-        </button>
+        </Botao>
       </div>
       {erro && <p className="text-red-400 text-xs">{erro}</p>}
     </div>

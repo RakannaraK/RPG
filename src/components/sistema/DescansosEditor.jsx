@@ -5,8 +5,9 @@
  * Fase 17.5 — modos fixo/dado aceitam fórmula/notação com variáveis.
  */
 import FormulaInput from './FormulaInput'
+import Botao from '../ui/Botao'
 
-const inputCls = 'px-2 py-1 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
+const inputCls = 'px-2 py-1 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
 const selectCls = inputCls
 
 function novoDescanso() {
@@ -90,9 +91,9 @@ export default function DescansosEditor({ descansos = [], onChange }) {
           <p className="text-sm font-medium text-purple-200">Tipos de descanso {descansos.length > 0 && `(${descansos.length})`}</p>
           <p className="text-accent-300 text-xs mt-0.5">Defina como cada descanso recupera vida e recursos. Sem descansos, a funcionalidade fica oculta.</p>
         </div>
-        <button type="button" onClick={add} className="text-sm px-3 py-1.5 bg-purple-800 hover:bg-purple-700 text-white rounded-lg transition-colors shrink-0">
+        <Botao variante="primario" tamanho="sm" type="button" onClick={add} className="shrink-0">
           + Adicionar descanso
-        </button>
+        </Botao>
       </div>
 
       {descansos.length === 0 ? (
@@ -102,7 +103,7 @@ export default function DescansosEditor({ descansos = [], onChange }) {
       ) : (
         <div className="space-y-3">
           {descansos.map((d, i) => (
-            <div key={d.id} className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
+            <div key={d.id} className="bg-void border border-border rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <input
                   type="text"

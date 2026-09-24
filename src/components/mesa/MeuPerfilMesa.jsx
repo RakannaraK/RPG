@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { redimensionarImagem } from '../../lib/imageUtils'
+import Botao from '../ui/Botao'
 
 /**
  * Fase 16.6 — "Meu perfil nesta mesa": apelido + avatar específicos da mesa.
@@ -75,7 +76,7 @@ export default function MeuPerfilMesa({ mesaId, usuarioId, username, apelidoInic
             value={apelido}
             onChange={e => setApelido(e.target.value)}
             placeholder={`Apelido (padrão: ${username || 'seu nome'})`}
-            className="w-full px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500"
+            className="w-full px-3 py-2 rounded-lg bg-void border border-border text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500"
           />
           <div className="flex items-center gap-2 flex-wrap">
             <label className="text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-purple-200 rounded-lg cursor-pointer transition-colors">
@@ -91,13 +92,11 @@ export default function MeuPerfilMesa({ mesaId, usuarioId, username, apelidoInic
         </div>
       </div>
       <div className="flex items-center gap-3 mt-3">
-        <button
+        <Botao variante="primario" tamanho="md"
           onClick={salvar}
-          disabled={saving || uploading}
-          className="px-4 py-2 bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
-        >
+          disabled={saving || uploading}>
           {saving ? 'Salvando...' : 'Salvar perfil'}
-        </button>
+        </Botao>
         {salvo && <span className="text-green-400 text-xs">✓ Salvo</span>}
         {erro && <span className="text-red-400 text-xs">{erro}</span>}
       </div>
