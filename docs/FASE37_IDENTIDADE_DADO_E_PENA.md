@@ -74,3 +74,23 @@ Tudo o que a varredura deixou anotado foi corrigido:
 **Medições depois de tudo** (1280 px e 375 px, logado): 0 reprovações de contraste nos 5 temas (pior razão 4,94 na ficha, 5,38 na mesa), menor fonte 12 px, **0 alvos de toque abaixo de 24 px** em painel, mesa, ficha, sessão e comunidade, nenhuma rolagem lateral, 0 erro no console.
 
 **Regressões que eu mesmo causei e corrigi na hora, por medir:** `flex` no `<summary>` apaga o triângulo nativo de abrir/fechar; ícone em botão de largura cheia fica solto na ponta; e o cabeçalho do painel passou a transbordar 41 px no celular (marca + 5 ícones em 375 px) — as ações foram para a segunda faixa.
+
+---
+
+## Rodada final (2026-09-24) — os 8 itens que faltavam
+
+Fechados: campos (233 usos, 6 tratamentos → um só, com verificação de contexto para não pintar card como campo), hierarquia dos estados vazios, vermelho saindo das ações desejáveis, "Encerrar combate" fora do topo, indicador de conexão unificado, raios (73 usos → `lg`/`xl`/`2xl`/`full`), densidade da linha de combate e 41 botões adotando o `Botao`.
+
+**Achado sistêmico de contraste:** botão cheio no acento com texto claro reprova nos temas claros. Em `accent-600`, branco dá 6,7:1 no violeta e 4,8 no carmim, mas 3,8 no esmeralda, 3,2 no âmbar e 4,1 no gelo — ali texto **escuro** é que passa. A cor de quem senta sobre o acento virou token de tema (`--sobre-acento`): branco em violeta e carmim, quase-preto nos outros três. Não é preferência estética; é o que a medição exigiu.
+
+**Estado final medido** (painel, mesa, ficha, sessão, comunidade × 5 temas): **0 reprovações de contraste** (pior razão 4,70), **0 alvos de toque abaixo de 24 px**, menor fonte 12 px, nenhuma rolagem lateral em 375 px, 0 erro no console, 863 testes verdes.
+
+### Duas armadilhas que me pegaram (e o que fazer)
+1. **Regex de string que atravessa linha.** Um `'[^']*...'` em Python casa através de quebras de linha e pode engolir um arquivo inteiro: trocou `text-white`/`text-ink` em 63 arquivos sem fundo de acento e corrompeu `text-ink-dim`. Fazer substituição de classe **linha a linha**, e usar `(?![-\w])` para `text-ink` não casar dentro de `text-ink-dim`.
+2. **Mudança em `tailwind.config.js` não recarrega no servidor de dev.** A classe nova não existia no CSS servido, mas existia no build. Ao mexer no config, reiniciar o `npm run dev` antes de medir — senão a medição acusa erro que não existe em produção.
+
+### O que segue aberto, de propósito
+- Adoção do `Botao`: 41 convertidos; os 471 restantes têm classe montada em template (estado ativo/inativo) e precisam de decisão humana caso a caso.
+- Emoji dentro de frase e em botão com rótulo escrito continuam.
+- Bucket vazio `ficha-imagens` no Supabase: só pelo painel (o SQL é bloqueado por gatilho e a API exige service_role).
+
