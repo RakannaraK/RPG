@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import CapaMesa from './CapaMesa'
+import Ilustra from '../arte/Ilustra'
+import { textoQuando } from '../../lib/agenda'
 
 const ROLE_LABELS = { mestre: 'Mestre', 'co-mestre': 'Co-mestre', jogador: 'Jogador', espectador: 'Espectador' }
 const ROLE_COLORS = {
@@ -9,7 +11,7 @@ const ROLE_COLORS = {
   espectador: 'bg-slate-600 text-slate-100',
 }
 
-export default function MesaCard({ mesa }) {
+export default function MesaCard({ mesa, proxima = null }) {
   const navigate = useNavigate()
 
   return (
@@ -39,6 +41,13 @@ export default function MesaCard({ mesa }) {
         {mesa.role === 'co-mestre' && <span className="text-orange-400">🛡 Co-mestre</span>}
         {mesa.arquivada && <span className="text-accent-300">📦 Arquivada</span>}
       </div>
+      {/* F40 — próxima sessão marcada */}
+      {proxima && (
+        <p className="mt-2 flex items-center gap-1.5 text-xs text-ink">
+          <Ilustra nome="calendario" tamanho={14} />
+          <span className="text-ink-dim">Próxima:</span> {textoQuando(proxima.inicio)}
+        </p>
+      )}
       </div>
     </button>
   )

@@ -27,6 +27,7 @@ import Sininho from '../components/notificacoes/Sininho'
 import Ilustra from '../components/arte/Ilustra'
 import CapaMesa from '../components/mesa/CapaMesa'
 import SeletorCapa from '../components/mesa/SeletorCapa'
+import AgendaMesa from '../components/mesa/AgendaMesa'
 import Botao from '../components/ui/Botao'
 
 const TABS = ['Fichas', 'Bestiário', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
@@ -431,6 +432,8 @@ export default function MesaPage() {
 
         {/* Fase 13.1 — banner de sessão ao vivo (não em mesa arquivada) */}
         {!arquivada && <SessaoBanner mesaId={id} isGestor={isGestor} />}
+        {/* F40 — próxima sessão no mundo real, com confirmação de presença */}
+        {!arquivada && <AgendaMesa mesaId={id} isGestor={isGestor} />}
         {/* Fase 13.5 — histórico de sessões encerradas */}
         <SessoesHistorico mesaId={id} />
 

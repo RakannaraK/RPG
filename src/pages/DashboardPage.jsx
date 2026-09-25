@@ -12,6 +12,7 @@ import GuiaMestre from '../components/ajuda/GuiaMestre'
 import Marca from '../components/marca/Marca'
 import Ilustra from '../components/arte/Ilustra'
 import Botao from '../components/ui/Botao'
+import { proximaDaMesa } from '../lib/agenda'
 
 export default function DashboardPage() {
   const { session, logout } = useAuth()
@@ -22,6 +23,13 @@ export default function DashboardPage() {
   const [showInvite, setShowInvite] = useState(false)
   const [showPrefs, setShowPrefs] = useState(false)
   const [showGuia, setShowGuia] = useState(false)
+  // F40 — próxima sessão de cada mesa (uma consulta; a RLS devolve só as minhas)
+  const [agendas, setAgendas] = useState([])
+  useEffect(() => {
+    supabase.from('agenda_mesa').select('id, mesa_id, inicio, duracao_min, recorrencia, ate, titulo')
+      .then(({ data }) => setAgendas(data || []))
+  }, [])
+  const proximaDe = mesaId => proximaDaMesa(agendas.filter(a => a.mesa_id === mesaId))
   const [logoutLoading, setLogoutLoading] = useState(false)
   const [showArquivadas, setShowArquivadas] = useState(false)
 
@@ -155,7 +163,7 @@ export default function DashboardPage() {
             {ativas.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {ativas.map(mesa => (
-                  <MesaCard key={mesa.id} mesa={mesa} />
+                  <MesaCard key={mesa.id} mesa={mesa} proxima={proximaDe(mesa.id)} />
                 ))}
               </div>
             ) : (
@@ -176,7 +184,7 @@ export default function DashboardPage() {
                 {showArquivadas && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3 opacity-75">
                     {arquivadas.map(mesa => (
-                      <MesaCard key={mesa.id} mesa={mesa} />
+                      <MesaCard key={mesa.id} mesa={mesa} proxima={proximaDe(mesa.id)} />
                     ))}
                   </div>
                 )}
