@@ -45,6 +45,7 @@ import PainelLinhas from '../components/ficha/PainelLinhas'
 import { podeAtivarHabilidade, planejarTurno } from '../lib/custoHabilidade'
 import Botao from '../components/ui/Botao'
 import BarraMacros from '../components/ficha/BarraMacros'
+import CabecalhoImpressao from '../components/ficha/CabecalhoImpressao'
 import { useCategorias } from '../hooks/useCategorias'
 import { useMaestrias } from '../hooks/useMaestrias'
 import { usePropriedades } from '../hooks/usePropriedades'
@@ -1020,7 +1021,7 @@ export default function FichaPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-void via-void to-black">
       {/* Barra de navegação */}
-      <header className="border-b border-border py-4">
+      <header className="border-b border-border py-4 print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-4">
           <Botao variante="fantasma" tamanho="sm" onClick={() => navigate(`/mesa/${mesaId}`)} className="shrink-0">
             ← Voltar
@@ -1039,6 +1040,14 @@ export default function FichaPage() {
             {ficha.privada && (
               <Ilustra nome="cadeado" tamanho={16} className="opacity-80" aria-label="Ficha privada" />
             )}
+            {/* F45 — ficha em A4, com QR code para a versão online */}
+            <button
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-ink-dim hover:text-ink hover:bg-hover rounded-lg transition-colors"
+              title="Imprimir a ficha (A4)" aria-label="Imprimir a ficha"
+            >
+              <Ilustra nome="pergaminho" tamanho={18} /> <span className="hidden sm:inline">Imprimir</span>
+            </button>
             <button
               onClick={handleExportar}
               disabled={!!portatil}
@@ -1082,6 +1091,7 @@ export default function FichaPage() {
       {/* Conteúdo principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className="moldura-pergaminho moldura-cantos moldura-cantos-g space-y-6">
+        <CabecalhoImpressao titulo={ficha.nome_personagem} url={`${window.location.origin}/mesa/${mesaId}/ficha/${fichaId}`} />
         {/* Cabeçalho do personagem */}
         {/* F33 — formas alternativas (só personagem tem; a forma em si não) */}
         {ficha.tipo_ficha === 'personagem' && !ficha.forma_de_id && (
@@ -1338,7 +1348,7 @@ export default function FichaPage() {
         />
 
         {/* Layout de 3 colunas */}
-        <div className="flex flex-col lg:flex-row gap-4 items-start">
+        <div className="flex flex-col lg:flex-row gap-4 items-start print:items-stretch">
 
           {/* Coluna esquerda — Perícias / Proficiências */}
           {hasLeft && (

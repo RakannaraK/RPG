@@ -89,7 +89,7 @@ export default function BarraMacros({ ficha, fichaId, mesaId, podeEditar, contex
   }
 
   return (
-    <section className="rounded-xl border border-border bg-raised/60 px-4 py-3 space-y-3" aria-label="Macros de rolagem">
+    <section className="rounded-xl border border-border bg-raised/60 px-4 py-3 space-y-3 print:hidden" aria-label="Macros de rolagem">
       <div className="flex items-center gap-2">
         <Ilustra nome="d20" tamanho={18} />
         <h2 className="text-ink text-sm font-semibold">Macros</h2>

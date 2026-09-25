@@ -32,6 +32,7 @@ import PainelEnciclopedia from '../components/mesa/PainelEnciclopedia'
 import TrilhaMesa from '../components/mesa/TrilhaMesa'
 import XCard from '../components/mesa/XCard'
 import PainelLimites from '../components/mesa/PainelLimites'
+import BaixarMesa from '../components/mesa/BaixarMesa'
 import Botao from '../components/ui/Botao'
 
 const TABS = ['Fichas', 'Bestiário', 'Enciclopédia', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
@@ -823,6 +824,9 @@ export default function MesaPage() {
                   ))}
                 </ul>
               </div>
+
+              {/* F45 — qualquer membro leva a sua cópia (o RLS decide o que vai) */}
+              <BaixarMesa mesaId={id} nome={mesa?.nome} />
 
               {/* Transferir posse (16.4) — só o dono */}
               {isCriador && membros.length > 1 && (

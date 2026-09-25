@@ -26,7 +26,7 @@ function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, on
   return (
     <div className="space-y-2">
       {isDono && (
-        <div className="flex justify-end">
+        <div className="flex justify-end print:hidden">
           <button
             onClick={handleSalvar}
             className={`text-xs px-3 py-1 rounded-lg transition-colors ${
@@ -45,9 +45,12 @@ function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, on
           onChange={e => setValor(e.target.value)}
           placeholder={placeholder}
           rows={10}
-          className="w-full px-3 py-2.5 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-1 focus:ring-accent-500 resize-none"
+          className="w-full px-3 py-2.5 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-1 focus:ring-accent-500 resize-none print:hidden"
         />
-      ) : valor ? (
+      ) : null}
+      {/* F45 — no papel o textarea cortaria o texto: sai como parágrafo */}
+      {isDono && <p className="hidden print:block text-sm whitespace-pre-wrap">{valor || 'Sem conteúdo.'}</p>}
+      {isDono ? null : valor ? (
         <p className="text-ink text-sm whitespace-pre-wrap min-h-[6rem] px-3 py-2.5 bg-hover rounded-lg border border-border">
           {valor}
         </p>
@@ -57,6 +60,17 @@ function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, on
         </p>
       )}
       {erro && <p className="text-harm text-xs">{erro}</p>}
+    </div>
+  )
+}
+
+/** F45 — aba sempre montada (o conteúdo já carregou quando alguém imprime):
+ *  a inativa some na tela e aparece no papel, com o nome da aba como título. */
+function Aba({ id, atual, rotulo, children }) {
+  return (
+    <div className={id === atual ? 'print:mt-4' : 'hidden print:block print:mt-4'}>
+      <h3 className="hidden print:block font-semibold mb-2">{rotulo}</h3>
+      {children}
     </div>
   )
 }
@@ -96,10 +110,11 @@ export default function AbasCentrais({
   if (tabsList.length === 0) return null
 
   const currentTab = tabsList.find(t => t.id === activeTab) ? activeTab : tabsList[0].id
+  const rotuloDe = id => tabsList.find(t => t.id === id)?.label
 
   return (
     <div className="bg-raised border border-border rounded-xl overflow-hidden">
-      <div className="flex border-b border-border overflow-x-auto overflow-y-hidden">
+      <div className="flex border-b border-border overflow-x-auto overflow-y-hidden print:hidden">
         {tabsList.map(tab => (
           <button
             key={tab.id}
@@ -116,7 +131,8 @@ export default function AbasCentrais({
       </div>
 
       <div className="p-4">
-        {currentTab === 'acoes' && (
+        {tabsList.some(t => t.id === 'acoes') && (
+          <Aba id="acoes" atual={currentTab} rotulo={rotuloDe('acoes')}>
           <AcoesTab
             fichaId={fichaId}
             isDono={isDono}
@@ -124,8 +140,10 @@ export default function AbasCentrais({
             valoresFinais={valoresFinais}
             modificadoresAtivos={modificadoresAtivos}
           />
+          </Aba>
         )}
-        {currentTab === 'inventario' && (
+        {tabsList.some(t => t.id === 'inventario') && (
+          <Aba id="inventario" atual={currentTab} rotulo={rotuloDe('inventario')}>
           <EquipamentosTab
             fichaId={fichaId}
             donoId={donoId}
@@ -145,8 +163,10 @@ export default function AbasCentrais({
             critico={critico}
             configSom={configSom}
           />
+          </Aba>
         )}
-        {currentTab === 'tracos' && (
+        {tabsList.some(t => t.id === 'tracos') && (
+          <Aba id="tracos" atual={currentTab} rotulo={rotuloDe('tracos')}>
           <TextoTab
             fichaId={fichaId}
             campo="tracos"
@@ -155,8 +175,10 @@ export default function AbasCentrais({
             placeholder="Traços de personalidade, características de raça, habilidades de classe..."
             onRefetch={onRefetch}
           />
+          </Aba>
         )}
-        {currentTab === 'notas' && (
+        {tabsList.some(t => t.id === 'notas') && (
+          <Aba id="notas" atual={currentTab} rotulo={rotuloDe('notas')}>
           <TextoTab
             fichaId={fichaId}
             campo="notas"
@@ -165,6 +187,7 @@ export default function AbasCentrais({
             placeholder="Histórico, anotações, segredos, contatos..."
             onRefetch={onRefetch}
           />
+          </Aba>
         )}
         {currentTab === 'arvore' && (
           <ArvoreHabilidades
@@ -176,7 +199,8 @@ export default function AbasCentrais({
           />
         )}
 
-        {currentTab === 'habilidades' && (
+        {tabsList.some(t => t.id === 'habilidades') && (
+          <Aba id="habilidades" atual={currentTab} rotulo={rotuloDe('habilidades')}>
           <PainelHabilidades
             habilidades={habilidades}
             habilidadesFicha={habilidadesFicha}
@@ -200,6 +224,7 @@ export default function AbasCentrais({
             poolsPorId={poolsPorId}
             onPagarTurno={onPagarTurno}
           />
+          </Aba>
         )}
       </div>
     </div>

@@ -21,3 +21,28 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* ── F45 — impressão (A4) ────────────────────────────────────────────────────
+   O papel é branco e a tinta, preta, em qualquer tema: tudo que é cor vira
+   #111 (impressora agradece) e os rótulos "apagados" ficam cinza. Fundos já
+   não saem (o navegador não imprime fundo por padrão), então só o texto e as
+   bordas precisam ser trocados. */
+@media print {
+  @page { size: A4; margin: 12mm; }
+  html, body, #root { background: #fff !important; min-height: 0; }
+  *, *::before, *::after {
+    color: #111 !important;
+    border-color: #bbb !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  .text-ink-dim, .text-slate-400, .text-slate-500 { color: #555 !important; }
+  /* nada fica escondido atrás de rolagem interna */
+  .overflow-hidden, .overflow-auto, .overflow-y-auto, .overflow-x-auto { overflow: visible !important; }
+  /* avisos flutuantes, modais e toasts não vão para o papel */
+  .fixed { display: none !important; }
+  /* moldura decorativa: sem margem e sem enfeite */
+  .moldura-pergaminho { padding: 0 !important; border: 0 !important; }
+  .moldura-pergaminho::before, .moldura-pergaminho::after { display: none !important; }
+  input, select, textarea { border: 0 !important; background: transparent !important; }
+}
