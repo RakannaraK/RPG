@@ -40,7 +40,7 @@ Depois de ligar, ela aparece sozinha, sem precisar de deploy.
     então a ficha continua).
   - O painel esconde "+ Nova mesa" e a comunidade esconde publicar e curtir para convidado. O
     banco barra do mesmo jeito.
-- **App instalável (PWA)**: `manifest.webmanifest` (nome, cores, abrir no painel, modo app) e
+- **App instalável (PWA)**: `manifest.json` (nome, cores, abrir no painel, modo app) e
   ícones PNG 192, 512, 512 "maskable" e 180 (Apple), gerados a partir do `favicon.svg`.
   - O próprio Chrome confirmou **zero erros de instalabilidade** (`Page.getInstallabilityErrors`).
   - Não precisou de service worker.
