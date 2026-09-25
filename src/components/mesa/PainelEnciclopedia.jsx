@@ -7,6 +7,7 @@ import {
 } from '../../lib/enciclopedia'
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
+import GeradorNpc from './GeradorNpc'
 
 const CAMPO = 'w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 const ROTULO = 'flex flex-col gap-1 text-xs text-ink-dim'
@@ -307,7 +308,8 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
   const [busca, setBusca] = useState('')
   const [tipo, setTipo] = useState('')
   const [abertoId, setAbertoId] = useState(null)
-  const [modo, setModo] = useState('ler') // ler | editar | novo | revelar
+  const [modo, setModo] = useState('ler') // ler | editar | novo | gerar | revelar
+  const [rascunho, setRascunho] = useState(null) // F46 — NPC gerado indo para o formulário
   const [erro, setErro] = useState('')
 
   const jogadores = useMemo(() => membros.filter(m => m.usuario_id !== meuId && !GESTORES.includes(m.role)), [membros, meuId])
@@ -325,11 +327,17 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
   }
 
   const vazio = !enc.carregando && enc.verbetes.length === 0
+  const criando = modo === 'novo' || modo === 'gerar'
 
   return (
     <div className="grid gap-6 lg:grid-cols-[18rem_1fr] items-start">
-      <aside className={`space-y-3 ${aberto || modo === 'novo' ? 'hidden lg:block' : ''}`}>
-        {isGestor && <Botao variante="primario" className="w-full" onClick={() => { setAbertoId(null); setModo('novo') }}>+ Novo verbete</Botao>}
+      <aside className={`space-y-3 ${aberto || criando ? 'hidden lg:block' : ''}`}>
+        {isGestor && (
+          <div className="flex gap-2">
+            <Botao variante="primario" className="flex-1" onClick={() => { setAbertoId(null); setRascunho(null); setModo('novo') }}>+ Novo verbete</Botao>
+            <Botao variante="secundario" onClick={() => { setAbertoId(null); setModo('gerar') }}>Gerar NPC</Botao>
+          </div>
+        )}
         <input type="search" value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar…" aria-label="Buscar na enciclopédia" className={CAMPO} />
         <select value={tipo} onChange={e => setTipo(e.target.value)} aria-label="Filtrar por tipo" className={CAMPO}>
           <option value="">Todos os tipos</option>
@@ -357,24 +365,32 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
       </aside>
 
       <section className="min-w-0 rounded-2xl border border-border bg-raised/60 p-5">
-        {(aberto || modo === 'novo') && (
+        {(aberto || criando) && (
           <Botao variante="fantasma" tamanho="sm" className="lg:hidden mb-3" onClick={() => { setAbertoId(null); setModo('ler') }}>← Voltar à lista</Botao>
+        )}
+        {modo === 'gerar' && (
+          <GeradorNpc
+            onSalvar={async linha => { const c = validarVerbete(linha); if (!c.ok) throw new Error(c.erro); const v = await enc.salvar(null, c.linha); abrir(v.id) }}
+            onAjustar={linha => { setRascunho(linha); setModo('novo') }}
+            onCancelar={() => setModo('ler')}
+          />
         )}
         {modo === 'novo' && (
           <FormVerbete
+            key={rascunho ? 'rascunho' : 'novo'} inicial={rascunho}
             enviarImagem={f => enc.enviarImagem(f, meuId)}
             onSalvar={async linha => { const v = await enc.salvar(null, linha); abrir(v.id) }}
             onCancelar={() => setModo('ler')}
           />
         )}
-        {modo !== 'novo' && aberto && modo === 'editar' && (
+        {!criando && aberto && modo === 'editar' && (
           <FormVerbete
             key={aberto.id} inicial={aberto} enviarImagem={f => enc.enviarImagem(f, meuId)}
             onSalvar={async linha => { await enc.salvar(aberto.id, linha); setModo('ler') }}
             onCancelar={() => setModo('ler')}
           />
         )}
-        {modo !== 'novo' && aberto && modo !== 'editar' && (
+        {!criando && aberto && modo !== 'editar' && (
           <DetalheVerbete verbete={aberto} verbetes={enc.verbetes} isGestor={isGestor} onAbrir={abrir}>
             {isGestor && (
               <div className="space-y-4 border-t border-border pt-4">
@@ -400,7 +416,7 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
             )}
           </DetalheVerbete>
         )}
-        {modo !== 'novo' && !aberto && (
+        {!criando && !aberto && (
           <div className="flex flex-col items-center text-center gap-3 py-8">
             <Ilustra nome="tomo" tamanho={64} />
             {vazio ? (
