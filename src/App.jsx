@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { PreferenciasProvider } from './context/PreferenciasContext'
 import PageTransition from './theme/PageTransition'
@@ -14,6 +14,8 @@ import OuvinteDadosMesa from './components/dados/OuvinteDadosMesa'
 import OuvinteDesafios from './components/minigames/OuvinteDesafios'
 import OverlayPage from './pages/OverlayPage'
 import ComunidadePage from './pages/ComunidadePage'
+import ConvitePage from './pages/ConvitePage'
+import { destinoDepoisDoLogin } from './lib/convite'
 
 function ProtectedRoute({ children }) {
   const { session, loading } = useAuth()
@@ -35,6 +37,7 @@ function ProtectedRoute({ children }) {
 
 function PublicRoute({ children }) {
   const { session, loading } = useAuth()
+  const location = useLocation() // F47: quem veio de um convite volta para ele
 
   if (loading) {
     return (
@@ -45,7 +48,7 @@ function PublicRoute({ children }) {
   }
 
   if (session) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to={destinoDepoisDoLogin(location.state)} replace />
   }
 
   return children
@@ -105,6 +108,8 @@ function AppRoutes() {
         />
         {/* F36 — comunidade: abre sem login (vitrine em leitura + demo) */}
         <Route path="/comunidade" element={<ComunidadePage />} />
+        {/* F47 — convite por link: com conta ou como convidado */}
+        <Route path="/convite/:codigo" element={<ConvitePage />} />
         {/* F34 — overlay para OBS: sem login, só com o token secreto */}
         <Route path="/overlay/:token" element={<OverlayPage />} />
         <Route path="/teste-dados" element={<DadosTestePage />} />

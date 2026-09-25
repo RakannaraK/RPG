@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { souConvidado } from '../lib/convite'
 import { useComunidade } from '../hooks/useComunidade'
 import { useMesas } from '../hooks/useMesa'
 import Marca from '../components/marca/Marca'
@@ -217,6 +218,7 @@ export default function ComunidadePage() {
   const { session } = useAuth()
   const navigate = useNavigate()
   const logado = !!session
+  const participa = logado && !souConvidado(session) // F47: convidado só olha
   const { publicacoes, minhasCurtidas, meuId, indisponivel, carregando, publicar, curtir, denunciar, apagar } = useComunidade()
   const { mesas } = useMesas()
   const [vitrinePublica, setVitrinePublica] = useState(null)
@@ -271,7 +273,7 @@ export default function ComunidadePage() {
           <Marca tamanho="sm" className="hidden sm:flex" />
           <h1 className="text-white font-bold text-xl">Comunidade</h1>
           <p className="text-purple-400 text-sm">fichas, criaturas, sistemas e artes que a galera compartilha</p>
-          {logado && (
+          {participa && (
             <button onClick={() => setPublicando(v => !v)} className={`${BTN} ml-auto bg-purple-700 hover:bg-purple-600 text-sobre-acento`}>
               {publicando ? 'Fechar' : '+ Publicar'}
             </button>
@@ -336,7 +338,7 @@ export default function ComunidadePage() {
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {visiveis.map(p => (
                   <Cartao
-                    key={p.id} p={p} logado={logado}
+                    key={p.id} p={p} logado={participa}
                     curtida={minhasCurtidas.includes(p.id)}
                     souAutor={!!meuId && p.autor_id === meuId}
                     onCurtir={curtir} onObter={obter} onDenunciar={denunciar} onApagar={apagar}

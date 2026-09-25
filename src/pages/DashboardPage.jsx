@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { souConvidado } from '../lib/convite'
+import BannerConvidado from '../components/mesa/BannerConvidado'
 import { supabase } from '../lib/supabase'
 import { useMesas } from '../hooks/useMesa'
 import MesaCard from '../components/mesa/MesaCard'
@@ -105,6 +107,7 @@ export default function DashboardPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <BannerConvidado className="mb-6" />
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-white">Suas Mesas</h1>
@@ -116,9 +119,12 @@ export default function DashboardPage() {
             <Botao variante="contorno" onClick={() => setShowInvite(true)} className="flex-1 sm:flex-none">
               Entrar com código
             </Botao>
-            <Botao variante="primario" onClick={() => setShowCreate(true)} className="flex-1 sm:flex-none font-semibold">
-              + Nova mesa
-            </Botao>
+            {/* F47 — convidado joga, mas não cria mesa (o banco também barra) */}
+            {!souConvidado(session) && (
+              <Botao variante="primario" onClick={() => setShowCreate(true)} className="flex-1 sm:flex-none font-semibold">
+                + Nova mesa
+              </Botao>
+            )}
           </div>
         </div>
 

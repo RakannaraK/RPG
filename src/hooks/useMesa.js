@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { codigoDoConvite } from '../lib/convite'
 import { useAuth } from '../context/AuthContext'
 
 export function useMesas() {
@@ -108,7 +109,7 @@ export function useJoinMesa() {
       // A validação do convite e o insert acontecem no banco (RPC SECURITY
       // DEFINER) — o insert direto em membros_mesa é bloqueado por RLS.
       const { data, error: rpcError } = await supabase.rpc('entrar_na_mesa', {
-        codigo: codigo.trim(),
+        codigo: codigoDoConvite(codigo), // F47: aceita o link inteiro colado
       })
       if (rpcError) throw new Error(rpcError.message || 'Erro ao entrar na mesa.')
 

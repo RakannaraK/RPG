@@ -33,6 +33,8 @@ import TrilhaMesa from '../components/mesa/TrilhaMesa'
 import XCard from '../components/mesa/XCard'
 import PainelLimites from '../components/mesa/PainelLimites'
 import BaixarMesa from '../components/mesa/BaixarMesa'
+import BannerConvidado from '../components/mesa/BannerConvidado'
+import { linkDeConvite } from '../lib/convite'
 import Botao from '../components/ui/Botao'
 
 const TABS = ['Fichas', 'Bestiário', 'Enciclopédia', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
@@ -67,6 +69,7 @@ export default function MesaPage() {
     if (TABS.includes(abaDoLink)) setActiveTab(abaDoLink)
   }
   const [copiado, setCopiado] = useState(false)
+  const [linkCopiado, setLinkCopiado] = useState(false)
   const [showFichaCreate, setShowFichaCreate] = useState(false)
   const [novasRolagens, setNovasRolagens] = useState(0)
   const [showPrefs, setShowPrefs] = useState(false)
@@ -147,22 +150,23 @@ export default function MesaPage() {
     if (session && id) fetchMesa()
   }, [id, session, navigate])
 
-  async function copiarCodigo() {
+  async function copiar(texto, marcar) {
     try {
-      await navigator.clipboard.writeText(mesa.codigo_convite)
-      setCopiado(true)
-      setTimeout(() => setCopiado(false), 2000)
+      await navigator.clipboard.writeText(texto)
     } catch {
       const el = document.createElement('textarea')
-      el.value = mesa.codigo_convite
+      el.value = texto
       document.body.appendChild(el)
       el.select()
       document.execCommand('copy')
       document.body.removeChild(el)
-      setCopiado(true)
-      setTimeout(() => setCopiado(false), 2000)
     }
+    marcar(true)
+    setTimeout(() => marcar(false), 2000)
   }
+  const copiarCodigo = () => copiar(mesa.codigo_convite, setCopiado)
+  // F47 — o link entra direto, com conta ou como convidado
+  const copiarLink = () => copiar(linkDeConvite(window.location.origin, mesa.codigo_convite), setLinkCopiado)
 
   async function handleDeleteMesa() {
     setDeletingMesa(true)
@@ -444,6 +448,8 @@ export default function MesaPage() {
           </div>
         )}
 
+        {/* F47 — convidado: lembrete de criar conta */}
+        <BannerConvidado className="mt-6" />
         {/* Fase 13.1 — banner de sessão ao vivo (não em mesa arquivada) */}
         {!arquivada && <SessaoBanner mesaId={id} isGestor={isGestor} />}
         {/* F40 — próxima sessão no mundo real, com confirmação de presença */}
@@ -718,9 +724,12 @@ export default function MesaPage() {
                       {copiado ? '✓ Copiado!' : 'Copiar'}
                     </button>
                   </div>
-                  <p className="text-accent-300 text-xs mt-2">
-                    Compartilhe este código com seus jogadores para eles entrarem na mesa.
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
+                    <Botao variante="contorno" tamanho="sm" onClick={copiarLink}>{linkCopiado ? '✓ Link copiado!' : 'Copiar link de convite'}</Botao>
+                    <p className="text-accent-300 text-xs flex-1 min-w-[12rem]">
+                      Mande o link: quem abrir entra direto na mesa — com conta ou, se estiver ligado, como convidado, sem cadastro.
+                    </p>
+                  </div>
 
                   {/* Regenerar convite (16.3) */}
                   <div className="mt-3 pt-3 border-t border-purple-900/60">
