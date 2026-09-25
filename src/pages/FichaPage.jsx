@@ -44,6 +44,7 @@ import PainelPoderes from '../components/ficha/PainelPoderes'
 import PainelLinhas from '../components/ficha/PainelLinhas'
 import { podeAtivarHabilidade, planejarTurno } from '../lib/custoHabilidade'
 import Botao from '../components/ui/Botao'
+import BarraMacros from '../components/ficha/BarraMacros'
 import { useCategorias } from '../hooks/useCategorias'
 import { useMaestrias } from '../hooks/useMaestrias'
 import { usePropriedades } from '../hooks/usePropriedades'
@@ -1305,6 +1306,13 @@ export default function FichaPage() {
           onReceberInicial={handleReceberInicial}
           onDistribuir={handleDistribuirPontos}
           onAjustar={handleAjustarPontos}
+        />
+
+        {/* F39 — macros de rolagem: as rolagens que o jogador usa sempre */}
+        <BarraMacros
+          ficha={ficha} fichaId={fichaId} mesaId={mesaId}
+          podeEditar={isDono} contexto={contextoFormula}
+          onSalvar={macros => updateFicha(fichaId, { macros })}
         />
 
         {/* Faixa de atributos */}

@@ -12,6 +12,7 @@ export const FORMATO_FICHA = { formato: 'rpg-ficha', tipo: 'ficha', versao: 1 }
 const CAMPOS_FICHA = [
   'nome_personagem', 'raca', 'classe', 'nivel', 'hp_atual', 'hp_maximo', 'notas', 'imagem_url',
   'tracos', 'proficiencias', 'xp', 'carteira', 'vida_temp_atual',
+  'macros', // F39
 ]
 const CAMPOS_AMBIENTE = ['id', 'ficha_id', 'created_at', 'updated_at']
 
