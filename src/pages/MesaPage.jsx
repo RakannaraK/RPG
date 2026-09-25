@@ -29,6 +29,7 @@ import CapaMesa from '../components/mesa/CapaMesa'
 import SeletorCapa from '../components/mesa/SeletorCapa'
 import AgendaMesa from '../components/mesa/AgendaMesa'
 import PainelEnciclopedia from '../components/mesa/PainelEnciclopedia'
+import TrilhaMesa from '../components/mesa/TrilhaMesa'
 import Botao from '../components/ui/Botao'
 
 const TABS = ['Fichas', 'Bestiário', 'Enciclopédia', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
@@ -443,6 +444,8 @@ export default function MesaPage() {
         {!arquivada && <SessaoBanner mesaId={id} isGestor={isGestor} />}
         {/* F40 — próxima sessão no mundo real, com confirmação de presença */}
         {!arquivada && <AgendaMesa mesaId={id} isGestor={isGestor} />}
+        {/* F43 — trilha sonora e efeitos (canto da tela) */}
+        {!arquivada && <TrilhaMesa mesaId={id} isGestor={isGestor} />}
         {/* Fase 13.5 — histórico de sessões encerradas */}
         <SessoesHistorico mesaId={id} />
 

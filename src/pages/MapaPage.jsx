@@ -27,6 +27,7 @@ import PainelNotas from '../components/mesa/PainelNotas'
 import { useChatMesa } from '../hooks/useChatMesa'
 import { podeEditarFicha } from '../lib/permissoesFicha'
 import Ilustra from '../components/arte/Ilustra'
+import TrilhaMesa from '../components/mesa/TrilhaMesa'
 
 const BTN_ICONE = 'h-9 min-w-9 px-2 rounded-lg text-sm transition-colors'
 const telaCheiaDisponivel = typeof document !== 'undefined' && document.fullscreenEnabled
@@ -409,6 +410,7 @@ export default function MapaPage() {
         </div>
         {menuCamadas && <MenuCamadas camadas={camadas} onCamadas={setCamadas} isGestor={isGestor} />}
       </header>
+      <TrilhaMesa mesaId={mesaId} isGestor={isGestor} />
 
       <div className="relative flex-1 flex min-h-0">
         <main className="relative flex-1 min-w-0">

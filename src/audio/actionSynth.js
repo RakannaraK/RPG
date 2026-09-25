@@ -179,6 +179,64 @@ function somNeutro(ctx, destino, t, volume) {
   src.start(t); src.stop(t + 0.05)
 }
 
+// ── Ambiente (F43, só na mesa de efeitos do mestre; passam dos 700ms) ──
+
+function somTrovao(ctx, destino, t, volume) {
+  // estalo seco e o ribombar longo, grave, que vai morrendo
+  const estalo = ruido(ctx, 0.15)
+  const hp = ctx.createBiquadFilter()
+  hp.type = 'highpass'
+  hp.frequency.value = 1500
+  const ge = envelope(ctx, t, volume * 0.5, 0.15, 0.002)
+  estalo.connect(hp); hp.connect(ge); ge.connect(destino)
+  estalo.start(t); estalo.stop(t + 0.16)
+
+  const dur = 2.6
+  const ronco = ruido(ctx, dur)
+  const lp = ctx.createBiquadFilter()
+  lp.type = 'lowpass'
+  lp.frequency.setValueAtTime(900, t + 0.05)
+  lp.frequency.exponentialRampToValueAtTime(120, t + dur)
+  const gr = envelope(ctx, t + 0.05, volume * 0.9, dur, 0.08)
+  ronco.connect(lp); lp.connect(gr); gr.connect(destino)
+  ronco.start(t + 0.05); ronco.stop(t + dur + 0.1)
+}
+
+function somSino(ctx, destino, t, volume) {
+  // parciais inarmônicos de sino, cada um decaindo no seu tempo
+  const base = 392
+  ;[[1, 2.4], [2.76, 1.6], [5.4, 0.9], [8.93, 0.5]].forEach(([r, dur], i) => {
+    const osc = ctx.createOscillator()
+    osc.type = 'sine'
+    osc.frequency.value = base * r
+    const g = envelope(ctx, t, (volume * 0.3) / (i + 1), dur, 0.003)
+    osc.connect(g); g.connect(destino)
+    osc.start(t); osc.stop(t + dur + 0.05)
+  })
+}
+
+function somPorta(ctx, destino, t, volume) {
+  // três batidas na madeira
+  ;[0, 0.28, 0.56].forEach(dt => {
+    const tn = t + dt
+    const osc = ctx.createOscillator()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(180, tn)
+    osc.frequency.exponentialRampToValueAtTime(90, tn + 0.08)
+    const g = envelope(ctx, tn, volume * 0.8, 0.1, 0.001)
+    osc.connect(g); g.connect(destino)
+    osc.start(tn); osc.stop(tn + 0.12)
+
+    const src = ruido(ctx, 0.04)
+    const bp = ctx.createBiquadFilter()
+    bp.type = 'bandpass'
+    bp.frequency.value = 900
+    const gn = envelope(ctx, tn, volume * 0.35, 0.04, 0.001)
+    src.connect(bp); bp.connect(gn); gn.connect(destino)
+    src.start(tn); src.stop(tn + 0.05)
+  })
+}
+
 const SINTESE = {
   lamina: somLamina,
   impacto: somImpacto,
@@ -190,6 +248,9 @@ const SINTESE = {
   critico: somCritico,
   falha: somFalha,
   neutro: somNeutro,
+  trovao: somTrovao,
+  sino: somSino,
+  porta: somPorta,
 }
 
 /**

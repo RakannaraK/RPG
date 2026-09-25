@@ -29,6 +29,7 @@ import { useChatMesa } from '../hooks/useChatMesa'
 import Sininho from '../components/notificacoes/Sininho'
 import Ilustra from '../components/arte/Ilustra'
 import Botao from '../components/ui/Botao'
+import TrilhaMesa from '../components/mesa/TrilhaMesa'
 
 /**
  * Fase 13 — tela da sessão ao vivo.
@@ -427,6 +428,7 @@ export default function SessaoPage() {
           </div>
         </div>
       </header>
+      <TrilhaMesa mesaId={mesaId} isGestor={isMestre} />
 
       {/* Corpo: painel de fichas + feed */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
