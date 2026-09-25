@@ -30,6 +30,8 @@ import SeletorCapa from '../components/mesa/SeletorCapa'
 import AgendaMesa from '../components/mesa/AgendaMesa'
 import PainelEnciclopedia from '../components/mesa/PainelEnciclopedia'
 import TrilhaMesa from '../components/mesa/TrilhaMesa'
+import XCard from '../components/mesa/XCard'
+import PainelLimites from '../components/mesa/PainelLimites'
 import Botao from '../components/ui/Botao'
 
 const TABS = ['Fichas', 'Bestiário', 'Enciclopédia', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
@@ -392,6 +394,7 @@ export default function MesaPage() {
             <span className={`text-xs font-semibold px-2 py-1 rounded-full ${roleInfo(meuRole).cls}`}>
               {roleInfo(meuRole).label}
             </span>
+            {!arquivada && <XCard mesaId={id} isGestor={isGestor} />}
             <Sininho />
             <button
               onClick={() => navigate(`/mesa/${id}/mapa`)}
@@ -696,6 +699,8 @@ export default function MesaPage() {
 
           {activeTab === 'Membros' && (
             <div className="space-y-4">
+              {/* F44 — combinados, linhas e véus (anônimos) */}
+              <PainelLimites mesaId={id} isGestor={isGestor} />
               {isGestor && (
                 <div className="bg-slate-800 border border-purple-800 rounded-xl p-5">
                   <p className="text-purple-300 text-sm font-medium mb-2">Código de convite</p>

@@ -28,6 +28,7 @@ import { useChatMesa } from '../hooks/useChatMesa'
 import { podeEditarFicha } from '../lib/permissoesFicha'
 import Ilustra from '../components/arte/Ilustra'
 import TrilhaMesa from '../components/mesa/TrilhaMesa'
+import XCard from '../components/mesa/XCard'
 
 const BTN_ICONE = 'h-9 min-w-9 px-2 rounded-lg text-sm transition-colors'
 const telaCheiaDisponivel = typeof document !== 'undefined' && document.fullscreenEnabled
@@ -411,6 +412,8 @@ export default function MapaPage() {
         {menuCamadas && <MenuCamadas camadas={camadas} onCamadas={setCamadas} isGestor={isGestor} />}
       </header>
       <TrilhaMesa mesaId={mesaId} isGestor={isGestor} />
+      {/* F44 — flutuante: o cabeçalho do mapa já não tem espaço no celular */}
+      <XCard mesaId={mesaId} isGestor={isGestor} className="fixed bottom-3 right-3 z-40" />
 
       <div className="relative flex-1 flex min-h-0">
         <main className="relative flex-1 min-w-0">

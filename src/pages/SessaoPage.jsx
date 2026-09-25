@@ -30,6 +30,7 @@ import Sininho from '../components/notificacoes/Sininho'
 import Ilustra from '../components/arte/Ilustra'
 import Botao from '../components/ui/Botao'
 import TrilhaMesa from '../components/mesa/TrilhaMesa'
+import XCard from '../components/mesa/XCard'
 
 /**
  * Fase 13 — tela da sessão ao vivo.
@@ -423,6 +424,7 @@ export default function SessaoPage() {
             >
               <Ilustra nome="mapa" tamanho={18} /> <span className="hidden sm:inline">Mapa</span>
             </button>
+            <XCard mesaId={mesaId} isGestor={isMestre} />
             <Sininho />
             <PresencaBar conectados={conectados} meuId={session?.user?.id} conectado={conectado} />
           </div>
