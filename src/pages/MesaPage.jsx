@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import SistemaEditor from '../components/sistema/SistemaEditor'
@@ -28,9 +28,10 @@ import Ilustra from '../components/arte/Ilustra'
 import CapaMesa from '../components/mesa/CapaMesa'
 import SeletorCapa from '../components/mesa/SeletorCapa'
 import AgendaMesa from '../components/mesa/AgendaMesa'
+import PainelEnciclopedia from '../components/mesa/PainelEnciclopedia'
 import Botao from '../components/ui/Botao'
 
-const TABS = ['Fichas', 'Bestiário', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
+const TABS = ['Fichas', 'Bestiário', 'Enciclopédia', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
 const TABS_GESTOR = ['Escudo'] // F34.3 — só mestre/co-mestre
 
 // Fase 16 — rótulo/cor por papel (mestre/co-mestre/jogador/espectador)
@@ -53,6 +54,14 @@ export default function MesaPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('Fichas')
+  // F41 — links de aviso abrem direto numa aba (?aba=Enciclopédia)
+  const [params] = useSearchParams()
+  const abaDoLink = params.get('aba')
+  const [abaVista, setAbaVista] = useState(null)
+  if (abaDoLink !== abaVista) { // ajuste no render, não em efeito: um aviso novo na mesma página troca a aba
+    setAbaVista(abaDoLink)
+    if (TABS.includes(abaDoLink)) setActiveTab(abaDoLink)
+  }
   const [copiado, setCopiado] = useState(false)
   const [showFichaCreate, setShowFichaCreate] = useState(false)
   const [novasRolagens, setNovasRolagens] = useState(0)
@@ -621,6 +630,10 @@ export default function MesaPage() {
               podeEscrever={podeEscrever}
               onAbrir={fichaId => navigate(`/mesa/${id}/ficha/${fichaId}`)}
             />
+          )}
+
+          {activeTab === 'Enciclopédia' && (
+            <PainelEnciclopedia mesaId={id} meuId={session?.user?.id} isGestor={isGestor} />
           )}
 
           {activeTab === 'Dados' && (
