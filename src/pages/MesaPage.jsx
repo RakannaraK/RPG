@@ -34,6 +34,7 @@ import XCard from '../components/mesa/XCard'
 import PainelLimites from '../components/mesa/PainelLimites'
 import BaixarMesa from '../components/mesa/BaixarMesa'
 import BannerConvidado from '../components/mesa/BannerConvidado'
+import BauGrupo from '../components/mesa/BauGrupo'
 import { linkDeConvite } from '../lib/convite'
 import Botao from '../components/ui/Botao'
 
@@ -634,6 +635,8 @@ export default function MesaPage() {
                   onFechar={() => setShowFichaCreate(false)}
                 />
               )}
+              {/* F49 — baú do grupo */}
+              <BauGrupo mesaId={id} meuId={session?.user?.id} isGestor={isGestor} podeEscrever={podeEscrever} fichas={fichas} />
             </div>
           )}
 

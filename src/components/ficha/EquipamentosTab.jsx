@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useItens } from '../../hooks/useItens'
 import { useRolagem } from '../../hooks/useRolagem'
 import { validarNotacao, resolverNotacao } from '../../lib/diceNotation'
@@ -15,6 +15,50 @@ import Dice3D from '../dados/Dice3D'
 import { PRESET_IDS, resolveActionSound } from '../../engines/actionSoundEngine'
 import { tocarPresetAcao, tocarSomAcao } from '../../audio/actionSynth'
 import Ilustra from '../arte/Ilustra'
+import { destinosParaDar } from '../../lib/bau'
+
+/** F49 — tirar o item desta ficha: para o baú do grupo ou para outro personagem. */
+function MoverItem({ item, fichaId, mesaId, onMovido, onFechar }) {
+  const [fichas, setFichas] = useState(null)
+  const [destino, setDestino] = useState('')
+  const [erro, setErro] = useState('')
+  const [ocupado, setOcupado] = useState(false)
+
+  useEffect(() => {
+    supabase.from('fichas').select('id, nome_personagem, tipo_ficha').eq('mesa_id', mesaId).order('nome_personagem')
+      .then(({ data }) => setFichas(destinosParaDar(data || [], fichaId)))
+  }, [mesaId, fichaId])
+
+  async function mover(nome, args) {
+    setOcupado(true); setErro('')
+    const { error } = await supabase.rpc(nome, args)
+    if (error) { setErro(error.message); setOcupado(false); return }
+    onMovido()
+  }
+
+  return (
+    <div className="mt-2 rounded-lg border border-border bg-void/50 p-2 flex flex-wrap items-center gap-2">
+      <button
+        type="button" disabled={ocupado} onClick={() => mover('guardar_no_bau', { p_item_id: item.id })}
+        className="px-2.5 py-1 min-h-[24px] rounded-lg text-xs bg-slate-700 hover:bg-slate-600 text-purple-100 disabled:opacity-50"
+      >Guardar no baú do grupo</button>
+      {fichas?.length > 0 && (
+        <>
+          <select value={destino} onChange={e => setDestino(e.target.value)} aria-label="Dar para" className="px-2 py-1 rounded-lg bg-void border border-border text-ink text-xs">
+            <option value="">Dar para…</option>
+            {fichas.map(f => <option key={f.id} value={f.id}>{f.nome_personagem}</option>)}
+          </select>
+          <button
+            type="button" disabled={ocupado || !destino} onClick={() => mover('dar_item', { p_item_id: item.id, p_ficha_destino: destino })}
+            className="px-2.5 py-1 min-h-[24px] rounded-lg text-xs bg-slate-700 hover:bg-slate-600 text-purple-100 disabled:opacity-50"
+          >Dar</button>
+        </>
+      )}
+      <button type="button" onClick={onFechar} className="px-2 py-1 min-h-[24px] text-xs text-ink-dim hover:text-ink">Cancelar</button>
+      {erro && <p className="w-full text-harm text-xs" role="alert">{erro}</p>}
+    </div>
+  )
+}
 
 const TIPOS_ITEM = ['item', 'arma', 'armadura', 'magico', 'outro']
 
@@ -576,7 +620,8 @@ function RecursoDurabilidade({ item, isDono, onRecurso, onDurab }) {
 }
 
 export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [], categorias = [], maestria = null, onGanharMaestria, maestriaDoItem, atributos = [], camposCombate = [], pericias = [], classes = [], pools = [], critico = null, configSom = null }) {
-  const { itens, loading, error, createItem, updateItem, deleteItem } = useItens(fichaId)
+  const { itens, loading, error, createItem, updateItem, deleteItem, refetch } = useItens(fichaId)
+  const [movendoId, setMovendoId] = useState(null) // F49
   const { registrarRolagem, registrarEvento } = useRolagem()
   const { preferencias } = usePreferencias()
   const [showForm, setShowForm] = useState(false)
@@ -858,6 +903,15 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                       </div>
                       {isDono && (
                         <div className="flex gap-1 shrink-0">
+                          {mesaId && (
+                            <button
+                              onClick={() => setMovendoId(id => id === item.id ? null : item.id)}
+                              className="p-1.5 text-ink-dim hover:text-ink hover:bg-hover rounded-lg transition-colors"
+                              title="Guardar no baú ou dar a alguém" aria-label={`Guardar "${item.nome}" no baú ou dar a alguém`} aria-expanded={movendoId === item.id}
+                            >
+                              <Ilustra nome="bau" tamanho={16} />
+                            </button>
+                          )}
                           <button
                             onClick={() => { setEditingItem(item); setShowForm(true) }}
                             className="p-1.5 text-ink-dim hover:text-ink hover:bg-hover rounded-lg transition-colors text-sm"
@@ -877,6 +931,9 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                       )}
                     </div>
 
+                    {movendoId === item.id && (
+                      <MoverItem item={item} fichaId={fichaId} mesaId={mesaId} onMovido={() => { setMovendoId(null); refetch() }} onFechar={() => setMovendoId(null)} />
+                    )}
                     {item.descricao && (
                       <p className="text-ink-dim text-sm mt-2">{item.descricao}</p>
                     )}
