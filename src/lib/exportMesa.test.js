@@ -7,6 +7,7 @@ describe('F45 — exportar a mesa inteira', () => {
       mesa: { id: 'm', nome: 'A Torre', codigo_convite: 'ABC123', overlay_token: 'segredo' },
       fichas: [{ tipo: 'ficha' }],
       tabelas: { verbetes: [{ id: 'v' }] },
+      bau: [{ nome: 'Poção' }],
       exportadoEm: '2026-09-25T00:00:00.000Z',
     })
     expect(arq).toMatchObject({ formato: 'rpg-ficha', tipo: 'mesa', versao: 1, exportado_em: '2026-09-25T00:00:00.000Z' })
@@ -16,6 +17,7 @@ describe('F45 — exportar a mesa inteira', () => {
     // toda tabela aparece, mesmo vazia (quem lê o arquivo não precisa adivinhar)
     for (const t of TABELAS_MESA) expect(Array.isArray(arq[t])).toBe(true)
     expect(arq.fichas).toHaveLength(1)
+    expect(arq.bau_do_grupo).toEqual([{ nome: 'Poção' }])
   })
 
   it('nome do arquivo', () => {

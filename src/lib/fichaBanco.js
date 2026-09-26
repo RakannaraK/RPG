@@ -105,5 +105,6 @@ export async function exportarMesaDoBanco(mesaId) {
     return exportarFicha({ ficha, filhos, sistema: grafo })
   }))
   const tabelas = Object.fromEntries(await Promise.all(TABELAS_MESA.map(async t => [t, await todasAsLinhas(t, mesaId)])))
-  return montarArquivoMesa({ mesa, sistema: grafo ? serializarSistema(grafo) : null, fichas, tabelas })
+  const { data: bau } = await supabase.from('itens_ficha').select('*').eq('bau_mesa_id', mesaId)
+  return montarArquivoMesa({ mesa, sistema: grafo ? serializarSistema(grafo) : null, fichas, tabelas, bau: bau || [] })
 }

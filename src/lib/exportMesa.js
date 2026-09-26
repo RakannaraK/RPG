@@ -16,7 +16,7 @@ export const TABELAS_MESA = [
 // dariam acesso à mesa a quem receber o arquivo
 const SEGREDOS_MESA = ['codigo_convite', 'overlay_token']
 
-export function montarArquivoMesa({ mesa, sistema = null, fichas = [], tabelas = {}, exportadoEm = new Date().toISOString() }) {
+export function montarArquivoMesa({ mesa, sistema = null, fichas = [], tabelas = {}, bau = [], exportadoEm = new Date().toISOString() }) {
   const semSegredos = Object.fromEntries(Object.entries(mesa || {}).filter(([k]) => !SEGREDOS_MESA.includes(k)))
   return {
     ...FORMATO_MESA,
@@ -24,6 +24,7 @@ export function montarArquivoMesa({ mesa, sistema = null, fichas = [], tabelas =
     mesa: semSegredos,
     sistema,
     fichas,
+    bau_do_grupo: bau, // F49: itens que não estão em ficha nenhuma
     ...Object.fromEntries(TABELAS_MESA.map(t => [t, tabelas[t] || []])),
   }
 }
