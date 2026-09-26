@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { souConvidado } from '../lib/convite'
+import MesasAbertas from '../components/comunidade/MesasAbertas'
 import { useComunidade } from '../hooks/useComunidade'
 import { useMesas } from '../hooks/useMesa'
 import Marca from '../components/marca/Marca'
@@ -294,6 +295,9 @@ export default function ComunidadePage() {
         )}
 
         {publicando && <Publicar onPublicar={publicar} onFechar={() => setPublicando(false)} />}
+
+        {/* F51 — mesas procurando jogadores */}
+        <MesasAbertas />
 
         {indisponivel ? (
           <p className="text-purple-400 text-sm italic">Comunidade ainda não ativada neste banco (sql/fase36_comunidade.sql).</p>

@@ -35,6 +35,7 @@ import PainelLimites from '../components/mesa/PainelLimites'
 import BaixarMesa from '../components/mesa/BaixarMesa'
 import BannerConvidado from '../components/mesa/BannerConvidado'
 import BauGrupo from '../components/mesa/BauGrupo'
+import AnuncioMesa from '../components/mesa/AnuncioMesa'
 import { linkDeConvite } from '../lib/convite'
 import Botao from '../components/ui/Botao'
 
@@ -711,6 +712,8 @@ export default function MesaPage() {
             <div className="space-y-4">
               {/* F44 — combinados, linhas e véus (anônimos) */}
               <PainelLimites mesaId={id} isGestor={isGestor} />
+              {/* F51 — anunciar na Comunidade e responder pedidos de vaga */}
+              {isGestor && !arquivada && <AnuncioMesa mesaId={id} />}
               {isGestor && (
                 <div className="bg-slate-800 border border-purple-800 rounded-xl p-5">
                   <p className="text-purple-300 text-sm font-medium mb-2">Código de convite</p>
