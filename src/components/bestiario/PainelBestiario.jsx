@@ -7,6 +7,7 @@ import { duplicarFicha, exportarFichaDoBanco } from '../../lib/fichaBanco'
 import { nomeArquivoFicha } from '../../lib/fichaPortatil'
 import { baixarJson } from '../../lib/baixarArquivo'
 import ImportarFicha from '../ficha/ImportarFicha'
+import BestiarioSrd from './BestiarioSrd'
 import Ilustra from '../arte/Ilustra'
 import Botao from '../ui/Botao'
 
@@ -30,6 +31,7 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
   const [novo, setNovo] = useState(null) // { nome, especie, ameaca, vida }
   const [ocupado, setOcupado] = useState('')
   const [erro, setErro] = useState('')
+  const [srd, setSrd] = useState(false) // F50
 
   const doBestiario = criaturas.filter(c => !c.origem_id) // cópias em jogo não poluem a lista
   const filtro = busca.trim().toLocaleLowerCase('pt-BR')
@@ -89,6 +91,7 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
               rotulo="⬆ Importar criatura"
               onImportada={id => { refetch(); onAbrir?.(id) }}
             />
+            <Botao variante="contorno" onClick={() => setSrd(v => !v)} aria-expanded={srd}>Bestiário SRD 5e</Botao>
             <button
               type="button" onClick={() => setNovo({ nome: '', especie: '', ameaca: '', vida: '' })}
               className="text-sm px-4 py-2 bg-purple-700 hover:bg-purple-600 text-sobre-acento rounded-lg transition-colors"
@@ -96,6 +99,14 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
           </>
         )}
       </div>
+
+      {srd && (
+        <BestiarioSrd
+          mesaId={mesaId} meuId={meuId} sistemaId={sistema?.id}
+          onImportada={id => { setSrd(false); refetch(); onAbrir?.(id) }}
+          onFechar={() => setSrd(false)}
+        />
+      )}
 
       {novo && (
         <div className="rounded-xl border border-purple-800 bg-slate-800 p-3 space-y-2">
