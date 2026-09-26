@@ -82,8 +82,8 @@ export function useEnciclopedia(mesaId, isGestor) {
   }
 
   /** Imagem do verbete: nome aleatório, para a URL pública não ser adivinhável antes da revelação. */
-  async function enviarImagem(file, usuarioId) {
-    const resized = await redimensionarImagem(file)
+  async function enviarImagem(file, usuarioId, maxLado = 1200) {
+    const resized = await redimensionarImagem(file, maxLado)
     const path = `${usuarioId}/verbetes/${crypto.randomUUID()}.jpg`
     const { error } = await supabase.storage.from('fichas-imagens').upload(path, resized, { contentType: 'image/jpeg' })
     if (error) throw new Error(error.message)

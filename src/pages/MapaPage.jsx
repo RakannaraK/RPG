@@ -411,7 +411,7 @@ export default function MapaPage() {
         </div>
         {menuCamadas && <MenuCamadas camadas={camadas} onCamadas={setCamadas} isGestor={isGestor} />}
       </header>
-      <TrilhaMesa mesaId={mesaId} isGestor={isGestor} />
+      <TrilhaMesa mesaId={mesaId} isGestor={isGestor} reservarEspaco={false} />
       {/* F44 — flutuante: o cabeçalho do mapa já não tem espaço no celular */}
       <XCard mesaId={mesaId} isGestor={isGestor} className="fixed bottom-3 right-3 z-40" />
 

@@ -8,6 +8,7 @@ import {
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
 import GeradorNpc from './GeradorNpc'
+import PainelAtlas from './PainelAtlas'
 
 const CAMPO = 'w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 const ROTULO = 'flex flex-col gap-1 text-xs text-ink-dim'
@@ -311,6 +312,7 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
   const [modo, setModo] = useState('ler') // ler | editar | novo | gerar | revelar
   const [rascunho, setRascunho] = useState(null) // F46 — NPC gerado indo para o formulário
   const [erro, setErro] = useState('')
+  const [vista, setVista] = useState('verbetes') // F48: verbetes | atlas
 
   const jogadores = useMemo(() => membros.filter(m => m.usuario_id !== meuId && !GESTORES.includes(m.role)), [membros, meuId])
   const idsJogadores = jogadores.map(j => j.usuario_id)
@@ -330,6 +332,21 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
   const criando = modo === 'novo' || modo === 'gerar'
 
   return (
+    <div className="space-y-4">
+    <div className="flex gap-2" role="group" aria-label="Ver">
+      {[['verbetes', 'Verbetes', 'tomo'], ['atlas', 'Atlas', 'mapa']].map(([id, rotulo, icone]) => (
+        <Botao key={id} tamanho="sm" variante={vista === id ? 'primario' : 'contorno'} aria-pressed={vista === id} onClick={() => setVista(id)}>
+          <span className="inline-flex items-center gap-1.5"><Ilustra nome={icone} tamanho={16} /> {rotulo}</span>
+        </Botao>
+      ))}
+    </div>
+    {vista === 'atlas' ? (
+      <PainelAtlas
+        mesaId={mesaId} isGestor={isGestor} verbetes={enc.verbetes}
+        enviarImagem={(f, lado) => enc.enviarImagem(f, meuId, lado)}
+        onAbrirVerbete={id => { setVista('verbetes'); abrir(id) }}
+      />
+    ) : (
     <div className="grid gap-6 lg:grid-cols-[18rem_1fr] items-start">
       <aside className={`space-y-3 ${aberto || criando ? 'hidden lg:block' : ''}`}>
         {isGestor && (
@@ -431,6 +448,8 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
           </div>
         )}
       </section>
+    </div>
+    )}
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTrilha } from '../../hooks/useTrilha'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import { tocarPresetAcao } from '../../audio/actionSynth'
@@ -37,7 +38,7 @@ const CAMPO = 'flex-1 min-w-0 px-2.5 py-1.5 rounded-lg bg-void border border-bor
  * Fase 43 — trilha sonora da mesa (vídeo do YouTube, sincronizado) e efeitos
  * que o mestre dispara para todo mundo. Fica num canto da tela, nas páginas da mesa.
  */
-export default function TrilhaMesa({ mesaId, isGestor }) {
+export default function TrilhaMesa({ mesaId, isGestor, reservarEspaco = true }) {
   const { preferencias } = usePreferencias()
   const { estado, indisponivel, atualizar, disparar } = useTrilha(mesaId, efeito =>
     tocarPresetAcao(efeito, { ativo: preferencias.som_acao_ativo, volume: preferencias.som_acao_volume }))
@@ -48,6 +49,7 @@ export default function TrilhaMesa({ mesaId, isGestor }) {
   const [link, setLink] = useState('')
   const [erro, setErro] = useState('')
   const alvoRef = useRef(null)
+  const secaoRef = useRef(null)
   const playerRef = useRef(null)
   const estadoRef = useRef(estado)
   const volumeRef = useRef(volume)
@@ -128,7 +130,19 @@ export default function TrilhaMesa({ mesaId, isGestor }) {
   useEffect(() => { gravar('dp-trilha-ouvir', ouvir) }, [ouvir])
   useEffect(() => { gravar('dp-trilha-recolhida', recolhido) }, [recolhido])
 
-  if (indisponivel || (!videoId && !isGestor)) return null
+  const aparece = !indisponivel && (!!videoId || isGestor)
+
+  // a barra é fixa no canto: reserva a altura dela no fim da página, senão tampa
+  // o último conteúdo (botão "Criar mapa" etc.). No mapa (tela cheia) não reserva.
+  useEffect(() => {
+    const el = secaoRef.current
+    if (!reservarEspaco || !aparece || !el) return
+    const ro = new ResizeObserver(() => { document.body.style.paddingBottom = `${el.offsetHeight + 24}px` })
+    ro.observe(el)
+    return () => { ro.disconnect(); document.body.style.paddingBottom = '' }
+  }, [reservarEspaco, aparece])
+
+  if (!aparece) return null
 
   function destravar() {
     const p = playerRef.current
@@ -153,8 +167,10 @@ export default function TrilhaMesa({ mesaId, isGestor }) {
   const titulo = videoId ? (estado.titulo || 'Música do YouTube') : 'Trilha e efeitos'
   const caixa = 'fixed bottom-3 left-3 z-40 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-border bg-raised/95 backdrop-blur shadow-xl'
 
-  return (
-    <section aria-label="Trilha da mesa" className={recolhido ? `${caixa} w-auto p-1.5 flex items-center gap-2` : `${caixa} w-72 p-2.5 space-y-2`}>
+  // portal: dentro da página, um ancestral com animação/transform prende o `fixed`
+  // ao conteúdo em vez da tela (a barra rolava junto e tampava botões)
+  return createPortal(
+    <section ref={secaoRef} aria-label="Trilha da mesa" className={recolhido ? `${caixa} w-auto p-1.5 flex items-center gap-2` : `${caixa} w-72 p-2.5 space-y-2`}>
       {/* o mesmo div nos dois tamanhos: trocar de lugar recriaria o tocador */}
       {ativo && <div ref={alvoRef} className={`${recolhido ? 'w-16 h-9' : 'w-40 h-[90px]'} shrink-0 rounded-lg overflow-hidden bg-void [&_iframe]:w-full [&_iframe]:h-full`} />}
       {recolhido ? (
@@ -219,6 +235,7 @@ export default function TrilhaMesa({ mesaId, isGestor }) {
       )}
       </>)}
       {erro && <p className="text-harm text-xs" role="alert">{erro}</p>}
-    </section>
+    </section>,
+    document.body,
   )
 }
