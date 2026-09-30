@@ -20,13 +20,28 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  async function login(email, password) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+  // captchaToken: só quando a verificação anti-robô está ligada (components/auth/Captcha)
+  async function login(email, password, captchaToken = null) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password, options: captchaToken ? { captchaToken } : undefined })
     if (error) throw error
   }
 
-  async function register(email, password) {
-    const { error } = await supabase.auth.signUp({ email, password })
+  /** Com "Confirm email" ligado no Supabase, não há sessão até a pessoa clicar no link. */
+  async function register(email, password, captchaToken = null) {
+    const { data, error } = await supabase.auth.signUp({
+      email, password,
+      // o link do e-mail volta para este site (precisa estar em Supabase → URL Configuration)
+      options: { emailRedirectTo: window.location.origin, ...(captchaToken ? { captchaToken } : {}) },
+    })
+    if (error) throw error
+    return { precisaConfirmar: !data.session }
+  }
+
+  async function reenviarConfirmacao(email, captchaToken = null) {
+    const { error } = await supabase.auth.resend({
+      type: 'signup', email,
+      options: { emailRedirectTo: window.location.origin, ...(captchaToken ? { captchaToken } : {}) },
+    })
     if (error) throw error
   }
 
@@ -36,7 +51,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ session, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ session, loading, login, register, reenviarConfirmacao, logout }}>
       {children}
     </AuthContext.Provider>
   )

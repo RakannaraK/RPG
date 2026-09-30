@@ -1,23 +1,40 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { faltaConfirmar, traduzirErroAuth } from '../../lib/erroAuth'
+import Captcha, { CHAVE_CAPTCHA } from './Captcha'
 
 export default function LoginForm() {
-  const { login } = useAuth()
+  const { login, reenviarConfirmacao } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [captcha, setCaptcha] = useState(null)
+  const [versaoCaptcha, setVersaoCaptcha] = useState(0)
+  const [reenviar, setReenviar] = useState('') // '' | 'pode' | 'enviado'
+
+  function novoCaptcha() { setCaptcha(null); setVersaoCaptcha(v => v + 1) }
+
+  async function reenviarEmail() {
+    setError('')
+    try { await reenviarConfirmacao(email, captcha); setReenviar('enviado') }
+    catch (err) { setError(traduzirErroAuth(err)) }
+    finally { novoCaptcha() }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
     setLoading(true)
+    setReenviar('')
     try {
-      await login(email, password)
+      await login(email, password, captcha)
     } catch (err) {
-      setError(err.message || 'Erro ao entrar. Verifique seus dados.')
+      setError(traduzirErroAuth(err) || 'Erro ao entrar. Verifique seus dados.')
+      if (faltaConfirmar(err)) setReenviar('pode')
     } finally {
       setLoading(false)
+      novoCaptcha()
     }
   }
 
@@ -52,10 +69,19 @@ export default function LoginForm() {
           <span>{error}</span>
         </div>
       )}
+      {reenviar === 'pode' && (
+        <button type="button" onClick={reenviarEmail} disabled={!!CHAVE_CAPTCHA && !captcha}
+          className="w-full py-2 text-sm text-purple-300 hover:text-white underline disabled:opacity-50">
+          Reenviar o e-mail de confirmação
+        </button>
+      )}
+      {reenviar === 'enviado' && <p className="text-ok text-sm text-center" role="status">Enviamos de novo. Confira a caixa de entrada e o spam.</p>}
+
+      <Captcha onToken={setCaptcha} versao={versaoCaptcha} />
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || (!!CHAVE_CAPTCHA && !captcha)}
         className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-sobre-acento font-semibold rounded-xl transition-colors shadow-lg shadow-purple-900/50 text-base"
       >
         {loading ? 'Entrando...' : 'Entrar'}

@@ -31,11 +31,11 @@ export default function MesaInvite({ onClose, onJoined }) {
             <input
               type="text"
               required
-              maxLength={8}
+              maxLength={200}
               value={codigo}
               onChange={e => setCodigo(e.target.value.toLowerCase())}
               className="w-full px-4 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono tracking-widest text-center text-lg uppercase"
-              placeholder="ex: a1b2c3d4"
+              placeholder="código ou link do convite"
               autoFocus
             />
           </div>

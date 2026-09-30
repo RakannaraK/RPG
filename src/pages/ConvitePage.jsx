@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { LIMITE_NOME_CONVIDADO, codigoDoConvite, validarNomeConvidado } from '../lib/convite'
+import { traduzirErroAuth } from '../lib/erroAuth'
+import Captcha, { CHAVE_CAPTCHA } from '../components/auth/Captcha'
 import Marca from '../components/marca/Marca'
 import Ilustra from '../components/arte/Ilustra'
 import Botao from '../components/ui/Botao'
@@ -17,17 +19,15 @@ async function convidadoLigado() {
   } catch { return false }
 }
 
-// as duas respostas previsíveis do Supabase vêm em inglês
-function traduzir(msg = '') {
-  if (/anonymous sign-ins are disabled/i.test(msg)) return 'A entrada de convidados está desligada neste site. Entre com uma conta.'
-  if (/rate limit/i.test(msg)) return 'Muitas entradas de convidado agora. Tente de novo em alguns minutos.'
-  return msg
-}
-
 /** Entra na mesa pelo código; se já é membro, só acha a mesa. Devolve o id. */
 async function entrarNaMesa(codigo) {
   const { data, error } = await supabase.rpc('entrar_na_mesa', { codigo })
-  if (!error) return (Array.isArray(data) ? data[0] : data)?.mesa_id
+  if (!error) {
+    const id = (Array.isArray(data) ? data[0] : data)?.mesa_id
+    if (id) return id
+    // lista vazia = código errado (a tentativa conta no limite do banco)
+    throw new Error('Código de convite inválido ou a mesa não existe mais.')
+  }
   const { data: m } = await supabase.from('mesas').select('id').eq('codigo_convite', codigo).maybeSingle()
   if (m?.id) return m.id
   throw new Error(error.message)
@@ -46,6 +46,8 @@ export default function ConvitePage() {
   const [nome, setNome] = useState('')
   const [erro, setErro] = useState('')
   const [ocupado, setOcupado] = useState(false)
+  const [captcha, setCaptcha] = useState(null)
+  const [versaoCaptcha, setVersaoCaptcha] = useState(0)
 
   useEffect(() => { convidadoLigado().then(setLigado) }, [])
 
@@ -61,13 +63,13 @@ export default function ConvitePage() {
     if (!v.ok) { setErro(v.erro); return }
     setErro(''); setOcupado(true)
     try {
-      const { error } = await supabase.auth.signInAnonymously()
-      if (error) throw new Error(traduzir(error.message))
+      const { error } = await supabase.auth.signInAnonymously(captcha ? { options: { captchaToken: captcha } } : undefined)
+      if (error) throw new Error(traduzirErroAuth(error))
       const mesaId = await entrarNaMesa(codigo)
       // o nome escolhido vira o apelido nesta mesa (o username do convidado é automático)
       await supabase.rpc('atualizar_perfil_mesa', { p_mesa_id: mesaId, p_apelido: v.nome, p_avatar_url: null })
       navigate(`/mesa/${mesaId}`, { replace: true })
-    } catch (err) { setErro(err.message); setOcupado(false) }
+    } catch (err) { setErro(err.message); setOcupado(false); setCaptcha(null); setVersaoCaptcha(v => v + 1) }
   }
 
   return (
@@ -99,7 +101,8 @@ export default function ConvitePage() {
                       className="px-3 py-2.5 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500"
                     />
                   </label>
-                  <Botao type="submit" variante="primario" tamanho="lg" className="w-full">Entrar como convidado</Botao>
+                  <Captcha onToken={setCaptcha} versao={versaoCaptcha} />
+                  <Botao type="submit" variante="primario" tamanho="lg" className="w-full" disabled={!!CHAVE_CAPTCHA && !captcha}>Entrar como convidado</Botao>
                   <p className="text-ink-dim text-xs">
                     Sem e-mail e sem senha. Sua ficha fica guardada neste navegador, e dá para criar a conta depois sem perder nada.
                   </p>

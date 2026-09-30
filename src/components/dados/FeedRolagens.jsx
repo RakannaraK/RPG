@@ -110,6 +110,12 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
             <span className="text-ink text-sm font-medium">{rotulo}</span>
           )}
           <span className="text-ink-dim font-mono text-xs shrink-0">{notacao}</span>
+          {/* sorteada no servidor: ninguém escolheu esse número (quem forjar pela API fica sem o selo) */}
+          {rolagem.verificada && (
+            <span className="text-ok text-xs shrink-0 inline-flex items-center gap-1" title="Sorteada no servidor: ninguém escolheu esse número">
+              <Ilustra nome="escudo" tamanho={12} /> verificada
+            </span>
+          )}
         </div>
         <span className="text-ink-dim text-xs shrink-0">{tempoRelativo(created_at)}</span>
       </div>

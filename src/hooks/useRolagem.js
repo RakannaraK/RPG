@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { rolarNotacao } from '../lib/diceNotation'
+import { rolarNotacao, validarNotacao } from '../lib/diceNotation'
 import { rolarDados } from '../lib/dice'
-import { aplicarCritico } from '../lib/criticoEngine'
 import { resolverRolagem, paradaComVantagem, escolherRollUnder } from '../lib/resolutionEngine'
 import { usePreferencias } from '../context/PreferenciasContext'
 
@@ -21,10 +20,10 @@ function replaceAt(arr, indices, novos) {
  *   const { registrarRolagem, rolando, erro } = useRolagem()
  *   const resultado = await registrarRolagem({ mesaId, fichaId, rotulo, notacao })
  *
- * Fluxo:
- *   1. rolarNotacao() executa localmente e retorna imediatamente (para a animação)
- *   2. O resultado é inserido na tabela `rolagens` no Supabase
- *   3. O Realtime notifica os outros jogadores — o autor já tem o resultado
+ * Fluxo (registrarRolagem):
+ *   1. O servidor sorteia e grava a rolagem com o selo `verificada`
+ *   2. O resultado volta para a animação do autor
+ *   3. O Realtime notifica os outros jogadores
  */
 export function useRolagem() {
   const { session } = useAuth()
@@ -58,77 +57,40 @@ export function useRolagem() {
    */
   async function registrarRolagem({ mesaId, fichaId = null, rotulo = null, notacao, sessaoId = null, percentual = 0, critico = null, som = null }) {
     setErro('')
+    // notação ruim avisa na hora, sem ir ao servidor
+    if (!validarNotacao(String(notacao || '').trim())) {
+      const e = new Error(`Notação inválida: "${notacao}"`)
+      setErro(e.message)
+      throw e
+    }
     setRolando(true)
-
-    // 1. Rola localmente — sincronamente, resultado já disponível para a animação
-    let resultado
     try {
-      resultado = rolarNotacao(notacao)
-    } catch (err) {
-      setErro(err.message || 'Notação inválida.')
-      setRolando(false)
-      throw err
-    }
-
-    // Fase 22.4 — crítico: multiplica dados+fixos ANTES dos percentuais (contrato:
-    // dados+fixos → multiplicador crítico → percentuais → piso).
-    let criticoInfo = null
-    if (critico?.multiplicador) {
-      const dadosTotal = (resultado.mantidos || []).reduce((s, v) => s + (Number(v) || 0), 0)
-      const fixos = resultado.total - dadosTotal
-      const sub = aplicarCritico({ dadosTotal, fixos, multiplicador: critico.multiplicador, modo: critico.modo })
-      criticoInfo = { multiplicador: critico.multiplicador, modo: critico.modo || 'total', antes: resultado.total }
-      resultado = { ...resultado, total: sub }
-    }
-
-    // Fase 18.3 — percentual de rolagem: aplica sobre o TOTAL (após vant/desv e fixos), piso.
-    // Aritmética inteira (× (100+p)/100) p/ evitar o erro de ponto flutuante do × (1+p/100).
-    if (percentual) {
-      const totalBase = resultado.total
-      resultado = {
-        ...resultado,
-        total: Math.floor(totalBase * (100 + percentual) / 100),
-        total_base: totalBase,
-        percentual,
-      }
-    }
-
-    // 2. Persiste no Supabase (aguarda para garantir que o feed dos outros jogadores funcione)
-    try {
-      const payload = {
-        mesa_id: mesaId,
-        autor_id: session.user.id,
-        autor_nome: autorNome || 'Jogador',
-        ficha_id: fichaId || null,
-        rotulo: rotulo || null,
-        notacao: resultado.notacao,
-        resultados: {
-          dados: resultado.dados,
-          individuais: resultado.individuais,
-          mantidos: resultado.mantidos,
-          descartados: resultado.descartados,
-          modificador: resultado.modificador,
+      // Sorteio no SERVIDOR (sql/seguranca_melhorias_2026_09.sql): o banco rola,
+      // aplica crítico (F22.4) e percentual (F18.3), grava a rolagem com o selo
+      // `verificada` e devolve o resultado para a animação. Assim ninguém grava o
+      // número que quiser pela API.
+      const { data, error } = await supabase.rpc('rolar_notacao', {
+        p_mesa_id: mesaId,
+        p_notacao: notacao,
+        p_rotulo: rotulo,
+        p_ficha_id: fichaId,
+        p_sessao_id: sessaoId,
+        p_extras: {
           skin,
-          ...(percentual ? { percentual, total_base: resultado.total_base } : {}),
-          ...(criticoInfo ? { critico: criticoInfo } : {}),
-          // FV.5b — decisão de som já resolvida no cliente que rolou (o preset
-          // certo depende de dados só ele tem: item/habilidade da própria ficha)
+          ...(percentual ? { percentual } : {}),
+          ...(critico?.multiplicador ? { critico: { multiplicador: critico.multiplicador, modo: critico.modo || 'total' } } : {}),
+          // FV.5b — o preset certo depende de dados que só quem rolou tem
           ...(som ? { som } : {}),
         },
-        total: resultado.total,
-      }
-      // Só inclui sessao_id quando há sessão (evita depender da coluna antes do ALTER)
-      if (sessaoId) payload.sessao_id = sessaoId
-      const { error } = await supabase.from('rolagens').insert(payload)
-      if (error) throw error
+      })
+      if (error) throw new Error(error.message)
+      return data
     } catch (err) {
-      // A rolagem local aconteceu — apenas exibe o erro sem quebrar a animação
-      setErro(err.message || 'Erro ao salvar rolagem no servidor.')
+      setErro(err.message || 'Não foi possível rolar.')
+      throw err
     } finally {
       setRolando(false)
     }
-
-    return resultado
   }
 
   /**

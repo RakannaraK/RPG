@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { traduzirErroAuth } from '../../lib/erroAuth'
+import Captcha, { CHAVE_CAPTCHA } from './Captcha'
 import Selo from '../marca/Selo'
 
 export default function RegisterForm({ onSwitchToLogin }) {
@@ -10,6 +12,8 @@ export default function RegisterForm({ onSwitchToLogin }) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [captcha, setCaptcha] = useState(null)
+  const [versaoCaptcha, setVersaoCaptcha] = useState(0)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -24,12 +28,15 @@ export default function RegisterForm({ onSwitchToLogin }) {
     }
     setLoading(true)
     try {
-      await register(email, password)
-      setSuccess(true)
+      // sem confirmação de e-mail, a sessão já vem e o site entra sozinho
+      const { precisaConfirmar } = await register(email, password, captcha)
+      if (precisaConfirmar) setSuccess(true)
     } catch (err) {
-      setError(err.message || 'Erro ao registrar. Tente novamente.')
+      setError(traduzirErroAuth(err) || 'Erro ao registrar. Tente novamente.')
     } finally {
       setLoading(false)
+      setCaptcha(null)
+      setVersaoCaptcha(v => v + 1)
     }
   }
 
@@ -42,7 +49,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
         <div>
           <h3 className="text-white font-semibold text-lg">Conta criada!</h3>
           <p className="text-purple-400 text-sm mt-2">
-            Verifique seu email para confirmar a conta, depois volte para entrar.
+            Enviamos um link para <strong className="text-white">{email}</strong>. Clique nele para ativar a conta (veja também o spam) e depois entre.
           </p>
         </div>
         <button
@@ -98,9 +105,11 @@ export default function RegisterForm({ onSwitchToLogin }) {
         </div>
       )}
 
+      <Captcha onToken={setCaptcha} versao={versaoCaptcha} />
+
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || (!!CHAVE_CAPTCHA && !captcha)}
         className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-sobre-acento font-semibold rounded-xl transition-colors shadow-lg shadow-purple-900/50 text-base"
       >
         {loading ? 'Criando conta...' : 'Criar conta'}
