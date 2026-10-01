@@ -6,8 +6,9 @@ import { souConvidado } from '../../lib/convite'
 import { filtrarMesas, situacao, textoVagas } from '../../lib/mesasAbertas'
 import CapaMesa from '../mesa/CapaMesa'
 import Botao from '../ui/Botao'
+import Icone from '../ui/Icone'
+import { capaDaMesa } from '../../lib/capas'
 
-const CAMPO = 'px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 
 function Cartao({ m, estado, onPedir, onCancelar, onAbrir, onEntrar }) {
   const [escrevendo, setEscrevendo] = useState(false)
@@ -21,15 +22,15 @@ function Cartao({ m, estado, onPedir, onCancelar, onAbrir, onEntrar }) {
   }
 
   return (
-    <li className="rounded-xl border border-border bg-raised overflow-hidden flex flex-col">
-      <CapaMesa capa={m.capa} altura={48} />
+    <li className="cartao rounded-2xl border border-border bg-raised/80 overflow-hidden flex flex-col shadow-nivel-1">
+      <CapaMesa capa={capaDaMesa({ id: m.mesa_id, capa: m.capa })} altura={56} />
       <div className="p-4 space-y-2 flex-1 flex flex-col">
-        <p className="text-ink font-semibold">{m.nome}</p>
+        <p className="font-sora text-ink text-lg font-semibold leading-snug">{m.nome}</p>
         <p className="text-ink-dim text-xs">
           {[m.sistema, m.quando, textoVagas(m.vagas), `${m.jogadores} ${m.jogadores === 1 ? 'jogador' : 'jogadores'}`].filter(Boolean).join(' · ')}
         </p>
-        {m.iniciantes && <span className="self-start text-xs px-2 py-0.5 rounded-full border border-ok text-ok">Aceita iniciantes</span>}
-        <p className="text-ink text-sm whitespace-pre-wrap flex-1">{m.descricao}</p>
+        {m.iniciantes && <span className="self-start inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border border-ok/60 text-ok"><Icone nome="check" tamanho={12} /> Aceita iniciantes</span>}
+        <p className="text-ink-dim text-sm whitespace-pre-wrap flex-1 line-clamp-4">{m.descricao}</p>
 
         {estado === 'sem-login' && <Botao variante="contorno" tamanho="sm" onClick={onEntrar}>Entre para pedir uma vaga</Botao>}
         {estado === 'convidado' && <p className="text-ink-dim text-xs">Crie uma conta para pedir vaga em outra mesa.</p>}
@@ -44,7 +45,7 @@ function Cartao({ m, estado, onPedir, onCancelar, onAbrir, onEntrar }) {
         {estado === 'pode-pedir' && !escrevendo && <Botao variante="primario" tamanho="sm" onClick={() => setEscrevendo(true)}>Quero jogar</Botao>}
         {estado === 'pode-pedir' && escrevendo && (
           <div className="space-y-2">
-            <textarea value={mensagem} onChange={e => setMensagem(e.target.value)} maxLength={500} rows={2} placeholder="Conte um pouco sobre você (opcional)" aria-label="Mensagem para o mestre" className={`${CAMPO} w-full`} />
+            <textarea value={mensagem} onChange={e => setMensagem(e.target.value)} maxLength={500} rows={2} placeholder="Conte um pouco sobre você (opcional)" aria-label="Mensagem para o mestre" className="campo w-full" />
             <div className="flex gap-2">
               <Botao variante="primario" tamanho="sm" disabled={ocupado} onClick={() => acao(() => onPedir(mensagem))}>{ocupado ? 'Enviando…' : 'Enviar pedido'}</Botao>
               <Botao variante="fantasma" tamanho="sm" onClick={() => setEscrevendo(false)}>Cancelar</Botao>
@@ -94,13 +95,16 @@ export default function MesasAbertas() {
   return (
     <section className="space-y-3" aria-labelledby="titulo-mesas-abertas">
       <div className="flex flex-wrap items-center gap-3">
-        <h2 id="titulo-mesas-abertas" className="text-ink font-semibold text-lg flex-1">Mesas procurando jogadores</h2>
-        <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar sistema, horário, tema…" aria-label="Buscar mesas abertas" className={`${CAMPO} min-w-[12rem]`} />
-        <label className="flex items-center gap-2 text-sm text-ink min-h-[24px]">
-          <input type="checkbox" checked={iniciantes} onChange={e => setIniciantes(e.target.checked)} /> Aceita iniciantes
+        <div className="flex-1 min-w-[14rem]">
+          <h2 id="titulo-mesas-abertas" className="font-sora text-ink font-semibold text-xl">Mesas procurando jogadores</h2>
+          <p className="text-ink-dim text-sm mt-0.5">Peça uma vaga: o mestre recebe e decide.</p>
+        </div>
+        <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar sistema, horário, tema…" aria-label="Buscar mesas abertas" className="campo min-w-[12rem]" />
+        <label className="flex items-center gap-2 text-sm text-ink min-h-[24px] cursor-pointer">
+          <input type="checkbox" checked={iniciantes} onChange={e => setIniciantes(e.target.checked)} className="accent-purple-500" /> Aceita iniciantes
         </label>
       </div>
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {lista.map(m => (
           <Cartao
             key={m.mesa_id} m={m} estado={situacao(m.mesa_id, ctx)}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { interpretarEntrada, destinatarios, opcoesDestino, rotuloSussurro, contarNaoLidas, TAMANHO_MAX_MENSAGEM } from './chatMesa'
+import { interpretarEntrada, destinatarios, opcoesDestino, rotuloSussurro, contarNaoLidas, TAMANHO_MAX_MENSAGEM, agruparMensagens } from './chatMesa'
 
 const membros = [
   { usuario_id: 'm', nome: 'Mestre', role: 'mestre' },
@@ -64,5 +64,22 @@ describe('rótulos e não lidas', () => {
     expect(contarNaoLidas(msgs, null, 'a')).toBe(2)
     expect(contarNaoLidas(msgs, '2026-09-19T10:00:00+00:00', 'a')).toBe(1)
     expect(contarNaoLidas(msgs, '2026-09-19T10:06:00.123456+00:00', 'a')).toBe(0)
+  })
+})
+
+describe('F52 — mensagens agrupadas', () => {
+  it('cola mensagens seguidas da mesma pessoa e separa por dia, autor e sussurro', () => {
+    const t = (h, min) => new Date(2026, 9, 1, h, min).toISOString()
+    const msgs = [
+      { id: 1, autor_id: 'a', created_at: t(20, 0) },
+      { id: 2, autor_id: 'a', created_at: t(20, 2) },
+      { id: 3, autor_id: 'b', created_at: t(20, 3) },
+      { id: 4, autor_id: 'b', created_at: t(20, 30) },
+      { id: 5, autor_id: 'b', created_at: t(20, 31), para: ['a'] },
+      { id: 6, autor_id: 'b', created_at: new Date(2026, 9, 2, 9, 0).toISOString() },
+    ]
+    const g = agruparMensagens(msgs)
+    expect(g.map(x => x.inicioGrupo)).toEqual([true, false, true, true, true, true])
+    expect(g.map(x => x.novoDia)).toEqual([true, false, false, false, false, true])
   })
 })

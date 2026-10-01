@@ -1,7 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMembrosMesa } from '../../hooks/useMembrosMesa'
 import { useRolagem } from '../../hooks/useRolagem'
-import { destinatarios, interpretarEntrada, opcoesDestino, rotuloSussurro, TAMANHO_MAX_MENSAGEM } from '../../lib/chatMesa'
+import { agruparMensagens, destinatarios, interpretarEntrada, opcoesDestino, rotuloSussurro, TAMANHO_MAX_MENSAGEM } from '../../lib/chatMesa'
+import Avatar from '../ui/Avatar'
+import Botao from '../ui/Botao'
+import Icone from '../ui/Icone'
+import Ilustra from '../arte/Ilustra'
+
+function dia(iso) {
+  const d = new Date(iso)
+  const hoje = new Date()
+  const ontem = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - 1)
+  if (d.toDateString() === hoje.toDateString()) return 'Hoje'
+  if (d.toDateString() === ontem.toDateString()) return 'Ontem'
+  return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })
+}
 
 function hora(iso) {
   const d = new Date(iso)
@@ -16,7 +29,7 @@ function hora(iso) {
  */
 export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = true, podeRolar = true, sessaoId = null, className = 'h-[60vh]' }) {
   const { mensagens, indisponivel, enviar, apagar, marcarLidas } = chat
-  const { membros, nomeDe } = useMembrosMesa(mesaId)
+  const { membros, nomeDe, avatarDe } = useMembrosMesa(mesaId)
   const { registrarRolagem, erro: erroRolagem } = useRolagem()
   const [texto, setTexto] = useState('')
   const [destino, setDestino] = useState('todos')
@@ -69,39 +82,59 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
       <ul
         ref={listaRef}
         onScroll={e => { const el = e.currentTarget; noFimRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40 }}
-        className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1"
+        className="flex-1 min-h-0 overflow-y-auto pr-1"
         aria-live="polite"
       >
-        {mensagens.length === 0 && <li className="text-ink-dim text-sm italic">Nenhuma mensagem ainda. Diga oi!</li>}
-        {mensagens.map(m => {
+        {mensagens.length === 0 && (
+          <li className="h-full flex flex-col items-center justify-center text-center px-6 py-10">
+            <Ilustra nome="pergaminho" tamanho={56} className="opacity-80 mb-3" />
+            <p className="text-ink font-medium">Nenhuma mensagem ainda</p>
+            <p className="text-ink-dim text-sm mt-1">Diga oi para a mesa. Comece com <span className="font-mono text-ink">/r 1d20</span> para rolar daqui.</p>
+          </li>
+        )}
+        {agruparMensagens(mensagens).map(({ m, inicioGrupo, novoDia }) => {
           const minha = m.autor_id === meuId
           const sussurro = rotuloSussurro(m, meuId, nomeDe)
+          const nome = minha ? 'Você' : nomeDe(m.autor_id)
           return (
-            <li key={m.id} className={`group ${minha ? 'ml-6' : 'mr-6'}`}>
-              <div className={`flex items-baseline gap-2 text-xs ${minha ? 'justify-end' : ''}`}>
-                <span className="text-ink font-semibold">{minha ? 'Você' : nomeDe(m.autor_id)}</span>
-                <span className="text-ink-dim">{hora(m.created_at)}</span>
-                {sussurro && (
-                  <button
-                    type="button"
-                    // Responder o sussurro: quem recebeu responde só para o autor
-                    onClick={() => !minha && setDestino(m.autor_id)}
-                    className="text-violet-300 hover:underline"
-                    title={minha ? undefined : 'Responder em sussurro'}
-                  >{sussurro}</button>
-                )}
+            <li key={m.id} className={`group relative ${inicioGrupo ? 'mt-3 first:mt-0' : ''}`}>
+              {novoDia && (
+                <div className="flex items-center gap-3 my-3 text-xs text-ink-dim" role="separator">
+                  <span className="flex-1 h-px bg-border/70" />{dia(m.created_at)}<span className="flex-1 h-px bg-border/70" />
+                </div>
+              )}
+              <div className={`flex gap-3 rounded-lg px-2 py-1 transition-colors duration-rapida hover:bg-hover/40 ${sussurro ? 'border-l-2 border-accent-400 bg-accent-800/15' : ''}`}>
+                <div className="w-8 shrink-0">
+                  {inicioGrupo
+                    ? <Avatar url={avatarDe(m.autor_id)} nome={nomeDe(m.autor_id)} tamanho="sm" />
+                    : <span className="block text-xs leading-6 text-ink-dim text-right opacity-0 group-hover:opacity-100 tabular-nums">{hora(m.created_at).slice(-5)}</span>}
+                </div>
+                <div className="flex-1 min-w-0">
+                  {inicioGrupo && (
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span className={`text-sm font-semibold ${minha ? 'text-accent-300' : 'text-ink'}`}>{nome}</span>
+                      <span className="text-ink-dim text-xs tabular-nums">{hora(m.created_at)}</span>
+                      {sussurro && (
+                        <button
+                          type="button"
+                          // Responder o sussurro: quem recebeu responde só para o autor
+                          onClick={() => !minha && setDestino(m.autor_id)}
+                          className="text-accent-300 text-xs hover:underline"
+                          title={minha ? undefined : 'Responder em sussurro'}
+                        >{sussurro}</button>
+                      )}
+                    </div>
+                  )}
+                  <p className={`text-sm text-ink whitespace-pre-wrap break-words leading-relaxed ${sussurro ? 'italic' : ''}`}>{m.texto}</p>
+                </div>
                 {(minha || isGestor) && (
                   <button
                     type="button" onClick={() => aoApagar(m.id)}
-                    className="text-ink-dim hover:text-red-400 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
-                    title="Apagar mensagem" aria-label="Apagar mensagem"
-                  >✕</button>
+                    className="botao-icone !min-w-[28px] !min-h-[28px] self-start opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:!text-harm"
+                    aria-label="Apagar mensagem" data-dica="Apagar"
+                  ><Icone nome="lixeira" tamanho={15} /></button>
                 )}
               </div>
-              <p className={`mt-0.5 rounded-xl px-3 py-2 text-sm whitespace-pre-wrap break-words ${
-                sussurro ? 'bg-violet-950/70 border border-violet-800 text-violet-100 italic'
-                  : minha ? 'bg-accent-600 text-sobre-acento' : 'bg-raised text-sobre-acento'
-              }`}>{m.texto}</p>
             </li>
           )
         })}
@@ -113,7 +146,7 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
             <select
               value={opcoes.some(o => o.valor === destino) ? destino : 'todos'}
               onChange={e => setDestino(e.target.value)}
-              className="w-full px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm"
+              className="campo w-full !min-h-[36px] !py-1.5"
               aria-label="Para quem"
             >
               {opcoes.map(o => <option key={o.valor} value={o.valor}>{o.rotulo}</option>)}
@@ -127,15 +160,14 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
               rows={2}
               maxLength={TAMANHO_MAX_MENSAGEM + 50}
               placeholder={destino === 'todos' ? 'Mensagem para a mesa… (/r 1d20+5 rola)' : 'Sussurro…'}
-              className="flex-1 resize-none px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500"
+              className="campo flex-1 resize-none"
               aria-label="Mensagem"
             />
-            <button
-              type="button" onClick={aoEnviar} disabled={enviando || !texto.trim()}
-              className="px-3 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-sobre-acento text-sm font-semibold"
-            >{enviando ? '…' : 'Enviar'}</button>
+            <Botao variante="primario" onClick={aoEnviar} disabled={enviando || !texto.trim()} aria-label="Enviar mensagem" className="!min-h-[44px] !px-4">
+              <Icone nome="seta-dir" tamanho={18} className={enviando ? 'opacity-50' : ''} />
+            </Botao>
           </div>
-          {(erro || erroRolagem) && <p className="text-red-400 text-xs">{erro || erroRolagem}</p>}
+          {(erro || erroRolagem) && <p className="aviso-erro !text-xs" role="alert">{erro || erroRolagem}</p>}
           <p className="text-ink-dim text-xs">Enter envia · Shift+Enter quebra linha · /r 2d6+3 rótulo rola no feed</p>
         </div>
       ) : (

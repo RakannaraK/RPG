@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 
 /**
  * Membros da mesa com nome de exibição (apelido na mesa > username).
- * @returns {{ membros: {usuario_id, nome, role}[], nomeDe: (id) => string, recarregar }}
+ * @returns {{ membros: {usuario_id, nome, role, avatar_url}[], nomeDe: (id) => string, avatarDe: (id) => string|null, recarregar }}
  */
 export function useMembrosMesa(mesaId) {
   const [membros, setMembros] = useState([])
@@ -12,12 +12,13 @@ export function useMembrosMesa(mesaId) {
     if (!mesaId) return
     const { data } = await supabase
       .from('membros_mesa')
-      .select('role, apelido, usuario:usuario_id (id, username)')
+      .select('role, apelido, avatar_url, usuario:usuario_id (id, username)')
       .eq('mesa_id', mesaId)
     setMembros((data || []).map(m => ({
       usuario_id: m.usuario?.id,
       nome: m.apelido || m.usuario?.username || 'Jogador',
       role: m.role,
+      avatar_url: m.avatar_url || null,
     })).filter(m => m.usuario_id))
   }, [mesaId])
 
@@ -28,5 +29,10 @@ export function useMembrosMesa(mesaId) {
     [membros]
   )
 
-  return { membros, nomeDe, recarregar }
+  const avatarDe = useCallback(
+    usuarioId => membros.find(m => m.usuario_id === usuarioId)?.avatar_url || null,
+    [membros]
+  )
+
+  return { membros, nomeDe, avatarDe, recarregar }
 }

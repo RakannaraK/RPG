@@ -70,3 +70,20 @@ export function contarNaoLidas(mensagens, vistoEm, meuId) {
   const desde = vistoEm ? Date.parse(vistoEm) : 0
   return mensagens.filter(m => m.autor_id !== meuId && Date.parse(m.created_at) > desde).length
 }
+
+/**
+ * F52 — agrupa mensagens seguidas da mesma pessoa (até `janelaMs` de
+ * distância) e marca onde muda o dia. A primeira do grupo mostra nome, rosto
+ * e hora; as outras entram coladas, como num registro de mesa.
+ */
+export function agruparMensagens(mensagens = [], janelaMs = 5 * 60 * 1000) {
+  const dia = iso => new Date(iso).toDateString()
+  return mensagens.map((m, i) => {
+    const ant = mensagens[i - 1]
+    const novoDia = !ant || dia(ant.created_at) !== dia(m.created_at)
+    const sussurroMudou = !ant || (ant.para?.length > 0) !== (m.para?.length > 0)
+    const inicioGrupo = novoDia || sussurroMudou || ant.autor_id !== m.autor_id
+      || Date.parse(m.created_at) - Date.parse(ant.created_at) > janelaMs
+    return { m, inicioGrupo, novoDia }
+  })
+}

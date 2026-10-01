@@ -15,6 +15,9 @@ import EstadoVazio from '../components/ui/EstadoVazio'
 import { EsqueletoCartoes } from '../components/ui/Esqueleto'
 import { useToast } from '../components/ui/Toast'
 import { proximaDaMesa } from '../lib/agenda'
+import GuiaMestre, { useProgressoMestre } from '../components/ajuda/GuiaMestre'
+import { passosDoGuia, quantosFeitos } from '../lib/guia'
+import { usePreferencias } from '../context/PreferenciasContext'
 
 export default function DashboardPage() {
   const { session } = useAuth()
@@ -32,6 +35,13 @@ export default function DashboardPage() {
   }, [])
   const proximaDe = mesaId => proximaDaMesa(agendas.filter(a => a.mesa_id === mesaId))
   const [showArquivadas, setShowArquivadas] = useState(false)
+  const [showGuia, setShowGuia] = useState(false)
+  // F52 — primeiros passos do mestre: some quando tudo está feito ou a pessoa pula
+  const { preferencias, salvarPreferencias } = usePreferencias()
+  const progresso = useProgressoMestre(!preferencias.guia_dispensado)
+  const passos = passosDoGuia(progresso || {})
+  const feitos = quantosFeitos(passos)
+  const proximoPasso = passos.find(p => !p.feito)
 
   // 16.8 — separa mesas ativas das arquivadas
   const ativas = mesas.filter(m => !m.arquivada)
@@ -69,6 +79,21 @@ export default function DashboardPage() {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <BannerConvidado className="mb-6" />
+        {progresso && !preferencias.guia_dispensado && feitos < passos.length && !souConvidado(session) && (
+          <section className="mb-8 rounded-2xl border border-accent-700/50 bg-raised/70 p-5 flex flex-col sm:flex-row sm:items-center gap-4" aria-label="Primeiros passos">
+            <div className="flex-1 min-w-0">
+              <p className="text-ink-dim text-xs font-semibold uppercase tracking-wider">Primeiros passos do mestre · {feitos} de {passos.length}</p>
+              <p className="font-sora text-ink text-lg font-semibold mt-1">Próximo: {proximoPasso?.titulo}</p>
+              <div className="mt-3 h-1.5 rounded-full bg-void ring-1 ring-inset ring-border overflow-hidden max-w-sm" aria-hidden="true">
+                <div className="h-full rounded-full bg-accent-500" style={{ width: `${(feitos / passos.length) * 100}%` }} />
+              </div>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Botao variante="fantasma" onClick={() => salvarPreferencias({ guia_dispensado: true })}>Pular</Botao>
+              <Botao variante="primario" onClick={() => setShowGuia(true)}>Ver o guia</Botao>
+            </div>
+          </section>
+        )}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5 mb-8">
           <div>
             <h1 className="font-sora text-3xl sm:text-4xl font-bold text-ink tracking-tight">Suas mesas</h1>
@@ -146,6 +171,7 @@ export default function DashboardPage() {
 
       {showCreate && <MesaCreate onClose={() => setShowCreate(false)} onCreated={handleMesaCreated} />}
       {showInvite && <MesaInvite onClose={() => setShowInvite(false)} onJoined={handleMesaJoined} />}
+      {showGuia && <GuiaMestre onFechar={() => setShowGuia(false)} onCriarMesa={() => setShowCreate(true)} />}
     </div>
   )
 }

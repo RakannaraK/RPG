@@ -495,3 +495,37 @@ html { scrollbar-width: thin; scrollbar-color: rgb(var(--hover-c)) transparent; 
 /* quem tem chama precisa deixar o conteúdo por cima dela */
 .com-chama { position: relative; overflow: hidden; }
 .com-chama > :where(:not(.chama-arcana)) { position: relative; z-index: 1; }
+
+/* ── Dados: total que salta, crítico e falha natural ─────────────────────── */
+.total-salta { animation: resultado-salta 420ms var(--ease-mola) backwards; }
+
+@keyframes critico-brilho {
+  0%   { box-shadow: 0 0 0 0 transparent; }
+  22%  { box-shadow: 0 0 0 1px var(--dice-400), 0 0 44px -4px color-mix(in srgb, var(--dice-400) 75%, transparent); }
+  100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--dice-400) 45%, transparent), 0 0 24px -10px color-mix(in srgb, var(--dice-400) 60%, transparent); }
+}
+.rolagem-critica { position: relative; overflow: hidden; animation: critico-brilho 1.2s var(--ease-padrao) forwards; }
+/* faíscas douradas subindo uma vez */
+.rolagem-critica::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 88%, var(--dice-200) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 28% 80%, var(--dice-400) 0 1px, transparent 2px),
+    radial-gradient(circle at 47% 92%, var(--dice-200) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 63% 84%, var(--dice-400) 0 1px, transparent 2px),
+    radial-gradient(circle at 81% 90%, var(--dice-200) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 92% 78%, var(--dice-400) 0 1px, transparent 2px);
+  animation: faiscas-sobem 1.3s var(--ease-saida) forwards;
+}
+@keyframes faiscas-sobem {
+  from { transform: translateY(0); opacity: 1; }
+  to   { transform: translateY(-70%); opacity: 0; }
+}
+/* falha natural: sem vermelho piscando — só o total treme uma vez */
+.rolagem-falha .total-salta { animation: tremer 380ms var(--ease-padrao); }
+:root[data-movimento="reduzido"] :is(.total-salta, .rolagem-critica, .rolagem-critica::after, .rolagem-falha .total-salta) { animation: none; }
+:root[data-movimento="reduzido"] .rolagem-critica::after { display: none; }
+:root[data-movimento="reduzido"] .rolagem-critica { box-shadow: 0 0 0 1px color-mix(in srgb, var(--dice-400) 45%, transparent); }

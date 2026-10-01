@@ -6,22 +6,47 @@ import { descreverResultado } from '../../lib/resolutionEngine'
 import { tocarSomDado, estimarNumDados } from '../../lib/diceSounds'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import Dice3D from './Dice3D'
+import Botao from '../ui/Botao'
+import Icone from '../ui/Icone'
+import { montarNotacao, naturalD20 } from '../../lib/natural'
 
-const ATALHOS = [
-  { label: 'd4', notacao: '1d4' }, { label: 'd6', notacao: '1d6' }, { label: 'd8', notacao: '1d8' },
-  { label: 'd10', notacao: '1d10' }, { label: 'd12', notacao: '1d12' }, { label: 'd20', notacao: '1d20' }, { label: 'd100', notacao: '1d100' },
-]
+const LADOS = [4, 6, 8, 10, 12, 20, 100]
+
+/** Número com − e + (quantidade, modificador). */
+function Passo({ rotulo, valor, min, max, sinal = false, onMudar }) {
+  const mudar = v => onMudar(Math.max(min, Math.min(max, v)))
+  return (
+    <div>
+      <span className="block text-ink-dim text-xs font-semibold uppercase tracking-wider mb-1">{rotulo}</span>
+      <div className="inline-flex items-center rounded-xl border border-border bg-void/60">
+        <button type="button" onClick={() => mudar(valor - 1)} disabled={valor <= min} aria-label={`${rotulo}: menos um`} className="botao-icone !rounded-l-xl !rounded-r-none disabled:opacity-40"><Icone nome="menos" tamanho={16} /></button>
+        <span className="w-12 text-center font-mono font-semibold text-ink tabular-nums" aria-live="polite" aria-label={rotulo}>{sinal && valor > 0 ? `+${valor}` : valor}</span>
+        <button type="button" onClick={() => mudar(valor + 1)} disabled={valor >= max} aria-label={`${rotulo}: mais um`} className="botao-icone !rounded-r-xl !rounded-l-none disabled:opacity-40"><Icone nome="mais" tamanho={16} /></button>
+      </div>
+    </div>
+  )
+}
 
 const COR_TXT = { verde: 'text-ok', ambar: 'text-dice-400', vermelho: 'text-harm', roxo: 'text-ink' }
 
 function ResultadoDisplay({ resultado, rotulo, rolando, skin }) {
   const { notacao, dados, mantidos, descartados, modificador, total } = resultado
+  const natural = rolando ? null : naturalD20(dados)
 
   return (
-    <div className="bg-raised/60 border border-border/50 rounded-2xl p-5 space-y-4">
+    <div className={`resultado-rolagem rounded-2xl border p-5 space-y-4 ${
+      natural === 'critico' ? 'rolagem-critica border-dice-400/70 bg-dice-700/10'
+        : natural === 'falha' ? 'rolagem-falha border-harm/60 bg-harm/5'
+        : 'border-border/70 bg-raised/60'
+    }`}>
       <div className="flex items-baseline gap-2 flex-wrap">
         {rotulo && <span className="text-ink font-semibold">{rotulo}</span>}
         <span className="text-ink-dim font-mono text-sm">{notacao}</span>
+        {natural && (
+          <span className={`ml-auto text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${natural === 'critico' ? 'text-dice-200 border-dice-400/70 bg-dice-700/30' : 'text-harm border-harm/60 bg-harm/10'}`}>
+            {natural === 'critico' ? 'Crítico natural' : 'Falha natural'}
+          </span>
+        )}
       </div>
       <div className="flex flex-wrap gap-3 items-end">
         {dados.map((d, i) => (
@@ -31,15 +56,19 @@ function ResultadoDisplay({ resultado, rotulo, rolando, skin }) {
           </div>
         ))}
       </div>
-      <div className="flex items-baseline gap-3 flex-wrap pt-1 border-t border-border/60">
-        <span className="text-ink-dim text-sm">Total</span>
-        <span className="text-4xl font-bold text-ink leading-none">{total}</span>
+      <div className="flex items-end gap-4 flex-wrap pt-3 border-t border-border/60">
+        <div>
+          <span className="block text-ink-dim text-xs font-semibold uppercase tracking-wider">Total</span>
+          <span key={rolando ? 'r' : total} className={`block font-sora text-5xl font-bold leading-none tabular-nums ${rolando ? 'text-ink-dim' : 'total-salta'} ${natural === 'critico' ? 'text-dice-400' : natural === 'falha' ? 'text-harm' : 'text-ink'}`} aria-live="polite">
+            {rolando ? '…' : total}
+          </span>
+        </div>
         {(mantidos.length > 1 || modificador !== 0) && (
-          <span className="text-ink-dim text-sm">
-            ({mantidos.join(' + ')}{modificador > 0 && ` + ${modificador}`}{modificador < 0 && ` − ${Math.abs(modificador)}`})
+          <span className="text-ink-dim text-sm pb-1 font-mono">
+            {mantidos.join(' + ')}{modificador > 0 && ` + ${modificador}`}{modificador < 0 && ` − ${Math.abs(modificador)}`}
           </span>
         )}
-        {descartados.length > 0 && <span className="text-harm text-xs ml-auto">descartados: {descartados.join(', ')}</span>}
+        {descartados.length > 0 && <span className="text-harm text-xs ml-auto pb-1">descartados: {descartados.join(', ')}</span>}
       </div>
     </div>
   )
@@ -87,7 +116,11 @@ export default function RoladorGenerico({ mesaId, fichaId = null }) {
   const resolucao = sistema?.config_layout?.resolucao || null
   const modo = resolucao?.modo || 'soma'
 
-  const [notacao, setNotacao] = useState('')
+  const [lados, setLados] = useState(20)   // F52 — rolador rápido
+  const [qtd, setQtd] = useState(1)
+  const [mod, setMod] = useState(0)
+  const [livre, setLivre] = useState('')   // notação escrita à mão (tem prioridade)
+  const [vez, setVez] = useState(0)
   const [rotulo, setRotulo] = useState('')
   const [valor, setValor] = useState('')       // parada / alvo / modificador
   const [dificuldade, setDificuldade] = useState('')
@@ -100,14 +133,13 @@ export default function RoladorGenerico({ mesaId, fichaId = null }) {
   const especiaisAtivo = modo === 'sucessos' && resolucao?.dados_especiais?.ativo
 
   async function handleRolarSoma() {
-    const n = notacao.trim()
-    if (!n) { setErroLocal('Digite uma notação de dados.'); return }
+    const n = livre.trim() || montarNotacao(qtd, lados, mod)
     if (!validarNotacao(n)) { setErroLocal(`Notação inválida: "${n}". Exemplos: 1d20, 2d6+3, 4d6kh3`); return }
     setErroLocal('')
     tocarSomDado(preferencias.dado_skin, { ativo: preferencias.som_ativo, volume: preferencias.som_volume, numDados: estimarNumDados(n) })
     try {
       const res = await registrarRolagem({ mesaId, fichaId, rotulo: rotulo.trim() || null, notacao: n })
-      setResultado({ ...res, _soma: true }); setRotuloDisplay(rotulo.trim()); setRolando(true); setTimeout(() => setRolando(false), 1400)
+      setResultado({ ...res, _soma: true }); setVez(v => v + 1); setRotuloDisplay(rotulo.trim()); setRolando(true); setTimeout(() => setRolando(false), 900)
     } catch { /* erroHook */ }
   }
 
@@ -129,33 +161,54 @@ export default function RoladorGenerico({ mesaId, fichaId = null }) {
 
   const erro = erroLocal || erroHook
 
-  // ── Modo soma: notação livre (o de sempre) ──────────────────────────────────
+  // ── Modo soma: escolha o dado, quantos e o modificador (ou escreva a notação) ──
   if (modo === 'soma') {
+    const montada = montarNotacao(qtd, lados, mod)
     return (
       <div className="space-y-5">
-        <div className="flex flex-wrap gap-2">
-          {ATALHOS.map(a => (
-            <button key={a.label} onClick={() => { setNotacao(a.notacao); setErroLocal('') }}
-              className={`px-3 py-1.5 text-sm font-mono font-semibold rounded-lg border transition-colors ${
-                notacao === a.notacao ? 'bg-accent-600 border-accent-500 text-sobre-acento' : 'bg-void/50 border-border text-accent-300 hover:border-accent-500 hover:text-sobre-acento'
-              }`}>{a.label}</button>
-          ))}
+        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2" role="radiogroup" aria-label="Dado">
+          {LADOS.map(l => {
+            const ativo = !livre && lados === l
+            return (
+              <button
+                key={l} type="button" role="radio" aria-checked={ativo}
+                onClick={() => { setLados(l); setLivre(''); setErroLocal('') }}
+                className={`cartao flex flex-col items-center gap-1 rounded-xl border py-2.5 font-mono font-semibold ${ativo ? 'selecionado text-ink' : 'border-border bg-void/40 text-ink-dim hover:text-ink'}`}
+              >
+                <Icone nome="dado" tamanho={20} className={ativo ? 'text-dice-400' : ''} />
+                d{l}
+              </button>
+            )
+          })}
         </div>
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <input type="text" value={notacao} onChange={e => { setNotacao(e.target.value); setErroLocal('') }}
-              onKeyDown={e => e.key === 'Enter' && handleRolarSoma()} placeholder="Ex: 2d6+3, 4d6kh3, 1d20"
-              className={`${INP} flex-1 font-mono`} />
-            <button onClick={handleRolarSoma} disabled={rolando || salvando}
-              className="px-6 py-3 bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-sobre-acento font-bold rounded-xl transition-colors shadow-lg shadow-void/40">
-              {rolando ? '🎲' : 'Rolar'}
-            </button>
+
+        <div className="flex flex-wrap items-end gap-4">
+          <Passo rotulo="Quantidade" valor={qtd} min={1} max={30} onMudar={v => { setQtd(v); setLivre('') }} />
+          <Passo rotulo="Modificador" valor={mod} min={-30} max={30} sinal onMudar={v => { setMod(v); setLivre('') }} />
+          <div className="ml-auto flex items-center gap-3">
+            <span className="font-mono text-lg text-ink" aria-label="Notação que vai rolar">{livre.trim() || montada}</span>
+            <Botao variante="primario" tamanho="lg" onClick={handleRolarSoma} disabled={rolando || salvando} className="px-6">
+              <Icone nome="dado" tamanho={18} className={rolando ? 'animate-spin' : ''} /> Rolar
+            </Botao>
           </div>
-          <input type="text" value={rotulo} onChange={e => setRotulo(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleRolarSoma()}
-            placeholder="Rótulo opcional — Ex: Iniciativa, Ataque, Dano" className={`${INP} w-full text-sm`} />
         </div>
-        {erro && <div className="flex items-start gap-2 text-harm text-sm bg-harm/60 border border-harm/60 rounded-xl px-4 py-3"><span>⚠</span><span>{erro}</span></div>}
-        {resultado && <ResultadoDisplay resultado={resultado} rotulo={rotuloDisplay} rolando={rolando} skin={preferencias.dado_skin} />}
+
+        <details className="group/livre rounded-xl border border-border/70 px-4 py-3">
+          <summary className="cursor-pointer text-sm text-ink-dim hover:text-ink list-none flex items-center gap-2">
+            <Icone nome="chevron-dir" tamanho={14} className="transition-transform duration-normal group-open/livre:rotate-90" />
+            Notação livre e rótulo <span className="text-xs">(2d6+3, 4d6kh3, 1d20…)</span>
+          </summary>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <input type="text" value={livre} onChange={e => { setLivre(e.target.value); setErroLocal('') }}
+              onKeyDown={e => e.key === 'Enter' && handleRolarSoma()} placeholder="Ex.: 2d6+3, 4d6kh3"
+              aria-label="Notação livre" className="campo font-mono" />
+            <input type="text" value={rotulo} onChange={e => setRotulo(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleRolarSoma()}
+              placeholder="Rótulo: Iniciativa, Ataque…" aria-label="Rótulo da rolagem" className="campo" />
+          </div>
+        </details>
+
+        {erro && <p className="aviso-erro" role="alert">{erro}</p>}
+        {resultado && <ResultadoDisplay key={vez} resultado={resultado} rotulo={rotuloDisplay} rolando={rolando} skin={preferencias.dado_skin} />}
       </div>
     )
   }

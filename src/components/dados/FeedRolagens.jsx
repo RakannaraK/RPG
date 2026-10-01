@@ -10,6 +10,7 @@ import { deveMostrar } from '../../lib/bandejaDados'
 import Dice3D from './Dice3D'
 import { bandejaSuportada } from './BandejaDados'
 import Ilustra from '../arte/Ilustra'
+import { naturalD20 } from '../../lib/natural'
 
 const COR_TXT = { verde: 'text-ok', ambar: 'text-dice-400', vermelho: 'text-harm', roxo: 'text-accent-300' }
 const COR_CARD = { verde: 'border-ok/50', ambar: 'border-dice-500/50', vermelho: 'border-harm/50', roxo: 'border-border' }
@@ -48,7 +49,7 @@ function ResultadoModo({ rolagem, animando, ehMeu, minhaSkin }) {
           return (
             <div key={i} className={`flex flex-col items-center gap-0.5 rounded-lg ${d.sucesso ? 'ring-1 ring-ok/70' : ''} ${d.especial ? 'ring-1 ring-harm/80' : ''}`}>
               {base}
-              {d.especial && <span className="text-harm text-[8px] leading-none">esp.</span>}
+              {d.especial && <span className="text-harm text-xs leading-none">esp.</span>}
             </div>
           )
         })}
@@ -98,11 +99,17 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
   const percentual = resultados?.percentual // Fase 18.3
   const totalBase = resultados?.total_base
   const critico = !!rolagem.critico // F22.3 — crítico configurável
+  const natural = naturalD20(dados) // F52 — 20/1 natural no d20
   // Aviso (turno, desafio, tempo passando…): sem dados nem notação, o "Total: 0" não diz nada
   const soAviso = dados.length === 0 && !notacao && !total
+  const destaque = critico || natural === 'critico' ? 'critico' : natural === 'falha' ? 'falha' : null
 
   return (
-    <div className={`bg-raised/60 border border-border rounded-xl p-3 space-y-2 ${critico ? 'crit-glow' : ''}`}>
+    <div className={`border rounded-xl p-3 space-y-2 ${
+      destaque === 'critico' ? `bg-dice-700/10 border-dice-500/60 ${animando ? 'rolagem-critica' : ''}`
+        : destaque === 'falha' ? 'bg-harm/5 border-harm/40'
+        : 'bg-raised/60 border-border'
+    }`}>
       <div className="flex items-baseline justify-between gap-2 flex-wrap">
         <div className="flex items-baseline gap-2 flex-wrap min-w-0">
           <span className="text-accent-300 text-xs font-semibold shrink-0">{nome}</span>
@@ -111,6 +118,11 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
           )}
           <span className="text-ink-dim font-mono text-xs shrink-0">{notacao}</span>
           {/* sorteada no servidor: ninguém escolheu esse número (quem forjar pela API fica sem o selo) */}
+          {destaque && (
+            <span className={`text-xs font-bold uppercase tracking-wider shrink-0 ${destaque === 'critico' ? 'text-dice-400' : 'text-harm'}`}>
+              {destaque === 'critico' ? (natural === 'critico' ? '20 natural' : 'crítico') : '1 natural'}
+            </span>
+          )}
           {rolagem.verificada && (
             <span className="text-ok text-xs shrink-0 inline-flex items-center gap-1" title="Sorteada no servidor: ninguém escolheu esse número">
               <Ilustra nome="escudo" tamanho={12} /> verificada
