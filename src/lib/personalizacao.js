@@ -7,11 +7,11 @@
 // F52 — cada tema tem uma "afinidade": a partícula do fundo e a frase que a
 // descreve nas preferências. A cor das partículas vem de --energia-* (tokens.css).
 export const TEMAS = [
-  { id: 'violeta', nome: 'Violeta (padrão)', amostra: '#8B5CF6', particula: 'runas', energia: 'Energia arcana roxa e azulada' },
-  { id: 'esmeralda', nome: 'Esmeralda', amostra: '#10B981', particula: 'eter', energia: 'Partículas etéreas flutuando' },
-  { id: 'carmim', nome: 'Carmim', amostra: '#E11D48', particula: 'brasas', energia: 'Brasas subindo devagar' },
-  { id: 'ambar', nome: 'Âmbar', amostra: '#F59E0B', particula: 'faiscas', energia: 'Faíscas douradas' },
-  { id: 'gelo', nome: 'Gelo', amostra: '#38BDF8', particula: 'neve', energia: 'Poeira congelada e névoa' },
+  { id: 'violeta', nome: 'Violeta', amostra: '#8B5CF6', cores: ['#A78BFA', '#60A5FA'], particula: 'runas', energia: 'Energia arcana roxa e azulada' },
+  { id: 'esmeralda', nome: 'Esmeralda', amostra: '#10B981', cores: ['#6EE7B7', '#A7F3D0'], particula: 'eter', energia: 'Partículas etéreas flutuando' },
+  { id: 'carmim', nome: 'Carmim', amostra: '#E11D48', cores: ['#FB923C', '#F43F5E'], particula: 'brasas', energia: 'Brasas subindo devagar' },
+  { id: 'ambar', nome: 'Âmbar', amostra: '#F59E0B', cores: ['#FCD34D', '#F59E0B'], particula: 'faiscas', energia: 'Faíscas douradas' },
+  { id: 'gelo', nome: 'Gelo', amostra: '#38BDF8', cores: ['#E0F2FE', '#7DD3FC'], particula: 'neve', energia: 'Poeira congelada e névoa' },
 ]
 
 export const FONTES = [

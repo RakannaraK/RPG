@@ -6,21 +6,78 @@ import { tocarSomDado } from '../../lib/diceSounds'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
-import Aparencia from './Aparencia'
+import { ANIMACOES, EFEITOS, FONTES, TAMANHOS_TEXTO, TEMAS } from '../../lib/personalizacao'
+import { EnvioDeSom, Escolha } from './Aparencia'
 import { perfilMudou } from '../../hooks/usePerfil'
+import { useToast } from '../ui/Toast'
 import Botao from '../ui/Botao'
 import Modal from '../ui/Modal'
+import Abas from '../ui/Abas'
+import Icone from '../ui/Icone'
 
 const SKINS = listarSkins()
 
+const CATEGORIAS = [
+  { id: 'geral', rotulo: 'Geral', icone: 'usuario' },
+  { id: 'aparencia', rotulo: 'Aparência', icone: 'magia' },
+  { id: 'dados', rotulo: 'Dados', icone: 'dado' },
+  { id: 'audio', rotulo: 'Áudio', icone: 'volume' },
+  { id: 'acessibilidade', rotulo: 'Acessibilidade', icone: 'olho' },
+]
+
+/** Título + explicação de um bloco de preferência. */
+function Bloco({ titulo, dica, children }) {
+  return (
+    <section className="space-y-3">
+      <div>
+        <h3 className="text-ink font-semibold">{titulo}</h3>
+        {dica && <p className="text-ink-dim text-sm mt-0.5">{dica}</p>}
+      </div>
+      {children}
+    </section>
+  )
+}
+
+/** Interruptor com rótulo (checkbox com cara de chave). */
+function Chave({ rotulo, dica, ligado, onMudar }) {
+  return (
+    <label className="flex items-center justify-between gap-4 cursor-pointer rounded-xl border border-border bg-void/40 px-4 py-3 hover:border-accent-700 transition-colors duration-rapida">
+      <span>
+        <span className="block text-sm text-ink font-medium">{rotulo}</span>
+        {dica && <span className="block text-sm text-ink-dim">{dica}</span>}
+      </span>
+      <input type="checkbox" role="switch" checked={ligado} onChange={e => onMudar(e.target.checked)} className="chave shrink-0" />
+    </label>
+  )
+}
+
+function Volume({ rotulo, valor, desligado, onMudar }) {
+  return (
+    <label className={`block ${desligado ? 'opacity-50' : ''}`}>
+      <span className="flex items-center justify-between mb-1">
+        <span className="text-sm text-ink">{rotulo}</span>
+        <span className="text-ink-dim text-sm tabular-nums">{Math.round(valor * 100)}%</span>
+      </span>
+      <input type="range" min={0} max={1} step={0.05} value={valor} disabled={desligado} onChange={e => onMudar(Number(e.target.value))} className="w-full accent-purple-500" />
+    </label>
+  )
+}
+
+/**
+ * Preferências (F52): antes era um modal longo com tudo empilhado. Agora são
+ * cinco categorias — lista lateral no computador, abas no celular. Tudo vale
+ * só para quem escolheu e é salvo na hora.
+ */
 export default function PreferenciasModal({ onFechar }) {
   const { preferencias, salvarPreferencias } = usePreferencias()
   const { dado_skin, som_ativo, som_volume, som_acao_ativo, som_acao_volume } = preferencias
   const { session } = useAuth()
+  const toast = useToast()
+  const [cat, setCat] = useState('geral')
+  const [girando, setGirando] = useState(null) // skin que acabou de ser escolhida (prévia rolando)
 
   // Nome de exibição (apelido global) — o que outras pessoas veem no lugar do e-mail.
   const [apelido, setApelido] = useState('')
-  const [apelidoSalvo, setApelidoSalvo] = useState(false)
   const [apelidoErro, setApelidoErro] = useState('')
   const [salvandoApelido, setSalvandoApelido] = useState(false)
 
@@ -31,189 +88,201 @@ export default function PreferenciasModal({ onFechar }) {
       .then(({ data }) => { if (data?.username) setApelido(data.username) })
   }, [session?.user?.id])
 
-  async function salvarApelido() {
+  async function salvarApelido(e) {
+    e?.preventDefault()
     const uid = session?.user?.id
     const v = apelido.trim()
     setApelidoErro('')
     if (!uid) return
-    if (!v) { setApelidoErro('O apelido não pode ficar vazio.'); return }
+    if (!v) { setApelidoErro('O nome não pode ficar vazio.'); return }
     setSalvandoApelido(true)
     const { error } = await supabase.from('profiles').update({ username: v }).eq('id', uid)
     setSalvandoApelido(false)
     if (error) { setApelidoErro(error.message || 'Erro ao salvar.'); return }
     setApelido(v)
     perfilMudou(uid, { username: v }) // o cabeçalho atualiza na hora
-    setApelidoSalvo(true)
-    setTimeout(() => setApelidoSalvo(false), 2000)
+    toast.ok('Nome atualizado')
   }
 
-  function escolher(id) {
+  function escolherSkin(id) {
     salvarPreferencias({ dado_skin: id })
+    setGirando(id)
+    setTimeout(() => setGirando(g => (g === id ? null : g)), 900)
     // Toca um preview da skin escolhida (respeita som on/off e volume)
     tocarSomDado(id, { ativo: som_ativo, volume: som_volume, numDados: 3 })
   }
 
-  function ouvir(e, id) {
-    e.stopPropagation()
-    tocarSomDado(id, { ativo: som_ativo, volume: som_volume, numDados: 3 })
+  const tema = preferencias.tema || 'violeta'
+
+  const conteudo = {
+    geral: (
+      <Bloco titulo="Nome de exibição" dica="É o que as outras pessoas veem no lugar do seu e-mail. Dá para trocar quando quiser.">
+        <form onSubmit={salvarApelido} className="flex flex-wrap gap-2">
+          <input
+            type="text" value={apelido} onChange={e => setApelido(e.target.value)} maxLength={40}
+            placeholder="Seu apelido" aria-label="Nome de exibição" className="campo flex-1 min-w-[12rem]"
+          />
+          <Botao type="submit" variante="primario" disabled={salvandoApelido}>{salvandoApelido ? 'Salvando…' : 'Salvar'}</Botao>
+        </form>
+        {apelidoErro && <p className="aviso-erro" role="alert">{apelidoErro}</p>}
+      </Bloco>
+    ),
+
+    aparencia: (
+      <div className="space-y-8">
+        <Bloco titulo="Tema" dica="Muda a energia do site inteiro: cor, luz e as partículas do fundo.">
+          <div className="grid gap-2.5 sm:grid-cols-2" role="radiogroup" aria-label="Tema">
+            {TEMAS.map(t => {
+              const ativo = tema === t.id
+              return (
+                <button
+                  key={t.id} type="button" role="radio" aria-checked={ativo}
+                  onClick={() => salvarPreferencias({ tema: t.id })}
+                  className={`cartao relative flex items-center gap-3 rounded-xl border p-3 text-left ${ativo ? 'selecionado' : 'border-border bg-void/40'}`}
+                >
+                  <span
+                    className="w-12 h-12 rounded-lg shrink-0 ring-1 ring-white/10"
+                    style={{ background: `radial-gradient(circle at 30% 30%, ${t.cores[0]}, ${t.amostra} 55%, #0B0812)`, boxShadow: `0 0 18px -4px ${t.amostra}` }}
+                    aria-hidden="true"
+                  />
+                  <span className="min-w-0">
+                    <span className="block text-ink font-semibold text-sm">{t.nome}{t.id === 'violeta' ? ' (padrão)' : ''}</span>
+                    <span className="block text-ink-dim text-xs mt-0.5">{t.energia}</span>
+                  </span>
+                  {ativo && <Icone nome="check" tamanho={18} className="ml-auto text-accent-300" />}
+                </button>
+              )
+            })}
+          </div>
+        </Bloco>
+
+        <Bloco titulo="Efeitos visuais" dica="Partículas e luz ambiente. Nada disso atrapalha a leitura nem os cliques.">
+          <Escolha campo="efeitos" opcoes={EFEITOS} rotuloOculto="Efeitos visuais" />
+        </Bloco>
+
+        <Bloco titulo="Fonte">
+          <select value={preferencias.fonte || 'padrao'} onChange={e => salvarPreferencias({ fonte: e.target.value })} className="campo w-full sm:w-72" aria-label="Fonte">
+            {FONTES.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+          </select>
+        </Bloco>
+      </div>
+    ),
+
+    dados: (
+      <div className="space-y-8">
+        <Bloco titulo="Skin do dado" dica="Clique para escolher; o dado rola e você ouve o som dele.">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5" role="radiogroup" aria-label="Skin do dado">
+            {SKINS.map(s => {
+              const ativa = dado_skin === s.id
+              return (
+                <div key={s.id} className="relative">
+                  <button
+                    type="button" role="radio" aria-checked={ativa} onClick={() => escolherSkin(s.id)}
+                    className={`cartao w-full flex flex-col items-center gap-2 p-3 rounded-xl border ${ativa ? 'selecionado' : 'border-border bg-void/40'}`}
+                  >
+                    {ativa && <Icone nome="check" tamanho={16} className="absolute top-2 left-2 text-accent-300" />}
+                    <Dice3D lados={20} resultado={20} rolando={girando === s.id} skin={s.id} />
+                    <span className={`text-sm font-semibold ${ativa ? 'text-ink' : 'text-ink-dim'}`}>{s.nome}</span>
+                  </button>
+                  <button
+                    type="button" onClick={() => tocarSomDado(s.id, { ativo: som_ativo, volume: som_volume, numDados: 3 })}
+                    aria-label={`Ouvir ${s.nome}`} data-dica="Ouvir"
+                    className="botao-icone !min-w-[32px] !min-h-[32px] absolute top-1 right-1"
+                  ><Icone nome="volume" tamanho={16} /></button>
+                </div>
+              )
+            })}
+          </div>
+        </Bloco>
+
+        {/* F27 — bandeja: dados 3D com física caindo por cima da tela */}
+        <Bloco titulo="Dados na mesa" dica="Os dados 3D que caem por cima da tela quando alguém rola.">
+          <Escolha
+            campo="dados_mesa" rotuloOculto="Dados na mesa"
+            opcoes={[
+              { id: 'todos', nome: 'De todos', dica: 'As rolagens de qualquer pessoa da mesa caem na sua tela.' },
+              { id: 'meus', nome: 'Só os meus', dica: 'Só as suas rolagens caem na tela.' },
+              { id: 'nenhum', nome: 'Desligado', dica: 'Nenhum dado cai na tela (os resultados continuam no feed).' },
+            ]}
+          />
+          {!bandejaSuportada && (
+            <p className="text-sm text-warn">Neste aparelho a bandeja fica desligada (sem WebGL ou com "reduzir movimento" ativo).</p>
+          )}
+        </Bloco>
+
+        <Bloco titulo="Som de dado próprio">
+          <EnvioDeSom
+            campo="som_dado_url" campoVolume="som_volume" pasta="dado"
+            titulo="Arquivo de som"
+            dica="Toca no lugar do som sintetizado, em todas as skins. Curto (menos de 1 s) fica melhor."
+            rodape="Você ouve o seu som em toda rolagem; os outros ouvem o deles."
+          />
+        </Bloco>
+      </div>
+    ),
+
+    audio: (
+      <div className="space-y-8">
+        <Bloco titulo="Rolagens">
+          <Chave rotulo="Som das rolagens" dica="O barulho do dado quando alguém rola." ligado={som_ativo} onMudar={v => salvarPreferencias({ som_ativo: v })} />
+          <Volume rotulo="Volume das rolagens" valor={som_volume} desligado={!som_ativo} onMudar={v => salvarPreferencias({ som_volume: v })} />
+        </Bloco>
+        {/* FV.4c — sons de ação (combate), independentes do som de dado */}
+        <Bloco titulo="Ações e efeitos">
+          <Chave rotulo="Sons de ação" dica="Golpes, magias e os efeitos que o mestre dispara." ligado={som_acao_ativo} onMudar={v => salvarPreferencias({ som_acao_ativo: v })} />
+          <Volume rotulo="Volume das ações" valor={som_acao_volume} desligado={!som_acao_ativo} onMudar={v => salvarPreferencias({ som_acao_volume: v })} />
+        </Bloco>
+        <Bloco titulo="Som de crítico próprio">
+          <EnvioDeSom
+            campo="som_critico_url" campoVolume="som_acao_volume" pasta="critico"
+            titulo="Arquivo de som"
+            rodape="Toca no lugar do som padrão quando sai um crítico."
+          />
+        </Bloco>
+      </div>
+    ),
+
+    acessibilidade: (
+      <div className="space-y-8">
+        <Bloco titulo="Animações" dica="Transições de tela, de abas e de janelas.">
+          <Escolha campo="animacoes" opcoes={ANIMACOES} rotuloOculto="Animações" />
+          {typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches && (
+            <p className="text-sm text-ink-dim flex items-center gap-1.5"><Icone nome="info" tamanho={14} /> O seu sistema pede menos movimento, então as animações já ficam reduzidas.</p>
+          )}
+        </Bloco>
+        <Bloco titulo="Tamanho do texto" dica="Aumenta o site inteiro: texto, botões e espaços.">
+          <Escolha campo="tamanho_texto" opcoes={TAMANHOS_TEXTO} rotuloOculto="Tamanho do texto" />
+        </Bloco>
+        <Bloco titulo="Contraste">
+          <Chave rotulo="Alto contraste" dica="Texto secundário e bordas mais fortes, sem textura." ligado={preferencias.alto_contraste === true} onMudar={v => salvarPreferencias({ alto_contraste: v })} />
+        </Bloco>
+      </div>
+    ),
   }
 
   return (
     <Modal
-      onFechar={onFechar} tamanho="lg"
-      titulo="Preferências" subtitulo="Aparência, dados, som e acessibilidade. Vale só para você."
+      onFechar={onFechar} tamanho="xl" titulo="Preferências" subtitulo="Vale só para você e é salvo na hora."
+      corpoClassName="!p-0"
       rodape={<Botao variante="primario" onClick={onFechar}>Concluído</Botao>}
     >
-      <div className="space-y-6">
-          {/* Nome de exibição (apelido global) */}
-          <div>
-            <p className="text-sm font-medium text-purple-200 mb-1">Nome de exibição</p>
-            <p className="text-accent-300 text-xs mb-2">É o que as outras pessoas veem (no lugar do seu e-mail). Pode trocar a qualquer hora.</p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={apelido}
-                onChange={e => setApelido(e.target.value)}
-                maxLength={40}
-                placeholder="Seu apelido"
-                className="flex-1 px-3 py-2 rounded-lg bg-void border border-border text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-              <button
-                type="button"
-                onClick={salvarApelido}
-                disabled={salvandoApelido}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${apelidoSalvo ? 'bg-green-700 text-green-100' : 'bg-purple-700 hover:bg-purple-600 text-sobre-acento'}`}
-              >
-                {apelidoSalvo ? '✓ Salvo' : salvandoApelido ? '...' : 'Salvar'}
-              </button>
-            </div>
-            {apelidoErro && <p className="text-red-400 text-xs mt-1">{apelidoErro}</p>}
-          </div>
-
-          {/* Grid de skins */}
-          <div>
-            <p className="text-sm font-medium text-purple-200 mb-3">Skin do dado</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {SKINS.map(s => {
-                const ativa = dado_skin === s.id
-                return (
-                  <button
-                    key={s.id}
-                    onClick={() => escolher(s.id)}
-                    className={`relative flex flex-col items-center gap-2 p-3 rounded-xl border transition-colors ${
-                      ativa
-                        ? 'border-purple-400 bg-purple-900/40'
-                        : 'border-purple-800 bg-purple-950/30 hover:border-purple-600'
-                    }`}
-                  >
-                    {ativa && (
-                      <span className="absolute top-1.5 left-2 text-green-400 text-xs">✓</span>
-                    )}
-                    <span
-                      onClick={e => ouvir(e, s.id)}
-                      title={`Ouvir ${s.nome}`}
-                      className="absolute top-1 right-1.5 text-sm text-purple-300 hover:text-white cursor-pointer"
-                    >
-                      🔊
-                    </span>
-                    <Dice3D lados={20} resultado={20} rolando={false} skin={s.id} />
-                    <span className={`text-xs font-semibold ${ativa ? 'text-white' : 'text-purple-300'}`}>
-                      {s.nome}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* F27 — bandeja: dados 3D com física caindo por cima da tela */}
-          <fieldset className="space-y-2 border-t border-purple-900 pt-5">
-            <legend className="text-sm font-medium text-purple-200 mb-2">Dados na mesa</legend>
-            {[
-              ['todos', 'De todos', 'As rolagens de qualquer pessoa da mesa caem na sua tela.'],
-              ['meus', 'Só os meus', 'Só as suas rolagens caem na tela.'],
-              ['nenhum', 'Desligado', 'Nenhum dado cai na tela (os resultados continuam no feed).'],
-            ].map(([valor, rotulo, dica]) => (
-              <label key={valor} className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="dados_mesa"
-                  value={valor}
-                  checked={(preferencias.dados_mesa || 'todos') === valor}
-                  onChange={() => salvarPreferencias({ dados_mesa: valor })}
-                  className="mt-1 accent-purple-500"
-                />
-                <span>
-                  <span className="block text-sm text-purple-100">{rotulo}</span>
-                  <span className="block text-xs text-purple-400">{dica}</span>
-                </span>
-              </label>
-            ))}
-            {!bandejaSuportada && (
-              <p className="text-xs text-amber-300">Neste aparelho a bandeja fica desligada (sem WebGL ou com "reduzir movimento" ativo).</p>
-            )}
-          </fieldset>
-
-          {/* Controles de som */}
-          <div className="space-y-3 border-t border-purple-900 pt-5">
-            <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm font-medium text-purple-200">Som das rolagens</span>
-              <input
-                type="checkbox"
-                checked={som_ativo}
-                onChange={e => salvarPreferencias({ som_ativo: e.target.checked })}
-                className="w-5 h-5 accent-purple-500"
-              />
-            </label>
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-purple-200">Volume</span>
-                <span className="text-purple-400 text-xs tabular-nums">{Math.round(som_volume * 100)}%</span>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.05}
-                value={som_volume}
-                onChange={e => salvarPreferencias({ som_volume: Number(e.target.value) })}
-                disabled={!som_ativo}
-                className="w-full accent-purple-500 disabled:opacity-40"
-              />
-            </div>
-          </div>
-
-          {/* F35 — tema, fonte e som de crítico próprio */}
-          <Aparencia />
-
-          {/* FV.4c — sons de ação (combate), independentes do som de dado acima */}
-          <div className="space-y-3 border-t border-purple-900 pt-5">
-            <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm font-medium text-purple-200">Sons de ação</span>
-              <input
-                type="checkbox"
-                checked={som_acao_ativo}
-                onChange={e => salvarPreferencias({ som_acao_ativo: e.target.checked })}
-                className="w-5 h-5 accent-purple-500"
-              />
-            </label>
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-purple-200">Volume</span>
-                <span className="text-purple-400 text-xs tabular-nums">{Math.round(som_acao_volume * 100)}%</span>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.05}
-                value={som_acao_volume}
-                onChange={e => salvarPreferencias({ som_acao_volume: Number(e.target.value) })}
-                disabled={!som_acao_ativo}
-                className="w-full accent-purple-500 disabled:opacity-40"
-              />
-            </div>
-          </div>
+      <div className="md:grid md:grid-cols-[13rem_minmax(0,1fr)] md:min-h-[26rem]">
+        {/* celular: abas no topo */}
+        <div className="md:hidden px-3 pt-2 sticky top-0 z-10 bg-raised">
+          <Abas rotulo="Categorias" tamanho="sm" abas={CATEGORIAS.map(c => ({ id: c.id, rotulo: c.rotulo }))} atual={cat} onTrocar={setCat} />
+        </div>
+        {/* computador: lista lateral */}
+        <nav className="hidden md:block border-r border-border/70 p-3 space-y-1" aria-label="Categorias">
+          {CATEGORIAS.map(c => (
+            <button
+              key={c.id} type="button" onClick={() => setCat(c.id)} aria-current={cat === c.id || undefined}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left transition-colors duration-rapida ${
+                cat === c.id ? 'bg-accent-800/30 text-ink font-semibold shadow-[inset_3px_0_0_var(--accent-400)]' : 'text-ink-dim hover:text-ink hover:bg-hover/70'
+              }`}
+            ><Icone nome={c.icone} tamanho={18} />{c.rotulo}</button>
+          ))}
+        </nav>
+        <div key={cat} className="entra-aba p-5 sm:p-6">{conteudo[cat]}</div>
       </div>
     </Modal>
   )

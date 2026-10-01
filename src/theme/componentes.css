@@ -402,3 +402,34 @@
 }
 .macro-resultado { animation: resultado-salta 380ms var(--ease-mola) backwards; }
 :root[data-movimento="reduzido"] :is(.macro-rolando .macro-dado, .macro-resultado, .cura-brilho) { animation: none; }
+
+/* ── Chave liga/desliga (checkbox com role="switch") ─────────────────────── */
+.chave {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 2.75rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: rgb(var(--hover-c));
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background-color var(--dur-normal) var(--ease-padrao), border-color var(--dur-normal) var(--ease-padrao);
+}
+.chave::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 999px;
+  background: var(--ink-dim);
+  transition: transform var(--dur-normal) var(--ease-mola), background-color var(--dur-normal);
+}
+.chave:checked { background: var(--accent-600); border-color: var(--accent-500); }
+.chave:checked::before { transform: translateX(1.25rem); background: var(--sobre-acento); }
+.chave:focus-visible { outline: 2px solid var(--accent-400); outline-offset: 2px; }
+
+/* ── Barras de rolagem finas, na cor do fundo elevado (herda para tudo) ──── */
+html { scrollbar-width: thin; scrollbar-color: rgb(var(--hover-c)) transparent; }
