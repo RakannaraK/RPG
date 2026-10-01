@@ -349,7 +349,7 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
         onAbrirVerbete={id => { setVista('verbetes'); abrir(id) }}
       />
     ) : (
-    <div className="grid gap-6 lg:grid-cols-[18rem_1fr] items-start">
+    <div className="grid gap-6 grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)] items-start">
       <aside className={`space-y-3 ${aberto || criando ? 'hidden lg:block' : ''}`}>
         {isGestor && (
           <div className="flex gap-2">

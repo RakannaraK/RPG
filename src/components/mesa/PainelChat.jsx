@@ -119,7 +119,7 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
                           type="button"
                           // Responder o sussurro: quem recebeu responde só para o autor
                           onClick={() => !minha && setDestino(m.autor_id)}
-                          className="text-accent-300 text-xs hover:underline"
+                          className="text-accent-300 text-xs hover:underline min-h-[24px] inline-flex items-center"
                           title={minha ? undefined : 'Responder em sussurro'}
                         >{sussurro}</button>
                       )}

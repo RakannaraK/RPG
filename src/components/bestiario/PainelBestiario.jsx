@@ -181,7 +181,7 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
           )}
         </EstadoVazio>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] items-start">
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] items-start">
           {/* ── Lista ── */}
           <div className="space-y-3">
             <label className="relative block">

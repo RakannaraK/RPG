@@ -147,7 +147,7 @@ function NovoDesafio({ membros, meuId, onCriar }) {
           <legend className="text-ink-dim text-xs mb-1">Participantes ({participantes.length})</legend>
           <div className="flex flex-wrap gap-1.5">
             {podemJogar.map(m => (
-              <label key={m.usuario_id} className={`${BTN} cursor-pointer ${participantes.includes(m.usuario_id) ? 'bg-accent-700 text-sobre-acento' : 'bg-hover text-sobre-acento'}`}>
+              <label key={m.usuario_id} className={`${BTN} cursor-pointer ${participantes.includes(m.usuario_id) ? 'bg-accent-700 text-sobre-acento' : 'bg-hover text-ink'}`}>
                 <input type="checkbox" className="sr-only" checked={participantes.includes(m.usuario_id)} onChange={() => alternar(m.usuario_id)} />
                 {m.nome}{m.usuario_id === meuId ? ' (você)' : ''}
               </label>

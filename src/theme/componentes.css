@@ -529,3 +529,11 @@ html { scrollbar-width: thin; scrollbar-color: rgb(var(--hover-c)) transparent; 
 :root[data-movimento="reduzido"] :is(.total-salta, .rolagem-critica, .rolagem-critica::after, .rolagem-falha .total-salta) { animation: none; }
 :root[data-movimento="reduzido"] .rolagem-critica::after { display: none; }
 :root[data-movimento="reduzido"] .rolagem-critica { box-shadow: 0 0 0 1px color-mix(in srgb, var(--dice-400) 45%, transparent); }
+
+/* ── Texto sobre o acento ESCURO (700/800) ─────────────────────────────────
+   --sobre-acento foi medido para o acento 600 (escuro nos temas claros:
+   esmeralda, âmbar, gelo). Sobre 700/800 o texto escuro reprovava (1,2 a
+   3,6:1 na varredura da F52); ali o branco passa nos cinco temas. Quando o
+   hover clareia para 600/500, volta para a cor de tema. */
+.text-sobre-acento:is(.bg-accent-700, .bg-purple-700, .bg-accent-800, .bg-purple-800) { color: #fff; }
+.text-sobre-acento:is([class*="hover:bg-accent-6"], [class*="hover:bg-purple-6"], [class*="hover:bg-accent-5"], [class*="hover:bg-purple-5"]):hover { color: var(--sobre-acento); }

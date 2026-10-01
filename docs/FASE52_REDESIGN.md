@@ -121,3 +121,34 @@ os tokens de `tokens.css` e a camada `rpg.css` (velino, molduras, divisor).
 | 52.10 | Varredura de responsividade, acessibilidade e desempenho (medida, não achismo) |
 
 Regra de cada etapa: build + lint (0 erros) + testes + navegador sem erro no console, commit e push.
+
+---
+
+## 3. Resultado (2026-10-01)
+
+| Etapa | Commit | O que saiu |
+|---|---|---|
+| 52.1 | c340996 | Tokens de movimento/profundidade/energia; fundo global em camadas; tema troca fundindo (View Transitions); preferências de animações, efeitos, tamanho do texto e alto contraste; páginas sob demanda (bundle inicial 1,5 MB → 321 KB) |
+| 52.2 | 4b1bcb7 | `Modal`, `useConfirmar`, `useToast`, `Abas`, `EstadoVazio`, `Esqueleto`, `SeloPapel`, `Icone`; 21 modais migrados; diálogos do navegador trocados |
+| 52.3–52.5 | 4aa02c0 | `BarraTopo` + `MenuUsuario` + notificações por dia; Suas mesas; mesa como painel da campanha (sessão como ação principal, aura ao vivo, abas grudadas); Trilha e efeitos |
+| 52.6 | b2696c4 | Ficha (retrato, nível em medalhão, vida animada, macros em cartões, abas) e bestiário (filtros, prévia, SRD em janela) |
+| 52.7 | daf1731 | Preferências em 5 categorias |
+| 52.8 | f87499e | `EfeitosAmbiente` (partículas por tema, canvas) e `ChamaArcana` |
+| 52.9 | 1682754 | Comunidade como feed; guia do mestre em passos com progresso real; rolador rápido com crítico/falha natural; chat agrupado |
+| 52.10 | (este) | Varredura e correções |
+
+### Varredura final (medida, não achismo)
+9 telas (painel, comunidade, mesa: fichas/bestiário/dados/chat/resumo/membros, ficha) × 5 temas a 1440 px, e as 9 a 375 px:
+- **0** rolagem lateral (corrigido: grades de uma coluna sem `grid-cols-1` esticavam até o conteúdo mais largo);
+- **0** alvo de toque abaixo de 24 px (corrigido: rótulo de sussurro do chat);
+- **0** texto abaixo de 12 px;
+- **0** reprovação de contraste WCAG AA (corrigido: `text-sobre-acento` sobre acento 700/800 e `bg-hover text-sobre-acento` davam 1,2–3,6:1 nos temas claros);
+- console sem erro; build de produção sob a CSP nova sem nenhuma violação;
+- com "reduzir movimento": sem partículas, chama parada, nada pulsando.
+
+### Ficou de fora (de propósito ou sem base no banco)
+- Enciclopédia, editor de Sistema, Escudo e Baú continuam com o layout interno anterior (já usam os tokens e os modais novos).
+- Busca global / paleta de comandos (Ctrl+K): opcional; a arquitetura não impede.
+- "Online/offline" fora da sessão, efeitos favoritos e "salvos" na comunidade: o banco não tem esses dados.
+- Eventos do sistema dentro do chat (rolagens vão para o feed de Dados, como antes).
+- Página do mapa: barra própria, compacta, mantida.

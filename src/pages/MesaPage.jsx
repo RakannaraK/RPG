@@ -430,7 +430,7 @@ export default function MesaPage() {
             <CapaMesa capa={capaDaMesa(mesa)} altura={150} />
           </div>
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-bg/40 to-bg/80" aria-hidden="true" />
-          <div className="relative p-5 sm:p-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-end">
+          <div className="relative p-5 sm:p-8 grid gap-6 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-end">
             <div className="min-w-0 pt-14 sm:pt-20">
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <SeloPapel papel={meuRole} />
@@ -653,7 +653,7 @@ export default function MesaPage() {
           )}
 
           {activeTab === 'Membros' && (
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] items-start">
+            <div className="grid gap-6 grid-cols-1 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] items-start">
               <div className="space-y-6">
                 <section className="rounded-2xl border border-border bg-raised/70 overflow-hidden" aria-label="Membros">
                   <div className="px-5 py-4 border-b border-border/70">

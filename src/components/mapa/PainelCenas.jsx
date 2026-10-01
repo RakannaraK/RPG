@@ -121,7 +121,7 @@ function ItemCena({ mapa, aberta, onVer, onAtivar, onRemover }) {
       <div className="flex gap-1.5 mt-2">
         <button
           onClick={tentar(onAtivar)}
-          className={`${BTN} flex-1 ${mapa.ativo ? 'bg-hover text-sobre-acento hover:bg-border' : 'bg-accent-700 text-sobre-acento hover:bg-accent-600'}`}
+          className={`${BTN} flex-1 ${mapa.ativo ? 'bg-hover text-ink hover:bg-border' : 'bg-accent-700 text-sobre-acento hover:bg-accent-600'}`}
         >
           {mapa.ativo ? 'Esconder dos jogadores' : 'Mostrar aos jogadores'}
         </button>
