@@ -4,6 +4,7 @@ import EquipamentosTab from '../EquipamentosTab'
 import AcoesTab from './AcoesTab'
 import PainelHabilidades from './PainelHabilidades'
 import ArvoreHabilidades from '../ArvoreHabilidades'
+import Abas from '../../ui/Abas'
 
 function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, onRefetch }) {
   const [valor, setValor] = useState(valorInicial)
@@ -68,7 +69,7 @@ function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, on
  *  a inativa some na tela e aparece no papel, com o nome da aba como título. */
 function Aba({ id, atual, rotulo, children }) {
   return (
-    <div className={id === atual ? 'print:mt-4' : 'hidden print:block print:mt-4'}>
+    <div className={id === atual ? 'entra-aba print:mt-4' : 'hidden print:block print:mt-4'}>
       <h3 className="hidden print:block font-semibold mb-2">{rotulo}</h3>
       {children}
     </div>
@@ -114,23 +115,15 @@ export default function AbasCentrais({
 
   return (
     <div className="bg-raised border border-border rounded-xl overflow-hidden">
-      <div className="flex border-b border-border overflow-x-auto overflow-y-hidden print:hidden">
-        {tabsList.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px shrink-0 ${
-              currentTab === tab.id
-                ? 'text-ink border-accent-500'
-                : 'text-ink-dim border-transparent hover:text-ink'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="px-2 print:hidden">
+        <Abas
+          rotulo="Seções da ficha" tamanho="sm" idPainel="painel-da-ficha"
+          abas={tabsList.map(t => ({ id: t.id, rotulo: t.label }))}
+          atual={currentTab} onTrocar={setActiveTab}
+        />
       </div>
 
-      <div className="p-4">
+      <div className="p-4" id="painel-da-ficha" role="tabpanel" aria-label={rotuloDe(currentTab)}>
         {tabsList.some(t => t.id === 'acoes') && (
           <Aba id="acoes" atual={currentTab} rotulo={rotuloDe('acoes')}>
           <AcoesTab
@@ -190,13 +183,13 @@ export default function AbasCentrais({
           </Aba>
         )}
         {currentTab === 'arvore' && (
-          <ArvoreHabilidades
+          <div className="entra-aba"><ArvoreHabilidades
             habilidades={habilidades}
             habilidadesFicha={habilidadesFicha}
             contexto={contextoNivel}
             isDono={isDono}
             onAdicionar={onAdicionarHabilidade}
-          />
+          /></div>
         )}
 
         {tabsList.some(t => t.id === 'habilidades') && (

@@ -7,6 +7,7 @@ import {
 } from '../../lib/macros'
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
+import Icone from '../ui/Icone'
 
 const CAMPO = 'px-2.5 py-1.5 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none'
 
@@ -55,6 +56,7 @@ export default function BarraMacros({ ficha, fichaId, mesaId, podeEditar, contex
   const [editando, setEditando] = useState(false)
   const [emEdicao, setEmEdicao] = useState(null)
   const [ultimo, setUltimo] = useState({}) // id -> total
+  const [rolando, setRolando] = useState(null) // id da macro com o dado girando
   const [erro, setErro] = useState('')
 
   if (!macros.length && !podeEditar) return null
@@ -67,12 +69,15 @@ export default function BarraMacros({ ficha, fichaId, mesaId, podeEditar, contex
       ativo: preferencias.som_ativo, volume: preferencias.som_volume,
       numDados: estimarNumDados(checagem.notacao),
     })
+    setRolando(macro.id)
     try {
       const r = await registrarRolagem({ mesaId, fichaId, rotulo: macro.nome, notacao: checagem.notacao })
       setUltimo(u => ({ ...u, [macro.id]: r?.total }))
       setTimeout(() => setUltimo(u => { const n = { ...u }; delete n[macro.id]; return n }), 5000)
     } catch (e) {
       setErro(e?.message || 'Não foi possível rolar.')
+    } finally {
+      setRolando(null)
     }
   }
 
@@ -89,10 +94,11 @@ export default function BarraMacros({ ficha, fichaId, mesaId, podeEditar, contex
   }
 
   return (
-    <section className="rounded-xl border border-border bg-raised/60 px-4 py-3 space-y-3 print:hidden" aria-label="Macros de rolagem">
+    <section className="space-y-3 print:hidden" aria-label="Macros de rolagem">
       <div className="flex items-center gap-2">
-        <Ilustra nome="d20" tamanho={18} />
-        <h2 className="text-ink text-sm font-semibold">Macros</h2>
+        <Ilustra nome="d20" tamanho={20} />
+        <h2 className="font-sora text-ink font-semibold">Macros</h2>
+        {!editando && macros.length > 0 && <span className="text-ink-dim text-xs">clique para rolar · o resultado vai para o feed</span>}
         {podeEditar && (
           <Botao variante="fantasma" tamanho="sm" className="ml-auto" onClick={() => { setEditando(v => !v); setEmEdicao(null) }}>
             {editando ? 'Pronto' : macros.length ? 'Editar' : '+ Nova macro'}
@@ -102,21 +108,29 @@ export default function BarraMacros({ ficha, fichaId, mesaId, podeEditar, contex
 
       {!editando && (
         macros.length ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] gap-2">
             {macros.map(m => {
               const checagem = validarMacro(m, contexto)
+              const resultado = ultimo[m.id]
               return (
-                <Botao
-                  key={m.id} variante="dado" tamanho="sm" onClick={() => rolar(m)}
+                <button
+                  key={m.id} type="button" onClick={() => rolar(m)}
                   title={checagem.ok ? `${m.notacao}  →  ${checagem.notacao}` : checagem.erro}
-                  className={checagem.ok ? '' : 'opacity-60'}
+                  className={`macro botao group relative text-left rounded-xl border px-3 py-2.5 ${
+                    checagem.ok ? 'border-dice-700/60 bg-dice-700/10 hover:border-dice-400 hover:bg-dice-700/20' : 'border-border bg-void/50 opacity-60'
+                  } ${rolando === m.id ? 'macro-rolando' : ''}`}
                 >
-                  <span className="font-medium">{m.nome}</span>
-                  <span className="font-mono opacity-75">{checagem.ok ? checagem.notacao : '?'}</span>
-                  {ultimo[m.id] !== undefined && (
-                    <span className="ml-1 rounded-md bg-void/70 px-1.5 font-mono font-bold text-dice-200">= {ultimo[m.id]}</span>
+                  <span className="flex items-center gap-2">
+                    <Icone nome="dado" tamanho={16} className="text-dice-400 shrink-0 macro-dado" />
+                    <span className="text-ink text-sm font-semibold truncate">{m.nome}</span>
+                  </span>
+                  <span className="block font-mono text-xs text-ink-dim mt-1 truncate">{checagem.ok ? checagem.notacao : 'não dá para rolar'}</span>
+                  {resultado !== undefined && (
+                    <span key={resultado} className="macro-resultado absolute -top-2 -right-2 min-w-[2rem] h-8 px-2 rounded-full bg-dice-500 text-bg font-mono font-bold text-sm inline-flex items-center justify-center shadow-nivel-2" aria-live="polite">
+                      {resultado}
+                    </span>
                   )}
-                </Botao>
+                </button>
               )
             })}
           </div>

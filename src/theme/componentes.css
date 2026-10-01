@@ -367,3 +367,38 @@
 }
 .ef-critico { animation: ef-critico 800ms var(--ease-padrao); }
 :root[data-movimento="reduzido"] :is(.ef-tremer, .ef-flash, .ef-critico) { animation: none; }
+
+/* ── Ficha ─────────────────────────────────────────────────────────────── */
+/* retrato com a luz do tema por trás */
+.retrato { box-shadow: 0 0 0 4px rgb(var(--bg-c) / .6), 0 10px 30px -10px color-mix(in srgb, var(--accent-500) 70%, transparent); }
+
+/* medalhão de nível: moldura âmbar fina, número grande */
+.medalhao-nivel {
+  min-width: 4.5rem;
+  padding: .5rem .75rem .6rem;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--dice-400) 45%, var(--border));
+  background:
+    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--dice-500) 16%, transparent), transparent 70%),
+    rgb(var(--void-c) / .7);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .05);
+}
+
+/* subiu a vida: um brilho verde curto em volta da barra */
+@keyframes cura-brilho {
+  0%   { box-shadow: 0 0 0 0 transparent; }
+  35%  { box-shadow: 0 0 0 2px rgb(var(--ok-c) / .55), 0 0 16px 2px rgb(var(--ok-c) / .5); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.cura-brilho { animation: cura-brilho 700ms var(--ease-padrao); }
+
+/* macro: o dado gira enquanto o servidor sorteia; o resultado "salta" */
+@keyframes dado-gira { to { transform: rotate(360deg); } }
+.macro-rolando .macro-dado { animation: dado-gira 600ms var(--ease-padrao) infinite; }
+@keyframes resultado-salta {
+  0%   { transform: scale(.4); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.macro-resultado { animation: resultado-salta 380ms var(--ease-mola) backwards; }
+:root[data-movimento="reduzido"] :is(.macro-rolando .macro-dado, .macro-resultado, .cura-brilho) { animation: none; }

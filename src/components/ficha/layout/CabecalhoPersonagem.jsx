@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { faixasDaBarra } from '../../../lib/barraVida'
 import { useUpdateFicha } from '../../../hooks/useFicha'
 import ClassesFicha, { resumoClasses } from './ClassesFicha'
+import BarraVida from '../../ui/BarraVida'
+import Botao from '../../ui/Botao'
+import Icone from '../../ui/Icone'
+import Ilustra from '../../arte/Ilustra'
 
 export default function CabecalhoPersonagem({
   ficha,
@@ -81,10 +84,6 @@ export default function CabecalhoPersonagem({
   // vidaMaxFinal inclui modificadores de raça/classe; hpMaximo é o valor base editável
   const hpMaxBase = Number(hpMaximo || 0)
   const hpMaxDisplay = vidaMaxFinal !== undefined ? vidaMaxFinal : hpMaxBase
-  // F35.4 — mesma barra do overlay/escudo: vida + pedaço de escudo (vida temp)
-  const barra = faixasDaBarra({ atual: hpNum, maximo: hpMaxDisplay, temp: vidaTempEfetiva })
-  const hpPercent = barra.pct
-  const hpBaixo = hpPercent > 0 && hpPercent <= 25
   const temModVida = vidaMaxFinal !== undefined && vidaMaxFinal !== hpMaxBase
 
   // FV.3 — flash âmbar-esmeralda (--ok) de 300ms ao subir o HP exibido (cura)
@@ -119,58 +118,49 @@ export default function CabecalhoPersonagem({
       ? (classesFicha[0].classe?.nome || null)
       : (classeFallbackNome || ficha.classe || null)
   const nivelLabel = temClasses ? nivelTotal : ficha.nivel
-  const subtituloPartes = [racaNome, classeLabel, nivelLabel ? `Nível ${nivelLabel}` : null]
-    .filter(Boolean)
 
-  const selectCls = 'px-2 py-1 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-1 focus:ring-accent-500'
-  const inputCls  = 'px-2 py-1 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-1 focus:ring-accent-500'
+  const subtituloSemNivel = [racaNome, classeLabel].filter(Boolean)
 
   return (
-    <div className="bg-void border border-border rounded-2xl p-5">
-      <div className="flex gap-5 items-start">
+    <section className="cabecalho-personagem relative rounded-2xl bg-gradient-to-br from-raised/90 via-raised/60 to-transparent p-5 sm:p-6" aria-label="Personagem">
+      <div className="flex flex-col sm:flex-row gap-5 sm:items-start">
 
-        {/* Avatar */}
-        {ficha.imagem_url ? (
-          <img
-            src={ficha.imagem_url}
-            alt={ficha.nome_personagem}
-            className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl shrink-0 ring-2 ring-accent-500"
-          />
-        ) : (
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl shrink-0 ring-2 ring-accent-500 bg-void flex items-center justify-center">
-            <span className="text-3xl sm:text-4xl select-none">🧙</span>
-          </div>
-        )}
+        {/* Retrato */}
+        <div className="retrato shrink-0 self-start w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden ring-2 ring-accent-500/70 bg-void flex items-center justify-center">
+          {ficha.imagem_url
+            ? <img src={ficha.imagem_url} alt={ficha.nome_personagem} className="w-full h-full object-cover" />
+            : <Ilustra nome="elmo" tamanho={64} />}
+        </div>
 
-        <div className="flex-1 min-w-0 space-y-3">
-          {/* Nome */}
-          <div>
-            <h2 className="text-2xl font-bold font-sora text-ink leading-tight">{ficha.nome_personagem}</h2>
-            {!isDono && (
-              subtituloPartes.length > 0
-                ? (
-                  <div className="flex flex-wrap gap-1.5 mt-1.5">
-                    {subtituloPartes.map((parte, i) => (
-                      <span key={i} className="px-2.5 py-0.5 rounded-full bg-hover border border-border text-ink-dim text-xs">
-                        {parte}
-                      </span>
-                    ))}
-                  </div>
-                )
-                : <p className="text-ink-dim text-sm mt-0.5 italic">Sem raça ou classe definida</p>
-            )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start gap-4">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-3xl sm:text-4xl font-bold font-sora text-ink leading-tight tracking-tight break-words">{ficha.nome_personagem}</h2>
+              {!isDono && (
+                subtituloSemNivel.length > 0
+                  ? <p className="text-ink-dim mt-1">{subtituloSemNivel.join(' • ')}</p>
+                  : <p className="text-ink-dim text-sm mt-1 italic">Sem raça ou classe definida</p>
+              )}
+            </div>
+            {/* Nível: medalhão à direita (com classes, é o total) */}
+            {nivelLabel ? (
+              <div className="medalhao-nivel shrink-0 text-center" aria-label={`Nível ${nivelLabel}`}>
+                <span className="block text-ink-dim text-xs font-semibold uppercase tracking-wider">Nível</span>
+                <span className="block font-sora text-3xl font-bold text-ink tabular-nums leading-none mt-0.5">{nivelLabel}</span>
+              </div>
+            ) : null}
           </div>
 
           {/* Seletores de raça/classe — apenas para o dono */}
           {isDono && (
-            <div className="space-y-2">
+            <div className="space-y-2 mt-3">
               <div className="flex flex-wrap gap-2 items-center">
                 {temSistemaRacas ? (
                   <select
                     value={racaId || ''}
                     onChange={e => onRacaChange(e.target.value || null)}
-                    className={selectCls}
-                    title="Raça"
+                    className="campo !min-h-[36px] !py-1"
+                    aria-label="Raça"
                   >
                     <option value="">Sem raça</option>
                     {racas.map(r => <option key={r.id} value={r.id}>{r.nome}</option>)}
@@ -181,8 +171,8 @@ export default function CabecalhoPersonagem({
                     value={racaTexto}
                     onChange={e => setRacaTexto(e.target.value)}
                     onBlur={e => salvarTextoLegado('raca', e.target.value)}
-                    placeholder="Raça"
-                    className={`${inputCls} w-28`}
+                    placeholder="Raça" aria-label="Raça"
+                    className="campo !min-h-[36px] !py-1 w-32"
                   />
                 )}
 
@@ -193,8 +183,8 @@ export default function CabecalhoPersonagem({
                     value={classeTexto}
                     onChange={e => setClasseTexto(e.target.value)}
                     onBlur={e => salvarTextoLegado('classe', e.target.value)}
-                    placeholder="Classe"
-                    className={`${inputCls} w-28`}
+                    placeholder="Classe" aria-label="Classe"
+                    className="campo !min-h-[36px] !py-1 w-32"
                   />
                 )}
               </div>
@@ -212,100 +202,78 @@ export default function CabecalhoPersonagem({
             </div>
           )}
 
-          {/* HP — escondido quando uma trilha substitui a vida (24.2) */}
-          <div className={esconderVida ? 'hidden' : ''}>
-            <div className="flex items-center gap-2 mb-1.5">
-              <p className="text-ink-dim text-xs font-medium uppercase tracking-[.12em]">
-                {rotuloVida}
+          {/* Vida — escondida quando uma trilha substitui a vida (24.2) */}
+          <div className={`mt-5 max-w-md ${esconderVida ? 'hidden' : ''}`}>
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-2">
+              <p className="text-ink-dim text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                <Icone nome="coracao" tamanho={14} className="text-harm" /> {rotuloVida}
+                {temModVida && (
+                  <span className="text-ok font-mono normal-case tracking-normal font-normal">
+                    (base {hpMaxBase}{vidaMaxFinal > hpMaxBase ? ` +${vidaMaxFinal - hpMaxBase}` : ` ${vidaMaxFinal - hpMaxBase}`})
+                  </span>
+                )}
               </p>
-              {temModVida && (
-                <span className="text-ok text-xs font-mono">
-                  (base {hpMaxBase}{vidaMaxFinal > hpMaxBase ? ` +${vidaMaxFinal - hpMaxBase}` : ` ${vidaMaxFinal - hpMaxBase}`})
-                </span>
+
+              {isDono ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-baseline gap-1 rounded-lg bg-void/80 border border-border px-2 py-1">
+                    <input
+                      type="number" value={hpAtual} onChange={e => setHpAtual(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && salvarHP()}
+                      aria-label="Vida atual" placeholder="0"
+                      className="w-14 bg-transparent text-ink text-right text-lg font-mono font-bold focus:outline-none"
+                    />
+                    <span className="text-ink-dim">/</span>
+                    {/* Exibe o max final; clique para editar o base */}
+                    {editandoHpBase ? (
+                      <input
+                        type="number" value={hpBaseTemp} onChange={e => setHpBaseTemp(e.target.value)}
+                        onBlur={salvarHpBase} onKeyDown={e => e.key === 'Enter' && salvarHpBase()}
+                        autoFocus aria-label="Vida máxima base"
+                        className="w-14 bg-transparent text-dice-400 text-sm font-mono font-semibold focus:outline-none border-b border-dice-500"
+                      />
+                    ) : (
+                      <button
+                        onClick={() => { setHpBaseTemp(String(hpMaxBase)); setEditandoHpBase(true) }}
+                        className="min-w-[2.5rem] text-ink-dim text-sm font-mono font-semibold hover:text-dice-400 transition-colors duration-rapida"
+                        title={`Vida máxima base: ${hpMaxBase}${temModVida ? ` (+${vidaMaxFinal - hpMaxBase} de modificadores) = ${hpMaxDisplay}` : ''}. Clique para mudar.`}
+                        aria-label="Mudar a vida máxima base"
+                      >
+                        {hpMaxDisplay || '—'}
+                      </button>
+                    )}
+                  </div>
+                  <Botao variante={hpSalvo ? 'secundario' : 'primario'} tamanho="sm" onClick={salvarHP}>
+                    {hpSalvo ? <><Icone nome="check" tamanho={14} /> Salvo</> : 'Salvar'}
+                  </Botao>
+                </div>
+              ) : ficha.hp_atual == null && !hpMaxDisplay ? null : (
+                <p className="text-ink text-2xl font-bold font-mono tabular-nums leading-none">
+                  {ficha.hp_atual ?? '—'}
+                  <span className="text-ink-dim font-normal text-base"> / {hpMaxDisplay || '—'}</span>
+                </p>
               )}
             </div>
 
-            {isDono ? (
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="flex items-center gap-1.5 bg-void border border-border rounded-lg px-2 py-1">
-                  <input
-                    type="number"
-                    value={hpAtual}
-                    onChange={e => setHpAtual(e.target.value)}
-                    className="w-14 bg-transparent text-ink text-center text-sm font-mono font-semibold focus:outline-none"
-                    placeholder="0"
-                  />
-                  <span className="text-ink-dim text-sm">/</span>
-                  {/* Exibe o max final; clique para editar o base */}
-                  {editandoHpBase ? (
-                    <input
-                      type="number"
-                      value={hpBaseTemp}
-                      onChange={e => setHpBaseTemp(e.target.value)}
-                      onBlur={salvarHpBase}
-                      onKeyDown={e => e.key === 'Enter' && salvarHpBase()}
-                      autoFocus
-                      className="w-14 bg-transparent text-dice-400 text-center text-sm font-mono font-semibold focus:outline-none border-b border-dice-500"
-                    />
-                  ) : (
-                    <button
-                      onClick={() => { setHpBaseTemp(String(hpMaxBase)); setEditandoHpBase(true) }}
-                      className="w-14 text-ink text-center text-sm font-mono font-semibold focus:outline-none hover:text-dice-400 transition-colors"
-                      title={`HP máx base: ${hpMaxBase}${temModVida ? ` (+${vidaMaxFinal - hpMaxBase} de modificadores) = ${hpMaxDisplay}` : ''}`}
-                    >
-                      {hpMaxDisplay || '—'}
-                    </button>
-                  )}
-                </div>
-                <button
-                  onClick={salvarHP}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                    hpSalvo
-                      ? 'bg-ok/20 text-ok'
-                      : 'bg-accent-700 hover:bg-accent-600 text-sobre-acento'
-                  }`}
-                >
-                  {hpSalvo ? '✓ Salvo' : 'Salvar HP'}
-                </button>
-              </div>
-            ) : ficha.hp_atual == null && !hpMaxDisplay ? (
+            {!isDono && ficha.hp_atual == null && !hpMaxDisplay ? (
               /* Antes aparecia "? / ?" sem explicação — quem olhava não sabia se
                  era erro, se faltava dado ou se a ficha estava quebrada. */
-              <p className="text-ink-dim text-sm">
-                Vida ainda não definida neste sistema.
-              </p>
-            ) : (
-              <p className="text-ink text-lg font-semibold font-mono">
-                {ficha.hp_atual ?? '—'}
-                <span className="text-ink-dim font-normal text-sm"> / {hpMaxDisplay || '—'}</span>
-              </p>
+              <p className="text-ink-dim text-sm">Vida ainda não definida neste sistema.</p>
+            ) : hpMaxDisplay > 0 && (
+              <BarraVida
+                atual={hpNum} maximo={hpMaxDisplay} temp={vidaTempEfetiva} rotulo={rotuloVida}
+                mostrarTexto={false} altura="h-3" className={curando ? 'cura-brilho rounded-full' : ''}
+              />
             )}
 
-            {hpErro && <p className="text-harm text-xs mt-1">{hpErro}</p>}
-
-            {hpMaxDisplay > 0 && (
-              <div className="mt-2 h-2.5 bg-void rounded-full overflow-hidden max-w-xs flex">
-                <div
-                  className={`h-full bg-harm transition-all duration-300 ${hpBaixo ? 'animate-pulse' : ''} ${curando ? 'shadow-[0_0_12px_rgba(52,211,153,.8)]' : ''}`}
-                  style={{ width: `${hpPercent}%` }}
-                />
-                {/* pedaço de escudo: a vida temporária que segura o próximo dano */}
-                {barra.pctTemp > 0 && (
-                  <div className="h-full bg-temp transition-all duration-300" style={{ width: `${barra.pctTemp}%` }} title={`+${vidaTempEfetiva} de vida temporária`} />
-                )}
-              </div>
-            )}
+            {hpErro && <p className="aviso-erro mt-2 !text-xs" role="alert">{hpErro}</p>}
 
             {vidaTempEfetiva > 0 && (
-              <p className="text-temp text-xs mt-1.5 font-medium flex items-center gap-1.5">
-                +{vidaTempEfetiva} Vida Temporária
+              <p className="text-temp text-sm mt-2 font-medium flex items-center gap-1.5">
+                <Icone nome="escudo" tamanho={14} /> +{vidaTempEfetiva} de vida temporária
                 {isDono && vidaTempPontual > 0 && (
-                  <button
-                    onClick={limparVidaTemp}
-                    className="text-temp/70 hover:text-temp transition-colors"
-                    title="Limpar vida temporária"
-                  >
-                    ✕
+                  <button onClick={limparVidaTemp} className="botao-icone !min-w-[28px] !min-h-[28px] !text-temp" aria-label="Limpar vida temporária" data-dica="Limpar">
+                    <Icone nome="x" tamanho={14} />
                   </button>
                 )}
               </p>
@@ -313,6 +281,6 @@ export default function CabecalhoPersonagem({
           </div>
         </div>
       </div>
-    </div>
+    </section>
   )
 }

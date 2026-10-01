@@ -126,9 +126,9 @@ export default function InvocarBestiario({ mesaId, meuId, isGestor, camposCombat
               acoesExtras={c => (
                 <button
                   type="button" onClick={() => setCriatura(c)}
-                  className="flex-1 py-1.5 text-dice-300 hover:text-white hover:bg-purple-900/40 transition-colors"
-                  title="Invocar no combate"
-                 aria-label="Invocar esta criatura"><Ilustra nome="espadas" tamanho={16} /></button>
+                  className="botao-icone !text-dice-400 hover:!bg-dice-700/20"
+                  data-dica="Invocar no combate" aria-label={`Invocar ${c.nome_personagem} no combate`}
+                ><Ilustra nome="espadas" tamanho={20} /></button>
               )}
             />
           </div>

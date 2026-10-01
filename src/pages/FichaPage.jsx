@@ -1040,7 +1040,9 @@ export default function FichaPage() {
               </span>
             )}
             {ficha.privada && (
-              <span className="inline-flex text-ink-dim mx-1" title="Ficha privada"><Icone nome="cadeado" tamanho={16} /><span className="sr-only">Ficha privada</span></span>
+              <span className="hidden sm:inline-flex items-center gap-1 text-xs text-ink-dim border border-border px-2 py-1 rounded-full mr-1" title="Só quem tem acesso vê esta ficha">
+                <Icone nome="olho" tamanho={13} /> Privada
+              </span>
             )}
             {/* F45 — ficha em A4, com QR code para a versão online */}
             <button onClick={() => window.print()} aria-label="Imprimir a ficha (A4)" data-dica="Imprimir (A4)" className="botao-icone">

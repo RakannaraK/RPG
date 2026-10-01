@@ -11,13 +11,16 @@ import BestiarioSrd from './BestiarioSrd'
 import Ilustra from '../arte/Ilustra'
 import Botao from '../ui/Botao'
 import { useConfirmar } from '../ui/Confirmar'
+import Modal, { FecharModal } from '../ui/Modal'
+import Icone from '../ui/Icone'
+import CabecalhoSecao from '../ui/CabecalhoSecao'
+import EstadoVazio from '../ui/EstadoVazio'
+import { EsqueletoCartoes } from '../ui/Esqueleto'
+import { nivelAmeaca, ordemAmeaca } from '../../lib/ameaca'
 
-const INP = 'px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 const AMEACAS = ['Trivial', 'Fácil', 'Normal', 'Difícil', 'Mortal', 'Lendária']
 const ESPECIES = ['Fera', 'Humanoide', 'Morto-vivo', 'Aberração', 'Elemental', 'Construto', 'Dragão', 'Espírito']
 
-/** Cabe qualquer texto; a cor é só um empurrãozinho visual para as palavras conhecidas. */
-const CorAmeaca = { Trivial: 'bg-slate-700 text-slate-200', Fácil: 'bg-emerald-900 text-emerald-200', Normal: 'bg-sky-900 text-sky-200', Difícil: 'bg-amber-900 text-amber-200', Mortal: 'bg-red-900 text-red-200', Lendária: 'bg-fuchsia-900 text-fuchsia-200' }
 
 /**
  * Fase 31.1 — bestiário da mesa: criaturas são FICHAS (`tipo_ficha = 'criatura'`),
@@ -34,6 +37,9 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
   const [ocupado, setOcupado] = useState('')
   const [erro, setErro] = useState('')
   const [srd, setSrd] = useState(false) // F50
+  const [selId, setSelId] = useState(null) // F52 — prévia ao lado (computador)
+  const [fEspecie, setFEspecie] = useState('')
+  const [fAmeaca, setFAmeaca] = useState('')
 
   const doBestiario = criaturas.filter(c => !c.origem_id) // cópias em jogo não poluem a lista
   const filtro = busca.trim().toLocaleLowerCase('pt-BR')
@@ -81,99 +87,221 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
     setOcupado('')
   }
 
+  // filtros só com o que existe nos dados (espécie e ameaça são texto livre)
+  const especies = [...new Set(doBestiario.map(c => c.especie).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'))
+  const ameacas = [...new Set(doBestiario.map(c => c.ameaca).filter(Boolean))].sort((a, b) => ordemAmeaca(a) - ordemAmeaca(b) || a.localeCompare(b, 'pt-BR'))
+  const filtrada = lista.filter(c => (!fEspecie || c.especie === fEspecie) && (!fAmeaca || c.ameaca === fAmeaca))
+  const selecionada = filtrada.find(c => c.id === selId) || null
+
+  function escolher(c) {
+    // no computador a prévia abre ao lado; no celular vai direto para a ficha
+    if (window.matchMedia?.('(min-width: 1024px)').matches) setSelId(c.id)
+    else onAbrir?.(c.id)
+  }
+
+  const chip = (ativo, rotulo, onClick, chave) => (
+    <button
+      key={chave ?? rotulo} type="button" onClick={onClick} aria-pressed={ativo}
+      className={`px-3 py-1 rounded-full border text-sm transition-colors duration-rapida ${ativo ? 'selecionado text-ink' : 'border-border text-ink-dim hover:text-ink hover:border-accent-700'}`}
+    >{rotulo}</button>
+  )
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por nome, espécie ou ameaça" className={`${INP} flex-1 min-w-[12rem]`} />
-        {podeEscrever && (
+    <div className="space-y-5">
+      <CabecalhoSecao
+        titulo="Bestiário da mesa"
+        descricao="As criaturas desta campanha. Nascem privadas: os jogadores não veem a ficha do monstro."
+        acoes={podeEscrever && (
           <>
             <ImportarFicha
               mesaId={mesaId} donoId={meuId}
               extras={{ tipo_ficha: 'criatura', privada: true }}
-              rotulo="⬆ Importar criatura"
+              rotulo="Importar"
+              className="botao inline-flex items-center gap-1.5 px-3 py-2 min-h-[36px] rounded-lg border border-border text-ink text-sm hover:border-accent-500"
               onImportada={id => { refetch(); onAbrir?.(id) }}
             />
-            <Botao variante="contorno" onClick={() => setSrd(v => !v)} aria-expanded={srd}>Bestiário SRD 5e</Botao>
-            <button
-              type="button" onClick={() => setNovo({ nome: '', especie: '', ameaca: '', vida: '' })}
-              className="text-sm px-4 py-2 bg-purple-700 hover:bg-purple-600 text-sobre-acento rounded-lg transition-colors"
-            >+ Nova criatura</button>
+            <Botao variante="contorno" onClick={() => setSrd(true)}><Icone nome="globo" tamanho={16} /> Biblioteca SRD</Botao>
+            <Botao variante="primario" onClick={() => setNovo({ nome: '', especie: '', ameaca: '', vida: '' })}><Icone nome="mais" tamanho={18} /> Nova criatura</Botao>
           </>
         )}
-      </div>
+      />
 
       {srd && (
-        <BestiarioSrd
-          mesaId={mesaId} meuId={meuId} sistemaId={sistema?.id}
-          onImportada={id => { setSrd(false); refetch(); onAbrir?.(id) }}
-          onFechar={() => setSrd(false)}
-        />
+        <Modal onFechar={() => setSrd(false)} tamanho="xl" titulo="Biblioteca SRD 5e" subtitulo="Criaturas prontas. Escolha uma para copiar para o bestiário desta mesa.">
+          <BestiarioSrd
+            mesaId={mesaId} meuId={meuId} sistemaId={sistema?.id}
+            onImportada={id => { setSrd(false); refetch(); onAbrir?.(id) }}
+          />
+        </Modal>
       )}
 
       {novo && (
-        <div className="rounded-xl border border-purple-800 bg-slate-800 p-3 space-y-2">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-            <input autoFocus value={novo.nome} onChange={e => setNovo({ ...novo, nome: e.target.value })} placeholder="Nome (ex.: Goblin)" className={INP} />
-            <input value={novo.especie} onChange={e => setNovo({ ...novo, especie: e.target.value })} placeholder="Espécie" list="especies-bestiario" className={INP} />
-            <input value={novo.ameaca} onChange={e => setNovo({ ...novo, ameaca: e.target.value })} placeholder="Ameaça" list="ameacas-bestiario" className={INP} />
-            <input type="number" min={1} value={novo.vida} onChange={e => setNovo({ ...novo, vida: e.target.value })} placeholder="Vida" className={INP} />
+        <Modal
+          onFechar={() => { setNovo(null); setErro('') }} bloqueado={ocupado === 'criando'}
+          titulo="Nova criatura" subtitulo="Atributos, habilidades e itens você monta depois, na ficha dela."
+          rodape={
+            <>
+              <FecharModal disabled={ocupado === 'criando'} />
+              <Botao variante="primario" onClick={criar} disabled={ocupado === 'criando'}>{ocupado === 'criando' ? 'Criando…' : 'Criar e abrir a ficha'}</Botao>
+            </>
+          }
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block sm:col-span-2"><span className="rotulo">Nome</span>
+              <input autoFocus value={novo.nome} onChange={e => setNovo({ ...novo, nome: e.target.value })} placeholder="Ex.: Goblin" className="campo w-full" />
+            </label>
+            <label className="block"><span className="rotulo">Espécie</span>
+              <input value={novo.especie} onChange={e => setNovo({ ...novo, especie: e.target.value })} placeholder="Fera, Humanoide…" list="especies-bestiario" className="campo w-full" />
+            </label>
+            <label className="block"><span className="rotulo">Ameaça</span>
+              <input value={novo.ameaca} onChange={e => setNovo({ ...novo, ameaca: e.target.value })} placeholder="Normal, ND 5…" list="ameacas-bestiario" className="campo w-full" />
+            </label>
+            <label className="block"><span className="rotulo">Vida</span>
+              <input type="number" min={1} value={novo.vida} onChange={e => setNovo({ ...novo, vida: e.target.value })} placeholder="Ex.: 7" className="campo w-full" />
+            </label>
           </div>
           <datalist id="especies-bestiario">{ESPECIES.map(e => <option key={e} value={e} />)}</datalist>
           <datalist id="ameacas-bestiario">{AMEACAS.map(a => <option key={a} value={a} />)}</datalist>
-          <div className="flex items-center gap-2">
-            <Botao variante="primario" tamanho="sm" type="button" onClick={criar} disabled={ocupado === 'criando'}>
-              {ocupado === 'criando' ? 'Criando…' : 'Criar e abrir a ficha'}
-            </Botao>
-            <button type="button" onClick={() => { setNovo(null); setErro('') }} className="px-3 py-1.5 text-sm text-purple-300 hover:text-white">Cancelar</button>
-            <span className="text-accent-300 text-xs">Atributos, habilidades e itens você monta na ficha.</span>
+          {erro && <p className="aviso-erro mt-3" role="alert">{erro}</p>}
+        </Modal>
+      )}
+
+      {erro && !novo && <p className="aviso-erro" role="alert">{erro}</p>}
+
+      {loading ? (
+        <EsqueletoCartoes quantos={3} className="grid gap-3 lg:max-w-sm" altura="h-20" />
+      ) : doBestiario.length === 0 ? (
+        <EstadoVazio arte="garra" titulo="O bestiário está vazio" descricao="Crie uma criatura do zero ou copie uma pronta da biblioteca SRD. Depois é só invocar no combate ou no mapa.">
+          {podeEscrever && (
+            <>
+              <Botao variante="contorno" onClick={() => setSrd(true)}>Abrir a biblioteca SRD</Botao>
+              <Botao variante="primario" onClick={() => setNovo({ nome: '', especie: '', ameaca: '', vida: '' })}><Icone nome="mais" tamanho={18} /> Nova criatura</Botao>
+            </>
+          )}
+        </EstadoVazio>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] items-start">
+          {/* ── Lista ── */}
+          <div className="space-y-3">
+            <label className="relative block">
+              <span className="sr-only">Buscar criatura</span>
+              <Icone nome="busca" tamanho={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-dim pointer-events-none" />
+              <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por nome, espécie ou ameaça" className="campo w-full !pl-9" />
+            </label>
+            {especies.length > 1 && (
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filtrar por espécie">
+                {chip(!fEspecie, 'Todas', () => setFEspecie(''), '__todas')}
+                {especies.map(e => chip(fEspecie === e, e, () => setFEspecie(fEspecie === e ? '' : e)))}
+              </div>
+            )}
+            {ameacas.length > 1 && (
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filtrar por ameaça">
+                {chip(!fAmeaca, 'Qualquer ameaça', () => setFAmeaca(''), '__qualquer')}
+                {ameacas.map(a => chip(fAmeaca === a, a, () => setFAmeaca(fAmeaca === a ? '' : a)))}
+              </div>
+            )}
+            <p className="text-ink-dim text-xs">{filtrada.length} de {doBestiario.length} criatura{doBestiario.length > 1 ? 's' : ''}</p>
+
+            {filtrada.length === 0 ? (
+              <EstadoVazio compacto arte="garra" titulo="Nada encontrado" descricao="Tente outro nome ou tire um filtro." />
+            ) : (
+              <ul className="entra-lista space-y-2">
+                {filtrada.map((c, i) => (
+                  <li key={c.id} style={{ '--i': i }} className="flex items-stretch gap-1.5">
+                    <button
+                      type="button" onClick={() => escolher(c)} aria-current={selecionada?.id === c.id || undefined}
+                      className={`cartao flex-1 min-w-0 flex items-center gap-3 p-2.5 rounded-xl border text-left bg-raised/70 ${selecionada?.id === c.id ? 'selecionado' : 'border-border'}`}
+                    >
+                      <Retrato c={c} tamanho="w-12 h-12" />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-1.5 text-ink font-semibold truncate">
+                          {c.nome_personagem}
+                          {c.privada && <Icone nome="cadeado" tamanho={13} className="text-ink-dim" />}
+                        </span>
+                        <span className="block text-ink-dim text-xs truncate mt-0.5">{[c.especie, c.hp_maximo ? `${c.hp_maximo} de vida` : null].filter(Boolean).join(' • ') || 'sem espécie'}</span>
+                      </span>
+                      {c.ameaca && <SeloAmeaca ameaca={c.ameaca} />}
+                    </button>
+                    {acoesExtras && <div className="flex items-center">{acoesExtras(c)}</div>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* ── Prévia (computador) ── */}
+          <div className="hidden lg:block lg:sticky lg:top-32">
+            {selecionada ? (
+              <article key={selecionada.id} className="entra-aba rounded-2xl border border-border bg-raised/70 overflow-hidden">
+                <div className="relative h-40 bg-void flex items-center justify-center overflow-hidden">
+                  {selecionada.imagem_url
+                    ? <img src={selecionada.imagem_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                    : <Ilustra nome="garra" tamanho={96} className="opacity-70" />}
+                  <div className="absolute inset-0 bg-gradient-to-t from-raised via-transparent to-transparent" aria-hidden="true" />
+                </div>
+                <div className="p-5 space-y-4 -mt-8 relative">
+                  <div>
+                    <div className="flex items-start gap-3">
+                      <h3 className="flex-1 font-sora text-2xl font-bold text-ink leading-tight">{selecionada.nome_personagem}</h3>
+                      {selecionada.ameaca && <SeloAmeaca ameaca={selecionada.ameaca} grande />}
+                    </div>
+                    <p className="text-ink-dim mt-1">{selecionada.especie || 'Espécie não definida'}</p>
+                  </div>
+                  {selecionada.hp_maximo && (
+                    <div className="inline-flex items-center gap-2 rounded-xl bg-void/70 border border-border px-3 py-2">
+                      <Icone nome="coracao" tamanho={16} className="text-harm" />
+                      <span className="text-ink font-semibold tabular-nums">{selecionada.hp_maximo}</span>
+                      <span className="text-ink-dim text-sm">de vida</span>
+                    </div>
+                  )}
+                  {selecionada.privada && (
+                    <p className="inline-flex items-center gap-1.5 text-sm text-ink-dim"><Icone nome="cadeado" tamanho={14} /> Apenas o mestre vê esta ficha</p>
+                  )}
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Botao variante="primario" onClick={() => onAbrir?.(selecionada.id)}>Abrir a ficha completa <Icone nome="seta-dir" tamanho={16} /></Botao>
+                    <Botao variante="contorno" onClick={() => exportar(selecionada)} disabled={ocupado === selecionada.id}><Icone nome="baixar" tamanho={16} /> Exportar</Botao>
+                    {(podeEditarFicha(selecionada, meuId) || isGestor) && (
+                      <>
+                        <Botao variante="contorno" onClick={() => duplicar(selecionada)} disabled={ocupado === selecionada.id}><Icone nome="copiar" tamanho={16} /> Duplicar</Botao>
+                        <Botao variante="fantasma" className="hover:!text-harm" onClick={() => apagar(selecionada)} disabled={ocupado === selecionada.id}><Icone nome="lixeira" tamanho={16} /> Excluir</Botao>
+                      </>
+                    )}
+                  </div>
+                  <p className="text-ink-dim text-xs">Atributos, ações, reações e notas do mestre ficam na ficha completa.</p>
+                </div>
+              </article>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-border p-10 text-center">
+                <Ilustra nome="garra" tamanho={56} className="mx-auto mb-3 opacity-80" />
+                <p className="text-ink font-medium">Escolha uma criatura</p>
+                <p className="text-ink-dim text-sm mt-1">A prévia aparece aqui; a ficha completa abre com um clique.</p>
+              </div>
+            )}
           </div>
         </div>
       )}
-
-      {erro && <p className="text-red-400 text-sm">{erro}</p>}
-
-      {loading ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[1, 2, 3].map(i => <div key={i} className="h-24 bg-slate-800 rounded-xl animate-pulse border border-purple-900" />)}</div>
-      ) : lista.length === 0 ? (
-        <div className="text-center py-12 border border-dashed border-purple-800 rounded-2xl">
-          <Ilustra nome="garra" tamanho={64} className="mx-auto mb-3" />
-          <p className="text-purple-300 text-sm">{doBestiario.length === 0 ? 'Bestiário vazio.' : 'Nada encontrado com esse texto.'}</p>
-          {podeEscrever && doBestiario.length === 0 && (
-            <p className="text-accent-300 text-xs mt-1">Crie criaturas aqui e invoque-as no combate e no mapa.</p>
-          )}
-        </div>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {lista.map(c => {
-            const podeMexer = podeEditarFicha(c, meuId) || isGestor
-            return (
-              <div key={c.id} className="rounded-xl border border-purple-800 bg-slate-800 overflow-hidden flex flex-col">
-                <button type="button" onClick={() => onAbrir?.(c.id)} className="flex gap-3 p-3 text-left hover:bg-slate-700/60 transition-colors">
-                  {c.imagem_url
-                    ? <img src={c.imagem_url} alt="" className="w-14 h-14 rounded-lg object-cover border border-purple-900 shrink-0" />
-                    : <div className="w-14 h-14 rounded-lg bg-slate-900 border border-purple-900 flex items-center justify-center text-2xl shrink-0">🐾</div>}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-white font-semibold truncate flex items-center gap-1.5">
-                      {c.nome_personagem}
-                      {c.privada && <span title="Só você e o mestre veem a ficha">🔒</span>}
-                    </p>
-                    <p className="text-purple-400 text-xs mt-0.5 truncate">{c.especie || 'sem espécie'}{c.hp_maximo ? ` · ${c.hp_maximo} de vida` : ''}</p>
-                    {c.ameaca && (
-                      <span className={`inline-block mt-1 text-xs font-semibold px-1.5 py-0.5 rounded-full ${CorAmeaca[c.ameaca] || 'bg-purple-900 text-purple-200'}`}>{c.ameaca}</span>
-                    )}
-                  </div>
-                </button>
-                <div className="flex border-t border-purple-900/70 text-sm">
-                  {acoesExtras?.(c)}
-                  <button type="button" onClick={() => exportar(c)} disabled={ocupado === c.id} className="flex-1 py-1.5 text-purple-300 hover:text-white hover:bg-purple-900/40 transition-colors" title="Exportar (.json)">⬇</button>
-                  {podeMexer && <button type="button" onClick={() => duplicar(c)} disabled={ocupado === c.id} className="flex-1 py-1.5 text-purple-300 hover:text-white hover:bg-purple-900/40 border-l border-purple-900/70 transition-colors" title="Duplicar">⧉</button>}
-                  {podeMexer && <button type="button" onClick={() => apagar(c)} disabled={ocupado === c.id} className="flex-1 py-1.5 text-red-500 hover:text-red-400 hover:bg-red-950/40 border-l border-purple-900/70 transition-colors" title="Apagar do bestiário">🗑</button>}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
     </div>
+  )
+}
+
+/** Retrato da criatura (imagem ou a garra da casa). */
+function Retrato({ c, tamanho }) {
+  return c.imagem_url
+    ? <img src={c.imagem_url} alt="" loading="lazy" className={`${tamanho} rounded-lg object-cover ring-1 ring-border shrink-0`} />
+    : <span className={`${tamanho} rounded-lg bg-void ring-1 ring-border flex items-center justify-center shrink-0`}><Ilustra nome="garra" tamanho={28} /></span>
+}
+
+/** Ameaça: o texto é livre ("ND 1/4", "Mortal"); as palavras conhecidas ganham um nível de 1 a 5 em pontinhos. */
+function SeloAmeaca({ ameaca, grande = false }) {
+  const n = nivelAmeaca(ameaca)
+  return (
+    <span className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border border-border bg-void/70 font-semibold text-ink ${grande ? 'px-3 py-1 text-sm' : 'px-2 py-0.5 text-xs'}`} title={`Ameaça: ${ameaca}`}>
+      {n > 0 && (
+        <span className="inline-flex gap-0.5" aria-hidden="true">
+          {[1, 2, 3, 4, 5].map(i => <span key={i} className={`w-1 h-2.5 rounded-sm ${i <= n ? (n >= 4 ? 'bg-harm' : n >= 3 ? 'bg-warn' : 'bg-ok') : 'bg-border'}`} />)}
+        </span>
+      )}
+      {ameaca}
+    </span>
   )
 }
