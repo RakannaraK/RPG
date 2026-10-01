@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import Modal, { FecharModal } from '../ui/Modal'
+import Botao from '../ui/Botao'
 
 /**
  * Fase 25.5 — conceder XP a todos os personagens da sessão de uma vez (só o
@@ -58,39 +60,28 @@ export default function ConcederXpGrupo({ onConceder }) {
       )}
 
       {aberto && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-amber-700/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-white font-bold text-lg mb-2">Conceder XP a todos?</h3>
-            <p className="text-purple-300 text-sm mb-4">
-              Todos os personagens da mesa recebem a mesma quantidade de XP.
-            </p>
-            <div className="space-y-2 mb-4">
-              <input type="number" min={1} value={quantidade} onChange={e => setQuantidade(e.target.value)}
-                placeholder="Quantidade de XP" autoFocus
-                className="w-full px-3 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
-              <input type="text" value={motivo} onChange={e => setMotivo(e.target.value)}
-                placeholder="Motivo (opcional, ex: Sessão 12)"
-                className="w-full px-3 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
-            </div>
-            {erro && <p className="text-red-400 text-xs mb-3">{erro}</p>}
-            <div className="flex gap-3">
-              <button
-                onClick={() => setAberto(false)}
-                disabled={aplicando}
-                className="flex-1 py-2.5 text-purple-300 hover:text-white border border-purple-700 hover:border-purple-500 rounded-xl text-sm transition-colors disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={aplicar}
-                disabled={aplicando || !Number(quantidade)}
-                className="flex-1 py-2.5 bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors"
-              >
-                {aplicando ? 'Aplicando...' : 'Confirmar'}
-              </button>
-            </div>
+        <Modal
+          onFechar={() => setAberto(false)} bloqueado={aplicando} tamanho="sm"
+          titulo="Conceder XP a todos?" subtitulo="Todos os personagens da mesa recebem a mesma quantidade de XP."
+          rodape={
+            <>
+              <FecharModal disabled={aplicando} />
+              <Botao variante="dado" onClick={aplicar} disabled={aplicando || !Number(quantidade)}>{aplicando ? 'Aplicando…' : 'Conceder XP'}</Botao>
+            </>
+          }
+        >
+          <div className="space-y-3">
+            <label className="block">
+              <span className="rotulo">Quantidade de XP</span>
+              <input type="number" min={1} value={quantidade} onChange={e => setQuantidade(e.target.value)} autoFocus className="campo w-full" />
+            </label>
+            <label className="block">
+              <span className="rotulo">Motivo <span className="text-ink-dim font-normal">(opcional)</span></span>
+              <input type="text" value={motivo} onChange={e => setMotivo(e.target.value)} placeholder="Ex.: Sessão 12" className="campo w-full" />
+            </label>
+            {erro && <p className="aviso-erro" role="alert">{erro}</p>}
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   )

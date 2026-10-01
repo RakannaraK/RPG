@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { JOGOS, NOMES_DIFICULDADE, resumoResultado } from '../../lib/minigames/resultado'
 import JogoRodaRunica from './JogoRodaRunica'
 import JogoCronometro from './JogoCronometro'
 import JogoMemoria from './JogoMemoria'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import { tocarPresetAcao } from '../../audio/actionSynth'
+import Modal from '../ui/Modal'
 
 const COMPONENTE = { roda: JogoRodaRunica, cronometro: JogoCronometro, memoria: JogoMemoria }
 
@@ -63,14 +63,13 @@ export default function JogoMinigame({ tipo, dificuldade, config, semente, titul
   const nomeJogo = `${JOGOS[tipo]?.icone || '🎮'} ${JOGOS[tipo]?.nome || tipo}`
   const BTN = 'px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors'
 
-  return createPortal(
-    <div className="fixed inset-0 z-[70] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={nomeJogo}>
-      <div className="w-full max-w-lg rounded-2xl border border-border bg-bg shadow-2xl p-5 sm:p-6 flex flex-col items-center gap-4 max-h-full overflow-y-auto overflow-x-hidden">
-        <div className="text-center">
-          <h2 className="text-ink text-xl font-bold">{nomeJogo}</h2>
-          <p className="text-ink-dim text-sm">{NOMES_DIFICULDADE[dificuldade] || dificuldade}{titulo ? ` · ${titulo}` : ''}</p>
-        </div>
-
+  return (
+    <Modal
+      onFechar={onFechar} tamanho="md" fecharFora={false}
+      bloqueado={fase === 'contagem' || fase === 'jogando'}
+      titulo={nomeJogo} subtitulo={`${NOMES_DIFICULDADE[dificuldade] || dificuldade}${titulo ? ` · ${titulo}` : ''}`}
+      corpoClassName="flex flex-col items-center gap-4 overflow-x-hidden"
+    >
         {fase === 'instrucoes' && (
           <>
             <p className="text-ink text-sm leading-relaxed text-center">{INSTRUCOES[tipo]}</p>
@@ -106,8 +105,6 @@ export default function JogoMinigame({ tipo, dificuldade, config, semente, titul
             </div>
           </>
         )}
-      </div>
-    </div>,
-    document.body
+    </Modal>
   )
 }

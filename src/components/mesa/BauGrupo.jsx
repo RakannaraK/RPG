@@ -3,6 +3,7 @@ import { useBau } from '../../hooks/useBau'
 import { fichasQueUso, validarItemBau } from '../../lib/bau'
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
+import { useConfirmar } from '../ui/Confirmar'
 
 const CAMPO = 'px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 
@@ -11,6 +12,7 @@ const CAMPO = 'px-3 py-2 rounded-lg bg-void border border-border text-ink text-s
  * ficha e pega daqui; o mestre também põe o saque direto.
  */
 export default function BauGrupo({ mesaId, meuId, isGestor, podeEscrever, fichas }) {
+  const { confirmar } = useConfirmar()
   const bau = useBau(mesaId)
   const minhas = fichasQueUso(fichas, meuId)
   const [destino, setDestino] = useState('')
@@ -80,7 +82,7 @@ export default function BauGrupo({ mesaId, meuId, isGestor, podeEscrever, fichas
               {isGestor && (
                 <button
                   type="button" aria-label={`Tirar "${item.nome}" do baú`} title="Tirar do baú"
-                  onClick={() => window.confirm(`Tirar "${item.nome}" do baú? Ele deixa de existir.`) && acao(`t${item.id}`, () => bau.tirar(item.id))}
+                  onClick={async () => (await confirmar({ titulo: 'Tirar do baú?', mensagem: `${item.nome} deixa de existir.`, confirmar: 'Tirar', perigo: true })) && acao(`t${item.id}`, () => bau.tirar(item.id))}
                   className="min-w-[28px] min-h-[28px] rounded-lg text-ink-dim hover:text-ink hover:bg-slate-700 inline-flex items-center justify-center"
                 ><Ilustra nome="lixeira" tamanho={14} /></button>
               )}

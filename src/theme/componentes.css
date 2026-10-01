@@ -1,0 +1,275 @@
+/* ── Fase 52 — peças de interface reutilizáveis ────────────────────────────
+   Tudo aqui sai dos tokens (tokens.css): cor, duração, curva, sombra. As
+   classes casam com os componentes de src/components/ui/. Movimento só em
+   transform/opacity; quem pediu menos movimento (data-movimento="reduzido")
+   fica só com esmaecer. */
+
+/* ── Campo de texto canônico ──────────────────────────────────────────────── */
+.campo {
+  background: var(--void);
+  border: 1px solid var(--border);
+  border-radius: .5rem;
+  padding: .5rem .75rem;
+  min-height: 40px;
+  color: var(--ink);
+  font-size: .875rem;
+  line-height: 1.25rem;
+}
+.campo::placeholder { color: var(--ink-dim); }
+.campo:hover:not(:focus-visible):not(:disabled) { border-color: color-mix(in srgb, var(--accent-700) 55%, var(--border)); }
+.campo:disabled { opacity: .55; cursor: not-allowed; }
+
+/* mensagem de erro/aviso dentro de formulário */
+.aviso-erro {
+  border: 1px solid rgb(var(--harm-c) / .4);
+  background: rgb(var(--harm-c) / .1);
+  color: var(--harm);
+  border-radius: .6rem;
+  padding: .5rem .75rem;
+  font-size: .875rem;
+}
+.rotulo { display: block; color: var(--ink); font-size: .875rem; font-weight: 500; margin-bottom: .375rem; }
+.rotulo-dica { display: block; color: var(--ink-dim); font-size: .75rem; font-weight: 400; margin-top: .125rem; }
+
+/* erro: um tremor curto SÓ no campo (nunca na tela) */
+@keyframes tremer {
+  0%, 100% { transform: none; }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+.tremer { animation: tremer 320ms var(--ease-padrao); }
+
+/* ── Botões ──────────────────────────────────────────────────────────────────
+   Hover: sobe 1 px e clareia. Clique: comprime (física de botão de verdade). */
+.botao {
+  transition:
+    transform var(--dur-rapida) var(--ease-padrao),
+    background-color var(--dur-rapida) var(--ease-padrao),
+    border-color var(--dur-rapida) var(--ease-padrao),
+    color var(--dur-rapida) var(--ease-padrao),
+    box-shadow var(--dur-normal) var(--ease-padrao),
+    filter var(--dur-rapida) var(--ease-padrao);
+}
+.botao:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.08); }
+.botao:not(:disabled):active { transform: translateY(0) scale(.97); filter: brightness(.95); transition-duration: 60ms; }
+.botao-primario { box-shadow: inset 0 1px 0 rgb(255 255 255 / .12), 0 6px 18px -8px color-mix(in srgb, var(--accent-600) 80%, transparent); }
+.botao-primario:not(:disabled):hover { box-shadow: inset 0 1px 0 rgb(255 255 255 / .16), 0 8px 24px -8px color-mix(in srgb, var(--accent-500) 90%, transparent); }
+
+/* Botão só de ícone (fechar, menu, notificações…): alvo de 36 px. */
+.botao-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: .5rem;
+  color: var(--ink-dim);
+  transition: color var(--dur-rapida) var(--ease-padrao), background-color var(--dur-rapida) var(--ease-padrao), transform var(--dur-rapida) var(--ease-padrao);
+}
+.botao-icone:hover { color: var(--ink); background-color: rgb(var(--hover-c) / .85); }
+.botao-icone:active { transform: scale(.94); }
+.botao-icone[aria-expanded="true"], .botao-icone[aria-pressed="true"] { color: var(--ink); background-color: rgb(var(--hover-c)); }
+
+.botao:focus-visible, .botao-icone:focus-visible, .cartao:focus-visible {
+  outline: 2px solid var(--accent-400);
+  outline-offset: 2px;
+}
+
+:root[data-movimento="reduzido"] .botao:not(:disabled):hover,
+:root[data-movimento="reduzido"] .botao:not(:disabled):active,
+:root[data-movimento="reduzido"] .botao-icone:active { transform: none; }
+
+/* ── Cartões clicáveis (mesa, ficha, criatura, publicação) ───────────────── */
+.cartao {
+  transition:
+    transform var(--dur-normal) var(--ease-padrao),
+    border-color var(--dur-normal) var(--ease-padrao),
+    box-shadow var(--dur-normal) var(--ease-padrao),
+    background-color var(--dur-normal) var(--ease-padrao);
+}
+.cartao:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent-500) 60%, var(--border));
+  box-shadow: var(--sombra-2), var(--brilho-suave);
+}
+.cartao:active { transform: translateY(0); }
+:root[data-movimento="reduzido"] .cartao:hover { transform: none; }
+
+/* estado selecionado: borda + luz + fundo (nunca só uma cor pequena) */
+.selecionado {
+  border-color: var(--accent-400) !important;
+  background-color: color-mix(in srgb, var(--accent-800) 22%, var(--raised));
+  box-shadow: var(--brilho);
+}
+
+/* cartão que acabou de nascer (ficha criada, criatura adicionada) */
+@keyframes brilho-nasce {
+  from { box-shadow: 0 0 0 1px var(--accent-400), 0 0 30px -2px var(--accent-500); }
+  to   { box-shadow: 0 0 0 0 transparent; }
+}
+.brilho-nasce { animation: brilho-nasce 1.4s var(--ease-padrao); }
+
+/* ── Dica (tooltip) ───────────────────────────────────────────────────────────
+   <button data-dica="Notificações"> — aparece depois de ~meio segundo com o
+   mouse parado em cima, ou na hora com o foco do teclado. Abre para a ESQUERDA
+   (alinhada à direita do botão): os botões de ícone moram no canto direito e,
+   centralizada, ela vazaria da tela. `data-dica-lado="dir"` abre para a direita. */
+[data-dica] { position: relative; }
+[data-dica]::after {
+  content: attr(data-dica);
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 80;
+  white-space: nowrap;
+  padding: .3rem .55rem;
+  border-radius: .45rem;
+  background: var(--raised);
+  border: 1px solid var(--border);
+  box-shadow: var(--sombra-2);
+  color: var(--ink);
+  font-size: .75rem;
+  font-weight: 500;
+  line-height: 1.1rem;
+  letter-spacing: 0;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-3px);
+  transition: opacity var(--dur-rapida) var(--ease-padrao), transform var(--dur-rapida) var(--ease-padrao);
+}
+[data-dica-lado="dir"]::after { right: auto; left: 0; }
+[data-dica]:hover::after { opacity: 1; transform: none; transition-delay: 450ms; }
+[data-dica]:focus-visible::after { opacity: 1; transform: none; }
+@media (hover: none) { [data-dica]::after { display: none; } }
+
+/* ── Modal ──────────────────────────────────────────────────────────────── */
+@keyframes modal-fundo-entra { from { opacity: 0; } }
+@keyframes modal-fundo-sai { to { opacity: 0; } }
+@keyframes modal-painel-entra { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+@keyframes modal-painel-sai { to { opacity: 0; transform: translateY(10px) scale(.98); } }
+@keyframes folha-entra { from { opacity: .4; transform: translateY(48px); } }
+@keyframes folha-sai { to { opacity: 0; transform: translateY(40px); } }
+
+.modal-entra .modal-fundo  { animation: modal-fundo-entra var(--dur-normal) var(--ease-padrao) backwards; }
+.modal-entra .modal-painel { animation: modal-painel-entra var(--dur-normal) var(--ease-padrao) backwards; }
+.modal-sai .modal-fundo    { animation: modal-fundo-sai var(--dur-normal) var(--ease-saida) forwards; }
+.modal-sai .modal-painel   { animation: modal-painel-sai var(--dur-normal) var(--ease-saida) forwards; }
+@media (max-width: 639px) {
+  .modal-entra .modal-painel { animation-name: folha-entra; }
+  .modal-sai .modal-painel   { animation-name: folha-sai; }
+}
+:root[data-movimento="reduzido"] .modal-entra .modal-painel { animation-name: modal-fundo-entra; }
+:root[data-movimento="reduzido"] .modal-sai .modal-painel   { animation-name: modal-fundo-sai; }
+
+/* luz do tema descendo do topo da janela */
+.modal-painel {
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--accent-500) 8%, transparent), transparent 160px);
+}
+
+/* ── Menu / popover (notificações, menu do usuário) ─────────────────────── */
+@keyframes pop-entra { from { opacity: 0; transform: translateY(-6px) scale(.98); } }
+.pop-entra { animation: pop-entra var(--dur-normal) var(--ease-padrao) backwards; transform-origin: top right; }
+:root[data-movimento="reduzido"] .pop-entra { animation-name: so-aparece; }
+
+/* ── Toast ──────────────────────────────────────────────────────────────── */
+@keyframes toast-entra { from { opacity: 0; transform: translateY(-10px) scale(.98); } }
+@keyframes toast-sai { to { opacity: 0; transform: translateX(18px); } }
+.toast { animation: toast-entra var(--dur-normal) var(--ease-padrao) backwards; backdrop-filter: blur(6px); }
+.toast-sai { animation: toast-sai var(--dur-normal) var(--ease-saida) forwards; }
+:root[data-movimento="reduzido"] .toast { animation-name: so-aparece; }
+:root[data-movimento="reduzido"] .toast-sai { animation-name: modal-fundo-sai; }
+
+/* ── Abas ───────────────────────────────────────────────────────────────── */
+.abas-faixa {
+  scrollbar-width: none;
+  box-shadow: inset 0 -1px 0 var(--border);
+  scroll-padding-inline: 40px;
+}
+.abas-faixa::-webkit-scrollbar { display: none; }
+.abas[data-ponta-dir] .abas-faixa { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent); }
+.abas[data-ponta-esq] .abas-faixa { -webkit-mask-image: linear-gradient(90deg, transparent, #000 44px); mask-image: linear-gradient(90deg, transparent, #000 44px); }
+.abas[data-ponta-esq][data-ponta-dir] .abas-faixa {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 44px, #000 calc(100% - 44px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 44px, #000 calc(100% - 44px), transparent);
+}
+.aba { transition: color var(--dur-rapida) var(--ease-padrao); }
+.aba::before {
+  content: '';
+  position: absolute;
+  inset: 6px 4px;
+  border-radius: .5rem;
+  background: rgb(var(--hover-c) / .7);
+  opacity: 0;
+  transition: opacity var(--dur-rapida) var(--ease-padrao);
+  z-index: -1;
+}
+.aba:hover::before { opacity: 1; }
+.aba[aria-selected="true"]::before { opacity: 0; }
+.aba { isolation: isolate; }
+.aba:focus-visible { outline: 2px solid var(--accent-400); outline-offset: -5px; border-radius: .6rem; }
+.abas-traco {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 2px;
+  transform-origin: 0 50%;
+  background: var(--accent-400);
+  pointer-events: none;
+  transition: transform var(--dur-normal) var(--ease-padrao);
+}
+:root[data-movimento="reduzido"] .abas-traco { transition-duration: 1ms; }
+
+.contador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 .3rem;
+  border-radius: 999px;
+  background: var(--accent-500);
+  color: var(--sobre-acento);
+  font-size: .75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* conteúdo que troca dentro da mesma página (aba, filtro) */
+@keyframes entra-aba { from { opacity: 0; transform: translateY(6px); } }
+.entra-aba { animation: entra-aba var(--dur-normal) var(--ease-padrao) backwards; }
+:root[data-movimento="reduzido"] .entra-aba { animation-name: so-aparece; }
+
+/* lista que entra em cascata: style={{ '--i': indice }} (até 8 itens) */
+.entra-lista > * { animation: entra-aba var(--dur-normal) var(--ease-padrao) backwards; animation-delay: calc(min(var(--i, 0), 8) * 30ms); }
+:root[data-movimento="reduzido"] .entra-lista > * { animation-name: so-aparece; animation-delay: 0s; }
+
+/* ── Avisos que chegam: o selo pulsa UMA vez ─────────────────────────────── */
+@keyframes pulso-uma-vez {
+  0%   { transform: scale(1); box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-400) 60%, transparent); }
+  45%  { transform: scale(1.22); box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent-400) 0%, transparent); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
+}
+.pulso-uma-vez { animation: pulso-uma-vez 700ms var(--ease-padrao); }
+:root[data-movimento="reduzido"] .pulso-uma-vez { animation: none; }
+
+/* ── Esqueleto de carregamento ──────────────────────────────────────────── */
+.esqueleto { position: relative; overflow: hidden; background: rgb(var(--hover-c) / .75); }
+.esqueleto::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / .045), transparent);
+  animation: esqueleto-brilho 1.8s var(--ease-padrao) infinite;
+}
+@keyframes esqueleto-brilho { to { transform: translateX(100%); } }
+:root[data-movimento="reduzido"] .esqueleto::after { display: none; }
+
+/* ── Estado vazio: o desenho flutua devagar (só com efeitos completos) ───── */
+@keyframes flutua { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.estado-vazio-arte { animation: flutua 5s ease-in-out infinite; }
+:root[data-movimento="reduzido"] .estado-vazio-arte,
+:root[data-efeitos] .estado-vazio-arte { animation: none; }

@@ -1,6 +1,7 @@
 @import './theme/tokens.css';
 @import './theme/motion.css';
 @import './theme/rpg.css';
+@import './theme/componentes.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,6 +11,10 @@
   margin: 0;
   padding: 0;
 }
+
+/* F52 — o espaço da barra de rolagem fica sempre reservado: abrir um modal
+   (que trava a rolagem) ou trocar para uma página curta não empurra o layout. */
+html { scrollbar-gutter: stable; }
 
 body {
   min-height: 100vh;

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { gravarImportacao, prepararImportacao } from '../../lib/fichaBanco'
+import Modal, { FecharModal } from '../ui/Modal'
+import Botao from '../ui/Botao'
 
 // [singular, plural]
 const ROTULOS = {
@@ -66,13 +67,18 @@ export default function ImportarFicha({ mesaId, donoId, onImportada, className =
       </button>
       {erro && !plano && <p className="text-red-400 text-xs mt-1">{erro}</p>}
 
-      {plano && createPortal(
-        <div className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-4" onClick={() => !ocupado && setPlano(null)}>
-          <div
-            role="dialog" aria-modal="true" aria-label="Importar ficha" onClick={e => e.stopPropagation()}
-            className="w-full max-w-md max-h-full overflow-y-auto rounded-2xl border border-border bg-bg p-5 space-y-4 shadow-2xl"
-          >
-            <h2 className="text-ink text-lg font-bold">Importar “{plano.ficha.nome_personagem}”</h2>
+      {plano && (
+        <Modal
+          onFechar={() => setPlano(null)} bloqueado={ocupado} tamanho="md"
+          titulo={`Importar “${plano.ficha.nome_personagem}”`}
+          rodape={
+            <>
+              <FecharModal disabled={ocupado} />
+              <Botao variante="primario" onClick={confirmar} disabled={ocupado}>{ocupado ? 'Importando…' : 'Importar'}</Botao>
+            </>
+          }
+        >
+          <div className="space-y-4">
             <p className="text-ink-dim text-sm">
               {[plano.ficha.raca, plano.ficha.classe, plano.ficha.nivel ? `nível ${plano.ficha.nivel}` : null].filter(Boolean).join(' · ') || 'sem detalhes'}
               {plano.sistemaOrigem ? ` · sistema de origem: ${plano.sistemaOrigem}` : ''}
@@ -88,17 +94,9 @@ export default function ImportarFicha({ mesaId, donoId, onImportada, className =
               </div>
             )}
             <p className="text-ink-dim text-xs">A ficha entra como sua, nesta mesa. Nada existente é alterado.</p>
-            {erro && <p className="text-red-400 text-xs">{erro}</p>}
-
-            <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setPlano(null)} disabled={ocupado} className="px-4 py-2 rounded-lg bg-hover text-ink text-sm hover:bg-border">Cancelar</button>
-              <button type="button" onClick={confirmar} disabled={ocupado} className="px-4 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-sobre-acento text-sm font-semibold">
-                {ocupado ? 'Importando…' : 'Importar'}
-              </button>
-            </div>
+            {erro && <p className="aviso-erro" role="alert">{erro}</p>}
           </div>
-        </div>,
-        document.body
+        </Modal>
       )}
     </>
   )

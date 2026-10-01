@@ -16,6 +16,9 @@ import { PRESET_IDS, resolveActionSound } from '../../engines/actionSoundEngine'
 import { tocarPresetAcao, tocarSomAcao } from '../../audio/actionSynth'
 import Ilustra from '../arte/Ilustra'
 import { destinosParaDar } from '../../lib/bau'
+import Modal, { FecharModal } from '../ui/Modal'
+import Botao from '../ui/Botao'
+import { useConfirmar } from '../ui/Confirmar'
 
 /** F49 — tirar o item desta ficha: para o baú do grupo ou para outro personagem. */
 function MoverItem({ item, fichaId, mesaId, onMovido, onFechar }) {
@@ -240,21 +243,17 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-void border border-border rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
-          <h2 className="text-ink font-bold text-lg">
-            {item ? 'Editar item' : 'Novo item'}
-          </h2>
-          <button
-            onClick={onFechar}
-            className="text-ink-dim hover:text-ink text-xl transition-colors"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+    <Modal
+      onFechar={onFechar} bloqueado={salvando}
+      titulo={item ? 'Editar item' : 'Novo item'}
+      rodape={
+        <>
+          <FecharModal disabled={salvando} />
+          <Botao variante="primario" onClick={handleSalvar} disabled={salvando}>{salvando ? 'Salvando…' : 'Salvar'}</Botao>
+        </>
+      }
+    >
+      <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
               <label className="block text-sm font-medium text-ink mb-1">Nome *</label>
@@ -482,26 +481,9 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
             />
           </div>
 
-          {erro && <p className="text-harm text-sm">{erro}</p>}
-        </div>
-
-        <div className="px-6 py-4 border-t border-border flex justify-between shrink-0">
-          <button
-            onClick={onFechar}
-            className="px-4 py-2 text-ink-dim hover:text-ink text-sm transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleSalvar}
-            disabled={salvando}
-            className="px-6 py-2 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed text-sobre-acento font-semibold rounded-lg text-sm transition-colors"
-          >
-            {salvando ? 'Salvando...' : 'Salvar'}
-          </button>
-        </div>
+          {erro && <p className="aviso-erro" role="alert">{erro}</p>}
       </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -620,6 +602,7 @@ function RecursoDurabilidade({ item, isDono, onRecurso, onDurab }) {
 }
 
 export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valoresFinais = {}, modificadoresAtivos = [], categorias = [], maestria = null, onGanharMaestria, maestriaDoItem, atributos = [], camposCombate = [], pericias = [], classes = [], pools = [], critico = null, configSom = null }) {
+  const { confirmar } = useConfirmar()
   const { itens, loading, error, createItem, updateItem, deleteItem, refetch } = useItens(fichaId)
   const [movendoId, setMovendoId] = useState(null) // F49
   const { registrarRolagem, registrarEvento } = useRolagem()
@@ -684,7 +667,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
   }
 
   async function handleDelete(item) {
-    if (!window.confirm(`Remover "${item.nome}"? Esta ação não pode ser desfeita.`)) return
+    if (!(await confirmar({ titulo: 'Remover item?', mensagem: `${item.nome} sai do inventário.`, detalhe: 'Esta ação não pode ser desfeita.', confirmar: 'Remover', perigo: true }))) return
     setDeletingId(item.id)
     setDeleteErro('')
     try {

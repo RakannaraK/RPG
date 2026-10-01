@@ -38,23 +38,21 @@ import BauGrupo from '../components/mesa/BauGrupo'
 import AnuncioMesa from '../components/mesa/AnuncioMesa'
 import { linkDeConvite } from '../lib/convite'
 import Botao from '../components/ui/Botao'
+import Modal, { FecharModal } from '../components/ui/Modal'
+import SeloPapel, { rotuloPapel } from '../components/ui/SeloPapel'
+import { useToast } from '../components/ui/Toast'
+import { useConfirmar } from '../components/ui/Confirmar'
 
 const TABS = ['Fichas', 'Bestiário', 'Enciclopédia', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
 const TABS_GESTOR = ['Escudo'] // F34.3 — só mestre/co-mestre
 
-// Fase 16 — rótulo/cor por papel (mestre/co-mestre/jogador/espectador)
-const ROLE_INFO = {
-  mestre:      { label: 'Mestre',     cls: 'bg-accent-600 text-sobre-acento' },
-  'co-mestre': { label: 'Co-mestre',  cls: 'bg-orange-500 text-orange-950' },
-  jogador:     { label: 'Jogador',    cls: 'bg-purple-700 text-sobre-acento' },
-  espectador:  { label: 'Espectador', cls: 'bg-slate-600 text-slate-100' },
-}
-const roleInfo = role => ROLE_INFO[role] || ROLE_INFO.jogador
 
 export default function MesaPage() {
   const { id } = useParams()
   const { session } = useAuth()
   const navigate = useNavigate()
+  const toast = useToast()
+  const { perguntar } = useConfirmar()
 
   const [mesa, setMesa] = useState(null)
   const [membros, setMembros] = useState([])
@@ -348,12 +346,15 @@ export default function MesaPage() {
 
   // F30.2 — pasta nasce ao mover a primeira ficha para ela (sem tabela de pastas)
   async function moverParaPasta(f) {
-    const nome = window.prompt(`Pasta de "${f.nome_personagem}" (vazio = sem pasta):`, f.pasta || '')
+    const nome = await perguntar({
+      titulo: 'Mover para pasta', mensagem: `Em qual pasta fica "${f.nome_personagem}"? Deixe vazio para tirar da pasta.`,
+      rotulo: 'Pasta', valor: f.pasta || '', placeholder: 'Ex.: Heróis, Vilões, Aliados', maxLength: 60, confirmar: 'Mover',
+    })
     if (nome === null) return
     const { error: err } = await supabase
       .from('fichas').update({ pasta: nome.trim().slice(0, 60) || null }).eq('id', f.id)
-    if (err) window.alert(`Não foi possível mover: ${err.message}`)
-    else refetchFichas()
+    if (err) toast.erro('Não foi possível mover', { detalhe: err.message })
+    else { refetchFichas(); toast.ok(nome.trim() ? `Movida para "${nome.trim()}"` : 'Tirada da pasta') }
   }
 
   async function handleArquivar(novoValor) {
@@ -398,9 +399,7 @@ export default function MesaPage() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0 ml-auto">
-            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${roleInfo(meuRole).cls}`}>
-              {roleInfo(meuRole).label}
-            </span>
+            <SeloPapel papel={meuRole} />
             {!arquivada && <XCard mesaId={id} isGestor={isGestor} />}
             <Sininho />
             <button
@@ -821,9 +820,7 @@ export default function MesaPage() {
                             <option value="espectador">Espectador</option>
                           </select>
                         ) : (
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${roleInfo(m.role).cls}`}>
-                            {roleInfo(m.role).label}
-                          </span>
+                          <SeloPapel papel={m.role} />
                         )}
                         {podeExpulsar(m) && (
                           <button
@@ -905,207 +902,140 @@ export default function MesaPage() {
 
       {/* Modal: deletar mesa */}
       {showDeleteMesa && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-red-800/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-white font-bold text-lg mb-2">Deletar mesa?</h3>
-            <p className="text-purple-300 text-sm mb-1">
-              Tem certeza? Esta ação não pode ser desfeita.
-            </p>
-            <p className="text-purple-400 text-xs mb-5">
-              Todas as fichas, sistemas, atributos e imagens desta mesa serão apagados permanentemente junto com ela.
-            </p>
-            {deleteMesaError && (
-              <p className="text-red-400 text-sm mb-3">{deleteMesaError}</p>
-            )}
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setShowDeleteMesa(false); setDeleteMesaError('') }}
-                disabled={deletingMesa}
-                className="flex-1 py-2.5 text-purple-300 hover:text-white border border-purple-700 hover:border-purple-500 rounded-xl text-sm transition-colors disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-              <Botao variante="perigo" tamanho="md"
-                onClick={handleDeleteMesa}
-                disabled={deletingMesa} className="flex-1 font-semibold">
-                {deletingMesa ? 'Deletando...' : 'Deletar'}
-              </Botao>
-            </div>
-          </div>
-        </div>
+        <Modal
+          onFechar={() => { setShowDeleteMesa(false); setDeleteMesaError('') }} bloqueado={deletingMesa}
+          tamanho="sm" tom="perigo" titulo="Apagar a mesa?"
+          rodape={
+            <>
+              <FecharModal disabled={deletingMesa} />
+              <Botao variante="perigo" onClick={handleDeleteMesa} disabled={deletingMesa}>{deletingMesa ? 'Apagando…' : 'Apagar mesa'}</Botao>
+            </>
+          }
+        >
+          <p className="text-ink text-sm"><strong>{mesa?.nome}</strong> será apagada com todas as fichas, o sistema, as imagens e o histórico de sessões.</p>
+          <p className="text-ink-dim text-sm mt-2">Esta ação não pode ser desfeita. Se a ideia é só parar de jogar, arquive a mesa.</p>
+          {deleteMesaError && <p className="aviso-erro mt-3" role="alert">{deleteMesaError}</p>}
+        </Modal>
       )}
 
       {/* Modal: deletar ficha */}
       {fichaToDelete && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-red-800/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-white font-bold text-lg mb-2">Deletar ficha?</h3>
-            <p className="text-purple-300 text-sm mb-1">
-              Tem certeza? Esta ação não pode ser desfeita.
-            </p>
-            <p className="text-purple-400 text-xs mb-5">
-              Todos os atributos, equipamentos e imagens de{' '}
-              <strong className="text-purple-300">{fichaToDelete.nome_personagem}</strong>{' '}
-              serão apagados permanentemente.
-            </p>
-            {deleteFichaError && (
-              <p className="text-red-400 text-sm mb-3">{deleteFichaError}</p>
-            )}
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setFichaToDelete(null); setDeleteFichaError('') }}
-                disabled={deletingFicha}
-                className="flex-1 py-2.5 text-purple-300 hover:text-white border border-purple-700 hover:border-purple-500 rounded-xl text-sm transition-colors disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-              <button
+        <Modal
+          onFechar={() => { setFichaToDelete(null); setDeleteFichaError('') }} bloqueado={deletingFicha}
+          tamanho="sm" tom="perigo" titulo="Apagar ficha?"
+          rodape={
+            <>
+              <FecharModal disabled={deletingFicha} />
+              <Botao
+                variante="perigo" disabled={deletingFicha}
                 onClick={() => (
                   fichaToDelete.dono?.id === session?.user?.id
                     ? handleDeleteFicha()          // própria → delete direto (RLS dono)
                     : handleDeletarFichaOrfa(fichaToDelete) // órfã → RPC (gestor)
                 )}
-                disabled={deletingFicha}
-                className="flex-1 py-2.5 bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors"
-              >
-                {deletingFicha ? 'Deletando...' : 'Deletar'}
-              </button>
-            </div>
-          </div>
-        </div>
+              >{deletingFicha ? 'Apagando…' : 'Apagar ficha'}</Botao>
+            </>
+          }
+        >
+          <p className="text-ink text-sm">
+            <strong>{fichaToDelete.nome_personagem}</strong> será apagada com todos os atributos, equipamentos e imagens.
+          </p>
+          <p className="text-ink-dim text-sm mt-2">Esta ação não pode ser desfeita.</p>
+          {deleteFichaError && <p className="aviso-erro mt-3" role="alert">{deleteFichaError}</p>}
+        </Modal>
       )}
 
       {/* Modal: sair da mesa (16.1) */}
       {showLeave && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-purple-700/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-white font-bold text-lg mb-2">Sair da mesa?</h3>
-            <p className="text-purple-300 text-sm mb-4">
-              Você deixará <strong className="text-purple-200">{mesa?.nome}</strong> e ela sairá do seu dashboard.
-              O que fazer com as suas fichas desta mesa?
-            </p>
-
-            <div className="space-y-2 mb-5">
-              <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${
-                !deletarFichas ? 'border-purple-600 bg-purple-950/40' : 'border-purple-900 hover:border-purple-700'
-              }`}>
-                <input type="radio" name="destinoFichas" checked={!deletarFichas} onChange={() => setDeletarFichas(false)} className="mt-0.5 accent-purple-500" />
-                <span>
-                  <span className="text-white text-sm font-medium block">Deixar na mesa</span>
-                  <span className="text-purple-400 text-xs">As fichas ficam para o mestre decidir. Se você voltar, elas ainda são suas.</span>
-                </span>
-              </label>
-              <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${
-                deletarFichas ? 'border-red-600 bg-red-950/30' : 'border-purple-900 hover:border-purple-700'
-              }`}>
-                <input type="radio" name="destinoFichas" checked={deletarFichas} onChange={() => setDeletarFichas(true)} className="mt-0.5 accent-red-500" />
-                <span>
-                  <span className="text-white text-sm font-medium block">Deletar minhas fichas</span>
-                  <span className="text-purple-400 text-xs">Apaga permanentemente as suas fichas desta mesa. Não pode ser desfeito.</span>
-                </span>
-              </label>
-            </div>
-
-            {leaveError && <p className="text-red-400 text-sm mb-3">{leaveError}</p>}
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setShowLeave(false); setLeaveError('') }}
-                disabled={leaving}
-                className="flex-1 py-2.5 text-purple-300 hover:text-white border border-purple-700 hover:border-purple-500 rounded-xl text-sm transition-colors disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleLeaveMesa}
-                disabled={leaving}
-                className={`flex-1 py-2.5 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors ${
-                  deletarFichas ? 'bg-red-700 hover:bg-red-600' : 'bg-purple-600 hover:bg-purple-700'
-                }`}
-              >
-                {leaving ? 'Saindo...' : 'Sair da mesa'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <Modal
+          onFechar={() => { setShowLeave(false); setLeaveError('') }} bloqueado={leaving}
+          tamanho="sm" titulo="Sair da mesa?"
+          subtitulo={`Você deixa ${mesa?.nome || 'a mesa'} e ela sai da sua lista.`}
+          rodape={
+            <>
+              <FecharModal disabled={leaving} />
+              <Botao variante={deletarFichas ? 'perigo' : 'primario'} onClick={handleLeaveMesa} disabled={leaving}>
+                {leaving ? 'Saindo…' : 'Sair da mesa'}
+              </Botao>
+            </>
+          }
+        >
+          <fieldset className="space-y-2">
+            <legend className="text-ink text-sm mb-2">O que fazer com as suas fichas desta mesa?</legend>
+            <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors duration-rapida ${
+              !deletarFichas ? 'selecionado' : 'border-border hover:border-accent-700'
+            }`}>
+              <input type="radio" name="destinoFichas" checked={!deletarFichas} onChange={() => setDeletarFichas(false)} className="mt-0.5 accent-purple-500" />
+              <span>
+                <span className="text-ink text-sm font-medium block">Deixar na mesa</span>
+                <span className="text-ink-dim text-sm">As fichas ficam para o mestre decidir. Se você voltar, elas ainda são suas.</span>
+              </span>
+            </label>
+            <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors duration-rapida ${
+              deletarFichas ? 'border-red-600 bg-red-950/30' : 'border-border hover:border-accent-700'
+            }`}>
+              <input type="radio" name="destinoFichas" checked={deletarFichas} onChange={() => setDeletarFichas(true)} className="mt-0.5 accent-red-500" />
+              <span>
+                <span className="text-ink text-sm font-medium block">Apagar minhas fichas</span>
+                <span className="text-ink-dim text-sm">Apaga para sempre as suas fichas desta mesa.</span>
+              </span>
+            </label>
+          </fieldset>
+          {leaveError && <p className="aviso-erro mt-3" role="alert">{leaveError}</p>}
+        </Modal>
       )}
 
       {/* Modal: expulsar membro (16.2) */}
       {membroToExpel && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-red-800/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-white font-bold text-lg mb-2">Expulsar da mesa?</h3>
-            <p className="text-purple-300 text-sm mb-1">
-              Remover <strong className="text-purple-200">{membroToExpel.usuario.username}</strong> da mesa?
-            </p>
-            <p className="text-purple-400 text-xs mb-5">
-              As fichas dele(a) ficam como <span className="text-amber-300">órfãs</span> — você pode deletá-las ou mantê-las depois. A pessoa recebe uma notificação.
-            </p>
-            {expelError && <p className="text-red-400 text-sm mb-3">{expelError}</p>}
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setMembroToExpel(null); setExpelError('') }}
-                disabled={expelling}
-                className="flex-1 py-2.5 text-purple-300 hover:text-white border border-purple-700 hover:border-purple-500 rounded-xl text-sm transition-colors disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-              <Botao variante="perigo" tamanho="md"
-                onClick={handleExpulsar}
-                disabled={expelling} className="flex-1 font-semibold">
-                {expelling ? 'Expulsando...' : 'Expulsar'}
-              </Botao>
-            </div>
-          </div>
-        </div>
+        <Modal
+          onFechar={() => { setMembroToExpel(null); setExpelError('') }} bloqueado={expelling}
+          tamanho="sm" tom="perigo" titulo="Expulsar da mesa?"
+          rodape={
+            <>
+              <FecharModal disabled={expelling} />
+              <Botao variante="perigo" onClick={handleExpulsar} disabled={expelling}>{expelling ? 'Expulsando…' : 'Expulsar'}</Botao>
+            </>
+          }
+        >
+          <p className="text-ink text-sm">Remover <strong>{membroToExpel.apelido || membroToExpel.usuario.username}</strong> da mesa?</p>
+          <p className="text-ink-dim text-sm mt-2">
+            As fichas dessa pessoa ficam como <span className="text-amber-300">órfãs</span>: você pode apagá-las ou mantê-las depois. Ela recebe uma notificação.
+          </p>
+          {expelError && <p className="aviso-erro mt-3" role="alert">{expelError}</p>}
+        </Modal>
       )}
 
       {/* Modal: transferir posse (16.4) */}
       {showTransferir && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-amber-700/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-white font-bold text-lg mb-2">Transferir posse da mesa</h3>
-            <p className="text-purple-300 text-sm mb-4">
-              O novo dono ganha todos os controles de mestre. <strong className="text-amber-300">Você vira co-mestre</strong> e
-              só o novo dono poderá te devolver a posse. Ação séria.
-            </p>
-
-            <label className="block text-purple-300 text-xs font-medium mb-1">Novo dono</label>
-            <select
-              value={novoDonoId}
-              onChange={e => setNovoDonoId(e.target.value)}
-              className="w-full px-3 py-2 mb-4 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
-            >
-              <option value="">Selecionar membro...</option>
+        <Modal
+          onFechar={() => { setShowTransferir(false); setTransferError('') }} bloqueado={transferring}
+          tamanho="sm" tom="aviso" titulo="Transferir posse da mesa"
+          rodape={
+            <>
+              <FecharModal disabled={transferring} />
+              <Botao variante="dado" onClick={handleTransferirPosse} disabled={transferring || !novoDonoId}>{transferring ? 'Transferindo…' : 'Transferir'}</Botao>
+            </>
+          }
+        >
+          <p className="text-ink text-sm">
+            O novo dono ganha todos os controles de mestre. <strong className="text-amber-300">Você vira co-mestre</strong> e
+            só o novo dono pode te devolver a posse.
+          </p>
+          <label className="block mt-4">
+            <span className="rotulo">Novo dono</span>
+            <select value={novoDonoId} onChange={e => setNovoDonoId(e.target.value)} className="campo w-full">
+              <option value="">Escolher membro…</option>
               {membros
                 .filter(m => m.usuario.id !== session?.user?.id)
                 .map(m => (
                   <option key={m.usuario.id} value={m.usuario.id}>
-                    {m.usuario.username} — {roleInfo(m.role).label}
+                    {m.apelido || m.usuario.username} — {rotuloPapel(m.role)}
                   </option>
                 ))}
             </select>
-
-            {transferError && <p className="text-red-400 text-sm mb-3">{transferError}</p>}
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setShowTransferir(false); setTransferError('') }}
-                disabled={transferring}
-                className="flex-1 py-2.5 text-purple-300 hover:text-white border border-purple-700 hover:border-purple-500 rounded-xl text-sm transition-colors disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleTransferirPosse}
-                disabled={transferring || !novoDonoId}
-                className="flex-1 py-2.5 bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-colors"
-              >
-                {transferring ? 'Transferindo...' : 'Transferir'}
-              </button>
-            </div>
-          </div>
-        </div>
+          </label>
+          {transferError && <p className="aviso-erro mt-3" role="alert">{transferError}</p>}
+        </Modal>
       )}
 
       {showPrefs && <PreferenciasModal onFechar={() => setShowPrefs(false)} />}

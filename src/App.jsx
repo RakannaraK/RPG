@@ -9,6 +9,8 @@ import DashboardPage from './pages/DashboardPage'
 import OuvinteDadosMesa from './components/dados/OuvinteDadosMesa'
 import OuvinteDesafios from './components/minigames/OuvinteDesafios'
 import Selo from './components/marca/Selo'
+import { ToastProvider } from './components/ui/Toast'
+import { ConfirmarProvider } from './components/ui/Confirmar'
 import { destinoDepoisDoLogin } from './lib/convite'
 
 // F52 — cada página grande vira um pedaço próprio do código: quem abre o site
@@ -131,11 +133,15 @@ export default function App() {
       <ErrorBoundary>
         <AuthProvider>
           <PreferenciasProvider>
-            <AppRoutes />
-            {/* F27 — bandeja de dados da mesa (fora da transição de página) */}
-            <OuvinteDadosMesa />
-            {/* F28 — aviso de desafio de minigame (fora da transição de página) */}
-            <OuvinteDesafios />
+            <ToastProvider>
+              <ConfirmarProvider>
+                <AppRoutes />
+                {/* F27 — bandeja de dados da mesa (fora da transição de página) */}
+                <OuvinteDadosMesa />
+                {/* F28 — aviso de desafio de minigame (fora da transição de página) */}
+                <OuvinteDesafios />
+              </ConfirmarProvider>
+            </ToastProvider>
           </PreferenciasProvider>
         </AuthProvider>
       </ErrorBoundary>

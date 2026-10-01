@@ -10,6 +10,7 @@ import ImportarFicha from '../ficha/ImportarFicha'
 import BestiarioSrd from './BestiarioSrd'
 import Ilustra from '../arte/Ilustra'
 import Botao from '../ui/Botao'
+import { useConfirmar } from '../ui/Confirmar'
 
 const INP = 'px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 const AMEACAS = ['Trivial', 'Fácil', 'Normal', 'Difícil', 'Mortal', 'Lendária']
@@ -24,6 +25,7 @@ const CorAmeaca = { Trivial: 'bg-slate-700 text-slate-200', Fácil: 'bg-emerald-
  * Nascem privadas: o jogador não vê a ficha do monstro.
  */
 export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever, onAbrir, acoesExtras = null }) {
+  const { confirmar } = useConfirmar()
   const { fichas: criaturas, loading, refetch } = useFichas(mesaId, 'criatura')
   const { sistema } = useSistema(mesaId)
   const { createFicha } = useCreateFicha()
@@ -71,7 +73,7 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
   }
 
   async function apagar(c) {
-    if (!window.confirm(`Apagar “${c.nome_personagem}” do bestiário? Não dá para desfazer.`)) return
+    if (!(await confirmar({ titulo: 'Excluir criatura?', mensagem: `${c.nome_personagem} sai do bestiário desta mesa.`, detalhe: 'Esta ação não pode ser desfeita.', confirmar: 'Excluir', perigo: true }))) return
     setOcupado(c.id); setErro('')
     const { error } = await supabase.from('fichas').delete().eq('id', c.id)
     if (error) setErro(error.message)

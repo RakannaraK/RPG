@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNotasMesa } from '../../hooks/useNotasMesa'
 import { useMembrosMesa } from '../../hooks/useMembrosMesa'
+import { useConfirmar } from '../ui/Confirmar'
 
 const INP = 'w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 const ESPERA_SALVAR = 800 // ms sem digitar até salvar
@@ -8,6 +9,7 @@ const TEXTO_ESTADO = { salvo: '✓ Salvo', editando: 'Editando…', salvando: 'S
 
 /** Editor de UMA nota (montado com key = id: trocar de nota começa limpo e salva o pendente). */
 function EditorNota({ nota, onSalvar, onApagar }) {
+  const { confirmar } = useConfirmar()
   const [titulo, setTitulo] = useState(nota.titulo)
   const [texto, setTexto] = useState(nota.texto)
   const [estado, setEstado] = useState('salvo')
@@ -76,7 +78,7 @@ function EditorNota({ nota, onSalvar, onApagar }) {
         <span className={`ml-auto ${erro ? 'text-red-400' : 'text-ink-dim'}`} aria-live="polite">{erro || TEXTO_ESTADO[estado]}</span>
         <button
           type="button"
-          onClick={() => { if (window.confirm(`Apagar a nota "${titulo || 'sem título'}"? Não dá para desfazer.`)) onApagar() }}
+          onClick={async () => { if (await confirmar({ titulo: 'Apagar nota?', mensagem: `A nota "${titulo || 'sem título'}" será apagada.`, detalhe: 'Esta ação não pode ser desfeita.', confirmar: 'Apagar', perigo: true })) onApagar() }}
           className="px-2 py-1 text-red-400 hover:text-red-300"
         >Apagar</button>
       </div>

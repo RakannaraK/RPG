@@ -3,6 +3,7 @@ import { useSeguranca } from '../../hooks/useSeguranca'
 import { LIMITE_TEXTO, TIPOS_LIMITE, agruparLimites } from '../../lib/seguranca'
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
+import { useConfirmar } from '../ui/Confirmar'
 
 const CAMPO = 'flex-1 min-w-0 px-2.5 py-1.5 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 
@@ -54,13 +55,14 @@ function Coluna({ tipo, itens, isGestor, onAcrescentar, onTirar }) {
  * sem nome; quem gere tira duplicatas.
  */
 export default function PainelLimites({ mesaId, isGestor }) {
+  const { confirmar } = useConfirmar()
   const { limites, indisponivel, acrescentar, tirar } = useSeguranca(mesaId)
   const [erro, setErro] = useState('')
   if (indisponivel) return null
   const grupos = agruparLimites(limites)
 
   async function tirarComConfirmacao(id) {
-    if (!window.confirm('Tirar este item? Quem acrescentou não fica sabendo.')) return
+    if (!(await confirmar({ titulo: 'Tirar da lista?', mensagem: 'Quem acrescentou não fica sabendo.', confirmar: 'Tirar' }))) return
     setErro('')
     try { await tirar(id) } catch (e) { setErro(e.message) }
   }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useImagens } from '../../hooks/useImagens'
 import ImageUpload from './ImageUpload'
 import Ilustra from '../arte/Ilustra'
+import { useConfirmar } from '../ui/Confirmar'
 
 const TIPOS_IMAGEM = [
   { value: 'retrato', label: 'Retrato' },
@@ -14,6 +15,7 @@ const TIPOS_IMAGEM = [
 ]
 
 export default function ImagensTab({ fichaId, donoId, isDono }) {
+  const { confirmar } = useConfirmar()
   const { imagens, loading, error, uploadImagem, deleteImagem } = useImagens(fichaId)
   const [selectedFile, setSelectedFile] = useState(null)
   const [tipo, setTipo] = useState('retrato')
@@ -46,7 +48,7 @@ export default function ImagensTab({ fichaId, donoId, isDono }) {
   }
 
   async function handleDelete(imagem) {
-    if (!window.confirm('Remover esta imagem? Esta ação não pode ser desfeita.')) return
+    if (!(await confirmar({ titulo: 'Remover imagem?', mensagem: 'A imagem sai da galeria desta ficha.', detalhe: 'Esta ação não pode ser desfeita.', confirmar: 'Remover', perigo: true }))) return
     setDeletingId(imagem.id)
     setDeleteErro('')
     try {

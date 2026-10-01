@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useCreateFicha } from '../../hooks/useFicha'
 import { duplicarFicha } from '../../lib/fichaBanco'
 import { formasDaFicha, planejarTransformacao } from '../../lib/transformacao'
+import { useConfirmar } from '../ui/Confirmar'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 const BTN = 'px-2.5 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50'
@@ -13,6 +14,7 @@ const BTN = 'px-2.5 py-1.5 rounded-lg text-sm transition-colors disabled:opacity
  * Transformar só troca qual delas está valendo — nada é apagado.
  */
 export default function PainelFormas({ ficha, mesaId, meuId, isDono, onAbrirFicha, onTransformar }) {
+  const { confirmar } = useConfirmar()
   const fichaId = ficha?.id
   const { createFicha } = useCreateFicha()
   const [formas, setFormas] = useState([])
@@ -75,7 +77,7 @@ export default function PainelFormas({ ficha, mesaId, meuId, isDono, onAbrirFich
   }
 
   async function apagar(forma) {
-    if (!window.confirm(`Apagar a forma “${forma.nome_personagem}”? Não dá para desfazer.`)) return
+    if (!(await confirmar({ titulo: 'Apagar forma?', mensagem: `A forma ${forma.nome_personagem} será apagada.`, detalhe: 'Esta ação não pode ser desfeita.', confirmar: 'Apagar', perigo: true }))) return
     setOcupado(forma.id); setErro('')
     const { error } = await supabase.from('fichas').delete().eq('id', forma.id)
     if (error) setErro(error.message)

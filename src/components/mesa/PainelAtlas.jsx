@@ -3,6 +3,7 @@ import { useAtlas } from '../../hooks/useAtlas'
 import { pinosDoMapa, posicaoNoMapa, semPino, validarAtlas } from '../../lib/atlas'
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
+import { useConfirmar } from '../ui/Confirmar'
 
 const CAMPO = 'px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 
@@ -53,6 +54,7 @@ function NovoMapa({ enviarImagem, onCriar, onCancelar }) {
  * enciclopédia. O jogador vê só mapas mostrados e pinos do que já sabe.
  */
 export default function PainelAtlas({ mesaId, isGestor, verbetes, enviarImagem, onAbrirVerbete }) {
+  const { confirmar } = useConfirmar()
   const atlas = useAtlas(mesaId)
   const [atualId, setAtualId] = useState(null)
   const [criando, setCriando] = useState(false)
@@ -132,7 +134,7 @@ export default function PainelAtlas({ mesaId, isGestor, verbetes, enviarImagem, 
             </select>
           </label>
           <Botao variante="fantasma" tamanho="sm" className="ml-auto text-red-300 hover:text-white hover:bg-red-950/40"
-            onClick={() => window.confirm(`Apagar o mapa "${mapa.nome}" e todos os pinos dele?`) && acao(async () => { await atlas.remover(mapa.id); setAtualId(null) })}
+            onClick={async () => (await confirmar({ titulo: 'Apagar mapa?', mensagem: `${mapa.nome} e todos os pinos dele serão apagados.`, confirmar: 'Apagar', perigo: true })) && acao(async () => { await atlas.remover(mapa.id); setAtualId(null) })}
           >Apagar mapa</Botao>
         </div>
       )}

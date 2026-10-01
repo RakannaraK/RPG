@@ -170,6 +170,8 @@ textarea:focus-visible {
    Mexe só em background-IMAGE; a cor continua vindo da classe/tema. */
 button.bg-purple-600, button.bg-purple-700, button.bg-purple-800 {
   background-image: linear-gradient(180deg, rgba(255, 255, 255, .13), rgba(0, 0, 0, .10));
+}
+button:is(.bg-purple-600, .bg-purple-700, .bg-purple-800):not(.botao-primario) {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .10);
 }
 button.bg-purple-600:hover, button.bg-purple-700:hover, button.bg-purple-800:hover {

@@ -14,6 +14,7 @@ import RecompensasEditor from './RecompensasEditor'
 import { PRESET_IDS } from '../../engines/actionSoundEngine'
 import { tocarPresetAcao } from '../../audio/actionSynth'
 import Botao from '../ui/Botao'
+import { useConfirmar } from '../ui/Confirmar'
 
 // Fase 12.5 — vocabulário ampliado de efeitos. `grupo` só organiza o dropdown.
 const TIPOS_MOD = [
@@ -538,6 +539,7 @@ const INP = 'w-full px-3 py-1.5 rounded-lg bg-void border border-border text-whi
 // Card compartilhado: usado tanto dentro da seção da raça/classe quanto na seção de avulsas.
 // Não expõe seletor de raça/classe no formulário de edição — vínculo é gerenciado pelo contexto.
 function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos, camposCombate, pericias = [], classes = [], pools = [], onUpdate, onDelete, onAddMod, onRemoveMod }) {
+  const { confirmar } = useConfirmar()
   const [expandido, setExpandido] = useState(false)
   const [editando, setEditando] = useState(false)
   const [editNome, setEditNome] = useState('')
@@ -588,7 +590,7 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
   }
 
   async function handleDelete() {
-    if (!window.confirm(`Remover "${habilidade.nome}"? Todos os modificadores serão apagados.`)) return
+    if (!(await confirmar({ titulo: 'Remover habilidade?', mensagem: `${habilidade.nome} sai, com todos os modificadores dela.`, confirmar: 'Remover', perigo: true }))) return
     setDeleting(true)
     try { await onDelete(habilidade.id) } catch { setDeleting(false) }
   }
@@ -932,6 +934,7 @@ function ItemCard({
   habilidades, onCreateHabilidade, onUpdateHabilidade, onDeleteHabilidade,
   onAddHabilidadeMod, onRemoveHabilidadeMod,
 }) {
+  const { confirmar } = useConfirmar()
   // 22.2 — override de pontos por raça (só quando o sistema usa inicial por raça)
   const mostraPontos = parentTipo === 'raca' && pontosStatus?.ativo && pontosStatus?.inicial_por_raca
   const pc = item.pontos_config || {}
@@ -959,7 +962,7 @@ function ItemCard({
   }
 
   async function handleDelete() {
-    if (!window.confirm(`Remover "${item.nome}"?\nTodos os modificadores e habilidades vinculadas serão apagados.`)) return
+    if (!(await confirmar({ titulo: 'Remover?', mensagem: `${item.nome} sai, com todos os modificadores e habilidades vinculadas.`, confirmar: 'Remover', perigo: true }))) return
     setDeleting(true)
     try { await onDelete(item.id) } catch { setDeleting(false) }
   }

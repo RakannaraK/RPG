@@ -6,6 +6,9 @@ import { supabase } from '../../lib/supabase'
 import DiceRoller from './DiceRoller'
 import FichaCreatePrioridades from './FichaCreatePrioridades'
 import { mergeConfigLayout } from '../../lib/sistemaDefaults'
+import Modal, { FecharModal } from '../ui/Modal'
+import Botao from '../ui/Botao'
+import Icone from '../ui/Icone'
 
 export default function FichaCreate({ mesaId, onCriada, onFechar }) {
   const { session } = useAuth()
@@ -133,26 +136,23 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-void border border-border rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
-        {/* Cabeçalho */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
-          <div>
-            <h2 className="text-ink font-bold text-lg">Nova ficha de personagem</h2>
-            <p className="text-ink-dim text-xs mt-0.5">
-              {step === 0 ? 'Passo 1 de 2 — Informações básicas' : 'Passo 2 de 2 — Atributos'}
-            </p>
-          </div>
-          <button
-            onClick={onFechar}
-            className="text-ink-dim hover:text-ink text-xl leading-none transition-colors"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Corpo */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+    <Modal
+      onFechar={onFechar} bloqueado={criando}
+      titulo="Nova ficha de personagem"
+      subtitulo={step === 0 ? 'Passo 1 de 2 — Informações básicas' : 'Passo 2 de 2 — Atributos'}
+      rodape={step === 0 ? (
+        <>
+          <FecharModal />
+          <Botao variante="primario" onClick={irParaStep1}>Próximo <Icone nome="seta-dir" tamanho={16} /></Botao>
+        </>
+      ) : (
+        <>
+          <Botao variante="fantasma" onClick={() => { setErro(''); setStep(0) }}><Icone nome="seta-esq" tamanho={16} /> Voltar</Botao>
+          <Botao variante="primario" onClick={handleSalvar} disabled={criando}>{criando ? 'Salvando…' : 'Salvar ficha'}</Botao>
+        </>
+      )}
+    >
+      <div key={step} className="entra-aba">
           {step === 0 ? (
             <div className="space-y-4">
               <div>
@@ -356,49 +356,8 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
             </div>
           )}
 
-          {erro && <p className="mt-4 text-harm text-sm">{erro}</p>}
-        </div>
-
-        {/* Rodapé */}
-        <div className="px-6 py-4 border-t border-border flex justify-between gap-3 shrink-0">
-          {step === 0 ? (
-            <>
-              <button
-                type="button"
-                onClick={onFechar}
-                className="px-4 py-2 text-ink-dim hover:text-ink text-sm transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={irParaStep1}
-                className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-sobre-acento font-semibold rounded-lg text-sm transition-colors"
-              >
-                Próximo →
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => { setErro(''); setStep(0) }}
-                className="px-4 py-2 text-ink-dim hover:text-ink text-sm transition-colors"
-              >
-                ← Voltar
-              </button>
-              <button
-                type="button"
-                onClick={handleSalvar}
-                disabled={criando}
-                className="px-6 py-2 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed text-sobre-acento font-semibold rounded-lg text-sm transition-colors"
-              >
-                {criando ? 'Salvando...' : 'Salvar ficha'}
-              </button>
-            </>
-          )}
-        </div>
       </div>
-    </div>
+          {erro && <p className="mt-4 aviso-erro" role="alert">{erro}</p>}
+    </Modal>
   )
 }

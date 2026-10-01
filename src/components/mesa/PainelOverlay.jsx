@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { useConfirmar } from '../ui/Confirmar'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
 const BTN = 'px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50'
@@ -10,6 +11,7 @@ const PADRAO = { mostrar_vida: 'barra', mostrar_turno: true, mostrar_rolagem: fa
  * mestre (o banco confere); regenerar invalida o link antigo na hora.
  */
 export default function PainelOverlay({ mesaId }) {
+  const { confirmar } = useConfirmar()
   const [token, setToken] = useState(null)
   const [cfg, setCfg] = useState(PADRAO)
   const [indisponivel, setIndisponivel] = useState(false)
@@ -73,7 +75,7 @@ export default function PainelOverlay({ mesaId }) {
             <a href={url} target="_blank" rel="noreferrer" className={`${BTN} bg-slate-700 hover:bg-slate-600 text-white`}>Abrir prévia ↗</a>
             <button
               type="button"
-              onClick={() => { if (window.confirm('Gerar um link novo? O link antigo para de funcionar na hora.')) salvar(cfg, true) }}
+              onClick={async () => { if (await confirmar({ titulo: 'Gerar link novo?', mensagem: 'O link antigo para de funcionar na hora. Quem usa no OBS precisa trocar.', confirmar: 'Gerar link novo' })) salvar(cfg, true) }}
               className={`${BTN} text-purple-300 hover:text-white border border-purple-800`}
             >Trocar link</button>
           </div>

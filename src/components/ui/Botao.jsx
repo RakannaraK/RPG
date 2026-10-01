@@ -14,7 +14,7 @@
  */
 
 const VARIANTES = {
-  primario:   'bg-purple-600 hover:bg-purple-500 text-sobre-acento',
+  primario:   'botao-primario bg-purple-600 hover:bg-purple-500 text-sobre-acento',
   secundario: 'bg-slate-700 hover:bg-slate-600 text-purple-100',
   contorno:   'border border-purple-700 hover:border-purple-500 text-purple-200 hover:text-white',
   perigo:     'bg-red-800 hover:bg-red-700 text-white',
@@ -38,9 +38,9 @@ export default function Botao({
   children,
   ...resto
 }) {
-  const base = 'inline-flex items-center justify-center gap-1.5 rounded-lg font-medium transition-colors ' +
-    'disabled:opacity-50 disabled:cursor-not-allowed ' +
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70'
+  // F52 — `botao` (theme/componentes.css): sobe 1 px no hover, comprime no clique
+  const base = 'botao inline-flex items-center justify-center gap-1.5 rounded-lg font-medium ' +
+    'disabled:opacity-50 disabled:cursor-not-allowed'
 
   return (
     <button

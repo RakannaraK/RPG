@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { calcularDescanso } from '../../lib/restEngine'
+import Modal, { FecharModal } from '../ui/Modal'
+import Botao from '../ui/Botao'
 
 /**
  * Fase 15.3 — botões de descanso na ficha, com preview + confirmação.
@@ -57,12 +59,17 @@ export default function DescansoBar({
 
       {/* Modal de confirmação com preview */}
       {preview && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-void border border-border rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-ink font-bold text-lg mb-1">{preview.tipo.nome}</h3>
-            <p className="text-accent-300 text-sm mb-4">{preview.resultado.resumo}</p>
-
-            <div className="space-y-1.5 mb-5 text-sm">
+        <Modal
+          onFechar={() => setPreview(null)} bloqueado={aplicando} tamanho="sm"
+          titulo={preview.tipo.nome} subtitulo={preview.resultado.resumo}
+          rodape={
+            <>
+              <FecharModal disabled={aplicando} />
+              <Botao variante="primario" onClick={confirmar} disabled={aplicando}>{aplicando ? 'Aplicando…' : 'Confirmar descanso'}</Botao>
+            </>
+          }
+        >
+            <div className="space-y-1.5 text-sm">
               {preview.resultado.vida.recuperado !== 0 && (
                 <div className="flex justify-between">
                   <span className="text-ink-dim">Vida{preview.resultado.vida.notacao ? ` (${preview.resultado.vida.notacao})` : ''}</span>
@@ -107,24 +114,7 @@ export default function DescansoBar({
               )}
             </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => setPreview(null)}
-                disabled={aplicando}
-                className="flex-1 py-2.5 text-accent-300 hover:text-ink border border-border hover:border-accent-500 rounded-xl text-sm transition-colors disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmar}
-                disabled={aplicando}
-                className="flex-1 py-2.5 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 text-sobre-acento font-semibold rounded-xl text-sm transition-colors"
-              >
-                {aplicando ? 'Aplicando...' : 'Confirmar descanso'}
-              </button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   )

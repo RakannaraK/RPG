@@ -6,6 +6,10 @@ import { useRolagem } from '../../hooks/useRolagem'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { mergeConfigLayout } from '../../lib/sistemaDefaults'
+import Modal, { FecharModal } from '../ui/Modal'
+import Botao from '../ui/Botao'
+import Icone from '../ui/Icone'
+import Esqueleto from '../ui/Esqueleto'
 import {
   prioridadeDoGrupo, validarOrdemGrupos, valorFinalMembro,
   validarDistribuicaoGrupo, validarPontosLivres,
@@ -189,24 +193,29 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
 
   if (loadingSistema) {
     return (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="text-accent-300">Carregando sistema...</div>
-      </div>
+      <Modal onFechar={onFechar} titulo="Nova ficha — criação por prioridades" subtitulo="Carregando o sistema…">
+        <div className="space-y-3" role="status" aria-label="Carregando"><Esqueleto className="h-10" /><Esqueleto className="h-24" /><Esqueleto className="h-10 w-2/3" /></div>
+      </Modal>
     )
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-void border border-border rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
-          <div>
-            <h2 className="text-ink font-bold text-lg">Nova ficha — criação por prioridades</h2>
-            <p className="text-ink-dim text-xs mt-0.5">Passo {fase + 1} de {totalFases}</p>
-          </div>
-          <button onClick={onFechar} className="text-ink-dim hover:text-ink text-xl leading-none transition-colors">✕</button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+    <Modal
+      onFechar={onFechar} bloqueado={criando}
+      titulo="Nova ficha — criação por prioridades"
+      subtitulo={`Passo ${fase + 1} de ${totalFases}`}
+      rodape={
+        <>
+          {fase === 0
+            ? <FecharModal />
+            : <Botao variante="fantasma" onClick={irAnterior}><Icone nome="seta-esq" tamanho={16} /> Voltar</Botao>}
+          {fase === totalFases - 1
+            ? <Botao variante="primario" onClick={finalizar} disabled={criando}>{criando ? 'Salvando…' : 'Finalizar'}</Botao>
+            : <Botao variante="primario" onClick={irProxima}>Próximo <Icone nome="seta-dir" tamanho={16} /></Botao>}
+        </>
+      }
+    >
+      <div key={fase} className="entra-aba space-y-4">
           {fase === 0 && (
             <div className="space-y-4">
               <div>
@@ -368,28 +377,8 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
             </div>
           )}
 
-          {erro && <p className="text-harm text-sm">{erro}</p>}
-        </div>
-
-        <div className="px-6 py-4 border-t border-border flex justify-between gap-3 shrink-0">
-          {fase === 0 ? (
-            <button type="button" onClick={onFechar} className="px-4 py-2 text-ink-dim hover:text-ink text-sm transition-colors">Cancelar</button>
-          ) : (
-            <button type="button" onClick={irAnterior} className="px-4 py-2 text-ink-dim hover:text-ink text-sm transition-colors">← Voltar</button>
-          )}
-          {fase === totalFases - 1 ? (
-            <button type="button" onClick={finalizar} disabled={criando}
-              className="px-6 py-2 bg-accent-600 hover:bg-accent-700 disabled:opacity-50 text-sobre-acento font-semibold rounded-lg text-sm transition-colors">
-              {criando ? 'Salvando...' : 'Finalizar'}
-            </button>
-          ) : (
-            <button type="button" onClick={irProxima}
-              className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-sobre-acento font-semibold rounded-lg text-sm transition-colors">
-              Próximo →
-            </button>
-          )}
-        </div>
+          {erro && <p className="aviso-erro" role="alert">{erro}</p>}
       </div>
-    </div>
+    </Modal>
   )
 }

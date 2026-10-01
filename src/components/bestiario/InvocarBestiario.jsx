@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
 import PainelBestiario from './PainelBestiario'
 import { defesaSugerida } from '../../lib/invocacao'
 import { invocarCriatura, valoresCombateDaCriatura } from '../../lib/invocarBanco'
 import { tocarPresetAcao } from '../../audio/actionSynth'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import Ilustra from '../arte/Ilustra'
+import Modal from '../ui/Modal'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-1 focus:ring-accent-500'
 const TIPOS = [['inimigo', 'Inimigo'], ['aliado', 'Aliado'], ['npc', 'NPC']]
@@ -113,17 +113,10 @@ export default function InvocarBestiario({ mesaId, meuId, isGestor, camposCombat
         title="Invocar criatura do bestiário"
       >{rotulo}</button>
 
-      {aberto && createPortal(
-        <div className="fixed inset-0 z-[60] bg-black/70 flex items-start justify-center p-4 overflow-y-auto" onClick={() => { setAberto(false); setCriatura(null) }}>
-          <div
-            role="dialog" aria-modal="true" aria-label="Bestiário" onClick={e => e.stopPropagation()}
-            className="w-full max-w-4xl my-8 rounded-2xl border border-border bg-bg p-5 space-y-4 shadow-2xl"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="text-ink text-lg font-bold">🐾 Bestiário</h2>
-              <button type="button" onClick={() => { setAberto(false); setCriatura(null) }} className="text-ink-dim hover:text-ink px-2">✕</button>
-            </div>
-            {aviso && <p className="text-emerald-300 text-sm">{aviso}</p>}
+      {aberto && (
+        <Modal onFechar={() => { setAberto(false); setCriatura(null) }} tamanho="xl" titulo="Bestiário" subtitulo="Escolha uma criatura para entrar no combate.">
+          <div className="space-y-4">
+            {aviso && <p className="text-ok text-sm" role="status">{aviso}</p>}
             {criatura && (
               <Dialogo criatura={criatura} camposCombate={camposCombate} comMapa={comMapa} onConfirmar={confirmar} onFechar={() => setCriatura(null)} />
             )}
@@ -139,8 +132,7 @@ export default function InvocarBestiario({ mesaId, meuId, isGestor, camposCombat
               )}
             />
           </div>
-        </div>,
-        document.body
+        </Modal>
       )}
     </>
   )

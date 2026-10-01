@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import Aparencia from './Aparencia'
 import Botao from '../ui/Botao'
+import Modal from '../ui/Modal'
 
 const SKINS = listarSkins()
 
@@ -56,24 +57,12 @@ export default function PreferenciasModal({ onFechar }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-purple-800 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
-        {/* Cabeçalho */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-purple-900 shrink-0">
-          <div>
-            <h2 className="text-white font-bold text-lg">Preferências</h2>
-            <p className="text-purple-400 text-xs mt-0.5">Skin do dado e som das rolagens</p>
-          </div>
-          <button
-            onClick={onFechar}
-            className="text-purple-400 hover:text-white text-xl leading-none transition-colors"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Corpo */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+    <Modal
+      onFechar={onFechar} tamanho="lg"
+      titulo="Preferências" subtitulo="Aparência, dados, som e acessibilidade. Vale só para você."
+      rodape={<Botao variante="primario" onClick={onFechar}>Concluído</Botao>}
+    >
+      <div className="space-y-6">
           {/* Nome de exibição (apelido global) */}
           <div>
             <p className="text-sm font-medium text-purple-200 mb-1">Nome de exibição</p>
@@ -223,16 +212,7 @@ export default function PreferenciasModal({ onFechar }) {
               />
             </div>
           </div>
-        </div>
-
-        {/* Rodapé */}
-        <div className="px-6 py-4 border-t border-purple-900 flex justify-end shrink-0">
-          <Botao variante="primario" tamanho="md"
-            onClick={onFechar} className="font-semibold">
-            Concluído
-          </Botao>
-        </div>
       </div>
-    </div>
+    </Modal>
   )
 }

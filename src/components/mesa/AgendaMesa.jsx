@@ -7,6 +7,7 @@ import {
 } from '../../lib/agenda'
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
+import { useConfirmar } from '../ui/Confirmar'
 
 // cada pessoa vê o horário no próprio fuso
 // ponytail: a recorrência mensal é calculada no fuso de quem vê; mesas com gente
@@ -92,6 +93,7 @@ function FormAgenda({ inicial, onSalvar, onCancelar }) {
  * O calendário da F29 é o do mundo do jogo; este é o da vida real.
  */
 export default function AgendaMesa({ mesaId, isGestor }) {
+  const { confirmar } = useConfirmar()
   const { eventos, presencas, indisponivel, salvar, remover, responder, meuId } = useAgenda(mesaId)
   const { nomeDe } = useMembrosMesa(mesaId)
   const [editando, setEditando] = useState(null) // null | 'novo' | evento
@@ -149,7 +151,7 @@ export default function AgendaMesa({ mesaId, isGestor }) {
 
   async function desmarcar() {
     const repete = evento.recorrencia !== 'nenhuma'
-    if (!window.confirm(repete ? 'Desmarcar TODAS as sessões desta agenda?' : 'Desmarcar esta sessão?')) return
+    if (!(await confirmar({ titulo: repete ? 'Desmarcar todas as sessões?' : 'Desmarcar a sessão?', mensagem: repete ? 'Todas as sessões desta agenda saem do calendário.' : 'A sessão sai do calendário e as presenças confirmadas somem.', confirmar: 'Desmarcar', perigo: true }))) return
     try { await remover(evento.id) } catch (e) { setErro(e.message) }
   }
 

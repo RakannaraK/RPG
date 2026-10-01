@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { supabase } from '../../lib/supabase'
 import { useMembrosMesa } from '../../hooks/useMembrosMesa'
 import { acessoDaFicha, colunasDeAcesso } from '../../lib/permissoesFicha'
+import Modal, { FecharModal } from '../ui/Modal'
+import Botao from '../ui/Botao'
 
 const INP = 'w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 const PAPEL = { mestre: 'mestre', 'co-mestre': 'co-mestre', jogador: 'jogador', espectador: 'espectador' }
@@ -52,14 +53,18 @@ export default function AcessoFicha({ ficha, mesaId, podeCompartilhar, onSalvar,
 
   const outros = membros.filter(m => m.usuario_id !== ficha.dono_id)
 
-  return createPortal(
-    <div className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-4" onClick={onFechar}>
-      <div
-        role="dialog" aria-modal="true" aria-label="Acesso e pasta"
-        onClick={e => e.stopPropagation()}
-        className="w-full max-w-md max-h-full overflow-y-auto rounded-2xl border border-border bg-bg p-5 space-y-5 shadow-2xl"
-      >
-        <h2 className="text-ink text-lg font-bold">Acesso e pasta — {ficha.nome_personagem}</h2>
+  return (
+    <Modal
+      onFechar={onFechar} bloqueado={salvando}
+      titulo="Acesso e pasta" subtitulo={ficha.nome_personagem}
+      rodape={
+        <>
+          <FecharModal disabled={salvando} />
+          <Botao variante="primario" onClick={salvar} disabled={salvando}>{salvando ? 'Salvando…' : 'Salvar'}</Botao>
+        </>
+      }
+    >
+      <div className="space-y-5">
 
         <label className="block space-y-1">
           <span className="text-ink-dim text-xs">Pasta (vazio = sem pasta)</span>
@@ -106,15 +111,8 @@ export default function AcessoFicha({ ficha, mesaId, podeCompartilhar, onSalvar,
           <p className="text-ink-dim text-xs">Só o dono da ficha ou o mestre mudam quem vê e quem edita.</p>
         )}
 
-        {erro && <p className="text-red-400 text-xs">{erro}</p>}
-        <div className="flex justify-end gap-2">
-          <button type="button" onClick={onFechar} className="px-4 py-2 rounded-lg bg-hover text-ink text-sm hover:bg-border">Cancelar</button>
-          <button type="button" onClick={salvar} disabled={salvando} className="px-4 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-sobre-acento text-sm font-semibold">
-            {salvando ? 'Salvando…' : 'Salvar'}
-          </button>
-        </div>
+        {erro && <p className="aviso-erro" role="alert">{erro}</p>}
       </div>
-    </div>,
-    document.body
+    </Modal>
   )
 }

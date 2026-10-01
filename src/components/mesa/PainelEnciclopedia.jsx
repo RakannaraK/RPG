@@ -9,6 +9,7 @@ import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
 import GeradorNpc from './GeradorNpc'
 import PainelAtlas from './PainelAtlas'
+import { useConfirmar } from '../ui/Confirmar'
 
 const CAMPO = 'w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 const ROTULO = 'flex flex-col gap-1 text-xs text-ink-dim'
@@ -304,6 +305,7 @@ function DetalheVerbete({ verbete, verbetes, isGestor, onAbrir, children }) {
  * documentos, com revelação campo a campo para cada jogador.
  */
 export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
+  const { confirmar } = useConfirmar()
   const enc = useEnciclopedia(mesaId, isGestor)
   const { membros } = useMembrosMesa(mesaId)
   const [busca, setBusca] = useState('')
@@ -324,7 +326,7 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
   function abrir(id) { setAbertoId(id); setModo('ler'); setErro('') }
 
   async function apagar() {
-    if (!window.confirm(`Apagar "${aberto.titulo}"? Quem já viu deixa de ver.`)) return
+    if (!(await confirmar({ titulo: 'Apagar verbete?', mensagem: `${aberto.titulo} sai da enciclopédia. Quem já viu deixa de ver.`, confirmar: 'Apagar', perigo: true }))) return
     try { await enc.remover(aberto.id); setAbertoId(null) } catch (e) { setErro(e.message) }
   }
 

@@ -21,6 +21,7 @@ import SimuladorFicha from './SimuladorFicha'
 import DescansosEditor from './DescansosEditor'
 import Ilustra from '../arte/Ilustra'
 import Botao from '../ui/Botao'
+import { useConfirmar } from '../ui/Confirmar'
 
 const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes', 'Descansos', 'Recursos', 'Poderes', 'Maestria & Itens', 'Simulador']
 
@@ -53,6 +54,7 @@ function newPericia() {
 }
 
 export default function SistemaEditor({ mesaId, isMestre }) {
+  const { confirmar } = useConfirmar()
   const { sistema: sistemaDB, atributos: atributosDB, pericias: periciasDB, loading, error, refetch } = useSistema(mesaId)
   const { pools } = usePools(sistemaDB?.id) // 23.4 — p/ escolher o pool da rerolagem
   const { linhas: linhasPoderSistema } = useLinhasPoder(sistemaDB?.id) // 25.3 — p/ threadar em Raças & Classes
@@ -101,11 +103,11 @@ export default function SistemaEditor({ mesaId, isMestre }) {
     setAtributos(prev => prev.map((a, i) => (i === index ? updated : a)))
   }
 
-  function removeAtributo(index) {
+  async function removeAtributo(index) {
     const attr = atributos[index]
     if (attr.id && !attr.id.startsWith('temp_')) {
       const nomeAttr = attr.nome || 'este atributo'
-      if (!window.confirm(`Remover "${nomeAttr}"? Os valores já salvos em fichas existentes serão apagados ao salvar o sistema.`)) return
+      if (!(await confirmar({ titulo: 'Remover atributo?', mensagem: `${nomeAttr} sai do sistema.`, detalhe: 'Os valores já salvos nas fichas são apagados quando você salvar o sistema.', confirmar: 'Remover', perigo: true }))) return
       setRemovedAtributoIds(prev => [...prev, attr.id])
     }
     setAtributos(prev => prev.filter((_, i) => i !== index))

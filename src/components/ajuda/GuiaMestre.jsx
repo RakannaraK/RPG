@@ -1,17 +1,14 @@
 // Guia do mestre — onboarding. Conceitos + primeiros passos + dicas.
 import Botao from '../ui/Botao'
+import Modal from '../ui/Modal'
 export default function GuiaMestre({ onFechar }) {
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onFechar}>
-      <div className="bg-slate-900 border border-purple-800 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-purple-900 shrink-0">
-          <div>
-            <h2 className="text-white font-bold text-lg">Guia do mestre</h2>
-            <p className="text-purple-400 text-xs mt-0.5">Como montar e tocar a sua mesa</p>
-          </div>
-          <button onClick={onFechar} className="text-purple-400 hover:text-white text-xl leading-none transition-colors">✕</button>
-        </div>
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6 text-sm">
+    <Modal
+      onFechar={onFechar} tamanho="lg"
+      titulo="Guia do mestre" subtitulo="Como montar e tocar a sua mesa"
+      rodape={<Botao variante="primario" onClick={onFechar}>Entendi</Botao>}
+    >
+      <div className="space-y-6 text-sm">
           <section>
             <h3 className="text-purple-200 font-semibold mb-2">Os conceitos</h3>
             <ul className="space-y-1.5 text-purple-300">
@@ -38,11 +35,7 @@ export default function GuiaMestre({ onFechar }) {
               <li>Seu <strong className="text-white">nome de exibição</strong> (em Preferências ⚙) é o que os outros veem — troque quando quiser.</li>
             </ul>
           </section>
-        </div>
-        <div className="px-6 py-4 border-t border-purple-900 flex justify-end shrink-0">
-          <Botao variante="primario" tamanho="md" onClick={onFechar} className="font-semibold">Entendi</Botao>
-        </div>
       </div>
-    </div>
+    </Modal>
   )
 }

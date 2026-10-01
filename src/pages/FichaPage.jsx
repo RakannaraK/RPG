@@ -78,10 +78,15 @@ import PainelFormas from '../components/ficha/PainelFormas'
 import { duplicarFicha, exportarFichaDoBanco } from '../lib/fichaBanco'
 import { nomeArquivoFicha } from '../lib/fichaPortatil'
 import { baixarJson } from '../lib/baixarArquivo'
+import Modal, { FecharModal } from '../components/ui/Modal'
+import { useToast } from '../components/ui/Toast'
+import { useConfirmar } from '../components/ui/Confirmar'
 
 export default function FichaPage() {
   const { id: mesaId, fichaId } = useParams()
   const { session } = useAuth()
+  const toast = useToast()
+  const { confirmar } = useConfirmar()
   const navigate = useNavigate()
 
   const { ficha, valoresAtributos, loading, error, refetch } = useFicha(fichaId)
@@ -199,18 +204,18 @@ export default function FichaPage() {
       const { ficha: f, arquivo } = await exportarFichaDoBanco(fichaId)
       baixarJson(nomeArquivoFicha(f.nome_personagem), arquivo)
     } catch (e) {
-      window.alert(`Não foi possível exportar: ${e.message}`)
+      toast.erro('Não foi possível exportar', { detalhe: e.message })
     } finally { setPortatil('') }
   }
 
   async function handleDuplicar() {
-    if (!window.confirm('Criar uma cópia desta ficha nesta mesa?')) return
+    if (!(await confirmar({ titulo: 'Duplicar ficha?', mensagem: 'Cria uma cópia desta ficha nesta mesa. A original não muda.', confirmar: 'Duplicar' }))) return
     setPortatil('duplicando')
     try {
       const novoId = await duplicarFicha(fichaId, { mesaId, donoId: session.user.id })
       navigate(`/mesa/${mesaId}/ficha/${novoId}`)
     } catch (e) {
-      window.alert(`Não foi possível duplicar: ${e.message}`)
+      toast.erro('Não foi possível duplicar', { detalhe: e.message })
     } finally { setPortatil('') }
   }
   const [deleting, setDeleting] = useState(false)
@@ -645,7 +650,7 @@ export default function FichaPage() {
         som: hab.som_preset ? { presetId: hab.som_preset } : null,
       })
     } catch (e) {
-      window.alert(`Não foi possível usar: ${e.message}`)
+      toast.erro('Não foi possível usar a habilidade', { detalhe: e.message })
     }
   }
 
@@ -1471,34 +1476,22 @@ export default function FichaPage() {
       )}
 
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-void border border-harm/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-ink font-bold text-lg mb-2">Deletar ficha?</h3>
-            <p className="text-accent-300 text-sm mb-5">
-              Tem certeza? Esta ação não pode ser desfeita. Todos os atributos,
-              equipamentos e imagens desta ficha serão apagados permanentemente.
-            </p>
-            {deleteError && (
-              <p className="text-harm text-sm mb-3">{deleteError}</p>
-            )}
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setShowDeleteConfirm(false); setDeleteError('') }}
-                disabled={deleting}
-                className="flex-1 py-2.5 text-accent-300 hover:text-ink border border-border hover:border-accent-500 rounded-xl text-sm transition-colors disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleDeleteFicha}
-                disabled={deleting}
-                className="flex-1 py-2.5 bg-harm hover:bg-harm disabled:opacity-50 text-ink font-semibold rounded-xl text-sm transition-colors"
-              >
-                {deleting ? 'Deletando...' : 'Deletar'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <Modal
+          onFechar={() => { setShowDeleteConfirm(false); setDeleteError('') }} bloqueado={deleting}
+          tamanho="sm" tom="perigo" titulo="Apagar ficha?"
+          rodape={
+            <>
+              <FecharModal disabled={deleting} />
+              <Botao variante="perigo" onClick={handleDeleteFicha} disabled={deleting}>{deleting ? 'Apagando…' : 'Apagar ficha'}</Botao>
+            </>
+          }
+        >
+          <p className="text-ink text-sm">
+            <strong>{ficha?.nome_personagem}</strong> será apagada com todos os atributos, equipamentos e imagens.
+          </p>
+          <p className="text-ink-dim text-sm mt-2">Esta ação não pode ser desfeita.</p>
+          {deleteError && <p className="aviso-erro mt-3" role="alert">{deleteError}</p>}
+        </Modal>
       )}
     </div>
   )
