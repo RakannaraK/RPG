@@ -7,6 +7,7 @@ import { estadoDaHabilidade } from '../../lib/combateAvancado'
 import { podeEditarFicha } from '../../lib/permissoesFicha'
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
+import { ChamaArcana } from '../ui/EfeitosAmbiente'
 
 /**
  * Fase 14 — painel de combate dentro da SessaoPage.
@@ -623,7 +624,9 @@ export default function CombatePanel({
   }
 
   return (
-    <div className="mb-6 rounded-2xl border border-red-800/50 bg-gradient-to-b from-red-950/30 to-slate-900/40 p-4 space-y-3">
+    <div className="com-chama mb-6 rounded-2xl border border-red-800/50 bg-gradient-to-b from-red-950/30 to-slate-900/40 p-4 pb-8 space-y-3">
+      {/* F52 — combate em andamento: a borda de baixo arde na cor do tema */}
+      <ChamaArcana />
       <div className="flex items-center gap-3 flex-wrap">
         <span className="inline-flex items-center gap-1.5 text-red-300 text-xs font-bold uppercase tracking-wider">
           <Ilustra nome="espadas" tamanho={15} /> {encontro.titulo || 'Combate'}

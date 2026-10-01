@@ -5,6 +5,7 @@ import { useConfirmar } from '../ui/Confirmar'
 import Botao from '../ui/Botao'
 import Icone from '../ui/Icone'
 import Esqueleto from '../ui/Esqueleto'
+import { ChamaArcana } from '../ui/EfeitosAmbiente'
 
 /** Liga a aura de "sessão ao vivo" no site enquanto este componente existir. */
 export function useAuraDeSessao(aoVivo) {
@@ -80,7 +81,8 @@ export default function SessaoBanner({ mesaId, isGestor, className = '' }) {
   // ---- Sessão ativa ----
   if (sessaoAtiva) {
     return (
-      <section className={`painel-sessao-viva relative overflow-hidden rounded-2xl border border-accent-500/50 bg-raised/80 p-5 shadow-brilho ${className}`} aria-label="Sessão ao vivo">
+      <section className={`painel-sessao-viva com-chama rounded-2xl border border-accent-500/50 bg-raised/80 p-5 pb-7 shadow-brilho ${className}`} aria-label="Sessão ao vivo">
+        <ChamaArcana />
         <span className="selo-ao-vivo">
           <span className="ponto-vivo" aria-hidden="true" /> Sessão ao vivo
         </span>

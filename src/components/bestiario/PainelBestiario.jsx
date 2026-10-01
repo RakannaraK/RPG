@@ -17,6 +17,7 @@ import CabecalhoSecao from '../ui/CabecalhoSecao'
 import EstadoVazio from '../ui/EstadoVazio'
 import { EsqueletoCartoes } from '../ui/Esqueleto'
 import { nivelAmeaca, ordemAmeaca } from '../../lib/ameaca'
+import { ChamaArcana } from '../ui/EfeitosAmbiente'
 
 const AMEACAS = ['Trivial', 'Fácil', 'Normal', 'Difícil', 'Mortal', 'Lendária']
 const ESPECIES = ['Fera', 'Humanoide', 'Morto-vivo', 'Aberração', 'Elemental', 'Construto', 'Dragão', 'Espírito']
@@ -232,7 +233,8 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
           {/* ── Prévia (computador) ── */}
           <div className="hidden lg:block lg:sticky lg:top-32">
             {selecionada ? (
-              <article key={selecionada.id} className="entra-aba rounded-2xl border border-border bg-raised/70 overflow-hidden">
+              <article key={selecionada.id} className="entra-aba com-chama rounded-2xl border border-border bg-raised/70">
+                <ChamaArcana />
                 <div className="relative h-40 bg-void flex items-center justify-center overflow-hidden">
                   {selecionada.imagem_url
                     ? <img src={selecionada.imagem_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
@@ -267,7 +269,7 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
                       </>
                     )}
                   </div>
-                  <p className="text-ink-dim text-xs">Atributos, ações, reações e notas do mestre ficam na ficha completa.</p>
+                  <p className="text-ink-dim text-xs pb-3">Atributos, ações, reações e notas do mestre ficam na ficha completa.</p>
                 </div>
               </article>
             ) : (

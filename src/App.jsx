@@ -11,6 +11,7 @@ import OuvinteDesafios from './components/minigames/OuvinteDesafios'
 import Selo from './components/marca/Selo'
 import { ToastProvider } from './components/ui/Toast'
 import { ConfirmarProvider } from './components/ui/Confirmar'
+import EfeitosAmbiente from './components/ui/EfeitosAmbiente'
 import { destinoDepoisDoLogin } from './lib/convite'
 
 // F52 — cada página grande vira um pedaço próprio do código: quem abre o site
@@ -133,6 +134,8 @@ export default function App() {
       <ErrorBoundary>
         <AuthProvider>
           <PreferenciasProvider>
+            {/* F52 — partículas do tema atrás de tudo (desligáveis) */}
+            <EfeitosAmbiente />
             <ToastProvider>
               <ConfirmarProvider>
                 <AppRoutes />
