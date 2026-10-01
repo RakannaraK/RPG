@@ -38,7 +38,6 @@ import PainelSlots from '../components/ficha/PainelSlots'
 import { podeUsarPoder, montarNotacaoUso, custoDeSlot, frasesDeUso } from '../lib/poderes'
 import { usePoderes } from '../hooks/usePoderes'
 import { usePoderesFicha } from '../hooks/usePoderesFicha'
-import Ilustra from '../components/arte/Ilustra'
 import { useLinhasPoder, useLinhasFicha } from '../hooks/useLinhasPoder'
 import PainelPoderes from '../components/ficha/PainelPoderes'
 import PainelLinhas from '../components/ficha/PainelLinhas'
@@ -81,6 +80,8 @@ import { baixarJson } from '../lib/baixarArquivo'
 import Modal, { FecharModal } from '../components/ui/Modal'
 import { useToast } from '../components/ui/Toast'
 import { useConfirmar } from '../components/ui/Confirmar'
+import BarraTopo from '../components/ui/BarraTopo'
+import Icone from '../components/ui/Icone'
 
 export default function FichaPage() {
   const { id: mesaId, fichaId } = useParams()
@@ -1026,72 +1027,46 @@ export default function FichaPage() {
   return (
     <div className="min-h-screen">
       {/* Barra de navegação */}
-      <header className="border-b border-border py-4 print:hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-4">
-          <Botao variante="fantasma" tamanho="sm" onClick={() => navigate(`/mesa/${mesaId}`)} className="shrink-0">
-            ← Voltar
-          </Botao>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-ink font-bold text-xl leading-tight truncate">
-              {ficha.nome_personagem}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
+      <BarraTopo
+        voltar={{ para: `/mesa/${mesaId}`, rotulo: 'Voltar para a mesa' }}
+        titulo={ficha.nome_personagem}
+        subtitulo={[ficha.raca, ficha.classe].filter(Boolean).join(' • ') || null}
+        largura="max-w-7xl"
+        acoes={
+          <>
             {!isDono && (
-              <span className="text-xs text-ink-dim bg-void/60 border border-border px-2 py-1 rounded-full">
-                Visualizando
+              <span className="hidden sm:inline-flex items-center gap-1 text-xs text-ink-dim border border-border px-2 py-1 rounded-full mr-1">
+                <Icone nome="olho" tamanho={13} /> Visualizando
               </span>
             )}
             {ficha.privada && (
-              <Ilustra nome="cadeado" tamanho={16} className="opacity-80" aria-label="Ficha privada" />
+              <span className="inline-flex text-ink-dim mx-1" title="Ficha privada"><Icone nome="cadeado" tamanho={16} /><span className="sr-only">Ficha privada</span></span>
             )}
             {/* F45 — ficha em A4, com QR code para a versão online */}
-            <button
-              onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm text-ink-dim hover:text-ink hover:bg-hover rounded-lg transition-colors"
-              title="Imprimir a ficha (A4)" aria-label="Imprimir a ficha"
-            >
-              <Ilustra nome="pergaminho" tamanho={18} /> <span className="hidden sm:inline">Imprimir</span>
+            <button onClick={() => window.print()} aria-label="Imprimir a ficha (A4)" data-dica="Imprimir (A4)" className="botao-icone">
+              <Icone nome="imprimir" tamanho={20} />
             </button>
-            <button
-              onClick={handleExportar}
-              disabled={!!portatil}
-              className="px-2.5 py-1.5 text-sm text-ink-dim hover:text-ink hover:bg-hover rounded-lg transition-colors disabled:opacity-50"
-              title="Exportar ficha (.json)"
-            >
-              {portatil === 'exportando' ? '…' : '⬇'}
+            <button onClick={handleExportar} disabled={!!portatil} aria-label="Exportar ficha (.json)" data-dica="Exportar (.json)" className="botao-icone disabled:opacity-50">
+              <Icone nome="baixar" tamanho={20} />
             </button>
             {(isDono || souGestor) && (
-              <button
-                onClick={handleDuplicar}
-                disabled={!!portatil}
-                className="px-2.5 py-1.5 text-sm text-ink-dim hover:text-ink hover:bg-hover rounded-lg transition-colors disabled:opacity-50"
-                title="Duplicar ficha nesta mesa"
-              >
-                {portatil === 'duplicando' ? '…' : '⧉'}
+              <button onClick={handleDuplicar} disabled={!!portatil} aria-label="Duplicar ficha nesta mesa" data-dica="Duplicar" className="botao-icone disabled:opacity-50">
+                <Icone nome="copiar" tamanho={20} />
               </button>
             )}
             {(isDono || souGestor) && (
-              <button
-                onClick={() => setShowAcesso(true)}
-                className="px-2.5 py-1.5 text-sm text-ink-dim hover:text-ink hover:bg-hover rounded-lg transition-colors"
-                title="Acesso e pasta"
-              >
-                🔐 <span className="hidden sm:inline">Acesso</span>
+              <button onClick={() => setShowAcesso(true)} aria-label="Acesso e pasta" data-dica="Acesso e pasta" className="botao-icone">
+                <Icone nome="cadeado" tamanho={20} />
               </button>
             )}
             {souDonoDeFato && (
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="p-2 text-harm hover:text-harm hover:bg-harm/50 rounded-lg transition-colors"
-                title="Deletar ficha"
-              >
-                🗑
+              <button onClick={() => setShowDeleteConfirm(true)} aria-label="Apagar ficha" data-dica="Apagar ficha" className="botao-icone hover:!text-harm">
+                <Icone nome="lixeira" tamanho={20} />
               </button>
             )}
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       {/* Conteúdo principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">

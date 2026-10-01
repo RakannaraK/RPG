@@ -1,54 +1,57 @@
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import CapaMesa from './CapaMesa'
-import Ilustra from '../arte/Ilustra'
+import SeloPapel from '../ui/SeloPapel'
+import Icone from '../ui/Icone'
 import { textoQuando } from '../../lib/agenda'
+import { capaDaMesa } from '../../lib/capas'
 
-const ROLE_LABELS = { mestre: 'Mestre', 'co-mestre': 'Co-mestre', jogador: 'Jogador', espectador: 'Espectador' }
-const ROLE_COLORS = {
-  mestre: 'bg-accent-600 text-sobre-acento',
-  'co-mestre': 'bg-orange-500 text-orange-950',
-  jogador: 'bg-purple-600 text-sobre-acento',
-  espectador: 'bg-slate-600 text-slate-100',
-}
-
+/**
+ * Cartão de mesa no painel "Suas mesas" (F52). A mesa é a peça mais
+ * importante do site, então o cartão tem presença: faixa ilustrada própria
+ * da campanha, nome em destaque, papel, quantas pessoas e a próxima sessão.
+ * Hover: sobe 2 px, a borda pega a cor do tema e a faixa aproxima de leve.
+ */
 export default function MesaCard({ mesa, proxima = null }) {
-  const navigate = useNavigate()
-
   return (
-    <button
-      onClick={() => navigate(`/mesa/${mesa.id}`)}
-      className="w-full text-left velino moldura-cantos hover:bg-slate-750 border border-purple-800 hover:border-purple-600 rounded-2xl overflow-hidden transition-all group"
+    <Link
+      to={`/mesa/${mesa.id}`}
+      className="cartao group relative flex flex-col h-full rounded-2xl border border-border bg-raised/80 overflow-hidden shadow-nivel-1"
     >
-      {/* F37.4 — faixa da capa escolhida pelo dono (sem capa, não ocupa nada) */}
-      <CapaMesa capa={mesa.capa} altura={56} />
+      <div className="relative overflow-hidden border-b border-border/60">
+        <div className="transition-transform duration-lenta ease-padrao group-hover:scale-[1.04] motion-reduce:transform-none">
+          <CapaMesa capa={capaDaMesa(mesa)} altura={84} />
+        </div>
+        <div className="absolute left-4 bottom-3"><SeloPapel papel={mesa.role} /></div>
+        {mesa.arquivada && (
+          <span className="absolute right-3 top-3 inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-bg/80 border border-border text-ink-dim">
+            <Icone nome="cadeado" tamanho={12} /> Arquivada
+          </span>
+        )}
+      </div>
 
-      <div className="p-5">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <h3 className="text-white font-semibold text-lg group-hover:text-purple-300 transition-colors leading-tight">
+      <div className="flex-1 flex flex-col p-4 sm:p-5">
+        <h3 className="font-sora text-ink font-semibold text-lg leading-snug group-hover:text-accent-300 transition-colors duration-normal">
           {mesa.nome}
         </h3>
-        <span className={`shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${ROLE_COLORS[mesa.role]}`}>
-          {ROLE_LABELS[mesa.role]}
-        </span>
-      </div>
+        {mesa.descricao && <p className="text-ink-dim text-sm mt-1 line-clamp-2">{mesa.descricao}</p>}
 
-      {mesa.descricao && (
-        <p className="text-purple-300 text-sm mb-4 line-clamp-2">{mesa.descricao}</p>
-      )}
-
-      <div className="flex items-center gap-4 text-purple-400 text-xs">
-        <span>👥 {mesa.totalMembros} {mesa.totalMembros === 1 ? 'membro' : 'membros'}</span>
-        {mesa.role === 'co-mestre' && <span className="text-orange-400">🛡 Co-mestre</span>}
-        {mesa.arquivada && <span className="text-accent-300">📦 Arquivada</span>}
+        <div className="mt-auto pt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-ink-dim">
+          <span className="inline-flex items-center gap-1.5">
+            <Icone nome="pessoas" tamanho={16} />
+            {mesa.totalMembros} {mesa.totalMembros === 1 ? 'pessoa' : 'pessoas'}
+          </span>
+          {proxima ? (
+            <span className="inline-flex items-center gap-1.5 text-ink">
+              <Icone nome="calendario" tamanho={16} className="text-dice-400" />
+              {textoQuando(proxima.inicio)}
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5">
+              <Icone nome="calendario" tamanho={16} /> Sem sessão marcada
+            </span>
+          )}
+        </div>
       </div>
-      {/* F40 — próxima sessão marcada */}
-      {proxima && (
-        <p className="mt-2 flex items-center gap-1.5 text-xs text-ink">
-          <Ilustra nome="calendario" tamanho={14} />
-          <span className="text-ink-dim">Próxima:</span> {textoQuando(proxima.inicio)}
-        </p>
-      )}
-      </div>
-    </button>
+    </Link>
   )
 }

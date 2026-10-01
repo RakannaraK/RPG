@@ -92,7 +92,7 @@ function FormAgenda({ inicial, onSalvar, onCancelar }) {
  * Fase 40 — próxima sessão da mesa, com "vou / talvez / não vou".
  * O calendário da F29 é o do mundo do jogo; este é o da vida real.
  */
-export default function AgendaMesa({ mesaId, isGestor }) {
+export default function AgendaMesa({ mesaId, isGestor, className = '' }) {
   const { confirmar } = useConfirmar()
   const { eventos, presencas, indisponivel, salvar, remover, responder, meuId } = useAgenda(mesaId)
   const { nomeDe } = useMembrosMesa(mesaId)
@@ -113,7 +113,7 @@ export default function AgendaMesa({ mesaId, isGestor }) {
 
   if (editando) {
     return (
-      <section className="mt-6 rounded-2xl border border-border bg-raised/60 px-5 py-4 space-y-3" aria-label="Marcar sessão">
+      <section className={`rounded-2xl border border-border bg-raised/70 p-5 space-y-3 ${className}`} aria-label="Marcar sessão">
         <h2 className="flex items-center gap-2 text-ink text-sm font-semibold">
           <Ilustra nome="calendario" tamanho={18} /> {editando === 'novo' ? 'Marcar sessão' : 'Editar sessão'}
         </h2>
@@ -128,9 +128,9 @@ export default function AgendaMesa({ mesaId, isGestor }) {
 
   if (!prox) {
     return (
-      <section className="mt-6 rounded-2xl border border-dashed border-border px-5 py-4 flex flex-wrap items-center gap-3">
-        <Ilustra nome="calendario" tamanho={22} />
-        <p className="text-ink-dim text-sm flex-1 min-w-[12rem]">Nenhuma sessão marcada. Marque a próxima e a mesa recebe o aviso.</p>
+      <section className={`rounded-2xl border border-dashed border-border p-5 flex flex-col items-start gap-3 ${className}`} aria-label="Próxima sessão">
+        <p className="text-ink-dim text-xs font-semibold uppercase tracking-wider flex items-center gap-2"><Ilustra nome="calendario" tamanho={20} /> Próxima sessão</p>
+        <p className="text-ink-dim text-sm">Nenhuma sessão marcada. Marque a próxima e a mesa recebe o aviso.</p>
         <Botao variante="primario" tamanho="sm" onClick={() => setEditando('novo')}>Marcar sessão</Botao>
       </section>
     )
@@ -156,7 +156,7 @@ export default function AgendaMesa({ mesaId, isGestor }) {
   }
 
   return (
-    <section className="mt-6 rounded-2xl border border-border bg-raised/60 px-5 py-4 space-y-3" aria-label="Próxima sessão">
+    <section className={`rounded-2xl border border-border bg-raised/70 p-5 space-y-3 ${className}`} aria-label="Próxima sessão">
       <div className="flex flex-wrap items-start gap-3">
         <Ilustra nome="calendario" tamanho={26} className="shrink-0 mt-0.5" />
         <div className="flex-1 min-w-[12rem]">

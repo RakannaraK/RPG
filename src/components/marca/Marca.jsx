@@ -11,12 +11,13 @@ const TAMANHOS = {
  * Fase 37 — assinatura da marca: selo + nome, com o "&" no âmbar dos dados.
  * Usada nos cabeçalhos (sm) e na tela de entrada (lg).
  */
-export default function Marca({ tamanho = 'sm', comTagline = false, pulso = false, className = '' }) {
+// `compacta`: no celular fica só o selo (o título da página precisa do espaço)
+export default function Marca({ tamanho = 'sm', comTagline = false, pulso = false, compacta = false, className = '' }) {
   const t = TAMANHOS[tamanho] || TAMANHOS.sm
   return (
     <div className={`flex items-center ${t.espaco} ${className}`}>
       <Selo tamanho={t.selo} pulso={pulso} />
-      <div className="leading-none">
+      <div className={`leading-none ${compacta ? 'hidden sm:block' : ''}`}>
         <div className={`font-bold tracking-tight text-white ${t.texto}`} style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
           {NOME_PARTES.antes}
           <span className={t.elo} style={{ color: 'var(--dice-400)' }}>{NOME_PARTES.elo}</span>

@@ -22,3 +22,17 @@ export function acharCapa(id) {
   if (!id) return null
   return CAPAS.find(c => c.id === id) || null
 }
+
+/**
+ * F52 — capa que a mesa MOSTRA: a escolhida pelo dono ou, sem escolha, uma
+ * derivada do id (sempre a mesma para a mesma mesa). Assim todo cartão tem
+ * identidade própria sem ninguém precisar configurar nada.
+ */
+export function capaDaMesa(mesa) {
+  const escolhida = acharCapa(mesa?.capa)
+  if (escolhida) return escolhida.id
+  const id = String(mesa?.id || '')
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
+  return CAPAS[h % CAPAS.length].id
+}

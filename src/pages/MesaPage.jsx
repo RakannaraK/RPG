@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import SistemaEditor from '../components/sistema/SistemaEditor'
@@ -19,12 +19,9 @@ import PainelBestiario from '../components/bestiario/PainelBestiario'
 import PainelEscudo from '../components/mesa/PainelEscudo'
 import RoladorGenerico from '../components/dados/RoladorGenerico'
 import FeedRolagens from '../components/dados/FeedRolagens'
-import PreferenciasModal from '../components/preferencias/PreferenciasModal'
 import SessaoBanner from '../components/sessao/SessaoBanner'
 import SessoesHistorico from '../components/sessao/SessoesHistorico'
 import MeuPerfilMesa from '../components/mesa/MeuPerfilMesa'
-import Sininho from '../components/notificacoes/Sininho'
-import Ilustra from '../components/arte/Ilustra'
 import CapaMesa from '../components/mesa/CapaMesa'
 import SeletorCapa from '../components/mesa/SeletorCapa'
 import AgendaMesa from '../components/mesa/AgendaMesa'
@@ -42,6 +39,15 @@ import Modal, { FecharModal } from '../components/ui/Modal'
 import SeloPapel, { rotuloPapel } from '../components/ui/SeloPapel'
 import { useToast } from '../components/ui/Toast'
 import { useConfirmar } from '../components/ui/Confirmar'
+import BarraTopo from '../components/ui/BarraTopo'
+import Abas from '../components/ui/Abas'
+import Avatar from '../components/ui/Avatar'
+import Icone from '../components/ui/Icone'
+import CabecalhoSecao from '../components/ui/CabecalhoSecao'
+import EstadoVazio from '../components/ui/EstadoVazio'
+import Esqueleto, { EsqueletoCartoes } from '../components/ui/Esqueleto'
+import CartaoFicha from '../components/mesa/CartaoFicha'
+import { capaDaMesa } from '../lib/capas'
 
 const TABS = ['Fichas', 'Bestiário', 'Enciclopédia', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
 const TABS_GESTOR = ['Escudo'] // F34.3 — só mestre/co-mestre
@@ -52,7 +58,7 @@ export default function MesaPage() {
   const { session } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
-  const { perguntar } = useConfirmar()
+  const { perguntar, confirmar } = useConfirmar()
 
   const [mesa, setMesa] = useState(null)
   const [membros, setMembros] = useState([])
@@ -72,7 +78,6 @@ export default function MesaPage() {
   const [linkCopiado, setLinkCopiado] = useState(false)
   const [showFichaCreate, setShowFichaCreate] = useState(false)
   const [novasRolagens, setNovasRolagens] = useState(0)
-  const [showPrefs, setShowPrefs] = useState(false)
   const chat = useChatMesa(id, session?.user?.id) // F29.2 — na página: não lidas contam com a aba fechada
 
   // delete mesa
@@ -92,7 +97,6 @@ export default function MesaPage() {
   const [expelError, setExpelError] = useState('')
 
   // regenerar convite (16.3)
-  const [confirmandoRegen, setConfirmandoRegen] = useState(false)
   const [regenerating, setRegenerating] = useState(false)
   const [regenError, setRegenError] = useState('')
 
@@ -162,11 +166,11 @@ export default function MesaPage() {
       document.body.removeChild(el)
     }
     marcar(true)
-    setTimeout(() => marcar(false), 2000)
+    setTimeout(() => marcar(false), 1800)
   }
-  const copiarCodigo = () => copiar(mesa.codigo_convite, setCopiado)
+  const copiarCodigo = () => { copiar(mesa.codigo_convite, setCopiado); toast.ok('Código copiado') }
   // F47 — o link entra direto, com conta ou como convidado
-  const copiarLink = () => copiar(linkDeConvite(window.location.origin, mesa.codigo_convite), setLinkCopiado)
+  const copiarLink = () => { copiar(linkDeConvite(window.location.origin, mesa.codigo_convite), setLinkCopiado); toast.ok('Link de convite copiado') }
 
   async function handleDeleteMesa() {
     setDeletingMesa(true)
@@ -246,13 +250,18 @@ export default function MesaPage() {
   }
 
   async function handleRegenerarConvite() {
+    const ok = await confirmar({
+      titulo: 'Gerar novo código?', confirmar: 'Gerar novo código',
+      mensagem: 'O código e o link antigos deixam de funcionar na hora. Quem já é membro continua na mesa.',
+    })
+    if (!ok) return
     setRegenerating(true)
     setRegenError('')
     try {
       const { data: novo, error: err } = await supabase.rpc('regenerar_convite', { p_mesa_id: id })
       if (err) throw err
       setMesa(prev => ({ ...prev, codigo_convite: novo }))
-      setConfirmandoRegen(false)
+      toast.ok('Novo código gerado')
     } catch (err) {
       setRegenError(err.message || 'Erro ao gerar novo código.')
     } finally {
@@ -314,23 +323,29 @@ export default function MesaPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-purple-400 text-lg">Carregando mesa...</div>
+      <div className="min-h-screen">
+        <BarraTopo voltar={{ para: '/dashboard', rotulo: 'Suas mesas' }} />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6" role="status" aria-label="Carregando a mesa">
+          <div className="rounded-3xl border border-border bg-raised/50 p-5 sm:p-8 pt-24 sm:pt-28">
+            <Esqueleto className="h-5 w-24 mb-4" />
+            <Esqueleto className="h-9 w-2/3 sm:w-1/2 mb-3" />
+            <Esqueleto className="h-4 w-1/2 sm:w-1/3" />
+          </div>
+          <Esqueleto className="h-12 w-full mt-8" />
+          <EsqueletoCartoes quantos={2} className="grid gap-4 md:grid-cols-2 mt-8" altura="h-32" />
+        </div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-400 mb-4">{error}</p>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-sobre-acento rounded-lg"
-          >
-            Voltar ao dashboard
-          </button>
+      <div className="min-h-screen">
+        <BarraTopo voltar={{ para: '/dashboard', rotulo: 'Suas mesas' }} />
+        <div className="max-w-xl mx-auto px-4 py-16">
+          <EstadoVazio arte="porta" titulo="Não foi possível abrir esta mesa" descricao={error}>
+            <Botao variante="primario" onClick={() => navigate('/dashboard')}>Voltar para suas mesas</Botao>
+          </EstadoVazio>
         </div>
       </div>
     )
@@ -380,242 +395,169 @@ export default function MesaPage() {
     return false
   }
 
+  const abas = [...TABS, ...(isGestor ? TABS_GESTOR : [])].map(tab => ({
+    id: tab,
+    rotulo: tab,
+    contador: tab === 'Dados' ? novasRolagens : tab === 'Chat' ? chat.naoLidas : 0,
+    selo: tab === 'Escudo' ? <Icone nome="cadeado" tamanho={14} className="text-ink-dim" /> : null,
+  }))
+  const nomeDoMembro = m => m.apelido || m.usuario?.username || '?'
+
   return (
     <div className="min-h-screen">
-      <CapaMesa capa={mesa?.capa} altura={104} className="border-b border-purple-800">
-      <header className="py-4">
-        {/* No celular o nome ficava reduzido a "Mes…" para caber cinco ícones na
-            mesma linha. Agora título e ações ficam em faixas separadas até sm. */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-wrap items-center gap-x-4 gap-y-2 sm:flex-nowrap">
-          <div className="flex items-center gap-3 min-w-0 basis-full sm:basis-auto sm:flex-1">
-            <Botao variante="fantasma" tamanho="sm" onClick={() => navigate('/dashboard')} className="shrink-0">
-              ← Voltar
-            </Botao>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-white font-bold text-xl leading-tight truncate">{mesa?.nome}</h1>
-              {mesa?.descricao && (
-                <p className="text-purple-400 text-sm mt-0.5 truncate">{mesa.descricao}</p>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0 ml-auto">
-            <SeloPapel papel={meuRole} />
+      <BarraTopo
+        voltar={{ para: '/dashboard', rotulo: 'Suas mesas' }}
+        acoes={
+          <>
             {!arquivada && <XCard mesaId={id} isGestor={isGestor} />}
-            <Sininho />
-            <button
-              onClick={() => navigate(`/mesa/${id}/mapa`)}
-              title="Mapa da mesa" aria-label="Mapa da mesa"
-              className="p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
-            >
-              <Ilustra nome="mapa" tamanho={20} />
-            </button>
-            <button
-              onClick={() => setShowPrefs(true)}
-              title="Preferências" aria-label="Preferências"
-              className="p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
-            >
-              <Ilustra nome="ajustes" tamanho={20} />
-            </button>
+            <Link to={`/mesa/${id}/mapa`} aria-label="Mapa da mesa" data-dica="Mapa da mesa" className="botao-icone lg:px-3 lg:gap-2">
+              <Icone nome="mapa" tamanho={20} /><span className="hidden lg:inline text-sm">Mapa</span>
+            </Link>
             {!isCriador && (
               <button
                 onClick={() => { setLeaveError(''); setDeletarFichas(false); setShowLeave(true) }}
-                className="p-2 text-purple-300 hover:text-red-400 hover:bg-red-950/40 rounded-lg transition-colors"
-                title="Sair da mesa" aria-label="Sair da mesa"
-              >
-                <Ilustra nome="porta" tamanho={20} />
-              </button>
+                aria-label="Sair da mesa" data-dica="Sair da mesa" className="botao-icone hover:!text-harm"
+              ><Icone nome="porta" tamanho={20} /></button>
             )}
-            {/* "Deletar mesa" saiu daqui: ficava a 24 px da engrenagem, fácil de
-                errar o toque. Mora na aba Membros, junto de arquivar e
-                transferir posse — onde as outras ações graves já estavam. */}
-          </div>
-        </div>
-      </header>
-      </CapaMesa>
+          </>
+        }
+      />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        {/* ── Herói da campanha: qual mesa, meu papel, quem joga e a sessão ── */}
+        <section className="relative mt-5 sm:mt-6 overflow-hidden rounded-3xl border border-border bg-raised/50 shadow-nivel-2" aria-label="A mesa">
+          <div className="absolute inset-x-0 top-0" aria-hidden="true">
+            <CapaMesa capa={capaDaMesa(mesa)} altura={150} />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-bg/40 to-bg/80" aria-hidden="true" />
+          <div className="relative p-5 sm:p-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-end">
+            <div className="min-w-0 pt-14 sm:pt-20">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <SeloPapel papel={meuRole} />
+                {arquivada && (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border border-amber-700/60 text-amber-200 bg-amber-950/50">
+                    <Icone nome="cadeado" tamanho={12} /> Arquivada
+                  </span>
+                )}
+              </div>
+              <h1 className="font-sora text-3xl sm:text-4xl font-bold text-ink tracking-tight break-words">{mesa?.nome}</h1>
+              {mesa?.descricao && <p className="text-ink-dim mt-2 max-w-2xl">{mesa.descricao}</p>}
+              <button
+                onClick={() => setActiveTab('Membros')}
+                className="mt-5 inline-flex items-center gap-3 rounded-full pr-3 hover:bg-hover/60 transition-colors duration-rapida"
+                aria-label={`${membros.length} pessoas na mesa — ver membros`}
+              >
+                <span className="flex -space-x-2">
+                  {membros.slice(0, 5).map(m => (
+                    <Avatar key={m.usuario.id} url={m.avatar_url} nome={nomeDoMembro(m)} tamanho="sm" className="ring-2 ring-bg" />
+                  ))}
+                </span>
+                <span className="text-sm text-ink-dim">
+                  {membros.length} {membros.length === 1 ? 'pessoa' : 'pessoas'}{membros.length > 5 ? ` (+${membros.length - 5})` : ''}
+                </span>
+              </button>
+            </div>
+            {/* Fase 13.1 — a sessão é a ação principal (não em mesa arquivada) */}
+            {!arquivada && <SessaoBanner mesaId={id} isGestor={isGestor} />}
+          </div>
+        </section>
+
         {/* Arquivada (16.8) — somente leitura */}
         {arquivada && (
-          <div className="mt-6 rounded-xl border border-amber-800/50 bg-amber-950/30 px-4 py-3 flex items-center justify-between gap-2 flex-wrap">
-            <p className="text-amber-200 text-sm">📦 Esta mesa está arquivada — somente leitura.</p>
-            {isCriador && (
-              <button
-                onClick={() => handleArquivar(false)}
-                className="px-3 py-1.5 bg-amber-800/70 hover:bg-amber-700 text-amber-50 text-sm rounded-lg transition-colors"
-              >
-                Desarquivar
-              </button>
-            )}
+          <div className="mt-4 rounded-2xl border border-amber-800/50 bg-amber-950/30 px-5 py-4 flex items-center justify-between gap-3 flex-wrap">
+            <p className="text-amber-200 text-sm">Esta mesa está arquivada: dá para ler tudo, mas nada muda.</p>
+            {isCriador && <Botao variante="dado" tamanho="sm" onClick={() => handleArquivar(false)}>Desarquivar</Botao>}
           </div>
         )}
 
         {/* F47 — convidado: lembrete de criar conta */}
-        <BannerConvidado className="mt-6" />
-        {/* Fase 13.1 — banner de sessão ao vivo (não em mesa arquivada) */}
-        {!arquivada && <SessaoBanner mesaId={id} isGestor={isGestor} />}
+        <BannerConvidado className="mt-4" />
         {/* F40 — próxima sessão no mundo real, com confirmação de presença */}
-        {!arquivada && <AgendaMesa mesaId={id} isGestor={isGestor} />}
+        {!arquivada && <AgendaMesa mesaId={id} isGestor={isGestor} className="mt-4" />}
         {/* F43 — trilha sonora e efeitos (canto da tela) */}
         {!arquivada && <TrilhaMesa mesaId={id} isGestor={isGestor} />}
-        {/* Fase 13.5 — histórico de sessões encerradas */}
-        <SessoesHistorico mesaId={id} />
 
-        <div className="flex border-b border-purple-900 mt-6 overflow-x-auto overflow-y-hidden">
-          {[...TABS, ...(isGestor ? TABS_GESTOR : [])].map(tab => (
-            <button
-              key={tab}
-              onClick={() => { setActiveTab(tab); if (tab === 'Dados') setNovasRolagens(0) }}
-              className={`relative px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px shrink-0 whitespace-nowrap ${
-                activeTab === tab
-                  ? 'text-white border-purple-500'
-                  : 'text-purple-400 border-transparent hover:text-purple-200'
-              }`}
-            >
-              {tab}
-              {tab === 'Dados' && novasRolagens > 0 && activeTab !== 'Dados' && (
-                <span className="ml-1.5 inline-flex items-center justify-center text-xs font-bold bg-accent-500 text-ink rounded-full w-5 h-5">
-                  {novasRolagens > 9 ? '9+' : novasRolagens}
-                </span>
-              )}
-              {tab === 'Chat' && chat.naoLidas > 0 && activeTab !== 'Chat' && (
-                <span className="ml-1.5 inline-flex items-center justify-center text-xs font-bold bg-accent-500 text-ink rounded-full w-5 h-5">
-                  {chat.naoLidas > 9 ? '9+' : chat.naoLidas}
-                </span>
-              )}
-            </button>
-          ))}
+      </div>
+
+      {/* ── Abas: o traço desliza; no celular a faixa rola e esmaece nas pontas.
+          Gruda embaixo do cabeçalho, de ponta a ponta da tela. ── */}
+      <div className="sticky top-16 z-[15] mt-8 bg-bg/80 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <Abas
+            rotulo="Seções da mesa" abas={abas} atual={activeTab} idPainel="painel-da-mesa"
+            onTrocar={tab => { setActiveTab(tab); if (tab === 'Dados') setNovasRolagens(0) }}
+          />
         </div>
+      </div>
 
-        <div className="py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+
+        <div key={activeTab} id="painel-da-mesa" role="tabpanel" aria-label={activeTab} className="entra-aba py-8">
           {activeTab === 'Fichas' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-purple-300 text-sm">
-                  {loadingFichas
-                    ? 'Carregando...'
-                    : fichas.length > 0
-                    ? `${fichas.length} ficha${fichas.length > 1 ? 's' : ''}`
-                    : 'Nenhuma ficha ainda'}
-                </p>
-                {podeEscrever && (
-                  <div className="flex gap-2">
+            <div className="space-y-6">
+              <CabecalhoSecao
+                titulo="Personagens"
+                descricao={loadingFichas ? 'Carregando…' : fichas.length > 0 ? `${fichas.length} ficha${fichas.length > 1 ? 's' : ''} nesta mesa` : 'Nenhuma ficha ainda'}
+                acoes={podeEscrever && (
+                  <>
                     <ImportarFicha
                       mesaId={id} donoId={session?.user?.id}
+                      className="botao inline-flex items-center gap-1.5 px-3 py-2 min-h-[36px] rounded-lg border border-border text-ink text-sm hover:border-accent-500"
                       onImportada={novoId => { refetchFichas(); navigate(`/mesa/${id}/ficha/${novoId}`) }}
                     />
                     <Botao variante="primario" onClick={() => setShowFichaCreate(true)}>
-                      + Nova ficha
+                      <Icone nome="mais" tamanho={18} /> Nova ficha
                     </Botao>
-                  </div>
+                  </>
                 )}
-              </div>
+              />
 
               {loadingFichas ? (
-                <div className="space-y-3">
-                  {[1, 2].map(i => (
-                    <div key={i} className="h-20 bg-slate-800 rounded-xl animate-pulse border border-purple-900" />
-                  ))}
-                </div>
+                <EsqueletoCartoes quantos={2} className="grid gap-4 md:grid-cols-2" altura="h-32" />
               ) : fichas.length === 0 ? (
-                <div className="text-center py-16 border border-dashed border-purple-800 rounded-2xl">
-                  <Ilustra nome="pergaminho" tamanho={72} className="mx-auto mb-4" />
-                  <p className="text-ink text-base font-medium mb-1">Nenhuma ficha criada</p>
-                  <p className="text-accent-300 text-sm mb-5">
-                    {podeEscrever
-                      ? 'Crie sua primeira ficha de personagem para começar a aventura!'
-                      : arquivada ? 'Mesa arquivada — somente leitura.' : 'Como espectador, você não cria fichas.'}
-                  </p>
+                <EstadoVazio
+                  arte="pergaminho" titulo="Nenhuma ficha criada"
+                  descricao={podeEscrever
+                    ? 'Crie o seu primeiro personagem para começar a aventura.'
+                    : arquivada ? 'Mesa arquivada: somente leitura.' : 'Como espectador, você acompanha as fichas dos outros.'}
+                >
                   {podeEscrever && (
-                    <button
-                      onClick={() => setShowFichaCreate(true)}
-                      className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-sobre-acento rounded-lg text-sm transition-colors"
-                    >
-                      + Criar ficha
-                    </button>
+                    <Botao variante="primario" onClick={() => setShowFichaCreate(true)}><Icone nome="mais" tamanho={18} /> Criar ficha</Botao>
                   )}
-                </div>
+                </EstadoVazio>
               ) : (
-                <div className="space-y-5">
+                <div className="space-y-6">
                   {agruparPorPasta(fichas).map(({ pasta, fichas: daPasta }, _i, grupos) => {
                     const cartoes = (
-                <div className="grid gap-3">
-                  {daPasta.map(f => {
-                    const ehDono = f.dono?.id === session?.user?.id
-                    // Órfã: dono não é mais membro da mesa (saiu/expulso) — Fase 16.2
-                    const orfa = !f.dono?.id || !membroIds.has(f.dono.id)
-                    const podeDeletar = ehDono || (orfa && isGestor)
-                    return (
-                      <div
-                        key={f.id}
-                        className={`flex bg-slate-800 border rounded-xl transition-all overflow-hidden ${
-                          orfa ? 'border-amber-800/60 hover:border-amber-600' : 'border-purple-800 hover:border-purple-600'
-                        }`}
-                      >
-                        <button
-                          onClick={() => navigate(`/mesa/${id}/ficha/${f.id}`)}
-                          className="flex-1 text-left p-4"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <p className="text-white font-semibold flex items-center gap-2">
-                                {f.nome_personagem}
-                                {f.privada && <span title="Ficha privada" className="text-xs">🔒</span>}
-                                {!ehDono && podeEditarFicha(f, session?.user?.id) && (
-                                  <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-700/60 text-emerald-300">você edita</span>
-                                )}
-                                {orfa && (
-                                  <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-amber-950 border border-amber-700/60 text-amber-300">
-                                    órfã
-                                  </span>
-                                )}
-                              </p>
-                              <p className="text-purple-400 text-sm mt-0.5">
-                                {[f.raca, f.classe, f.nivel ? `Nível ${f.nivel}` : null]
-                                  .filter(Boolean)
-                                  .join(' · ') || 'Sem detalhes'}
-                              </p>
+                      <div className="entra-lista grid gap-4 md:grid-cols-2">
+                        {daPasta.map((f, i) => {
+                          const ehDono = f.dono?.id === session?.user?.id
+                          // Órfã: dono não é mais membro da mesa (saiu/expulso) — Fase 16.2
+                          const orfa = !f.dono?.id || !membroIds.has(f.dono.id)
+                          return (
+                            <div key={f.id} style={{ '--i': i }}>
+                              <CartaoFicha
+                                ficha={f} mesaId={id} orfa={orfa}
+                                donoNome={f.dono?.username}
+                                voceEdita={!ehDono && podeEditarFicha(f, session?.user?.id)}
+                                podePasta={(isGestor || podeEditarFicha(f, session?.user?.id)) && !arquivada}
+                                podeExcluir={ehDono || (orfa && isGestor)}
+                                onPasta={() => moverParaPasta(f)}
+                                onExcluir={() => { setDeleteFichaError(''); setFichaToDelete(f) }}
+                              />
                             </div>
-                            <div className="text-right shrink-0">
-                              {f.hp_maximo && (
-                                <p className="text-green-400 text-sm font-medium">
-                                  {f.hp_atual ?? '?'}/{f.hp_maximo} HP
-                                </p>
-                              )}
-                              <p className="text-accent-300 text-xs mt-0.5">
-                                {orfa ? 'ex-membro' : f.dono?.username}
-                              </p>
-                            </div>
-                          </div>
-                        </button>
-                        {(isGestor || podeEditarFicha(f, session?.user?.id)) && !arquivada && (
-                          <button
-                            onClick={() => moverParaPasta(f)}
-                            className="px-3 text-purple-400 hover:text-white hover:bg-purple-900/40 border-l border-purple-800 transition-colors"
-                            title="Mover para pasta"
-                          >
-                            📁
-                          </button>
-                        )}
-                        {podeDeletar && (
-                          <button
-                            onClick={() => { setDeleteFichaError(''); setFichaToDelete(f) }}
-                            className="px-3 text-red-500 hover:text-red-400 hover:bg-red-950/40 border-l border-purple-800 transition-colors"
-                            title={orfa ? 'Deletar ficha órfã' : 'Deletar ficha'}
-                          >
-                            🗑
-                          </button>
-                        )}
+                          )
+                        })}
                       </div>
-                    )
-                  })}
-                </div>
                     )
                     // Sem nenhuma pasta na mesa: lista simples, como sempre foi
                     if (grupos.length === 1 && pasta === null) return <div key="sem-pasta">{cartoes}</div>
                     return (
                       <details key={pasta ?? ''} open className="group/pasta">
-                        <summary className="cursor-pointer text-purple-300 text-sm font-medium mb-2 select-none">
-                          📁 {pasta ?? 'Sem pasta'} <span className="text-accent-300 font-normal">({daPasta.length})</span>
+                        <summary className="cursor-pointer list-none inline-flex items-center gap-2 text-ink font-medium mb-3 select-none rounded-lg hover:text-accent-300 transition-colors duration-rapida">
+                          <Icone nome="chevron-dir" tamanho={16} className="transition-transform duration-normal group-open/pasta:rotate-90 text-ink-dim" />
+                          <Icone nome="pasta" tamanho={18} className="text-dice-400" />
+                          {pasta ?? 'Sem pasta'} <span className="text-ink-dim font-normal text-sm">({daPasta.length})</span>
                         </summary>
                         {cartoes}
                       </details>
@@ -629,6 +571,7 @@ export default function MesaPage() {
                   mesaId={id}
                   onCriada={ficha => {
                     setShowFichaCreate(false)
+                    toast.ok('Ficha criada', { detalhe: ficha.nome_personagem })
                     refetchFichas()
                     navigate(`/mesa/${id}/ficha/${ficha.id}`)
                   }}
@@ -653,29 +596,29 @@ export default function MesaPage() {
           )}
 
           {activeTab === 'Dados' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-              <div className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              <div className="space-y-10">
                 {podeEscrever && (
-                  <div>
-                    <p className="text-purple-200 font-medium text-sm mb-4">Rolar dados</p>
+                  <section className="space-y-4">
+                    <CabecalhoSecao titulo="Rolar dados" descricao="O resultado aparece para a mesa toda, no histórico ao lado." />
                     <RoladorGenerico mesaId={id} />
-                  </div>
+                  </section>
                 )}
                 {/* F28 — minigames: resultado vai ao feed ao lado */}
-                <div>
-                  <p className="text-purple-200 font-medium text-sm mb-4">Minigames</p>
+                <section className="space-y-4">
+                  <CabecalhoSecao titulo="Minigames" nivel={3} />
                   <PainelMinigames mesaId={id} meuId={session?.user?.id} podeJogar={podeEscrever} />
-                </div>
+                </section>
                 {/* F28.5 — desafios: o mestre põe vários jogadores na mesma partida */}
-                <div>
-                  <p className="text-purple-200 font-medium text-sm mb-4">Desafios</p>
+                <section className="space-y-4">
+                  <CabecalhoSecao titulo="Desafios" nivel={3} />
                   <PainelDesafios mesaId={id} meuId={session?.user?.id} isGestor={isGestor} podeJogar={podeEscrever} />
-                </div>
+                </section>
               </div>
-              <div>
-                <p className="text-purple-200 font-medium text-sm mb-4">Histórico da sessão</p>
+              <section className="space-y-4 lg:sticky lg:top-32">
+                <CabecalhoSecao titulo="Histórico" descricao="Rolagens da mesa, das mais novas para as mais antigas." />
                 <FeedRolagens mesaId={id} onNovaRolagem={() => setNovasRolagens(n => n + 1)} />
-              </div>
+              </section>
             </div>
           )}
 
@@ -686,16 +629,18 @@ export default function MesaPage() {
           )}
 
           {activeTab === 'Resumo' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* F29.4 — calendário do mundo */}
               <PainelCalendario mesaId={id} isGestor={isGestor && !arquivada} />
               <PainelRelogios mesaId={id} isGestor={isGestor} />
               {/* F29.3 — notas privadas ou compartilhadas */}
-              <div>
-                <p className="text-purple-200 font-medium text-sm mb-3">Notas</p>
+              <section className="space-y-3">
+                <CabecalhoSecao titulo="Notas" descricao="Só suas, ou compartilhadas com a mesa." nivel={3} />
                 <PainelNotas mesaId={id} meuId={session?.user?.id} />
-              </div>
+              </section>
               <RecapSessao mesaId={id} />
+              {/* Fase 13.5 — histórico de sessões encerradas */}
+              <SessoesHistorico mesaId={id} />
             </div>
           )}
 
@@ -708,193 +653,139 @@ export default function MesaPage() {
           )}
 
           {activeTab === 'Membros' && (
-            <div className="space-y-4">
-              {/* F44 — combinados, linhas e véus (anônimos) */}
-              <PainelLimites mesaId={id} isGestor={isGestor} />
-              {/* F51 — anunciar na Comunidade e responder pedidos de vaga */}
-              {isGestor && !arquivada && <AnuncioMesa mesaId={id} />}
-              {isGestor && (
-                <div className="bg-slate-800 border border-purple-800 rounded-xl p-5">
-                  <p className="text-purple-300 text-sm font-medium mb-2">Código de convite</p>
-                  <div className="flex items-center gap-3">
-                    <code className="flex-1 text-center font-mono text-xl tracking-[0.3em] text-white bg-purple-950 border border-purple-700 rounded-lg py-3 px-4 uppercase">
-                      {mesa?.codigo_convite}
-                    </code>
-                    <button
-                      onClick={copiarCodigo}
-                      className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                        copiado ? 'bg-green-700 text-green-100' : 'bg-purple-700 hover:bg-purple-600 text-sobre-acento'
-                      }`}
-                    >
-                      {copiado ? '✓ Copiado!' : 'Copiar'}
-                    </button>
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] items-start">
+              <div className="space-y-6">
+                <section className="rounded-2xl border border-border bg-raised/70 overflow-hidden" aria-label="Membros">
+                  <div className="px-5 py-4 border-b border-border/70">
+                    <CabecalhoSecao titulo={`Membros (${membros.length})`} nivel={3} descricao="Quem está nesta mesa e com qual papel." />
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 mt-3">
-                    <Botao variante="contorno" tamanho="sm" onClick={copiarLink}>{linkCopiado ? '✓ Link copiado!' : 'Copiar link de convite'}</Botao>
-                    <p className="text-accent-300 text-xs flex-1 min-w-[12rem]">
-                      Mande o link: quem abrir entra direto na mesa — com conta ou, se estiver ligado, como convidado, sem cadastro.
-                    </p>
-                  </div>
-
-                  {/* Regenerar convite (16.3) */}
-                  <div className="mt-3 pt-3 border-t border-purple-900/60">
-                    {!confirmandoRegen ? (
-                      <button
-                        onClick={() => { setRegenError(''); setConfirmandoRegen(true) }}
-                        className="text-xs text-purple-400 hover:text-white transition-colors"
-                      >
-                        ↻ Gerar novo código
-                      </button>
-                    ) : (
-                      <div className="space-y-2">
-                        <p className="text-amber-300 text-xs">
-                          O código antigo <strong>deixará de funcionar</strong>. Quem já é membro continua na mesa.
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <Botao variante="primario" tamanho="sm"
-                            onClick={handleRegenerarConvite}
-                            disabled={regenerating}>
-                            {regenerating ? 'Gerando...' : 'Confirmar novo código'}
-                          </Botao>
-                          <button
-                            onClick={() => { setConfirmandoRegen(false); setRegenError('') }}
-                            disabled={regenerating}
-                            className="px-3 py-1.5 text-purple-400 hover:text-white text-xs transition-colors disabled:opacity-50"
-                          >
-                            Cancelar
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    {regenError && <p className="text-red-400 text-xs mt-1">{regenError}</p>}
-                  </div>
-                </div>
-              )}
-
-              {/* Meu perfil nesta mesa (16.6) */}
-              {meuMembro && (
-                <MeuPerfilMesa
-                  mesaId={id}
-                  usuarioId={session.user.id}
-                  username={meuMembro.usuario?.username}
-                  apelidoInicial={meuMembro.apelido}
-                  avatarInicial={meuMembro.avatar_url}
-                  onSaved={onPerfilSalvo}
-                />
-              )}
-
-              <div className="bg-slate-800 border border-purple-800 rounded-xl overflow-hidden">
-                <div className="px-5 py-3 border-b border-purple-900">
-                  <p className="text-purple-200 font-medium text-sm">Membros ({membros.length})</p>
-                </div>
-                <ul className="divide-y divide-purple-900">
-                  {membros.map(m => (
-                    <li key={m.usuario.id} className="flex items-center justify-between gap-2 px-5 py-3">
-                      <div className="flex items-center gap-2 min-w-0">
-                        {m.avatar_url ? (
-                          <img src={m.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover border border-purple-700 shrink-0" />
-                        ) : (
-                          <div className="w-7 h-7 rounded-full bg-purple-950 border border-purple-800 flex items-center justify-center shrink-0">
-                            <span className="text-purple-300 text-xs font-bold">
-                              {(m.apelido || m.usuario.username || '?').slice(0, 2).toUpperCase()}
-                            </span>
+                  <ul className="divide-y divide-border/60">
+                    {membros.map(m => (
+                      <li key={m.usuario.id} className="flex items-center justify-between gap-3 px-5 py-3 hover:bg-hover/40 transition-colors duration-rapida">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Avatar url={m.avatar_url} nome={nomeDoMembro(m)} tamanho="md" />
+                          <div className="min-w-0">
+                            <p className="text-ink text-sm font-medium truncate">
+                              {nomeDoMembro(m)}
+                              {m.usuario.id === session?.user?.id && <span className="text-ink-dim font-normal"> (você)</span>}
+                            </p>
+                            {m.apelido && <p className="text-ink-dim text-xs truncate">{m.usuario.username}</p>}
                           </div>
-                        )}
-                        <span className="text-white text-sm truncate">
-                          {m.apelido || m.usuario.username}
-                          {m.apelido && <span className="text-accent-300 text-xs"> ({m.usuario.username})</span>}
-                          {m.usuario.id === session?.user?.id && <span className="text-accent-300"> (você)</span>}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        {/* Dono altera papel (16.5) de todos exceto ele mesmo e o próprio 'mestre' */}
-                        {isCriador && m.usuario.id !== session?.user?.id && m.role !== 'mestre' ? (
-                          <select
-                            value={m.role}
-                            onChange={e => handleDefinirRole(m.usuario.id, e.target.value)}
-                            className="text-xs px-2 py-1 rounded-lg bg-void border border-border text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
-                            title="Papel na mesa"
-                          >
-                            <option value="co-mestre">Co-mestre</option>
-                            <option value="jogador">Jogador</option>
-                            <option value="espectador">Espectador</option>
-                          </select>
-                        ) : (
-                          <SeloPapel papel={m.role} />
-                        )}
-                        {podeExpulsar(m) && (
-                          <button
-                            onClick={() => { setExpelError(''); setMembroToExpel(m) }}
-                            className="p-1 text-red-800 hover:text-red-400 transition-colors"
-                            title={`Expulsar ${m.usuario.username}`}
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {/* Dono altera papel (16.5) de todos exceto ele mesmo e o próprio 'mestre' */}
+                          {isCriador && m.usuario.id !== session?.user?.id && m.role !== 'mestre' ? (
+                            <select
+                              value={m.role}
+                              onChange={e => handleDefinirRole(m.usuario.id, e.target.value)}
+                              className="campo !min-h-[34px] !py-1 !px-2 !text-sm"
+                              aria-label={`Papel de ${nomeDoMembro(m)}`}
+                            >
+                              <option value="co-mestre">Co-mestre</option>
+                              <option value="jogador">Jogador</option>
+                              <option value="espectador">Espectador</option>
+                            </select>
+                          ) : (
+                            <SeloPapel papel={m.role} />
+                          )}
+                          {podeExpulsar(m) && (
+                            <button
+                              onClick={() => { setExpelError(''); setMembroToExpel(m) }}
+                              aria-label={`Expulsar ${nomeDoMembro(m)}`} data-dica="Expulsar da mesa"
+                              className="botao-icone hover:!text-harm"
+                            ><Icone nome="x" tamanho={18} /></button>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                {isGestor && (
+                  <section className="rounded-2xl border border-border bg-raised/70 p-5 space-y-4" aria-label="Convite">
+                    <CabecalhoSecao titulo="Convidar jogadores" nivel={3} descricao="Mande o link: quem abrir entra direto na mesa, com conta ou como convidado." />
+                    <div className="flex flex-wrap items-center gap-2">
+                      <code className="flex-1 min-w-[12rem] text-center font-mono text-xl tracking-[0.25em] text-ink bg-void border border-border rounded-xl py-3 px-4 uppercase select-all">
+                        {mesa?.codigo_convite}
+                      </code>
+                      <Botao variante={copiado ? 'secundario' : 'primario'} tamanho="lg" onClick={copiarCodigo} aria-live="polite">
+                        <Icone nome={copiado ? 'check' : 'copiar'} tamanho={18} /> {copiado ? 'Copiado' : 'Copiar código'}
+                      </Botao>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Botao variante="contorno" onClick={copiarLink}>
+                        <Icone nome={linkCopiado ? 'check' : 'link'} tamanho={16} /> {linkCopiado ? 'Link copiado' : 'Copiar link de convite'}
+                      </Botao>
+                      <Botao variante="fantasma" onClick={handleRegenerarConvite} disabled={regenerating}>
+                        {regenerating ? 'Gerando…' : 'Gerar novo código'}
+                      </Botao>
+                    </div>
+                    {regenError && <p className="aviso-erro" role="alert">{regenError}</p>}
+                  </section>
+                )}
+
+                {/* Meu perfil nesta mesa (16.6) */}
+                {meuMembro && (
+                  <MeuPerfilMesa
+                    mesaId={id}
+                    usuarioId={session.user.id}
+                    username={meuMembro.usuario?.username}
+                    apelidoInicial={meuMembro.apelido}
+                    avatarInicial={meuMembro.avatar_url}
+                    onSaved={onPerfilSalvo}
+                  />
+                )}
               </div>
 
-              {/* F45 — qualquer membro leva a sua cópia (o RLS decide o que vai) */}
-              <BaixarMesa mesaId={id} nome={mesa?.nome} />
+              <div className="space-y-6">
+                {/* F44 — combinados, linhas e véus (anônimos) */}
+                <PainelLimites mesaId={id} isGestor={isGestor} />
+                {/* F51 — anunciar na Comunidade e responder pedidos de vaga */}
+                {isGestor && !arquivada && <AnuncioMesa mesaId={id} />}
+                {/* F45 — qualquer membro leva a sua cópia (o RLS decide o que vai) */}
+                <BaixarMesa mesaId={id} nome={mesa?.nome} />
 
-              {/* Transferir posse (16.4) — só o dono */}
-              {isCriador && membros.length > 1 && (
-                <div className="bg-slate-800 border border-amber-800/40 rounded-xl p-5">
-                  <p className="text-purple-300 text-sm font-medium mb-1">Transferir posse</p>
-                  <p className="text-accent-300 text-xs mb-3">
-                    Passe a mesa para outro membro. Você deixa de ser o dono e vira co-mestre.
-                  </p>
-                  <Botao
-                    variante="contorno"
-                    onClick={() => { setTransferError(''); setNovoDonoId(''); setShowTransferir(true) }}
-                  >
-                    Transferir posse da mesa
-                  </Botao>
-                </div>
-              )}
+                {isCriador && (
+                  <section className="rounded-2xl border border-border bg-raised/50 p-5 space-y-5" aria-label="Administração da mesa">
+                    <CabecalhoSecao titulo="Administração" nivel={3} descricao="Só o dono da mesa vê esta parte." />
+                    {/* Capa da mesa (37.4) */}
+                    <SeletorCapa mesaId={id} capaAtual={mesa?.capa || null} onTrocou={capa => setMesa(prev => ({ ...prev, capa }))} />
 
-              {/* Capa da mesa (37.4) — só o dono */}
-              {isCriador && (
-                <div className="bg-slate-800 border border-purple-800 rounded-xl p-5">
-                  <SeletorCapa
-                    mesaId={id}
-                    capaAtual={mesa?.capa || null}
-                    onTrocou={capa => setMesa(prev => ({ ...prev, capa }))}
-                  />
-                </div>
-              )}
+                    {/* Transferir posse (16.4) */}
+                    {membros.length > 1 && (
+                      <div className="pt-5 border-t border-border/60">
+                        <p className="text-ink text-sm font-medium">Transferir posse</p>
+                        <p className="text-ink-dim text-sm mt-0.5 mb-3">Passe a mesa para outro membro. Você deixa de ser o dono e vira co-mestre.</p>
+                        <Botao variante="contorno" onClick={() => { setTransferError(''); setNovoDonoId(''); setShowTransferir(true) }}>
+                          Transferir posse da mesa
+                        </Botao>
+                      </div>
+                    )}
 
-              {/* Arquivar mesa (16.8) — só o dono */}
-              {isCriador && (
-                <div className="bg-slate-800 border border-purple-800 rounded-xl p-5">
-                  <p className="text-purple-300 text-sm font-medium mb-1">{arquivada ? 'Mesa arquivada' : 'Arquivar mesa'}</p>
-                  <p className="text-accent-300 text-xs mb-3">
-                    {arquivada
-                      ? 'A mesa está em somente leitura. Desarquive para voltar a jogar.'
-                      : 'Guarda a mesa em somente leitura (sem novas sessões, fichas ou rolagens). Some da lista principal e pode ser desarquivada depois.'}
-                  </p>
-                  <Botao variante="secundario" onClick={() => handleArquivar(!arquivada)}>
-                    {arquivada ? 'Desarquivar mesa' : 'Arquivar mesa'}
-                  </Botao>
-                </div>
-              )}
+                    {/* Arquivar mesa (16.8) */}
+                    <div className="pt-5 border-t border-border/60">
+                      <p className="text-ink text-sm font-medium">{arquivada ? 'Mesa arquivada' : 'Arquivar mesa'}</p>
+                      <p className="text-ink-dim text-sm mt-0.5 mb-3">
+                        {arquivada
+                          ? 'A mesa está em somente leitura. Desarquive para voltar a jogar.'
+                          : 'Guarda a mesa em somente leitura (sem novas sessões, fichas ou rolagens). Pode ser desarquivada depois.'}
+                      </p>
+                      <Botao variante="secundario" onClick={() => handleArquivar(!arquivada)}>
+                        {arquivada ? 'Desarquivar mesa' : 'Arquivar mesa'}
+                      </Botao>
+                    </div>
 
-              {/* Deletar mesa — veio da barra de cima (varredura de design) */}
-              {isCriador && (
-                <div className="bg-slate-800 border border-red-900/60 rounded-xl p-5">
-                  <p className="text-red-300 text-sm font-medium mb-1">Deletar mesa</p>
-                  <p className="text-accent-300 text-xs mb-3">
-                    Apaga a mesa, as fichas, o sistema e o histórico de sessões. Não tem como desfazer —
-                    se a ideia é só parar de jogar, use arquivar.
-                  </p>
-                  <Botao variante="perigo" onClick={() => setShowDeleteMesa(true)}>
-                    Deletar esta mesa
-                  </Botao>
-                </div>
-              )}
+                    {/* Apagar mesa — zona de perigo, separada */}
+                    <div className="pt-5 border-t border-red-900/50">
+                      <p className="text-red-300 text-sm font-medium">Apagar mesa</p>
+                      <p className="text-ink-dim text-sm mt-0.5 mb-3">
+                        Apaga a mesa, as fichas, o sistema e o histórico. Não tem como desfazer; para só parar de jogar, arquive.
+                      </p>
+                      <Botao variante="perigo" onClick={() => setShowDeleteMesa(true)}>Apagar esta mesa</Botao>
+                    </div>
+                  </section>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -1038,7 +929,6 @@ export default function MesaPage() {
         </Modal>
       )}
 
-      {showPrefs && <PreferenciasModal onFechar={() => setShowPrefs(false)} />}
     </div>
   )
 }

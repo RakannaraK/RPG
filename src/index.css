@@ -12,10 +12,6 @@
   padding: 0;
 }
 
-/* F52 — o espaço da barra de rolagem fica sempre reservado: abrir um modal
-   (que trava a rolagem) ou trocar para uma página curta não empurra o layout. */
-html { scrollbar-gutter: stable; }
-
 body {
   min-height: 100vh;
   background-color: var(--bg);

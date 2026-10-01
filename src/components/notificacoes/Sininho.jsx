@@ -1,27 +1,34 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useNotificacoes } from '../../hooks/useNotificacoes'
+import { useFechaFora } from '../../hooks/useFechaFora'
+import { agruparPorDia, iconeDaNotificacao, quandoFoi } from '../../lib/notificacoes'
+import Icone from '../ui/Icone'
 import Ilustra from '../arte/Ilustra'
 
 /**
- * Fase 16.7 — sininho de notificações (inline no header). Contador de não lidas,
- * dropdown com a lista; clicar navega para o link e marca como lida.
+ * Fase 16.7 → 52 — sininho de notificações. Contador de não lidas (pulsa UMA
+ * vez quando chega aviso novo), painel com os avisos separados por dia,
+ * ícone por tipo e marca de "novo". Clicar abre o link e marca como lida.
+ *
+ * O painel se ancora no cabeçalho (`relative` de quem usa), não no botão:
+ * assim ele cabe na tela do celular, onde o sino não fica na ponta.
  */
-function tempoRel(ts) {
-  if (!ts) return ''
-  const seg = Math.floor((Date.now() - new Date(ts).getTime()) / 1000)
-  if (seg < 60) return 'agora'
-  const min = Math.floor(seg / 60)
-  if (min < 60) return `${min}min`
-  const h = Math.floor(min / 60)
-  if (h < 24) return `${h}h`
-  return new Date(ts).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
-}
-
 export default function Sininho() {
   const navigate = useNavigate()
   const [aberto, setAberto] = useState(false)
+  const painel = useRef(null)
+  const botao = useRef(null)
   const { notificacoes, naoLidas, marcarLida, marcarTodasLidas } = useNotificacoes()
+  useFechaFora(painel, aberto, () => setAberto(false), botao)
+
+  // pulso só quando o número SOBE (aviso novo), não ao carregar nem ao ler
+  const [visto, setVisto] = useState(naoLidas)
+  const [pulso, setPulso] = useState(0)
+  if (naoLidas !== visto) {
+    if (naoLidas > visto && visto !== 0) setPulso(p => p + 1)
+    setVisto(naoLidas)
+  }
 
   function abrir(n) {
     marcarLida(n.id)
@@ -29,60 +36,87 @@ export default function Sininho() {
     if (n.link) navigate(n.link)
   }
 
+  const grupos = agruparPorDia(notificacoes)
+  const rotulo = naoLidas > 0 ? `Notificações: ${naoLidas} não lida${naoLidas > 1 ? 's' : ''}` : 'Notificações'
+
   return (
-    <div className="relative">
+    <>
       <button
+        ref={botao}
         onClick={() => setAberto(a => !a)}
-        title="Notificações"
-        className="relative p-2 text-purple-300 hover:text-white hover:bg-purple-800/50 rounded-lg transition-colors"
+        aria-label={rotulo} aria-expanded={aberto} aria-haspopup="dialog" data-dica="Notificações"
+        className="botao-icone relative"
       >
-        <Ilustra nome="sino" tamanho={20} />
+        <Icone nome="sino" tamanho={20} />
         {naoLidas > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-xs font-bold bg-red-500 text-white rounded-full">
+          <span key={pulso} className={`contador absolute -top-0.5 -right-0.5 !min-w-[1.1rem] !h-[1.1rem] !text-[0.6875rem] ring-2 ring-bg ${pulso ? 'pulso-uma-vez' : ''}`} aria-hidden="true">
             {naoLidas > 9 ? '9+' : naoLidas}
           </span>
         )}
       </button>
 
       {aberto && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setAberto(false)} />
-          <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-1.5rem)] bg-slate-900 border border-purple-800 rounded-xl shadow-2xl z-50 overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-purple-900">
-              <span className="text-white text-sm font-semibold">Notificações</span>
-              {naoLidas > 0 && (
-                <button onClick={marcarTodasLidas} className="text-purple-400 hover:text-white text-xs transition-colors">
-                  Marcar todas como lidas
-                </button>
-              )}
-            </div>
-
-            {notificacoes.length === 0 ? (
-              <div className="py-8 text-center text-accent-300 text-sm">Nenhuma notificação.</div>
-            ) : (
-              <ul className="max-h-96 overflow-y-auto divide-y divide-purple-900/60">
-                {notificacoes.map(n => (
-                  <li key={n.id}>
-                    <button
-                      onClick={() => abrir(n)}
-                      className={`w-full text-left px-4 py-3 transition-colors hover:bg-slate-800 ${n.lida ? '' : 'bg-purple-950/40'}`}
-                    >
-                      <div className="flex items-start gap-2">
-                        {!n.lida && <span className="w-2 h-2 rounded-full bg-purple-500 mt-1.5 shrink-0" />}
-                        <div className="min-w-0 flex-1">
-                          <p className={`text-sm ${n.lida ? 'text-purple-300' : 'text-white font-medium'}`}>{n.titulo}</p>
-                          {n.corpo && <p className="text-accent-300 text-xs mt-0.5 truncate">{n.corpo}</p>}
-                          <p className="text-ink-dim text-xs mt-0.5">{tempoRel(n.created_at)}</p>
-                        </div>
-                      </div>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+        <div
+          ref={painel}
+          role="dialog" aria-label="Notificações"
+          className="pop-entra absolute right-3 sm:right-6 top-full mt-1 w-[min(24rem,calc(100vw-1.5rem))] rounded-2xl border border-border bg-raised shadow-nivel-3 z-menu overflow-hidden"
+        >
+          <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border/70">
+            <p className="text-ink font-semibold">
+              Notificações
+              {naoLidas > 0 && <span className="ml-2 text-ink-dim text-sm font-normal">{naoLidas} nova{naoLidas > 1 ? 's' : ''}</span>}
+            </p>
+            {naoLidas > 0 && (
+              <button onClick={marcarTodasLidas} className="text-accent-300 hover:text-ink text-sm transition-colors duration-rapida">
+                Marcar todas como lidas
+              </button>
             )}
           </div>
-        </>
+
+          {notificacoes.length === 0 ? (
+            <div className="px-6 py-10 text-center">
+              <Ilustra nome="sino" tamanho={56} className="mx-auto mb-3 opacity-80" />
+              <p className="text-ink font-medium">Tudo em dia</p>
+              <p className="text-ink-dim text-sm mt-1">Sessões que começam, convites e mudanças de papel aparecem aqui.</p>
+            </div>
+          ) : (
+            <div className="max-h-[min(28rem,70vh)] overflow-y-auto overscroll-contain">
+              {grupos.map(g => (
+                <section key={g.rotulo}>
+                  <h3 className="sticky top-0 z-10 bg-raised/95 backdrop-blur px-4 pt-3 pb-1.5 text-xs font-semibold uppercase tracking-wider text-ink-dim">{g.rotulo}</h3>
+                  <ul>
+                    {g.itens.map(n => (
+                      <li key={n.id} className="group relative">
+                        <button
+                          onClick={() => abrir(n)}
+                          className={`w-full text-left flex items-start gap-3 px-4 py-3 transition-colors duration-rapida hover:bg-hover/70 ${n.lida ? '' : 'bg-accent-800/15'}`}
+                        >
+                          <span className={`mt-0.5 w-8 h-8 shrink-0 rounded-full inline-flex items-center justify-center ${n.lida ? 'bg-hover text-ink-dim' : 'bg-accent-700/30 text-accent-300'}`}>
+                            <Icone nome={iconeDaNotificacao(n.tipo)} tamanho={16} />
+                          </span>
+                          <span className="flex-1 min-w-0">
+                            <span className={`block text-sm ${n.lida ? 'text-ink-dim' : 'text-ink font-medium'}`}>{n.titulo}</span>
+                            {n.corpo && <span className="block text-ink-dim text-sm mt-0.5 line-clamp-2">{n.corpo}</span>}
+                            <span className="block text-ink-dim text-xs mt-1 tabular-nums">{quandoFoi(n.created_at)}</span>
+                          </span>
+                          {!n.lida && <span className="mt-2 w-2 h-2 rounded-full bg-accent-400 shrink-0" aria-label="nova" />}
+                        </button>
+                        {!n.lida && (
+                          <button
+                            onClick={() => marcarLida(n.id)}
+                            aria-label={`Marcar "${n.titulo}" como lida`} data-dica="Marcar como lida"
+                            className="botao-icone !min-w-[32px] !min-h-[32px] absolute right-2 bottom-2 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                          ><Icone nome="check" tamanho={16} /></button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          )}
+        </div>
       )}
-    </div>
+    </>
   )
 }

@@ -5,7 +5,17 @@ import { usePreferencias } from '../../context/PreferenciasContext'
 import { tocarPresetAcao } from '../../audio/actionSynth'
 import { EFEITOS_MESA, extrairVideo, posicaoAgora, precisaAjustar } from '../../lib/trilha'
 import Botao from '../ui/Botao'
-import Ilustra from '../arte/Ilustra'
+import Icone from '../ui/Icone'
+
+// F52 — cada efeito tem ícone e uma reação própria no botão (só nele, nunca na tela)
+const ICONE_EFEITO = {
+  trovao: 'raio', sino: 'sino', porta: 'porta', lamina: 'espada', impacto: 'impacto', disparo: 'mira',
+  projetil: 'flecha', arcano: 'magia', cura: 'coracao', escudo: 'escudo', critico: 'estrela', falha: 'caveira',
+}
+const ANIM_EFEITO = {
+  trovao: 'ef-tremer', impacto: 'ef-tremer', lamina: 'ef-tremer', disparo: 'ef-tremer', porta: 'ef-tremer', falha: 'ef-tremer',
+  critico: 'ef-critico', arcano: 'ef-flash', cura: 'ef-flash', escudo: 'ef-flash', sino: 'ef-flash', projetil: 'ef-flash',
+}
 
 // API de iframe do YouTube: um <script> só, carregado na primeira vez que alguém ouve
 let apiYouTube = null
@@ -32,7 +42,6 @@ const TOCANDO = 1
 const PAUSADO = 2
 const CARREGANDO = 3
 const FIM = 0
-const CAMPO = 'flex-1 min-w-0 px-2.5 py-1.5 rounded-lg bg-void border border-border text-ink text-xs placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 
 /**
  * Fase 43 — trilha sonora da mesa (vídeo do YouTube, sincronizado) e efeitos
@@ -48,6 +57,7 @@ export default function TrilhaMesa({ mesaId, isGestor, reservarEspaco = true }) 
   const [bloqueado, setBloqueado] = useState(false)
   const [link, setLink] = useState('')
   const [erro, setErro] = useState('')
+  const [animando, setAnimando] = useState(null) // { id, n } — reação do botão do efeito
   const alvoRef = useRef(null)
   const secaoRef = useRef(null)
   const playerRef = useRef(null)
@@ -165,76 +175,131 @@ export default function TrilhaMesa({ mesaId, isGestor, reservarEspaco = true }) 
   }
 
   const titulo = videoId ? (estado.titulo || 'Música do YouTube') : 'Trilha e efeitos'
-  const caixa = 'fixed bottom-3 left-3 z-40 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-border bg-raised/95 backdrop-blur shadow-xl'
+  const tocando = !!videoId && !!estado?.tocando
+  const caixa = 'trilha-caixa fixed bottom-4 left-4 z-menu max-w-[calc(100vw-2rem)] rounded-2xl border border-border bg-raised/95 backdrop-blur-md shadow-nivel-3'
+  const ROTULO = 'text-ink-dim text-xs font-semibold uppercase tracking-wider'
+
+  function dispararEfeito(id) {
+    setAnimando(a => ({ id, n: (a?.n || 0) + 1 }))
+    acao(() => disparar(id))
+  }
 
   // portal: dentro da página, um ancestral com animação/transform prende o `fixed`
   // ao conteúdo em vez da tela (a barra rolava junto e tampava botões)
   return createPortal(
-    <section ref={secaoRef} aria-label="Trilha da mesa" className={recolhido ? `${caixa} w-auto p-1.5 flex items-center gap-2` : `${caixa} w-72 p-2.5 space-y-2`}>
+    <section ref={secaoRef} aria-label="Trilha e efeitos da mesa" className={recolhido ? `${caixa} w-auto p-1.5 pr-2 flex items-center gap-2` : `${caixa} pop-entra w-80 p-3 space-y-3`}>
       {/* o mesmo div nos dois tamanhos: trocar de lugar recriaria o tocador */}
-      {ativo && <div ref={alvoRef} className={`${recolhido ? 'w-16 h-9' : 'w-40 h-[90px]'} shrink-0 rounded-lg overflow-hidden bg-void [&_iframe]:w-full [&_iframe]:h-full`} />}
+      {ativo && <div ref={alvoRef} className={`${recolhido ? 'w-16 h-9' : 'w-full aspect-video'} shrink-0 rounded-lg overflow-hidden bg-void [&_iframe]:w-full [&_iframe]:h-full`} />}
       {recolhido ? (
         <>
-          {!ativo && <Ilustra nome="som" tamanho={18} className="shrink-0 ml-1" />}
-          <p className="min-w-0 max-w-[10rem] text-xs text-ink truncate" title={titulo}>{titulo}</p>
+          {!ativo && (
+            <span className="w-9 h-9 rounded-xl bg-accent-800/40 text-accent-300 inline-flex items-center justify-center shrink-0">
+              <Icone nome="volume" tamanho={18} />
+            </span>
+          )}
+          <div className="min-w-0 max-w-[11rem]">
+            <p className="text-sm text-ink font-medium truncate" title={titulo}>{videoId ? titulo : 'Trilha e efeitos'}</p>
+            {videoId && (
+              <p className="text-xs text-ink-dim flex items-center gap-1.5">
+                <span className={`equalizador ${tocando ? '' : 'parado'}`} aria-hidden="true"><i /><i /><i /></span>
+                {tocando ? 'Tocando agora' : 'Pausada'}
+              </p>
+            )}
+          </div>
           {bloqueado && ativo
             ? <Botao variante="primario" tamanho="sm" onClick={destravar}>Ouvir</Botao>
-            : <Botao variante="fantasma" tamanho="sm" aria-expanded={false} aria-label="Abrir a trilha" onClick={() => setRecolhido(false)}>Abrir</Botao>}
+            : (
+              <button className="botao-icone" aria-expanded={false} aria-label="Abrir trilha e efeitos" data-dica="Abrir" onClick={() => setRecolhido(false)}>
+                <Icone nome="chevron-cima" tamanho={18} />
+              </button>
+            )}
         </>
       ) : (<>
       <div className="flex items-center gap-2">
-        <Ilustra nome="som" tamanho={18} className="shrink-0" />
-        <p className="flex-1 min-w-0 text-xs text-ink truncate" title={titulo}>{titulo}</p>
-        {videoId && <span className="text-xs text-ink-dim shrink-0">{estado.tocando ? 'tocando' : 'pausada'}</span>}
-        <Botao variante="fantasma" tamanho="sm" aria-expanded aria-label="Recolher a trilha" onClick={() => setRecolhido(true)}>Recolher</Botao>
+        <Icone nome="volume" tamanho={18} className="text-accent-300" />
+        <p className="flex-1 text-ink text-sm font-semibold">Trilha e efeitos</p>
+        <button className="botao-icone !min-w-[32px] !min-h-[32px]" aria-expanded aria-label="Recolher trilha e efeitos" data-dica="Recolher" onClick={() => setRecolhido(true)}>
+          <Icone nome="chevron-baixo" tamanho={18} />
+        </button>
       </div>
 
-      {videoId && (
-        <div className="flex items-center gap-2">
-          <Botao variante={ouvir ? 'contorno' : 'primario'} tamanho="sm" aria-pressed={!ouvir} onClick={() => setOuvir(o => !o)}>
-            {ouvir ? 'Silenciar' : 'Ouvir'}
-          </Botao>
-          {ouvir && (
-            <input
-              type="range" min={0} max={100} value={volume} aria-label="Volume da trilha"
-              onChange={e => setVolume(Number(e.target.value))} className="flex-1 min-w-0 accent-accent-500"
-            />
-          )}
-        </div>
-      )}
-      {bloqueado && ativo && (
-        <Botao variante="primario" tamanho="sm" className="w-full" onClick={destravar}>Clique para ouvir a trilha</Botao>
-      )}
-
-      {isGestor && (
-        <div className="space-y-2 border-t border-border pt-2">
-          {videoId && (
-            <div className="flex flex-wrap gap-1">
-              {estado.tocando
-                ? <Botao variante="secundario" tamanho="sm" onClick={() => acao(() => atualizar({ tocando: false, posicao_s: posicao(), marcado_em: agoraISO() }))}>Pausar</Botao>
-                : <Botao variante="primario" tamanho="sm" onClick={() => acao(() => atualizar({ tocando: true, marcado_em: agoraISO() }))}>Continuar</Botao>}
-              <Botao variante="secundario" tamanho="sm" onClick={() => acao(() => atualizar({ posicao_s: 0, marcado_em: agoraISO() }))}>Do começo</Botao>
-              <Botao
-                variante={estado.repetir ? 'primario' : 'contorno'} tamanho="sm" aria-pressed={!!estado.repetir}
-                onClick={() => acao(() => atualizar({ repetir: !estado.repetir, posicao_s: posicao(), marcado_em: agoraISO() }))}
-              >Repetir</Botao>
-              <Botao variante="fantasma" tamanho="sm" onClick={() => acao(() => atualizar({ video_id: null, titulo: null, tocando: false, posicao_s: 0, marcado_em: agoraISO() }))}>Tirar</Botao>
+      {/* ── Trilha ── */}
+      <div className="space-y-2">
+        <p className={ROTULO}>Trilha</p>
+        {videoId ? (
+          <div className="rounded-xl bg-void/70 border border-border/70 p-2.5 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className={`equalizador ${tocando ? '' : 'parado'}`} aria-hidden="true"><i /><i /><i /></span>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-ink-dim">{tocando ? 'Tocando agora' : 'Pausada'}</p>
+                <p className="text-sm text-ink truncate" title={titulo}>{titulo}</p>
+              </div>
             </div>
-          )}
-          <form onSubmit={tocarLink} className="flex gap-1">
-            <input value={link} onChange={e => setLink(e.target.value)} placeholder="Link do YouTube" aria-label="Link do YouTube" className={CAMPO} />
-            <Botao type="submit" variante="primario" tamanho="sm">Tocar</Botao>
+            <div className="flex items-center gap-2">
+              <button
+                className="botao-icone !min-w-[32px] !min-h-[32px]" aria-pressed={!ouvir}
+                aria-label={ouvir ? 'Silenciar para mim' : 'Ouvir'} data-dica={ouvir ? 'Silenciar para mim' : 'Ouvir'} data-dica-lado="dir"
+                onClick={() => setOuvir(o => !o)}
+              ><Icone nome={ouvir ? 'volume' : 'mudo'} tamanho={18} /></button>
+              {ouvir && (
+                <input
+                  type="range" min={0} max={100} value={volume} aria-label="Volume da trilha (só para você)"
+                  onChange={e => setVolume(Number(e.target.value))} className="flex-1 min-w-0 accent-accent-500"
+                />
+              )}
+            </div>
+          </div>
+        ) : (
+          <p className="text-ink-dim text-sm">{isGestor ? 'Cole um link do YouTube: a mesa toda ouve, no mesmo ponto da música.' : 'Nenhuma música tocando.'}</p>
+        )}
+        {bloqueado && ativo && (
+          <Botao variante="primario" tamanho="sm" className="w-full" onClick={destravar}>Clique para ouvir a trilha</Botao>
+        )}
+
+        {isGestor && videoId && (
+          <div className="flex flex-wrap gap-1">
+            {estado.tocando
+              ? <Botao variante="secundario" tamanho="sm" onClick={() => acao(() => atualizar({ tocando: false, posicao_s: posicao(), marcado_em: agoraISO() }))}><Icone nome="pausa" tamanho={14} /> Pausar</Botao>
+              : <Botao variante="primario" tamanho="sm" onClick={() => acao(() => atualizar({ tocando: true, marcado_em: agoraISO() }))}><Icone nome="play" tamanho={14} /> Continuar</Botao>}
+            <Botao variante="secundario" tamanho="sm" onClick={() => acao(() => atualizar({ posicao_s: 0, marcado_em: agoraISO() }))}>Do começo</Botao>
+            <Botao
+              variante={estado.repetir ? 'primario' : 'contorno'} tamanho="sm" aria-pressed={!!estado.repetir}
+              onClick={() => acao(() => atualizar({ repetir: !estado.repetir, posicao_s: posicao(), marcado_em: agoraISO() }))}
+            >Repetir</Botao>
+            <Botao variante="fantasma" tamanho="sm" onClick={() => acao(() => atualizar({ video_id: null, titulo: null, tocando: false, posicao_s: 0, marcado_em: agoraISO() }))}>Tirar</Botao>
+          </div>
+        )}
+        {isGestor && (
+          <form onSubmit={tocarLink} className="flex gap-1.5">
+            <input value={link} onChange={e => setLink(e.target.value)} placeholder="Link do YouTube" aria-label="Link do YouTube" className="campo flex-1 min-w-0 !min-h-[34px] !py-1.5 !text-sm" />
+            <Botao type="submit" variante="primario" tamanho="sm"><Icone nome="play" tamanho={14} /> Tocar</Botao>
           </form>
-          <p className="text-xs text-ink-dim">Efeitos — a mesa toda ouve</p>
-          <div className="grid grid-cols-3 gap-1">
-            {EFEITOS_MESA.map(ef => (
-              <Botao key={ef.id} variante="secundario" tamanho="sm" onClick={() => acao(() => disparar(ef.id))}>{ef.nome}</Botao>
-            ))}
+        )}
+      </div>
+
+      {/* ── Efeitos rápidos (só o mestre dispara; todo mundo ouve) ── */}
+      {isGestor && (
+        <div className="space-y-2 pt-3 border-t border-border/70">
+          <p className={ROTULO}>Efeitos rápidos <span className="normal-case tracking-normal font-normal">· a mesa toda ouve</span></p>
+          <div className="grid grid-cols-3 gap-1.5">
+            {EFEITOS_MESA.map(ef => {
+              const anim = animando?.id === ef.id
+              return (
+                <button
+                  key={anim ? `${ef.id}-${animando.n}` : ef.id}
+                  type="button" onClick={() => dispararEfeito(ef.id)}
+                  className={`efeito botao flex flex-col items-center gap-1 rounded-xl border border-border bg-void/60 hover:border-accent-500 hover:bg-hover/70 py-2 text-xs text-ink ${anim ? ANIM_EFEITO[ef.id] || 'ef-flash' : ''}`}
+                >
+                  <Icone nome={ICONE_EFEITO[ef.id] || 'magia'} tamanho={18} className="text-accent-300" />
+                  {ef.nome}
+                </button>
+              )
+            })}
           </div>
         </div>
       )}
       </>)}
-      {erro && <p className="text-harm text-xs" role="alert">{erro}</p>}
+      {erro && <p className="aviso-erro !text-xs" role="alert">{erro}</p>}
     </section>,
     document.body,
   )

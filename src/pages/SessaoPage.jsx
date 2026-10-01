@@ -26,11 +26,12 @@ import PainelChat from '../components/mesa/PainelChat'
 import PainelNotas from '../components/mesa/PainelNotas'
 import PainelCalendario from '../components/mesa/PainelCalendario'
 import { useChatMesa } from '../hooks/useChatMesa'
-import Sininho from '../components/notificacoes/Sininho'
 import Ilustra from '../components/arte/Ilustra'
-import Botao from '../components/ui/Botao'
 import TrilhaMesa from '../components/mesa/TrilhaMesa'
 import XCard from '../components/mesa/XCard'
+import BarraTopo from '../components/ui/BarraTopo'
+import Icone from '../components/ui/Icone'
+import { useAuraDeSessao } from '../components/sessao/SessaoBanner'
 
 /**
  * Fase 13 — tela da sessão ao vivo.
@@ -50,6 +51,7 @@ export default function SessaoPage() {
   const [sugestaoDano, setSugestaoDano] = useState(null) // F14.6 — dano de poder a aplicar num alvo
 
   const { conectados } = usePresencaSessao(sessaoId, mesaId)
+  useAuraDeSessao(!!sessao?.ativa) // F52 — o site "entra em jogo": aura do tema nas bordas
 
   // Sistema da mesa + cards das fichas pelo motor (13.3; extraído p/ o mapa na 26.2)
   const { sistema, habilidades, atributos, cards, loading: loadingCards, error: erroCards, conectado } = useCardsDaMesa(mesaId)
@@ -396,40 +398,24 @@ export default function SessaoPage() {
   return (
     <div className="min-h-screen">
       {/* Cabeçalho */}
-      <header className="border-b border-purple-800 py-4 sticky top-0 z-20 bg-slate-950/80 backdrop-blur">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-4 flex-wrap">
-          <Botao variante="fantasma" tamanho="sm" onClick={() => navigate(`/mesa/${mesaId}`)} className="shrink-0">
-            ← Sair da sessão
-          </Botao>
-          <div className="flex items-center gap-3 min-w-0">
-            <h1 className="text-white font-bold text-xl leading-tight truncate">
-              {sessao.titulo || 'Sessão'}
-            </h1>
-            {sessao.ativa ? (
-              <span className="inline-flex items-center gap-1.5 text-red-300 text-xs font-bold uppercase tracking-wider shrink-0">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                Ao vivo
-              </span>
-            ) : (
-              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider shrink-0">
-                Encerrada
-              </span>
-            )}
-          </div>
-          <div className="ml-auto shrink-0 flex items-center gap-3">
+      <BarraTopo
+        voltar={{ para: `/mesa/${mesaId}`, rotulo: 'Sair da sessão' }}
+        titulo={sessao.titulo || 'Sessão'}
+        largura="max-w-7xl" comunidade={false}
+        acoes={
+          <>
+            {sessao.ativa
+              ? <span className="selo-ao-vivo mr-1 max-sm:!px-2"><span className="ponto-vivo" aria-hidden="true" /><span className="max-sm:sr-only">Ao vivo</span></span>
+              : <span className="text-ink-dim text-xs font-semibold uppercase tracking-wider mr-1">Encerrada</span>}
             <button
               onClick={() => navigate(`/mesa/${mesaId}/mapa`, { state: { voltar: `/mesa/${mesaId}/sessao/${sessaoId}` } })}
-              className="px-2.5 py-1.5 text-sm text-purple-200 hover:text-white bg-purple-900/50 hover:bg-purple-800/60 rounded-lg transition-colors"
-              title="Abrir o mapa da mesa"
-            >
-              <Ilustra nome="mapa" tamanho={18} /> <span className="hidden sm:inline">Mapa</span>
-            </button>
+              aria-label="Abrir o mapa da mesa" data-dica="Mapa da mesa" className="botao-icone lg:px-3 lg:gap-2"
+            ><Icone nome="mapa" tamanho={20} /><span className="hidden lg:inline text-sm">Mapa</span></button>
             <XCard mesaId={mesaId} isGestor={isMestre} />
-            <Sininho />
             <PresencaBar conectados={conectados} meuId={session?.user?.id} conectado={conectado} />
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
       <TrilhaMesa mesaId={mesaId} isGestor={isMestre} />
 
       {/* Corpo: painel de fichas + feed */}

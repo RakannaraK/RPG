@@ -93,7 +93,14 @@ export default function Modal({
     const painel = painelRef.current
     const eu = {}
     pilha.push(eu)
-    document.documentElement.style.overflow = 'hidden'
+    // trava a rolagem da página sem ela "pular" para o lado: a largura que a
+    // barra de rolagem ocupava vira margem enquanto o modal está aberto
+    const html = document.documentElement
+    if (pilha.length === 1) {
+      const barra = window.innerWidth - html.clientWidth
+      html.style.overflow = 'hidden'
+      if (barra > 0) html.style.paddingRight = `${barra}px`
+    }
 
     if (painel && !painel.contains(document.activeElement)) {
       const campo = painel.querySelector('input:not([type="hidden"]):not([disabled]),select:not([disabled]),textarea:not([disabled])')
@@ -115,7 +122,7 @@ export default function Modal({
     return () => {
       document.removeEventListener('keydown', teclado)
       pilha.splice(pilha.indexOf(eu), 1)
-      if (pilha.length === 0) document.documentElement.style.overflow = ''
+      if (pilha.length === 0) { html.style.overflow = ''; html.style.paddingRight = '' }
       if (anterior && document.contains(anterior)) anterior.focus?.({ preventScroll: true })
     }
   }, [visivel, fechar, anterior])

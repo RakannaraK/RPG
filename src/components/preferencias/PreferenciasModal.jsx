@@ -7,6 +7,7 @@ import { usePreferencias } from '../../context/PreferenciasContext'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import Aparencia from './Aparencia'
+import { perfilMudou } from '../../hooks/usePerfil'
 import Botao from '../ui/Botao'
 import Modal from '../ui/Modal'
 
@@ -41,6 +42,7 @@ export default function PreferenciasModal({ onFechar }) {
     setSalvandoApelido(false)
     if (error) { setApelidoErro(error.message || 'Erro ao salvar.'); return }
     setApelido(v)
+    perfilMudou(uid, { username: v }) // o cabeçalho atualiza na hora
     setApelidoSalvo(true)
     setTimeout(() => setApelidoSalvo(false), 2000)
   }
