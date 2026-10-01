@@ -66,6 +66,8 @@ export default function MesaPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('Fichas')
+  const [sistemaVisto, setSistemaVisto] = useState(false)
+  if (activeTab === 'Sistema' && !sistemaVisto) setSistemaVisto(true)
   // F41 — links de aviso abrem direto numa aba (?aba=Enciclopédia)
   const [params] = useSearchParams()
   const abaDoLink = params.get('aba')
@@ -492,6 +494,7 @@ export default function MesaPage() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
 
+        {activeTab !== 'Sistema' && (
         <div key={activeTab} id="painel-da-mesa" role="tabpanel" aria-label={activeTab} className="entra-aba py-8">
           {activeTab === 'Fichas' && (
             <div className="space-y-6">
@@ -644,10 +647,6 @@ export default function MesaPage() {
             </div>
           )}
 
-          {activeTab === 'Sistema' && (
-            <SistemaEditor mesaId={id} isMestre={isGestor} />
-          )}
-
           {activeTab === 'Escudo' && isGestor && (
             <PainelEscudo mesaId={id} isGestor={isGestor} />
           )}
@@ -789,6 +788,18 @@ export default function MesaPage() {
             </div>
           )}
         </div>
+        )}
+
+        {/* F52 — o editor de sistema continua montado depois da 1ª visita:
+            trocar de aba não joga fora o que ainda não foi salvo */}
+        {sistemaVisto && (
+          <div
+            hidden={activeTab !== 'Sistema'} id={activeTab === 'Sistema' ? 'painel-da-mesa' : undefined}
+            role="tabpanel" aria-label="Sistema" className="entra-aba py-8"
+          >
+            <SistemaEditor mesaId={id} isMestre={isGestor} />
+          </div>
+        )}
       </div>
 
       {/* Modal: deletar mesa */}

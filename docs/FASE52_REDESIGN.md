@@ -147,8 +147,29 @@ Regra de cada etapa: build + lint (0 erros) + testes + navegador sem erro no con
 - com "reduzir movimento": sem partículas, chama parada, nada pulsando.
 
 ### Ficou de fora (de propósito ou sem base no banco)
-- Enciclopédia, editor de Sistema, Escudo e Baú continuam com o layout interno anterior (já usam os tokens e os modais novos).
+- Escudo e Baú continuam com o layout interno anterior (já usam os tokens e os modais novos). Enciclopédia e editor de Sistema foram refeitos na rodada seguinte (seção 4).
 - Busca global / paleta de comandos (Ctrl+K): opcional; a arquitetura não impede.
 - "Online/offline" fora da sessão, efeitos favoritos e "salvos" na comunidade: o banco não tem esses dados.
 - Eventos do sistema dentro do chat (rolagens vão para o feed de Dados, como antes).
 - Página do mapa: barra própria, compacta, mantida.
+
+---
+
+## 4. Rodada seguinte — Enciclopédia como wiki e Sistema em seções (2026-10-01)
+
+**Enciclopédia (wiki da campanha)**
+- Índice por categoria (NPCs, Locais, Facções…) com contagem em chips, busca em tudo e lista agrupada por tipo; no celular, índice → artigo → voltar.
+- Artigo: caminho (Enciclopédia › NPCs), título grande, tipo, estado de revelação com ícone (Oculto / Parcial / Revelado), #etiquetas, resumo em destaque, texto com ligações, **caixa de informações** (imagem + campos do tipo) ao lado, **Relacionados** nos dois sentidos (o que este cita e quem cita este) e "Apenas o mestre" para as notas secretas.
+- Editor em seções (tipo em chips, básico, detalhes do tipo, texto, notas do mestre, imagem e etiquetas) com **"Ligar a outro verbete…"**, que insere `[[Título]]` no cursor.
+- Revelar/entregar em janela própria; "Quem sabe o quê" recolhível. Funções novas puras e testadas em `lib/enciclopedia.js`: `relacionados`, `indicePorTipo`, `contarPorTipo`, `inserirMencao`.
+
+**Editor de Sistema em seções**
+- Nove seções (Geral, Atributos, Ficha, Raças e classes, Descansos, Recursos, Poderes, Maestria e itens, Simulador), cada uma com título e explicação; lista lateral no computador e abas no celular.
+- **Barra de alterações não salvas** que gruda embaixo, diz em quais seções há mudança e tem Salvar e Descartar; ponto amarelo na seção alterada; o navegador pergunta antes de fechar a aba com coisa não salva (`lib/editorSistema.js`, testado).
+- O editor continua montado ao trocar de aba da mesa: as edições não se perdem.
+- Tela inicial para criar o sistema: modelos em cartões, importar .json ou do zero.
+
+**Bug antigo corrigido no caminho**
+- Os três modelos de sistema falhavam ao criar (atributos sem regra de rolagem; o banco exige). Agora cada modelo tem a regra dele (4d6 tira o menor, bolinhas começam em 1, faixas começam em 0) e qualquer importação sem regra entra com "valor fixo 0".
+
+**Medido:** Enciclopédia e Sistema (e as seções Atributos, Ficha, Descansos e Recursos) nos 5 temas e a 375 px: 0 rolagem lateral, 0 alvo < 24 px, 0 texto < 12 px, 0 reprovação de contraste.

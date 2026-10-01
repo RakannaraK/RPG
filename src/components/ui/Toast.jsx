@@ -84,7 +84,7 @@ export function ToastProvider({ children }) {
     <Ctx.Provider value={toast}>
       {children}
       {createPortal(
-        <div className="fixed z-toast top-3 inset-x-3 sm:inset-x-auto sm:right-4 sm:top-4 flex flex-col items-stretch sm:items-end gap-2 pointer-events-none print:hidden">
+        <div className="avisos fixed z-toast top-3 inset-x-3 sm:inset-x-auto sm:top-auto sm:right-4 sm:bottom-4 flex flex-col items-stretch sm:items-end gap-2 pointer-events-none print:hidden">
           {itens.map(i => <Aviso key={i.id} item={i} onSumir={sumir} />)}
         </div>,
         document.body,

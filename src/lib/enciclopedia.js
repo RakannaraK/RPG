@@ -174,3 +174,49 @@ export function validarVerbete(v = {}) {
     },
   }
 }
+
+// ---------------------------------------------------------------- wiki (F52)
+
+/**
+ * Ligações de um verbete: o que ele CITA (menções que acham um verbete que o
+ * leitor vê) e quem o cita. Cada lista sem repetir, na ordem em que aparece.
+ */
+export function relacionados(verbete, verbetes = []) {
+  if (!verbete) return { cita: [], citadoPor: [] }
+  const textos = [verbete.resumo, verbete.corpo, ...Object.values(verbete.campos || {})]
+  const vistos = new Set()
+  const cita = []
+  for (const t of textos) {
+    for (const p of partesComMencoes(t || '', verbetes)) {
+      if (p.alvo && p.alvo.id !== verbete.id && !vistos.has(p.alvo.id)) { vistos.add(p.alvo.id); cita.push(p.alvo) }
+    }
+  }
+  return { cita, citadoPor: citadoPor(verbete, verbetes) }
+}
+
+/** Quantos verbetes de cada tipo (para os chips de categoria). */
+export function contarPorTipo(verbetes = []) {
+  const n = {}
+  for (const v of verbetes) n[v.tipo] = (n[v.tipo] || 0) + 1
+  return n
+}
+
+/**
+ * Índice da wiki: grupos por tipo na ordem de TIPOS_VERBETE, cada um já
+ * ordenado por título. Tipos sem verbete não aparecem.
+ */
+export function indicePorTipo(verbetes = []) {
+  return TIPOS_VERBETE
+    .map(t => ({ tipo: t, itens: ordenarVerbetes(verbetes.filter(v => v.tipo === t.id)) }))
+    .filter(g => g.itens.length)
+}
+
+/** Insere `[[Título]]` no texto na posição do cursor (para o editor). */
+export function inserirMencao(texto, posicao, titulo) {
+  const t = String(texto || '')
+  const p = Math.max(0, Math.min(t.length, Number.isFinite(posicao) ? posicao : t.length))
+  const antes = t.slice(0, p)
+  const espaco = antes && !/\s$/.test(antes) ? ' ' : ''
+  const marca = `${espaco}[[${titulo}]]`
+  return { texto: antes + marca + t.slice(p), cursor: p + marca.length }
+}

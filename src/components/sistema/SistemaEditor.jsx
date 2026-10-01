@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSistema, useSaveSistema } from '../../hooks/useSistema'
 import { usePools } from '../../hooks/usePools'
 import { useLinhasPoder } from '../../hooks/useLinhasPoder'
@@ -19,11 +19,15 @@ import SlotsEditor from './SlotsEditor'
 import MaestriaItensEditor from './MaestriaItensEditor'
 import SimuladorFicha from './SimuladorFicha'
 import DescansosEditor from './DescansosEditor'
-import Ilustra from '../arte/Ilustra'
 import Botao from '../ui/Botao'
+import Icone from '../ui/Icone'
+import Abas from '../ui/Abas'
+import CabecalhoSecao from '../ui/CabecalhoSecao'
+import EstadoVazio from '../ui/EstadoVazio'
+import Esqueleto from '../ui/Esqueleto'
 import { useConfirmar } from '../ui/Confirmar'
-
-const TABS_EDITOR = ['Atributos', 'Layout da ficha', 'Raças & Classes', 'Descansos', 'Recursos', 'Poderes', 'Maestria & Itens', 'Simulador']
+import { useToast } from '../ui/Toast'
+import { SECOES_SISTEMA, secoesAlteradas, textoAlteradas } from '../../lib/editorSistema'
 
 const REGRA_PADRAO = {
   tipo: 'dados',
@@ -55,12 +59,14 @@ function newPericia() {
 
 export default function SistemaEditor({ mesaId, isMestre }) {
   const { confirmar } = useConfirmar()
+  const toast = useToast()
   const { sistema: sistemaDB, atributos: atributosDB, pericias: periciasDB, loading, error, refetch } = useSistema(mesaId)
   const { pools } = usePools(sistemaDB?.id) // 23.4 — p/ escolher o pool da rerolagem
   const { linhas: linhasPoderSistema } = useLinhasPoder(sistemaDB?.id) // 25.3 — p/ threadar em Raças & Classes
   const { saveSistema, loading: saving } = useSaveSistema()
 
-  const [activeTab, setActiveTab] = useState('Atributos')
+  const [secao, setSecao] = useState('geral') // F52 — editor em seções
+  const [base, setBase] = useState(null)      // o que está salvo no banco (para saber o que mudou)
 
   // Sistema
   const [nome, setNome] = useState('')
@@ -78,21 +84,50 @@ export default function SistemaEditor({ mesaId, isMestre }) {
   const [removedPericiaIds, setRemovedPericiaIds] = useState([])
 
   const [saveError, setSaveError] = useState('')
-  const [saveSuccess, setSaveSuccess] = useState(false)
   const [exportando, setExportando] = useState(false)
   const [importando, setImportando] = useState(false)
   const [showGuia, setShowGuia] = useState(false)
 
-  // Sincroniza estado local quando dados do DB chegam
-  useEffect(() => {
-    setNome(sistemaDB?.nome || '')
-    setDescricao(sistemaDB?.descricao || '')
-    setAtributos(atributosDB.map(a => ({ ...a })))
-    setConfigLayout(mergeConfigLayout(sistemaDB?.config_layout))
-    setPericias(periciasDB.map(p => ({ ...p })))
+  // Sincroniza estado local quando dados do DB chegam (e no "Descartar")
+  const sincronizar = useCallback(() => {
+    const salvo = {
+      nome: sistemaDB?.nome || '',
+      descricao: sistemaDB?.descricao || '',
+      atributos: atributosDB.map(a => ({ ...a })),
+      configLayout: mergeConfigLayout(sistemaDB?.config_layout),
+      pericias: periciasDB.map(p => ({ ...p })),
+    }
+    setBase(salvo)
+    setNome(salvo.nome)
+    setDescricao(salvo.descricao)
+    setAtributos(salvo.atributos.map(a => ({ ...a })))
+    setConfigLayout(structuredClone(salvo.configLayout))
+    setPericias(salvo.pericias.map(p => ({ ...p })))
     setRemovedAtributoIds([])
     setRemovedPericiaIds([])
+    setSaveError('')
   }, [sistemaDB, atributosDB, periciasDB])
+  useEffect(() => { sincronizar() }, [sincronizar])
+
+  // F52 — o que falta salvar, por seção (a barra de baixo e os pontinhos usam)
+  const alteradas = secoesAlteradas(base, {
+    nome, descricao, atributos, pericias, configLayout,
+    removidos: { atributos: removedAtributoIds, pericias: removedPericiaIds },
+  })
+  const temAlteracao = alteradas.size > 0
+
+  // fechar a aba do navegador com coisa não salva: o navegador pergunta antes
+  useEffect(() => {
+    if (!temAlteracao) return
+    const avisar = e => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', avisar)
+    return () => window.removeEventListener('beforeunload', avisar)
+  }, [temAlteracao])
+
+  async function descartar() {
+    const ok = await confirmar({ titulo: 'Descartar alterações?', mensagem: `O que mudou em ${textoAlteradas(alteradas)} volta a ser como está salvo.`, confirmar: 'Descartar', perigo: true })
+    if (ok) sincronizar()
+  }
 
   // --- Atributos ---
   function addAtributo() {
@@ -132,15 +167,16 @@ export default function SistemaEditor({ mesaId, isMestre }) {
   // --- Salvar ---
   async function handleSave() {
     setSaveError('')
-    setSaveSuccess(false)
 
     if (!nome.trim()) {
-      setSaveError('O sistema precisa ter um nome.')
+      setSaveError('O sistema precisa ter um nome (seção Geral).')
+      setSecao('geral')
       return
     }
     const invalidos = atributos.filter(a => !a.nome.trim())
     if (invalidos.length > 0) {
       setSaveError('Todos os atributos precisam ter um nome.')
+      setSecao('atributos')
       return
     }
 
@@ -154,8 +190,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
         pericias,
         removedPericiaIds,
       })
-      setSaveSuccess(true)
-      setTimeout(() => setSaveSuccess(false), 3000)
+      toast.ok('Sistema salvo')
       refetch()
     } catch (err) {
       setSaveError(err.message)
@@ -171,7 +206,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
       const base = (sistemaDB.nome || 'sistema').trim().replace(/[^\w-]+/g, '_').toLowerCase() || 'sistema'
       baixarJson(`${base}.json`, serializarSistema(grafo))
     } catch (err) {
-      setSaveError(err.message || 'Erro ao exportar o sistema.')
+      toast.erro('Não foi possível exportar', { detalhe: err.message })
     } finally {
       setExportando(false)
     }
@@ -186,9 +221,10 @@ export default function SistemaEditor({ mesaId, isMestre }) {
     try {
       const json = JSON.parse(await file.text())
       await importarSistemaNaMesa(mesaId, json)
+      toast.ok('Sistema importado')
       refetch()
     } catch (err) {
-      setSaveError(err.message || 'Erro ao importar o sistema.')
+      toast.erro('Não foi possível importar', { detalhe: err.message })
     } finally {
       setImportando(false)
     }
@@ -200,315 +236,268 @@ export default function SistemaEditor({ mesaId, isMestre }) {
     setSaveError('')
     try {
       await importarSistemaNaMesa(mesaId, t.dados)
+      toast.ok(`Sistema criado a partir de ${t.nome}`)
       refetch()
     } catch (err) {
-      setSaveError(err.message || 'Erro ao criar a partir do modelo.')
+      toast.erro('Não foi possível usar o modelo', { detalhe: err.message })
     } finally {
       setImportando(false)
     }
   }
 
   if (loading) {
-    return <div className="py-12 text-center text-purple-400">Carregando sistema...</div>
+    return (
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-[15rem_minmax(0,1fr)]" role="status" aria-label="Carregando o sistema">
+        <div className="space-y-2">{[1, 2, 3, 4, 5].map(i => <Esqueleto key={i} className="h-10" />)}</div>
+        <div className="rounded-2xl border border-border p-6 space-y-3"><Esqueleto className="h-7 w-1/3" /><Esqueleto className="h-4 w-2/3" /><Esqueleto className="h-24" /></div>
+      </div>
+    )
   }
 
   if (error) {
-    return <div className="py-12 text-center text-red-400">{error}</div>
+    return <EstadoVazio arte="tomo" titulo="Não foi possível abrir o sistema" descricao={error} />
   }
 
   // Jogadores: visualização somente leitura
   if (!isMestre) {
     if (!sistemaDB) {
-      return (
-        <div className="text-center py-16 border border-dashed border-purple-800 rounded-2xl">
-          <Ilustra nome="tomo" tamanho={72} className="mx-auto mb-4" />
-          <p className="text-ink text-base font-medium">Nenhum sistema definido</p>
-          <p className="text-accent-300 text-sm mt-2">Aguarde o mestre configurar o sistema de regras.</p>
-        </div>
-      )
+      return <EstadoVazio arte="tomo" titulo="Nenhum sistema definido" descricao="Aguarde o mestre configurar as regras da mesa." />
     }
-
+    const resumoRegra = r => (r?.tipo === 'dados' ? `${r.quantidade}d${r.lados}` : r?.tipo === 'fixo' ? `Fixo ${r.valor}` : `${r?.pool_total} pts`)
     return (
       <div className="space-y-6">
-        <div>
-          <h2 className="text-xl font-bold text-white">{sistemaDB.nome}</h2>
-          {sistemaDB.descricao && <p className="text-purple-300 mt-1 text-sm">{sistemaDB.descricao}</p>}
-        </div>
+        <CabecalhoSecao titulo={sistemaDB.nome} descricao={sistemaDB.descricao || 'As regras desta mesa.'} />
         {atributosDB.length === 0 ? (
-          <p className="text-accent-300 text-sm">Nenhum atributo definido ainda.</p>
+          <EstadoVazio compacto arte="dado" titulo="Nenhum atributo ainda" descricao="O mestre ainda está montando o sistema." />
         ) : (
-          <div className="space-y-3">
-            <p className="text-purple-300 text-sm font-medium">Atributos ({atributosDB.length})</p>
-            {atributosDB.map(attr => (
-              <div key={attr.id} className="bg-slate-800 border border-purple-800 rounded-xl px-4 py-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-white font-medium">{attr.nome}</p>
-                    {attr.descricao && <p className="text-purple-400 text-xs mt-0.5">{attr.descricao}</p>}
+          <section className="space-y-3">
+            <p className="text-ink-dim text-xs font-semibold uppercase tracking-wider">Atributos ({atributosDB.length})</p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {atributosDB.map(attr => (
+                <div key={attr.id} className="rounded-xl border border-border bg-raised/70 px-4 py-3 flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-ink font-semibold">{attr.nome}</p>
+                    {attr.descricao && <p className="text-ink-dim text-sm mt-0.5">{attr.descricao}</p>}
                   </div>
-                  <span className="text-amber-400 font-mono text-sm shrink-0">
-                    {attr.regra_rolagem?.tipo === 'dados'
-                      ? `${attr.regra_rolagem.quantidade}d${attr.regra_rolagem.lados}`
-                      : attr.regra_rolagem?.tipo === 'fixo'
-                      ? `Fixo ${attr.regra_rolagem.valor}`
-                      : `${attr.regra_rolagem?.pool_total} pts`}
-                  </span>
+                  <span className="text-dice-400 font-mono text-sm shrink-0">{resumoRegra(attr.regra_rolagem)}</span>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </section>
         )}
       </div>
     )
   }
 
-  // Mestre: editor completo com abas
+  const info = SECOES_SISTEMA.find(s => s.id === secao) || SECOES_SISTEMA[0]
+  const precisaSistema = !sistemaDB?.id && ['racas', 'recursos', 'poderes', 'maestria'].includes(secao)
+
+  // Mestre: editor em seções
   return (
     <div className="space-y-6">
-      {/* Nome e descrição do sistema */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-white">
-            {sistemaDB ? 'Editar sistema' : 'Criar sistema de regras'}
-          </h2>
-          {!sistemaDB && (
-            <button
-              type="button"
-              onClick={() => setShowGuia(true)}
-              className="text-sm text-purple-300 hover:text-white shrink-0"
-            >
-              ? Guia do mestre
-            </button>
-          )}
-        </div>
-        {!sistemaDB && (
-          <div className="flex items-center gap-3 flex-wrap bg-slate-800 border border-purple-800 rounded-xl px-4 py-3">
-            <span className="text-purple-300 text-sm">Comece do zero abaixo, ou importe um sistema pronto:</span>
-            <label className={`text-sm px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${importando ? 'bg-purple-900 text-purple-400 cursor-wait' : 'bg-purple-700 hover:bg-purple-600 text-sobre-acento'}`}>
-              {importando ? 'Importando...' : '⬆ Importar sistema (.json)'}
-              <input
-                type="file"
-                accept="application/json,.json"
-                onChange={handleImportar}
-                disabled={importando}
-                className="hidden"
-              />
-            </label>
-          </div>
-        )}
-        {!sistemaDB && (
-          <div className="bg-slate-800 border border-purple-800 rounded-xl px-4 py-3">
-            <p className="text-purple-300 text-sm mb-2">Ou comece de um modelo pronto (você ajusta tudo depois):</p>
-            <div className="flex flex-wrap gap-2">
-              {TEMPLATES_SISTEMA.map(t => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => handleUsarModelo(t)}
-                  disabled={importando}
-                  title={t.descricao}
-                  className="text-sm px-3 py-1.5 rounded-lg border border-purple-700 text-purple-200 hover:bg-purple-900/40 disabled:opacity-50 transition-colors"
-                >
-                  {t.nome}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-        <div>
-          <label className="block text-sm font-medium text-purple-200 mb-1">Nome do sistema *</label>
-          <input
-            type="text"
-            placeholder="Ex: D&D 5e, Homebrew, Call of Cthulhu..."
-            value={nome}
-            onChange={e => setNome(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-purple-200 mb-1">Descrição (opcional)</label>
-          <input
-            type="text"
-            placeholder="Uma descrição breve do sistema..."
-            value={descricao}
-            onChange={e => setDescricao(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        </div>
+      <CabecalhoSecao
+        titulo={sistemaDB ? (sistemaDB.nome || 'Sistema') : 'Criar o sistema de regras'}
+        descricao={sistemaDB ? (sistemaDB.descricao || 'As regras da mesa: atributos, ficha, recursos e poderes.') : 'Comece de um modelo pronto, importe um arquivo ou monte do zero.'}
+        acoes={
+          <>
+            {!sistemaDB && <Botao variante="fantasma" onClick={() => setShowGuia(true)}><Icone nome="ajuda" tamanho={16} /> Guia do mestre</Botao>}
+            {sistemaDB?.id && (
+              <Botao variante="contorno" onClick={handleExportar} disabled={exportando || saving} title="Baixa um .json com todo o sistema (backup ou importar em outra mesa)">
+                <Icone nome="baixar" tamanho={16} /> {exportando ? 'Exportando…' : 'Exportar'}
+              </Botao>
+            )}
+          </>
+        }
+      />
+
+      {/* celular: abas no topo */}
+      <div className="lg:hidden">
+        <Abas
+          rotulo="Seções do sistema" tamanho="sm" atual={secao} onTrocar={setSecao}
+          abas={SECOES_SISTEMA.map(s => ({ id: s.id, rotulo: s.rotulo, selo: alteradas.has(s.id) ? <span className="w-1.5 h-1.5 rounded-full bg-warn" aria-label="não salvo" /> : null }))}
+        />
       </div>
 
-      {/* Sub-abas: Atributos | Layout da ficha */}
-      <div>
-        <div className="flex border-b border-purple-900 mb-5 overflow-x-auto overflow-y-hidden">
-          {TABS_EDITOR.map(tab => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px shrink-0 ${
-                activeTab === tab
-                  ? 'text-white border-purple-500'
-                  : 'text-purple-400 border-transparent hover:text-purple-200'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-[15rem_minmax(0,1fr)] items-start">
+        {/* computador: lista de seções */}
+        <nav className="hidden lg:block lg:sticky lg:top-32 space-y-0.5" aria-label="Seções do sistema">
+          {SECOES_SISTEMA.map(s => {
+            const atual = secao === s.id
+            return (
+              <button
+                key={s.id} type="button" onClick={() => setSecao(s.id)} aria-current={atual || undefined}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left transition-colors duration-rapida ${
+                  atual ? 'bg-accent-800/30 text-ink font-semibold shadow-[inset_3px_0_0_var(--accent-400)]' : 'text-ink-dim hover:text-ink hover:bg-hover/70'
+                }`}
+              >
+                <Icone nome={s.icone} tamanho={18} />
+                <span className="flex-1">{s.rotulo}</span>
+                {alteradas.has(s.id) && <span className="w-2 h-2 rounded-full bg-warn" title="Alteração não salva" aria-label="não salvo" />}
+              </button>
+            )
+          })}
+        </nav>
 
-        {activeTab === 'Atributos' && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-purple-200">
-                Atributos {atributos.length > 0 && `(${atributos.length})`}
-              </p>
-              <Botao variante="primario" tamanho="sm"
-                type="button"
-                onClick={addAtributo}>
-                + Adicionar atributo
-              </Botao>
+        <section className="min-w-0 rounded-2xl border border-border bg-raised/60 p-5 sm:p-6" aria-label={info.rotulo}>
+          <header className="flex items-start gap-3 pb-5 mb-5 border-b border-border/60">
+            <span className="w-10 h-10 shrink-0 rounded-xl bg-accent-800/30 text-accent-300 inline-flex items-center justify-center"><Icone nome={info.icone} tamanho={20} /></span>
+            <div className="min-w-0">
+              <h3 className="font-sora text-ink text-lg font-semibold">{info.rotulo}</h3>
+              <p className="text-ink-dim text-sm mt-0.5">{info.descricao}</p>
             </div>
+          </header>
 
-            {atributos.length === 0 ? (
-              <div className="text-center py-10 border border-dashed border-purple-800 rounded-xl text-accent-300 text-sm">
-                Nenhum atributo ainda. Clique em "Adicionar atributo" para começar.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {atributos.map((attr, i) => (
-                  <AtributoEditor
-                    key={attr.id}
-                    atributo={attr}
-                    index={i}
-                    onChange={updated => updateAtributo(i, updated)}
-                    onRemove={() => removeAtributo(i)}
-                  />
-                ))}
+          <div key={secao} className="entra-aba">
+            {precisaSistema && (
+              <EstadoVazio compacto arte="tomo" titulo="Salve o sistema primeiro" descricao="Dê um nome na seção Geral e salve; depois esta parte fica liberada.">
+                <Botao variante="primario" onClick={() => setSecao('geral')}>Ir para Geral</Botao>
+              </EstadoVazio>
+            )}
+
+            {secao === 'geral' && (
+              <div className="space-y-6">
+                {!sistemaDB && (
+                  <div className="space-y-4">
+                    <div>
+                      <p className="rotulo">Comece de um modelo pronto</p>
+                      <div className="grid gap-2.5 sm:grid-cols-2">
+                        {TEMPLATES_SISTEMA.map(t => (
+                          <button
+                            key={t.id} type="button" onClick={() => handleUsarModelo(t)} disabled={importando}
+                            className="cartao text-left rounded-xl border border-border bg-void/40 p-4 disabled:opacity-50"
+                          >
+                            <span className="block text-ink font-semibold">{t.nome}</span>
+                            {t.descricao && <span className="block text-ink-dim text-sm mt-1 line-clamp-2">{t.descricao}</span>}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <label className={`flex items-center gap-3 rounded-xl border border-dashed border-border p-4 cursor-pointer hover:border-accent-500 transition-colors duration-rapida has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent-400 ${importando ? 'opacity-60 cursor-wait' : ''}`}>
+                      <Icone nome="enviar" tamanho={22} className="text-accent-300" />
+                      <span>
+                        <span className="block text-ink text-sm font-medium">{importando ? 'Importando…' : 'Importar um sistema (.json)'}</span>
+                        <span className="block text-ink-dim text-xs">O arquivo que o botão Exportar gera em outra mesa.</span>
+                      </span>
+                      <input type="file" accept="application/json,.json" onChange={handleImportar} disabled={importando} className="sr-only" />
+                    </label>
+                    <div className="divisor-rpg text-xs text-ink-dim">ou monte do zero</div>
+                  </div>
+                )}
+                <label className="block">
+                  <span className="rotulo">Nome do sistema</span>
+                  <input type="text" placeholder="Ex.: D&D 5e, Homebrew, Call of Cthulhu…" value={nome} onChange={e => setNome(e.target.value)} className="campo w-full" />
+                </label>
+                <label className="block">
+                  <span className="rotulo">Descrição <span className="text-ink-dim font-normal">(opcional)</span></span>
+                  <input type="text" placeholder="Uma descrição breve do sistema…" value={descricao} onChange={e => setDescricao(e.target.value)} className="campo w-full" />
+                </label>
+                {!sistemaDB && (
+                  <p className="text-ink-dim text-sm">Depois de dar o nome, monte os atributos e salve. Raças, classes, recursos e poderes ficam liberados quando o sistema existir.</p>
+                )}
               </div>
             )}
-          </div>
-        )}
 
-        {activeTab === 'Layout da ficha' && (
-          <LayoutEditor
-            config={configLayout}
-            onConfigChange={setConfigLayout}
-            pericias={pericias}
-            onAddPericia={addPericia}
-            onUpdatePericia={updatePericia}
-            onRemovePericia={removePericia}
-            atributos={atributos}
-            pools={pools}
-          />
-        )}
-
-        {activeTab === 'Raças & Classes' && (
-          <RacasClassesEditor
-            sistemaId={sistemaDB?.id}
-            atributos={atributos}
-            camposCombate={configLayout.campos_combate || []}
-            pericias={pericias}
-            pontosStatus={configLayout.pontos_status}
-            linhasPoder={linhasPoderSistema}
-          />
-        )}
-
-        {activeTab === 'Descansos' && (
-          <DescansosEditor
-            descansos={configLayout.descansos || []}
-            onChange={descansos => setConfigLayout(prev => ({ ...prev, descansos }))}
-          />
-        )}
-
-        {/* Fase 20.1 — pools/recursos gastáveis · Fase 20.3 — slots (modo opcional) */}
-        {activeTab === 'Recursos' && (
-          sistemaDB?.id ? (
-            <div className="space-y-4">
-              <PoolsEditor sistemaId={sistemaDB.id} descansos={configLayout.descansos || []} />
-              <SlotsEditor
-                sistemaId={sistemaDB.id}
-                config={configLayout}
-                onChange={setConfigLayout}
-                descansos={configLayout.descansos || []}
-              />
-            </div>
-          ) : (
-            <p className="text-accent-300 text-sm">Salve o sistema antes de criar recursos.</p>
-          )
-        )}
-
-        {/* Fase 20.2 — catálogo de poderes */}
-        {activeTab === 'Poderes' && (
-          sistemaDB?.id ? (
-            <div className="space-y-3">
-              {/* 20.6 — rótulo do painel na ficha (o mestre nomeia) */}
-              <div className="bg-void border border-border rounded-xl p-4 flex items-center gap-3 flex-wrap">
-                <label className="text-purple-300 text-sm shrink-0">Nome do painel na ficha</label>
-                <input
-                  type="text"
-                  value={configLayout.poderes_rotulo || ''}
-                  onChange={e => setConfigLayout(prev => ({ ...prev, poderes_rotulo: e.target.value }))}
-                  placeholder="Poderes, Magias, Técnicas..."
-                  className="flex-1 min-w-[10rem] px-3 py-2 rounded-lg bg-void border border-border text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
+            {secao === 'atributos' && (
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-ink-dim text-sm">{atributos.length ? `${atributos.length} atributo${atributos.length > 1 ? 's' : ''}` : 'Nenhum atributo ainda.'}</p>
+                  <Botao variante="primario" onClick={addAtributo}><Icone nome="mais" tamanho={16} /> Adicionar atributo</Botao>
+                </div>
+                {atributos.length === 0 ? (
+                  <EstadoVazio compacto arte="dado" titulo="Nenhum atributo ainda" descricao="Força, Destreza, Sanidade… Cada atributo diz como o valor nasce na ficha.">
+                    <Botao variante="primario" onClick={addAtributo}><Icone nome="mais" tamanho={16} /> Adicionar atributo</Botao>
+                  </EstadoVazio>
+                ) : (
+                  <div className="space-y-3">
+                    {atributos.map((attr, i) => (
+                      <AtributoEditor
+                        key={attr.id} atributo={attr} index={i}
+                        onChange={updated => updateAtributo(i, updated)}
+                        onRemove={() => removeAtributo(i)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-              <LinhasPoderEditor sistemaId={sistemaDB.id} />
-              <PoderesEditor sistemaId={sistemaDB.id} />
-            </div>
-          ) : (
-            <p className="text-accent-300 text-sm">Salve o sistema antes de criar poderes.</p>
-          )
-        )}
+            )}
 
-        {/* Fase 21.1 — maestria por uso + categorias de item */}
-        {activeTab === 'Maestria & Itens' && (
-          sistemaDB?.id ? (
-            <MaestriaItensEditor
-              sistemaId={sistemaDB.id}
-              config={configLayout}
-              onChange={setConfigLayout}
-            />
-          ) : (
-            <p className="text-accent-300 text-sm">Salve o sistema antes de configurar maestria e categorias.</p>
-          )
-        )}
+            {secao === 'ficha' && (
+              <LayoutEditor
+                config={configLayout} onConfigChange={setConfigLayout}
+                pericias={pericias} onAddPericia={addPericia} onUpdatePericia={updatePericia} onRemovePericia={removePericia}
+                atributos={atributos} pools={pools}
+              />
+            )}
 
-        {activeTab === 'Simulador' && (
-          <SimuladorFicha
-            config={configLayout}
-            atributos={atributos}
-            pericias={pericias}
-          />
-        )}
+            {secao === 'racas' && !precisaSistema && (
+              <RacasClassesEditor
+                sistemaId={sistemaDB?.id} atributos={atributos}
+                camposCombate={configLayout.campos_combate || []} pericias={pericias}
+                pontosStatus={configLayout.pontos_status} linhasPoder={linhasPoderSistema}
+              />
+            )}
+
+            {secao === 'descansos' && (
+              <DescansosEditor
+                descansos={configLayout.descansos || []}
+                onChange={descansos => setConfigLayout(prev => ({ ...prev, descansos }))}
+              />
+            )}
+
+            {/* Fase 20.1 — pools/recursos gastáveis · Fase 20.3 — slots (modo opcional) */}
+            {secao === 'recursos' && !precisaSistema && (
+              <div className="space-y-6">
+                <PoolsEditor sistemaId={sistemaDB.id} descansos={configLayout.descansos || []} />
+                <SlotsEditor sistemaId={sistemaDB.id} config={configLayout} onChange={setConfigLayout} descansos={configLayout.descansos || []} />
+              </div>
+            )}
+
+            {/* Fase 20.2 — catálogo de poderes */}
+            {secao === 'poderes' && !precisaSistema && (
+              <div className="space-y-6">
+                {/* 20.6 — rótulo do painel na ficha (o mestre nomeia) */}
+                <label className="block max-w-md">
+                  <span className="rotulo">Nome do painel na ficha</span>
+                  <input
+                    type="text" value={configLayout.poderes_rotulo || ''}
+                    onChange={e => setConfigLayout(prev => ({ ...prev, poderes_rotulo: e.target.value }))}
+                    placeholder="Poderes, Magias, Técnicas…" className="campo w-full"
+                  />
+                </label>
+                <LinhasPoderEditor sistemaId={sistemaDB.id} />
+                <PoderesEditor sistemaId={sistemaDB.id} />
+              </div>
+            )}
+
+            {/* Fase 21.1 — maestria por uso + categorias de item */}
+            {secao === 'maestria' && !precisaSistema && (
+              <MaestriaItensEditor sistemaId={sistemaDB.id} config={configLayout} onChange={setConfigLayout} />
+            )}
+
+            {secao === 'simulador' && (
+              <SimuladorFicha config={configLayout} atributos={atributos} pericias={pericias} />
+            )}
+          </div>
+        </section>
       </div>
 
-      {/* Botão salvar */}
-      <div className="border-t border-purple-900 pt-4 flex items-center gap-4">
-        <Botao variante="primario" tamanho="md"
-          type="button"
-          onClick={handleSave}
-          disabled={saving} className="font-semibold">
-          {saving ? 'Salvando...' : 'Salvar sistema'}
-        </Botao>
-
-        {sistemaDB?.id && (
-          <Botao variante="contorno" tamanho="md"
-            type="button"
-            onClick={handleExportar}
-            disabled={exportando || saving}
-           
-            title="Baixa um .json com todo o sistema (backup ou importar em outra mesa)">
-            {exportando ? 'Exportando...' : '⬇ Exportar sistema'}
-          </Botao>
-        )}
-
-        {saveSuccess && (
-          <span className="text-green-400 text-sm">✓ Sistema salvo!</span>
-        )}
-        {saveError && (
-          <span className="text-red-400 text-sm">{saveError}</span>
-        )}
-      </div>
+      {/* Barra de alterações: aparece só com algo para salvar e gruda embaixo */}
+      {(alteradas.size > 0 || saving || saveError) && (
+        <div className="sticky bottom-3 z-20">
+          <div className="barra-salvar mx-auto max-w-3xl flex flex-wrap items-center gap-3 rounded-2xl border border-warn/40 bg-raised/95 backdrop-blur-md shadow-nivel-3 px-4 py-3" role="region" aria-label="Alterações não salvas">
+            <Icone nome="alerta" tamanho={20} className="text-warn shrink-0" />
+            <p className="flex-1 min-w-[12rem] text-sm text-ink">
+              {saveError
+                ? <span className="text-harm">{saveError}</span>
+                : alteradas.size > 0
+                  ? <>Alterações não salvas em <strong>{textoAlteradas(alteradas)}</strong>.</>
+                  : 'Salvando…'}
+            </p>
+            {alteradas.size > 0 && <Botao variante="fantasma" onClick={descartar} disabled={saving}>Descartar</Botao>}
+            <Botao variante="primario" onClick={handleSave} disabled={saving || alteradas.size === 0}>{saving ? 'Salvando…' : 'Salvar sistema'}</Botao>
+          </div>
+        </div>
+      )}
       {showGuia && <GuiaMestre onFechar={() => setShowGuia(false)} />}
     </div>
   )

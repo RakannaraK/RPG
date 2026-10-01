@@ -177,6 +177,8 @@
 
 /* ── Toast ──────────────────────────────────────────────────────────────── */
 @keyframes toast-entra { from { opacity: 0; transform: translateY(-10px) scale(.98); } }
+@keyframes toast-sobe { from { opacity: 0; transform: translateY(12px) scale(.98); } }
+@media (min-width: 640px) { .avisos .toast { animation-name: toast-sobe; } }
 @keyframes toast-sai { to { opacity: 0; transform: translateX(18px); } }
 .toast { animation: toast-entra var(--dur-normal) var(--ease-padrao) backwards; backdrop-filter: blur(6px); }
 .toast-sai { animation: toast-sai var(--dur-normal) var(--ease-saida) forwards; }
@@ -537,3 +539,31 @@ html { scrollbar-width: thin; scrollbar-color: rgb(var(--hover-c)) transparent; 
    hover clareia para 600/500, volta para a cor de tema. */
 .text-sobre-acento:is(.bg-accent-700, .bg-purple-700, .bg-accent-800, .bg-purple-800) { color: #fff; }
 .text-sobre-acento:is([class*="hover:bg-accent-6"], [class*="hover:bg-purple-6"], [class*="hover:bg-accent-5"], [class*="hover:bg-purple-5"]):hover { color: var(--sobre-acento); }
+
+/* ── Enciclopédia (wiki) ─────────────────────────────────────────────────── */
+/* ligação entre verbetes: sublinhado pontilhado na cor do tema */
+.link-wiki {
+  color: var(--accent-300);
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: color var(--dur-rapida) var(--ease-padrao);
+}
+.link-wiki:hover { color: var(--ink); text-decoration-style: solid; }
+.link-wiki:focus-visible { outline: 2px solid var(--accent-400); outline-offset: 2px; border-radius: 3px; }
+
+/* documento entregue: papel dentro da tela (sem textura forte) */
+.documento-verbete {
+  border-radius: .9rem;
+  border: 1px solid color-mix(in srgb, var(--dice-700) 45%, var(--border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--dice-500) 7%, transparent), transparent 60%),
+    rgb(var(--void-c) / .8);
+  padding: 1.25rem 1.5rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.02rem;
+}
+
+/* barra de "alterações não salvas" do editor de sistema: sobe ao aparecer */
+.barra-salvar { animation: toast-sobe var(--dur-normal) var(--ease-padrao) backwards; }
+:root[data-movimento="reduzido"] .barra-salvar { animation-name: so-aparece; }

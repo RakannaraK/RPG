@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   buscarVerbetes, camposRevelaveis, citadoPor, estadoRevelacao, mencoes, nomeDoCampo,
   ordenarVerbetes, partesComMencoes, quemSabe, validarVerbete,
+  relacionados, contarPorTipo, indicePorTipo, inserirMencao,
 } from './enciclopedia'
 
 const mirta = { id: 'm', tipo: 'npc', titulo: 'Velha Mirta', resumo: 'Dona da estalagem.', corpo: 'Mora em [[Vila Úmida]].', segredo: 'bruxa', tags: ['aliada'], campos: { aparencia: 'corcunda', motivacao: '' } }
@@ -84,5 +85,28 @@ describe('F42 — revelação campo a campo', () => {
     })
     expect(ok).toBe(true)
     expect(linha).toMatchObject({ titulo: 'Mirta', resumo: null, tags: ['aliada', 'vila'], campos: { aparencia: 'corcunda' } })
+  })
+})
+
+describe('F52 — enciclopédia como wiki', () => {
+  it('relacionados: o que cita (só o que existe para o leitor) e quem cita', () => {
+    const r = relacionados(vila, [mirta, vila])
+    expect(r.cita.map(v => v.id)).toEqual(['m']) // Barão Sombrio não existe: não vira ligação
+    expect(r.citadoPor.map(v => v.id)).toEqual(['m'])
+    expect(relacionados(null)).toEqual({ cita: [], citadoPor: [] })
+  })
+
+  it('índice por tipo na ordem dos tipos, sem tipo vazio', () => {
+    const lista = [vila, mirta, { id: 'x', tipo: 'npc', titulo: 'Aldo', campos: {} }]
+    const g = indicePorTipo(lista)
+    expect(g.map(x => x.tipo.id)).toEqual(['npc', 'local'])
+    expect(g[0].itens.map(v => v.titulo)).toEqual(['Aldo', 'Velha Mirta'])
+    expect(contarPorTipo(lista)).toEqual({ npc: 2, local: 1 })
+  })
+
+  it('insere a menção no cursor, com espaço quando precisa', () => {
+    expect(inserirMencao('Mora em', 7, 'Vila Úmida')).toEqual({ texto: 'Mora em [[Vila Úmida]]', cursor: 22 })
+    expect(inserirMencao('', 0, 'A')).toEqual({ texto: '[[A]]', cursor: 5 })
+    expect(inserirMencao('ab cd', 3, 'X').texto).toBe('ab [[X]]cd')
   })
 })

@@ -128,6 +128,10 @@ export function desserializarSistema(json, gerarId = defaultGerarId) {
 // sistema, carimba sistema_id em cada coleção e ACHATA os modificadores (que vêm
 // aninhados sob raças/classes/habilidades) numa lista única. Puro. O grafo de
 // entrada já deve estar remapeado (saída de desserializarSistema).
+// Atributo sem regra de rolagem (arquivo antigo, feito à mão ou modelo) entra
+// com valor fixo 0: o banco não aceita regra vazia e o mestre ajusta depois.
+export const REGRA_ROLAGEM_PADRAO = { tipo: 'fixo', valor: 0 }
+
 export function montarPayloadImportacao(grafo, sistemaId) {
   const comSistema = rows => (rows || []).map(row => ({ ...row, sistema_id: sistemaId }))
   const semMods = rows => (rows || []).map(({ modificadores, ...resto }) => ({ ...resto, sistema_id: sistemaId }))
@@ -140,7 +144,7 @@ export function montarPayloadImportacao(grafo, sistemaId) {
       descricao: g.sistema?.descricao ?? null,
       config_layout: g.sistema?.config_layout ?? {},
     },
-    atributos: comSistema(g.atributos),
+    atributos: comSistema(g.atributos).map(a => (a.regra_rolagem ? a : { ...a, regra_rolagem: { ...REGRA_ROLAGEM_PADRAO } })),
     pericias: comSistema(g.pericias),
     racas: semMods(g.racas),
     classes: semMods(g.classes),

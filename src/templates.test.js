@@ -23,7 +23,21 @@ describe('TEMPLATES_SISTEMA', () => {
       for (const a of payload.atributos) {
         expect(a.sistema_id).toBe(SID)
         expect(idsModelo.has(a.id)).toBe(false)
+        // o banco exige regra_rolagem NOT NULL — o modelo "Atributos & d20" quebrava aqui
+        expect(a.regra_rolagem?.tipo).toBeTruthy()
       }
     }
+  })
+})
+
+describe('importação sem regra de rolagem', () => {
+  it('atributo sem regra entra com valor fixo 0 (o banco não aceita vazio)', () => {
+    const payload = montarPayloadImportacao({ sistema: { nome: 'X' }, atributos: [{ id: 'a', nome: 'Força', regra_rolagem: null }, { id: 'b', nome: 'Agilidade' }] }, 'sid')
+    expect(payload.atributos.map(a => a.regra_rolagem)).toEqual([{ tipo: 'fixo', valor: 0 }, { tipo: 'fixo', valor: 0 }])
+  })
+  it('regra existente fica como está', () => {
+    const regra = { tipo: 'dados', quantidade: 3, lados: 6 }
+    const payload = montarPayloadImportacao({ sistema: { nome: 'X' }, atributos: [{ id: 'a', nome: 'Força', regra_rolagem: regra }] }, 'sid')
+    expect(payload.atributos[0].regra_rolagem).toEqual(regra)
   })
 })

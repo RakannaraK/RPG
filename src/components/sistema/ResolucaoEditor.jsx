@@ -73,7 +73,7 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
         <span className="text-accent-300 text-xs self-center">Presets:</span>
         {PRESETS.map(p => (
           <button key={p.rotulo} onClick={() => set({ ...p.cfg })}
-            className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
+            className="text-xs px-2 py-0.5 min-h-[24px] inline-flex items-center rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
             {p.rotulo}
           </button>
         ))}
@@ -155,7 +155,7 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
             </div>
           ))}
           <button onClick={() => set({ faixas: [...faixas, { de: null, ate: null, rotulo: '', texto: '', cor: 'verde' }] })}
-            className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
+            className="text-xs px-2 py-0.5 min-h-[24px] inline-flex items-center rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
             + faixa
           </button>
         </div>

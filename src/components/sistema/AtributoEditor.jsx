@@ -20,7 +20,7 @@ export default function AtributoEditor({ atributo, onChange, onRemove, index }) 
           placeholder="Nome do atributo (ex: Força)"
           value={atributo.nome}
           onChange={e => updateField('nome', e.target.value)}
-          className="flex-1 bg-transparent text-white placeholder-ink-dim font-medium focus:outline-none text-sm"
+          className="flex-1 min-h-[28px] bg-transparent text-white placeholder-ink-dim font-medium focus:outline-none text-sm"
           onClick={e => e.stopPropagation()}
         />
         <div className="flex items-center gap-2">
