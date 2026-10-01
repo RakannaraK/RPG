@@ -47,6 +47,35 @@
   --dice-200-c: 253 230 138; --dice-400-c: 251 191 36;
   --dice-500-c: 245 158 11;  --dice-700-c: 180 83 9;
   --ok-c: 52 211 153; --warn-c: 251 191 36; --harm-c: 248 113 113; --temp-c: 96 165 250;
+
+  /* ── Fase 52 — movimento ──────────────────────────────────────────────────
+     Três durações e quatro curvas para o site inteiro. Nada de 173 ms solto:
+     quem anima escolhe uma destas (no Tailwind: duration-rapida/normal/lenta,
+     ease-padrao/entrada/saida/mola). */
+  --dur-rapida: 140ms;   /* hover, pressão, cor */
+  --dur-normal: 220ms;   /* modal, menu, aba, página */
+  --dur-lenta: 420ms;    /* troca de tema, barras de vida, entrada de destaque */
+  --ease-padrao: cubic-bezier(.2, .8, .2, 1);
+  --ease-entrada: cubic-bezier(0, 0, .2, 1);
+  --ease-saida: cubic-bezier(.4, 0, 1, 1);
+  --ease-mola: cubic-bezier(.34, 1.56, .64, 1);
+
+  /* ── Fase 52 — profundidade ───────────────────────────────────────────────
+     Sombra é "altura" (o quanto a peça sai do fundo); brilho é "energia"
+     (acento do tema). Card parado usa nível 1; card em foco ganha brilho. */
+  --sombra-1: 0 1px 2px rgb(0 0 0 / .35), 0 2px 10px rgb(0 0 0 / .22);
+  --sombra-2: 0 6px 18px rgb(0 0 0 / .38), 0 2px 6px rgb(0 0 0 / .25);
+  --sombra-3: 0 18px 50px rgb(0 0 0 / .55), 0 6px 16px rgb(0 0 0 / .3);
+  --brilho: 0 0 0 1px color-mix(in srgb, var(--accent-500) 38%, transparent),
+            0 0 22px -4px color-mix(in srgb, var(--accent-500) 45%, transparent);
+  --brilho-suave: 0 0 18px -6px color-mix(in srgb, var(--accent-400) 40%, transparent);
+
+  /* ── Fase 52 — energia do tema ────────────────────────────────────────────
+     Cor das partículas e da chama arcana. Cada tema tem a sua "afinidade":
+     violeta é arcano azulado, carmim é brasa, âmbar é faísca dourada,
+     esmeralda é éter, gelo é cristal. Em hex puro porque o canvas lê. */
+  --energia-1: #A78BFA;
+  --energia-2: #60A5FA;
 }
 
 /* ── Fase 35 — temas: mexem só no ACENTO (o contraste do texto fica igual) ── */
@@ -57,6 +86,7 @@
   --accent-600-c: 5 150 105; --accent-700-c: 4 120 87; --accent-800-c: 6 95 70;
   --p900-c: 3 52 38; --p950-c: 2 24 18;
   --sobre-acento: #0B0812;
+  --energia-1: #6EE7B7; --energia-2: #A7F3D0;
 }
 :root[data-tema="carmim"] {
   --accent-300: #FDA4AF; --accent-400: #FB7185; --accent-500: #F43F5E;
@@ -65,6 +95,7 @@
   --accent-600-c: 225 29 72; --accent-700-c: 190 18 60; --accent-800-c: 159 18 57;
   --p900-c: 87 10 31; --p950-c: 40 4 14;
   --sobre-acento: #FFFFFF;
+  --energia-1: #FB923C; --energia-2: #F43F5E;
 }
 :root[data-tema="ambar"] {
   --accent-300: #FCD34D; --accent-400: #FBBF24; --accent-500: #F59E0B;
@@ -73,6 +104,7 @@
   --accent-600-c: 217 119 6; --accent-700-c: 180 83 9; --accent-800-c: 146 64 14;
   --p900-c: 80 35 8; --p950-c: 36 16 4;
   --sobre-acento: #0B0812;
+  --energia-1: #FCD34D; --energia-2: #F59E0B;
 }
 :root[data-tema="gelo"] {
   --accent-300: #7DD3FC; --accent-400: #38BDF8; --accent-500: #0EA5E9;
@@ -81,6 +113,7 @@
   --accent-600-c: 2 132 199; --accent-700-c: 3 105 161; --accent-800-c: 7 89 133;
   --p900-c: 4 49 73; --p950-c: 2 22 33;
   --sobre-acento: #0B0812;
+  --energia-1: #E0F2FE; --energia-2: #7DD3FC;
 }
 
 /* ── Fase 35 — fontes ───────────────────────────────────────────────────── */
@@ -92,6 +125,19 @@
   line-height: 1.7;
   word-spacing: .08em;
 }
+
+/* ── Fase 52 — acessibilidade ───────────────────────────────────────────────
+   Tamanho do texto: o Tailwind mede tudo em rem, então mexer na raiz escala
+   texto, espaçamento e alvos de toque juntos (nada estoura o layout).
+   Alto contraste: texto secundário e bordas mais fortes, e sem textura. */
+:root[data-tamanho="grande"] { font-size: 112.5%; }
+:root[data-tamanho="maior"]  { font-size: 125%; }
+:root[data-contraste="alto"] {
+  --ink-dim: rgba(240, 236, 250, .86);
+  --border: #4A3E66;
+  --border-c: 74 62 102;
+}
+:root[data-contraste="alto"] .velino { background-image: none; }
 
 /* ── Fase 38 — o remapeamento com !important foi embora ─────────────────────
    Até aqui, `purple-*` era a paleta do Tailwind e um bloco de ~60 regras com

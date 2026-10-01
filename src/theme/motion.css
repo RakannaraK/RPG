@@ -1,18 +1,52 @@
-/* Valores espelham PAGE_TRANSITION_MS / PAGE_TRANSITION_EASING / PAGE_TRANSITION_RISE_PX em motion.js */
+/* ── Transição de página (F52) ───────────────────────────────────────────────
+   Anima só o CONTEÚDO da página nova: o cabeçalho (`<header>` ou
+   `[data-cabecalho]`) troca na hora, sem piscar.
+   `backwards` e não `both`: depois que a animação acaba não sobra transform
+   nenhum — um transform parado vira "bloco de contenção" e prende qualquer
+   `position: fixed` lá dentro (foi o que prendeu a barra da trilha na F43). */
 @keyframes page-enter {
   from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes so-aparece {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-.page-transition {
-  min-height: 100vh;
-  animation: page-enter 200ms cubic-bezier(.2,.8,.2,1) both;
+.pagina { min-height: 100vh; }
+
+.pagina-entra > * > :not(header):not([data-cabecalho]) {
+  animation: page-enter var(--dur-normal) var(--ease-padrao) backwards;
+}
+:root[data-movimento="reduzido"] .pagina-entra > * > :not(header):not([data-cabecalho]) {
+  animation-name: so-aparece;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .page-transition {
-    animation: none;
-  }
+/* ── Preferência de movimento (F52) ─────────────────────────────────────────
+   `data-movimento="reduzido"` = o sistema pediu menos movimento OU a pessoa
+   escolheu "reduzidas" nas preferências. Some todo movimento contínuo;
+   fica só fade curto onde ele ajuda a entender o que mudou.
+   `data-animacoes="desligadas"` zera tudo, inclusive o fade. */
+:root[data-movimento="reduzido"] :is(.selo-pulso, .token-turno, .ping-onda, .animate-pulse, .animate-ping, .animate-bounce) {
+  animation: none !important;
+}
+:root[data-animacoes="desligadas"] *,
+:root[data-animacoes="desligadas"] *::before,
+:root[data-animacoes="desligadas"] *::after {
+  animation-duration: 1ms !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+  transition-delay: 0s !important;
+  scroll-behavior: auto !important;
+}
+
+/* Troca de tema (F52): o navegador fotografa a página no tema antigo e funde
+   com o novo (View Transitions). Sem suporte, a troca é instantânea. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 520ms;
+  animation-timing-function: cubic-bezier(.2, .8, .2, 1);
 }
 
 /* FV.3 — glow âmbar de crítico (rolagens), pico e decaimento em 700ms */

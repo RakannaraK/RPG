@@ -316,7 +316,7 @@ export default function MesaPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-slate-900 to-black">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-purple-400 text-lg">Carregando mesa...</div>
       </div>
     )
@@ -324,7 +324,7 @@ export default function MesaPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-slate-900 to-black">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-400 mb-4">{error}</p>
           <button
@@ -380,7 +380,7 @@ export default function MesaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
+    <div className="min-h-screen">
       <CapaMesa capa={mesa?.capa} altura={104} className="border-b border-purple-800">
       <header className="py-4">
         {/* No celular o nome ficava reduzido a "Mes…" para caber cinco ícones na

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   TEMAS, FONTES, LIMITE_SOM, ehTemaValido, ehFonteValida,
   atributosDeAparencia, validarSom, extensaoDoSom, midiaEhSom,
+  particulasLigadas, reduzMovimento,
 } from './personalizacao'
 
 describe('temas e fontes', () => {
@@ -14,10 +15,10 @@ describe('temas e fontes', () => {
     expect(ehFonteValida('facil')).toBe(true)
   })
   it('atributos do <html>: padrão não marca nada', () => {
-    expect(atributosDeAparencia({ tema: 'violeta', fonte: 'padrao' })).toEqual({ 'data-tema': null, 'data-fonte': null })
-    expect(atributosDeAparencia({ tema: 'carmim', fonte: 'mono' })).toEqual({ 'data-tema': 'carmim', 'data-fonte': 'mono' })
-    expect(atributosDeAparencia({ tema: 'inventado' })).toEqual({ 'data-tema': null, 'data-fonte': null })
-    expect(atributosDeAparencia()).toEqual({ 'data-tema': null, 'data-fonte': null })
+    expect(atributosDeAparencia({ tema: 'violeta', fonte: 'padrao' })).toMatchObject({ 'data-tema': null, 'data-fonte': null })
+    expect(atributosDeAparencia({ tema: 'carmim', fonte: 'mono' })).toMatchObject({ 'data-tema': 'carmim', 'data-fonte': 'mono' })
+    expect(atributosDeAparencia({ tema: 'inventado' })).toMatchObject({ 'data-tema': null, 'data-fonte': null })
+    expect(atributosDeAparencia()).toMatchObject({ 'data-tema': null, 'data-fonte': null })
   })
 })
 
@@ -54,5 +55,32 @@ describe('arquivo e mídia', () => {
     expect(midiaEhSom('https://x/y/uivo.ogg?token=1')).toBe(true)
     expect(midiaEhSom('https://x/y/arte.png')).toBe(false)
     expect(midiaEhSom(null)).toBe(false)
+  })
+})
+
+describe('F52 — aparência, movimento e efeitos', () => {
+  it('padrões não marcam o <html>; escolhas marcam', () => {
+    expect(Object.values(atributosDeAparencia({})).every(v => v === null)).toBe(true)
+    expect(atributosDeAparencia({
+      animacoes: 'reduzidas', efeitos: 'sutis', tamanho_texto: 'grande', alto_contraste: true,
+    })).toMatchObject({ 'data-animacoes': 'reduzidas', 'data-efeitos': 'sutis', 'data-tamanho': 'grande', 'data-contraste': 'alto' })
+    expect(atributosDeAparencia({ animacoes: 'loucura', efeitos: 'x' })).toMatchObject({ 'data-animacoes': null, 'data-efeitos': null })
+  })
+
+  it('o sistema pedir menos movimento vale mesmo com animações completas', () => {
+    expect(reduzMovimento('completas', false)).toBe(false)
+    expect(reduzMovimento(undefined, false)).toBe(false)
+    expect(reduzMovimento('completas', true)).toBe(true)
+    expect(reduzMovimento('reduzidas', false)).toBe(true)
+  })
+
+  it('partículas só com efeitos completos e sem movimento reduzido', () => {
+    expect(particulasLigadas(undefined, false)).toBe(true)
+    expect(particulasLigadas('completos', true)).toBe(false)
+    expect(particulasLigadas('sutis', false)).toBe(false)
+  })
+
+  it('todo tema tem partícula e descrição de energia', () => {
+    for (const t of TEMAS) expect(t.particula && t.energia).toBeTruthy()
   })
 })

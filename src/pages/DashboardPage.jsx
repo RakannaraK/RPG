@@ -70,7 +70,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
+    <div className="min-h-screen">
       <header className="border-b border-purple-800 py-4">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-y-3">
         <Marca tamanho="sm" pulso />

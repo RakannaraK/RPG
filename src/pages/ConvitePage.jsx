@@ -73,7 +73,7 @@ export default function ConvitePage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-slate-900 to-black px-4 py-10">
+    <div className="min-h-screen flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center text-center"><Marca tamanho="lg" /></div>
 

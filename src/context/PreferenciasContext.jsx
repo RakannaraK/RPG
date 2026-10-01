@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
-import { atributosDeAparencia } from '../lib/personalizacao'
+import { atributosDeAparencia, reduzMovimento } from '../lib/personalizacao'
 import { definirSomDoDado } from '../lib/diceSounds'
+import { prefersReducedMotion } from '../theme/motion'
 
 // Preferências visuais/sonoras do usuário, persistidas em profiles.preferencias (JSONB).
 const PADRAO = {
@@ -15,25 +16,63 @@ const PADRAO = {
   tema: 'violeta', fonte: 'padrao', som_critico_url: null,
   // F37 — som de dado enviado pelo usuário (no lugar do sintetizado)
   som_dado_url: null,
+  // F52 — movimento, ambientação e acessibilidade
+  animacoes: 'completas', efeitos: 'completos', tamanho_texto: 'normal', alto_contraste: false,
+}
+
+// F52 — a aparência fica guardada também no navegador: quem usa carmim não vê
+// o site abrir violeta e trocar depois que o perfil chega do banco.
+const CHAVE_APARENCIA = 'dp-aparencia'
+const CAMPOS_APARENCIA = ['tema', 'fonte', 'animacoes', 'efeitos', 'tamanho_texto', 'alto_contraste']
+function aparenciaGuardada() {
+  try { return JSON.parse(localStorage.getItem(CHAVE_APARENCIA)) || {} } catch { return {} }
 }
 
 const PreferenciasContext = createContext(null)
 
 export function PreferenciasProvider({ children }) {
   const { session } = useAuth()
-  const [preferencias, setPreferencias] = useState(PADRAO)
+  const [preferencias, setPreferencias] = useState(() => ({ ...PADRAO, ...aparenciaGuardada() }))
   const [loading, setLoading] = useState(true)
+  const [sistemaReduz, setSistemaReduz] = useState(prefersReducedMotion)
 
   const prefsRef = useRef(preferencias)
   useEffect(() => { prefsRef.current = preferencias }, [preferencias])
 
-  // F35 — tema e fonte no <html>: valem no site todo, só para quem escolheu
+  // F52 — o sistema operacional pode mudar o "reduzir movimento" com o site aberto
   useEffect(() => {
+    const mq = window.matchMedia?.('(prefers-reduced-motion: reduce)')
+    if (!mq) return
+    const mudou = () => setSistemaReduz(mq.matches)
+    mq.addEventListener('change', mudou)
+    return () => mq.removeEventListener('change', mudou)
+  }, [])
+
+  const reduzido = reduzMovimento(preferencias.animacoes, sistemaReduz)
+  useEffect(() => {
+    if (reduzido) document.documentElement.setAttribute('data-movimento', 'reduzido')
+    else document.documentElement.removeAttribute('data-movimento')
+  }, [reduzido])
+
+  // F35/F52 — aparência no <html>: vale no site todo, só para quem escolheu.
+  // Trocar de tema funde o tema velho com o novo (View Transitions do navegador)
+  // em vez de virar a chave de uma vez; sem suporte, troca na hora.
+  useEffect(() => {
+    const html = document.documentElement
     const atributos = atributosDeAparencia(preferencias)
-    for (const [attr, valor] of Object.entries(atributos)) {
-      if (valor) document.documentElement.setAttribute(attr, valor)
-      else document.documentElement.removeAttribute(attr)
+    const aplicar = () => {
+      for (const [attr, valor] of Object.entries(atributos)) {
+        if (valor) html.setAttribute(attr, valor)
+        else html.removeAttribute(attr)
+      }
     }
+    const temaMudou = html.getAttribute('data-tema') !== atributos['data-tema']
+    if (temaMudou && !html.hasAttribute('data-movimento') && document.startViewTransition) {
+      document.startViewTransition(aplicar)
+    } else aplicar()
+    try {
+      localStorage.setItem(CHAVE_APARENCIA, JSON.stringify(Object.fromEntries(CAMPOS_APARENCIA.map(c => [c, preferencias[c]]))))
+    } catch { /* sem armazenamento: só não lembra entre visitas */ }
   }, [preferencias])
 
   // F37 — avisa o módulo de som qual arquivo usar no lugar do sintetizado
@@ -43,7 +82,8 @@ export function PreferenciasProvider({ children }) {
   useEffect(() => {
     const uid = session?.user?.id
     if (!uid) {
-      setPreferencias(PADRAO)
+      // sem conta (ou o login ainda chegando): fica a aparência deste navegador
+      setPreferencias({ ...PADRAO, ...aparenciaGuardada() })
       setLoading(false)
       return
     }
@@ -77,7 +117,7 @@ export function PreferenciasProvider({ children }) {
   }, [session?.user?.id])
 
   return (
-    <PreferenciasContext.Provider value={{ preferencias, salvarPreferencias, loading }}>
+    <PreferenciasContext.Provider value={{ preferencias, salvarPreferencias, loading, reduzido }}>
       {children}
     </PreferenciasContext.Provider>
   )

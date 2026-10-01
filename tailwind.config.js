@@ -75,6 +75,34 @@ export default {
           950: cor('bg'),
         },
       },
+      /* F52 — tokens de movimento, camadas e profundidade (valores em tokens.css) */
+      transitionDuration: {
+        rapida: 'var(--dur-rapida)',
+        normal: 'var(--dur-normal)',
+        lenta: 'var(--dur-lenta)',
+      },
+      transitionTimingFunction: {
+        padrao: 'var(--ease-padrao)',
+        entrada: 'var(--ease-entrada)',
+        saida: 'var(--ease-saida)',
+        mola: 'var(--ease-mola)',
+      },
+      // fundo e ambiente ficam abaixo de zero (theme/rpg.css); daqui para cima:
+      zIndex: {
+        cabecalho: '20',
+        menu: '40',
+        modal: '50',
+        aviso: '60',
+        toast: '70',
+        dica: '80',
+      },
+      boxShadow: {
+        'nivel-1': 'var(--sombra-1)',
+        'nivel-2': 'var(--sombra-2)',
+        'nivel-3': 'var(--sombra-3)',
+        brilho: 'var(--brilho)',
+        'brilho-suave': 'var(--brilho-suave)',
+      },
       fontFamily: {
         sora: ['Sora', 'sans-serif'],
         sans: ['"Instrument Sans"', 'system-ui', 'sans-serif'],

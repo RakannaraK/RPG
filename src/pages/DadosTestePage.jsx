@@ -47,7 +47,7 @@ export default function DadosTestePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black flex flex-col items-center justify-center gap-10 p-8">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-10 p-8">
       <h1 className="text-white text-2xl font-bold">Teste — Dados 3D</h1>
 
       {/* Seletor de skin */}

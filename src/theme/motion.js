@@ -1,17 +1,21 @@
-// Fonte única de verdade para durações/easing/limites de animação (FV seção 2).
-export const PAGE_TRANSITION_MS = 200
-export const PAGE_TRANSITION_EASING = 'cubic-bezier(.2,.8,.2,1)'
-export const PAGE_TRANSITION_RISE_PX = 8
+// Fonte única de verdade para durações/easing/limites de animação no JS.
+// Espelham os tokens --dur-* e --ease-* de theme/tokens.css (F52).
+export const DUR_RAPIDA = 140
+export const DUR_NORMAL = 220
+export const DUR_LENTA = 420
 
 export const STAGGER_STEP_MS = 30
 export const STAGGER_MAX_ITEMS = 8
 
-export const TOGGLE_TRANSITION_MS = 150
-export const PRESS_SCALE = 0.98
-
 export function prefersReducedMotion() {
   if (typeof window === 'undefined' || !window.matchMedia) return false
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+/** F52 — movimento reduzido pelo sistema OU pela preferência do usuário. */
+export function movimentoReduzido() {
+  if (typeof document === 'undefined') return false
+  return document.documentElement.getAttribute('data-movimento') === 'reduzido'
 }
 
 // Delay (ms) do item de índice `index` num stagger de lista.

@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import { useAuth } from '../../context/AuthContext'
-import { FONTES, LIMITE_SOM, TEMAS, extensaoDoSom, validarSom } from '../../lib/personalizacao'
+import { ANIMACOES, EFEITOS, FONTES, LIMITE_SOM, TAMANHOS_TEXTO, TEMAS, extensaoDoSom, validarSom } from '../../lib/personalizacao'
 import Botao from '../ui/Botao'
 
 const BUCKET = 'fichas-imagens' // mesmo bucket das imagens: pasta do próprio usuário
@@ -89,6 +89,32 @@ function EnvioDeSom({ campo, campoVolume, pasta, titulo, dica, rodape }) {
   )
 }
 
+/** F52 — escolha de uma opção entre poucas (botões lado a lado, como rádio). */
+function Escolha({ titulo, campo, opcoes }) {
+  const { preferencias, salvarPreferencias } = usePreferencias()
+  const atual = preferencias[campo] || opcoes[0].id
+  const dica = opcoes.find(o => o.id === atual)?.dica
+  return (
+    <fieldset>
+      <legend className="text-xs text-purple-400 mb-1.5">{titulo}</legend>
+      <div className="flex flex-wrap gap-2">
+        {opcoes.map(o => (
+          <label
+            key={o.id}
+            className={`px-3 py-1.5 rounded-lg border text-xs cursor-pointer transition-colors duration-rapida has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-purple-400/70 ${
+              atual === o.id ? 'border-purple-400 bg-purple-900/40 text-white' : 'border-purple-800 text-purple-300 hover:border-purple-600'
+            }`}
+          >
+            <input type="radio" name={campo} value={o.id} checked={atual === o.id} onChange={() => salvarPreferencias({ [campo]: o.id })} className="sr-only" />
+            {o.nome}
+          </label>
+        ))}
+      </div>
+      {dica && <p className="text-xs text-accent-300 mt-1">{dica}</p>}
+    </fieldset>
+  )
+}
+
 /**
  * Fase 35.2 + 35.3 (+ F37) — aparência (tema e fonte) e sons próprios.
  * Tudo por usuário: ninguém mexe no que os outros veem/ouvem.
@@ -131,6 +157,21 @@ export default function Aparencia() {
         >
           {FONTES.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
         </select>
+      </label>
+
+      <Escolha titulo="Animações" campo="animacoes" opcoes={ANIMACOES} />
+      <Escolha titulo="Efeitos visuais" campo="efeitos" opcoes={EFEITOS} />
+      <Escolha titulo="Tamanho do texto" campo="tamanho_texto" opcoes={TAMANHOS_TEXTO} />
+      <label className="flex items-center justify-between gap-3 cursor-pointer">
+        <span>
+          <span className="block text-sm text-purple-100">Alto contraste</span>
+          <span className="block text-xs text-purple-400">Texto secundário e bordas mais fortes, sem textura.</span>
+        </span>
+        <input
+          type="checkbox" checked={preferencias.alto_contraste === true}
+          onChange={e => salvarPreferencias({ alto_contraste: e.target.checked })}
+          className="w-5 h-5 accent-purple-500 shrink-0"
+        />
       </label>
 
       <EnvioDeSom

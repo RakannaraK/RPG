@@ -8,8 +8,8 @@ import { faixasDaBarra, textoVida } from './barraVida'
 
 describe('Fase 35 — aceitação', () => {
   it('trocar o tema marca o site e volta ao padrão sem marca', () => {
-    expect(atributosDeAparencia({ tema: 'esmeralda', fonte: 'facil' })).toEqual({ 'data-tema': 'esmeralda', 'data-fonte': 'facil' })
-    expect(atributosDeAparencia({ tema: 'violeta', fonte: 'padrao' })).toEqual({ 'data-tema': null, 'data-fonte': null })
+    expect(atributosDeAparencia({ tema: 'esmeralda', fonte: 'facil' })).toMatchObject({ 'data-tema': 'esmeralda', 'data-fonte': 'facil' })
+    expect(atributosDeAparencia({ tema: 'violeta', fonte: 'padrao' })).toMatchObject({ 'data-tema': null, 'data-fonte': null })
     expect(TEMAS).toHaveLength(5)
   })
 

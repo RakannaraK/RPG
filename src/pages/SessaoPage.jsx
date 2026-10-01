@@ -371,7 +371,7 @@ export default function SessaoPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-slate-900 to-black">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-purple-400 text-lg">Carregando sessão...</div>
       </div>
     )
@@ -379,7 +379,7 @@ export default function SessaoPage() {
 
   if (error || !sessao) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-slate-900 to-black">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-400 mb-4">{error || 'Sessão não encontrada.'}</p>
           <button
@@ -394,7 +394,7 @@ export default function SessaoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
+    <div className="min-h-screen">
       {/* Cabeçalho */}
       <header className="border-b border-purple-800 py-4 sticky top-0 z-20 bg-slate-950/80 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-4 flex-wrap">

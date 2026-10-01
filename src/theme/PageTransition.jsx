@@ -1,28 +1,27 @@
 import { useLocation } from 'react-router-dom'
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 
-// Reinicia a animação de entrada (fade + subida) a cada troca de pathname,
-// SEM desmontar a árvore de filhos — evita derrubar componentes de página
-// (e suas subscriptions) em navegações que só trocam parâmetros de rota.
+// Transição de página (F52). A classe `pagina-entra` fica sempre ligada: todo
+// conteúdo de página que MONTA já entra animado (theme/motion.css). Quando a
+// rota muda mas a página é a mesma (/mesa/1 → /mesa/2), nada monta de novo —
+// aí a animação é reiniciada aqui, antes de pintar (layout effect), sem
+// desmontar a árvore (as subscriptions da página continuam vivas).
 export default function PageTransition({ children }) {
-  const location = useLocation()
+  const { pathname } = useLocation()
   const ref = useRef(null)
-  const firstRender = useRef(true)
+  const anterior = useRef(pathname)
 
-  useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false
-      return
-    }
+  useLayoutEffect(() => {
     const el = ref.current
-    if (!el) return
-    el.classList.remove('page-transition')
+    if (!el || anterior.current === pathname) return
+    anterior.current = pathname
+    el.classList.remove('pagina-entra')
     void el.offsetWidth
-    el.classList.add('page-transition')
-  }, [location.pathname])
+    el.classList.add('pagina-entra')
+  }, [pathname])
 
   return (
-    <div ref={ref} className="page-transition">
+    <div ref={ref} className="pagina pagina-entra">
       {children}
     </div>
   )

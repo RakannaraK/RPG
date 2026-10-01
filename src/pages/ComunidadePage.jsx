@@ -267,7 +267,7 @@ export default function ComunidadePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-black">
+    <div className="min-h-screen">
       <header className="border-b border-purple-900 py-4">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-3 flex-wrap">
           <Botao variante="fantasma" tamanho="sm" onClick={() => navigate(logado ? '/dashboard' : '/')}>← Voltar</Botao>

@@ -8,7 +8,7 @@ export default function AuthPage() {
   const [mode, setMode] = useState('login')
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-slate-900 to-black px-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
       {/* Glows decorativos */}
       <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-purple-700/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-purple-900/20 rounded-full blur-2xl pointer-events-none" />

@@ -33,24 +33,66 @@ body::before {
   background:
     radial-gradient(900px 620px at 12% -12%, color-mix(in srgb, var(--accent-700) 34%, transparent), transparent 70%),
     radial-gradient(760px 520px at 102% 2%,  color-mix(in srgb, var(--accent-800) 26%, transparent), transparent 72%),
-    radial-gradient(1100px 760px at 50% 118%, color-mix(in srgb, var(--dice-700) 12%, transparent), transparent 70%);
+    radial-gradient(1100px 760px at 50% 118%, color-mix(in srgb, var(--dice-700) 12%, transparent), transparent 70%),
+    /* F52 — a diagonal escura que cada página pintava por conta própria agora
+       é do fundo global: as páginas ficam transparentes e a luz do tema, as
+       partículas e a aura da sessão aparecem por trás de todas. */
+    linear-gradient(135deg, rgb(var(--p950-c)) 0%, var(--void) 48%, #050308 100%);
+  transition: opacity var(--dur-lenta) var(--ease-padrao);
 }
 
+/* F52 — sessão ao vivo: a luz do tema fica mais intensa e sobe pelas bordas.
+   Uma segunda camada (não dá para transicionar gradiente) que só acende. */
+html::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(70% 55% at 50% 112%, color-mix(in srgb, var(--accent-600) 30%, transparent), transparent 70%),
+    radial-gradient(40% 70% at -6% 50%,  color-mix(in srgb, var(--accent-700) 22%, transparent), transparent 70%),
+    radial-gradient(40% 70% at 106% 50%, color-mix(in srgb, var(--accent-700) 22%, transparent), transparent 70%);
+  transition: opacity 900ms var(--ease-padrao);
+}
+:root[data-sessao="ao-vivo"]::before { opacity: 1; }
+:root[data-efeitos="desligados"]::before,
+:root[data-sem-arte]::before { display: none; }
+
+/* Vinheta: escurece as bordas da tela. */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image: var(--velino-grao),
-    radial-gradient(130% 110% at 50% 50%, transparent 55%, rgba(0, 0, 0, .55) 100%);
-  background-size: 140px 140px, cover;
-  opacity: .5;
+  background: radial-gradient(130% 110% at 50% 50%, transparent 55%, rgba(0, 0, 0, .5) 100%);
 }
+
+/* Grão: textura de velino quase invisível, misturada à luz do fundo (overlay)
+   em vez de pintada por cima — pintada, ela acinzentava a página inteira. */
+html::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--velino-grao);
+  background-size: 140px 140px;
+  mix-blend-mode: overlay;
+  opacity: .07;
+}
+
+/* Efeitos desligados: fundo liso, sem luz de tema nem grão. */
+:root[data-efeitos="desligados"] body::before { background: linear-gradient(135deg, rgb(var(--p950-c)) 0%, var(--void) 48%, #050308 100%); }
+:root[data-efeitos="desligados"]::after,
+:root[data-contraste="alto"]::after { display: none; }
 
 /* O overlay do OBS (e qualquer tela que peça) fica limpo. */
 :root[data-sem-arte] body::before,
-:root[data-sem-arte] body::after { display: none; }
+:root[data-sem-arte] body::after,
+:root[data-sem-arte]::after { display: none; }
 
 /* ── Velino: superfície de painel com fibra de pergaminho ────────────────── */
 .velino {

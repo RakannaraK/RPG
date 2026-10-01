@@ -373,7 +373,7 @@ export default function FichaPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-void via-void to-black">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-3">
           <div className="w-10 h-10 border-4 border-accent-500 border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-ink-dim text-sm">Carregando ficha...</p>
@@ -384,7 +384,7 @@ export default function FichaPage() {
 
   if (error || !ficha) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-void via-void to-black">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-harm mb-4">{error || 'Ficha não encontrada.'}</p>
           <button
@@ -1019,7 +1019,7 @@ export default function FichaPage() {
   const hasRight = secoes.combate || secoes.defesas || secoes.imagens
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-void via-void to-black">
+    <div className="min-h-screen">
       {/* Barra de navegação */}
       <header className="border-b border-border py-4 print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-4">
