@@ -7,7 +7,7 @@ import {
 
 describe('temas e fontes', () => {
   it('as listas têm ids únicos e o padrão primeiro', () => {
-    expect(TEMAS[0].id).toBe('violeta')
+    expect(TEMAS[0].id).toBe('tinta')
     expect(FONTES[0].id).toBe('padrao')
     expect(new Set(TEMAS.map(t => t.id)).size).toBe(TEMAS.length)
     expect(ehTemaValido('gelo')).toBe(true)

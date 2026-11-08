@@ -142,11 +142,11 @@ export default function PreferenciasModal({ onFechar }) {
                 >
                   <span
                     className="w-12 h-12 rounded-lg shrink-0 ring-1 ring-white/10"
-                    style={{ background: `radial-gradient(circle at 30% 30%, ${t.cores[0]}, ${t.amostra} 55%, #0B0812)`, boxShadow: `0 0 18px -4px ${t.amostra}` }}
+                    style={{ background: t.gradiente || `radial-gradient(circle at 30% 30%, ${t.cores[0]}, ${t.amostra} 55%, #0B0812)`, boxShadow: `0 0 18px -4px ${t.amostra}` }}
                     aria-hidden="true"
                   />
                   <span className="min-w-0">
-                    <span className="block text-ink font-semibold text-sm">{t.nome}{t.id === 'violeta' ? ' (padrão)' : ''}</span>
+                    <span className="block text-ink font-semibold text-sm">{t.nome}{t.id === 'tinta' ? ' (padrão)' : ''}</span>
                     <span className="block text-ink-dim text-xs mt-0.5">{t.energia}</span>
                   </span>
                   {ativo && <Icone nome="check" tamanho={18} className="ml-auto text-accent-300" />}

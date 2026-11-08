@@ -13,7 +13,7 @@ const PADRAO = {
   // F27 — bandeja de dados: 'todos' | 'meus' | 'nenhum'
   dados_mesa: 'todos',
   // F35 — aparência e som de crítico próprio
-  tema: 'violeta', fonte: 'padrao', som_critico_url: null,
+  tema: 'tinta', fonte: 'padrao', som_critico_url: null,
   // F37 — som de dado enviado pelo usuário (no lugar do sintetizado)
   som_dado_url: null,
   // F52 — movimento, ambientação e acessibilidade

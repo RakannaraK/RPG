@@ -10,7 +10,7 @@ describe('Fase 35 — aceitação', () => {
   it('trocar o tema marca o site e volta ao padrão sem marca', () => {
     expect(atributosDeAparencia({ tema: 'esmeralda', fonte: 'facil' })).toMatchObject({ 'data-tema': 'esmeralda', 'data-fonte': 'facil' })
     expect(atributosDeAparencia({ tema: 'violeta', fonte: 'padrao' })).toMatchObject({ 'data-tema': null, 'data-fonte': null })
-    expect(TEMAS).toHaveLength(5)
+    expect(TEMAS).toHaveLength(6)
   })
 
   it('áudio de 3 s entra; de 30 s é recusado com o motivo', () => {

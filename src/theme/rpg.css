@@ -84,8 +84,17 @@ html::after {
   opacity: .07;
 }
 
+/* F56 — Tinta e Brasa: azul no canto de cima, vermelho no de baixo, preto no meio. */
+:root[data-tema="tinta"] body::before {
+  background:
+    radial-gradient(1200px 800px at 0% 0%, rgb(31 75 194 / .35), transparent 60%),
+    radial-gradient(1000px 700px at 100% 100%, rgb(168 30 47 / .30), transparent 60%),
+    linear-gradient(160deg, #070A12, #05070C);
+}
+
 /* Efeitos desligados: fundo liso, sem luz de tema nem grão. */
-:root[data-efeitos="desligados"] body::before { background: linear-gradient(135deg, rgb(var(--p950-c)) 0%, var(--void) 48%, #050308 100%); }
+:root[data-efeitos="desligados"] body::before,
+:root[data-efeitos="desligados"][data-tema="tinta"] body::before { background: linear-gradient(135deg, rgb(var(--p950-c)) 0%, var(--void) 48%, #050308 100%); }
 :root[data-efeitos="desligados"]::after,
 :root[data-contraste="alto"]::after { display: none; }
 

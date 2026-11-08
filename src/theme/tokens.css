@@ -76,6 +76,7 @@
      esmeralda é éter, gelo é cristal. Em hex puro porque o canvas lê. */
   --energia-1: #A78BFA;
   --energia-2: #60A5FA;
+  --energia-meio: color-mix(in srgb, var(--energia-1), var(--energia-2));
 }
 
 /* ── Fase 35 — temas: mexem só no ACENTO (o contraste do texto fica igual) ── */
@@ -114,6 +115,24 @@
   --p900-c: 4 49 73; --p950-c: 2 22 33;
   --sobre-acento: #0B0812;
   --energia-1: #E0F2FE; --energia-2: #7DD3FC;
+}
+
+/* ── Fase 56 — Tinta e Brasa: azul, preto, branco e vermelho. Redefine também
+   superfícies, texto e cor de dado (a identidade é o preto-azulado e o
+   vermelho). --ok/--warn/--harm/--temp seguem iguais (semânticas). ── */
+:root[data-tema="tinta"] {
+  --bg: #05070C; --void: #0A0E18; --raised: #111829; --hover: #1A2338; --border: #26314A;
+  --bg-c: 5 7 12; --void-c: 10 14 24; --raised-c: 17 24 41; --hover-c: 26 35 56; --border-c: 38 49 74;
+  --ink: #F4F7FC; --ink-dim: rgba(244,247,252,.60); --ink-c: 244 247 252;
+  --accent-300: #A9C4FF; --accent-400: #7FA6FF; --accent-500: #3D74F5;
+  --accent-600: #2A5FE6; --accent-700: #1F4BC2; --accent-800: #183A94;
+  --accent-300-c: 169 196 255; --accent-400-c: 127 166 255; --accent-500-c: 61 116 245;
+  --accent-600-c: 42 95 230; --accent-700-c: 31 75 194; --accent-800-c: 24 58 148;
+  --p900-c: 12 24 56; --p950-c: 6 12 28;
+  --sobre-acento: #FFFFFF;
+  --dice-200: #FFC9CF; --dice-400: #FF7080; --dice-500: #F0445A; --dice-700: #A81E2F;
+  --dice-200-c: 255 201 207; --dice-400-c: 255 112 128; --dice-500-c: 240 68 90; --dice-700-c: 168 30 47;
+  --energia-1: #7FA6FF; --energia-2: #FF5468; --energia-meio: #F4F7FC;
 }
 
 /* ── Fase 35 — fontes ───────────────────────────────────────────────────── */
