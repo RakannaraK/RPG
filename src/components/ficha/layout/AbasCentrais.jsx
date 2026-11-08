@@ -86,6 +86,7 @@ export default function AbasCentrais({
   condicoesManuais = {}, condicoesManuaisDisponiveis = [], onToggleCondicao, nomesAlvos = {},
   habilidadesBloqueadas = [], // 19.5
   contextoNivel = {}, // F33.3 — { nivel, niveisClasse } para a árvore
+  pontosArvore = null, // F54 — { total, gastos, saldo, erro, rotulo }
   poolsPorId = {}, onPagarTurno,  // 20.5
   categorias = [], // 21.1
   maestria = null, onGanharMaestria, // 21.3
@@ -103,7 +104,8 @@ export default function AbasCentrais({
     secoes.notas      && { id: 'notas',       label: 'Notas' },
     temHabilidades    && { id: 'habilidades', label: 'Habilidades' },
     // F33.3 — a árvore só aparece quando o sistema liga habilidades entre si
-    habilidades.some(h => h.requer_habilidade_id) && { id: 'arvore', label: 'Árvore' },
+    (habilidades.some(h => h.requer_habilidade_id || h.requer_habilidades_ids?.length)
+      || ((pontosArvore?.total != null || pontosArvore?.erro) && habilidades.some(h => h.custo_pontos > 0))) && { id: 'arvore', label: 'Árvore' },
   ].filter(Boolean)
 
   const [activeTab, setActiveTab] = useState(tabsList[0]?.id || '')
@@ -189,6 +191,8 @@ export default function AbasCentrais({
             contexto={contextoNivel}
             isDono={isDono}
             onAdicionar={onAdicionarHabilidade}
+            onRemover={onRemoverHabilidade}
+            pontos={pontosArvore}
           /></div>
         )}
 

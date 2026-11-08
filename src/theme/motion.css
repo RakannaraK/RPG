@@ -109,3 +109,23 @@
   from { width: 100%; }
   to   { width: 0%; }
 }
+
+/* F54 — árvore de habilidades em constelação: estrelas cintilam, nós disponíveis pulsam */
+@keyframes arv-cintila {
+  0%, 100% { opacity: .25; }
+  50%      { opacity: .8; }
+}
+@keyframes arv-pulso {
+  from { transform: scale(1); opacity: .8; }
+  to   { transform: scale(1.5); opacity: 0; }
+}
+.arv-estrela { animation: arv-cintila 3.5s ease-in-out infinite; }
+.arv-pulso {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: arv-pulso 1.8s ease-out infinite;
+}
+:root[data-movimento="reduzido"] :is(.arv-estrela, .arv-pulso) { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .arv-estrela, .arv-pulso { animation: none; }
+}

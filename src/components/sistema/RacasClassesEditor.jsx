@@ -7,6 +7,7 @@ import {
   ehAcertoDano, ehVantagem, ehAcao, montarEfeitoPayload,
 } from '../../lib/efeitoForm'
 import { validarFormula, usaAtributoOuMod } from '../../lib/formulaEngine'
+import { montarArvore } from '../../lib/arvoreHabilidades'
 import { validarFaixas } from '../../lib/faixas'
 import FormulaInput from './FormulaInput'
 import FaixasEditor from './FaixasEditor'
@@ -551,7 +552,9 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
   const [editCustoPool, setEditCustoPool] = useState([]) // 20.5
   const [editSomPreset, setEditSomPreset] = useState('') // FV.5a
   const [editRecarga, setEditRecarga] = useState('')       // F32.2
-  const [editRequer, setEditRequer] = useState('')         // F33.3 — pré-requisito
+  const [editRequer, setEditRequer] = useState([])         // F33.3/F54 — pré-requisitos (ids)
+  const [editModo, setEditModo] = useState('todos')         // F54
+  const [editCusto, setEditCusto] = useState('')            // F54 — custo na árvore
   const [editMidia, setEditMidia] = useState('')           // F35.4 — imagem/som
   const [editCargaMax, setEditCargaMax] = useState('')
   const [editCargaRodada, setEditCargaRodada] = useState('')
@@ -576,7 +579,11 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
         som_preset: editSomPreset,
         // F32.2 — vazio = sem recarga / não é ultimate
         recarga_turnos: editRecarga === '' ? null : Math.max(0, Number(editRecarga) || 0),
-        requer_habilidade_id: editRequer || null, // F33.3
+        requer_habilidade_id: editRequer[0] || null, // F33.3 — espelha o 1º
+        // F54 — só grava as colunas novas se o banco já as tem (ou se há o que gravar)
+        ...(editRequer.length > 1 || 'requer_habilidades_ids' in habilidade ? { requer_habilidades_ids: editRequer } : {}),
+        ...(editModo === 'qualquer' || 'requer_modo' in habilidade ? { requer_modo: editModo } : {}),
+        ...(editCusto !== '' || 'custo_pontos' in habilidade ? { custo_pontos: editCusto } : {}),
         midia_url: editMidia, // F35.4
         carga_max: editCargaMax === '' ? null : Math.max(1, Number(editCargaMax) || 1),
         carga_por_rodada: editCargaRodada === '' ? null : Math.max(0, Number(editCargaRodada) || 0),
@@ -605,11 +612,21 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
     setEditCustoPool(Array.isArray(habilidade.custo_pool) ? habilidade.custo_pool : [])
     setEditSomPreset(habilidade.som_preset || '')
     setEditRecarga(habilidade.recarga_turnos != null ? String(habilidade.recarga_turnos) : '')
-    setEditRequer(habilidade.requer_habilidade_id || '')
+    setEditRequer([...new Set([...(habilidade.requer_habilidades_ids || []), habilidade.requer_habilidade_id].filter(id => id && habilidadesTodas.some(h => h.id === id)))])
+    setEditModo(habilidade.requer_modo === 'qualquer' ? 'qualquer' : 'todos')
+    setEditCusto(habilidade.custo_pontos ? String(habilidade.custo_pontos) : '')
     setEditMidia(habilidade.midia_url || '')
     setEditCargaMax(habilidade.carga_max != null ? String(habilidade.carga_max) : '')
     setEditCargaRodada(habilidade.carga_por_rodada != null ? String(habilidade.carga_por_rodada) : '')
     setErro(''); setEditando(true)
+  }
+
+  // F54 — quem depende desta (direta ou indiretamente) não pode virar pré-requisito dela
+  const dependentes = new Set()
+  if (editando) {
+    const nos = montarArvore(habilidadesTodas).nos
+    const sobe = id => nos.get(id)?.filhos.forEach(f => { if (!dependentes.has(f)) { dependentes.add(f); sobe(f) } })
+    sobe(habilidade.id)
   }
 
   const tipoBadge = habilidade.tipo === 'ativavel'
@@ -681,16 +698,40 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
                   placeholder="https://… .png ou .mp3" className={`${SEL} w-52`}
                   title="Aparece na ficha; se for áudio, toca ao usar a habilidade." />
               </div>
-              {/* F33.3 — pré-requisito: outra habilidade (monta a árvore) */}
+              {/* F33.3/F54 — pré-requisitos: outras habilidades (monta a árvore) */}
               <div>
-                <p className="text-purple-400 text-xs mb-1">Exige a habilidade</p>
-                <select value={editRequer} onChange={e => setEditRequer(e.target.value)} className={`${SEL} w-44`}
-                  title="Só pode ser aprendida depois desta. Vazio = raiz da árvore.">
-                  <option value="">— nenhuma —</option>
-                  {habilidadesTodas.filter(h => h.id !== habilidade.id).map(h => (
+                <p className="text-purple-400 text-xs mb-1">Exige as habilidades</p>
+                <div className="flex flex-wrap gap-1 mb-1">
+                  {editRequer.map(id => (
+                    <span key={id} className="inline-flex items-center gap-1 pl-2 rounded-full bg-purple-900/60 border border-purple-700 text-xs text-ink">
+                      {habilidadesTodas.find(h => h.id === id)?.nome}
+                      <button type="button" aria-label="Remover pré-requisito" onClick={() => setEditRequer(l => l.filter(x => x !== id))}
+                        className="min-w-6 min-h-6 rounded-full hover:text-harm">×</button>
+                    </span>
+                  ))}
+                </div>
+                <select value="" onChange={e => e.target.value && setEditRequer(l => [...l, e.target.value])} className={`${SEL} w-44`}
+                  title="Só pode ser aprendida depois destas. Vazio = raiz da árvore.">
+                  <option value="">+ adicionar pré-requisito</option>
+                  {habilidadesTodas.filter(h => h.id !== habilidade.id && !editRequer.includes(h.id) && !dependentes.has(h.id)).map(h => (
                     <option key={h.id} value={h.id}>{h.nome}</option>
                   ))}
                 </select>
+                {editRequer.length > 1 && (
+                  <div className="flex gap-3 mt-1 text-xs text-ink-dim">
+                    {[['todos', 'Exige todas'], ['qualquer', 'Basta uma']].map(([v, r]) => (
+                      <label key={v} className="inline-flex items-center gap-1 min-h-6 cursor-pointer">
+                        <input type="radio" name={`modo-${habilidade.id}`} checked={editModo === v} onChange={() => setEditModo(v)} />{r}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <p className="text-purple-400 text-xs mb-1">Custo na árvore (pontos)</p>
+                <input type="number" value={editCusto} onChange={e => setEditCusto(e.target.value)}
+                  min="0" placeholder="—" className={`${SEL} w-20 text-center`}
+                  title="Pontos gastos ao aprender pela árvore. Vazio = de graça." />
               </div>
               {/* 19.5 — requisito de nível */}
               <div>

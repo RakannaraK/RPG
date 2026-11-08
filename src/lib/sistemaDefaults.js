@@ -55,6 +55,8 @@ export const CONFIG_LAYOUT_DEFAULT = {
   // Fase 25.4b — criação de personagem por PRIORIDADES. Excludente com
   // rolagem (F3) e pontos de status (F22). { ativo, etapas: [...] }
   criacao_prioridades: { ativo: false, etapas: [] },
+  // Fase 54 — orçamento da árvore de habilidades (fórmula vazia = sem orçamento)
+  arvore: { formula_pontos: '', rotulo_pontos: 'Pontos de habilidade' },
   // Fase 23 — modo de RESOLUÇÃO da rolagem. Ausente/'soma' = comportamento de
   // sempre (retrocompatível byte a byte). Um modo por sistema.
   resolucao: {
@@ -175,6 +177,7 @@ export function mergeConfigLayout(raw) {
       ativo: !!(raw || {}).criacao_prioridades?.ativo,
       etapas: (raw || {}).criacao_prioridades?.etapas || [],
     },
+    arvore: { ...CONFIG_LAYOUT_DEFAULT.arvore, ...((raw || {}).arvore || {}) },
     exibicao_atributos: (raw || {}).exibicao_atributos || 'numero',
     maximo_dots: (raw || {}).maximo_dots || 5,
     resolucao: {

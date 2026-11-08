@@ -84,6 +84,11 @@ export function useHabilidades(sistemaId) {
     if (updates.midia_url !== undefined) payload.midia_url = (updates.midia_url || '').trim() || null
     // F33.3 — pré-requisito na árvore (null = raiz)
     if (updates.requer_habilidade_id !== undefined) payload.requer_habilidade_id = updates.requer_habilidade_id || null
+    // F54 — vários pré-requisitos, modo e custo em pontos da árvore
+    if (updates.requer_habilidades_ids !== undefined) payload.requer_habilidades_ids = updates.requer_habilidades_ids || []
+    if (updates.requer_modo !== undefined) payload.requer_modo = updates.requer_modo === 'qualquer' ? 'qualquer' : 'todos'
+    if (updates.custo_pontos !== undefined) payload.custo_pontos =
+      updates.custo_pontos === '' || updates.custo_pontos == null ? null : Math.max(0, Math.floor(Number(updates.custo_pontos)) || 0)
     // F32.2 — recarga em turnos e ultimate (null = não tem)
     for (const campo of ['recarga_turnos', 'carga_max', 'carga_por_rodada']) {
       if (updates[campo] !== undefined) {

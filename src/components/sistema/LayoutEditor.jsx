@@ -351,6 +351,34 @@ export default function LayoutEditor({
         />
       </div>
 
+      {/* Árvore de habilidades (F54) */}
+      <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
+        <p className="text-purple-200 text-sm font-semibold">Árvore de habilidades</p>
+        <p className="text-accent-300 text-xs">
+          Pontos que o jogador gasta na árvore (cada habilidade define o custo). Fórmula vazia = sem
+          orçamento: a árvore só mostra os pré-requisitos. Raça e classe não gastam pontos.
+        </p>
+        <FormulaInput
+          value={config.arvore?.formula_pontos || ''}
+          onChange={f => onConfigChange({ ...config, arvore: { ...config.arvore, formula_pontos: f } })}
+          placeholder="ex: nivel * 2"
+          presets={[
+            { label: 'Sem orçamento', valor: '' },
+            { label: '1 por nível', valor: 'nivel' },
+            { label: '2 por nível', valor: 'nivel*2' },
+          ]}
+          variaveis={['nivel']}
+        />
+        <input
+          type="text"
+          value={config.arvore?.rotulo_pontos ?? ''}
+          onChange={e => onConfigChange({ ...config, arvore: { ...config.arvore, rotulo_pontos: e.target.value } })}
+          placeholder="Pontos de habilidade"
+          aria-label="Nome dos pontos da árvore"
+          className={`${INP_PS} w-full`}
+        />
+      </div>
+
       {/* Progressão por XP (19.3) */}
       <ProgressaoEditor
         progressao={config.progressao_xp}

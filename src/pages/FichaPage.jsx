@@ -1,3 +1,4 @@
+import { pontosDaArvore } from '../lib/arvoreHabilidades'
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -607,6 +608,12 @@ export default function FichaPage() {
     pericias: {},
     recursos: {},
     estados: mapaEstados(config.estados || [], valoresEstados), // 24.4 — estado(x)
+  }
+
+  // F54 — orçamento da árvore de habilidades (fórmula do mestre − custo do que aprendeu à mão)
+  const pontosArvore = {
+    ...pontosDaArvore({ formula: config.arvore?.formula_pontos, contexto: contextoFormula, habilidades, habilidadesFicha }),
+    rotulo: config.arvore?.rotulo_pontos || 'Pontos de habilidade',
   }
 
   // 23.5/24.4 — quantidade de dados especiais (ex: Fome): um estado com
@@ -1380,6 +1387,7 @@ export default function FichaPage() {
               onAdicionarHabilidade={adicionarHabilidade}
               contextoNivel={{ nivel: nivelTotal, niveisClasse }}
               onRemoverHabilidade={removerHabilidade}
+              pontosArvore={pontosArvore}
               onAjustarRecurso={ajustarRecurso}
               onUsarHabilidade={handleUsarHabilidade}
               onAjustarCargaHabilidade={ajustarCargaHabilidade}

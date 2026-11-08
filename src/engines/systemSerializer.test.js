@@ -155,3 +155,23 @@ describe('montarPayloadImportacao', () => {
     expect(p.modificadores[0].sistema_id).toBeUndefined()
   })
 })
+
+describe('F54 — pré-requisitos múltiplos da árvore viajam no remap', () => {
+  it('requer_habilidades_ids (lista), requer_modo e custo_pontos são preservados com ids novos', () => {
+    const H2 = '88888888-8888-4888-8888-888888888888'
+    const H3 = '77777777-7777-4777-8777-777777777777'
+    const json = {
+      sistema: { nome: 'S', config_layout: {} },
+      habilidades: [
+        { id: A, nome: 'Início' },
+        { id: H2, nome: 'Outra', requer_habilidade_id: A, requer_habilidades_ids: [A] },
+        { id: H3, nome: 'Fim', requer_habilidade_id: A, requer_habilidades_ids: [A, H2], requer_modo: 'qualquer', custo_pontos: 3 },
+      ],
+    }
+    const out = desserializarSistema(json, gerador())
+    const [ini, , fim] = out.habilidades
+    expect(fim.requer_habilidades_ids).toEqual([ini.id, out.habilidades[1].id])
+    expect(fim.requer_habilidade_id).toBe(ini.id)
+    expect(fim).toMatchObject({ requer_modo: 'qualquer', custo_pontos: 3 })
+  })
+})
