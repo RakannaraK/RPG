@@ -17,12 +17,18 @@ import { useToast } from '../components/ui/Toast'
 import { proximaDaMesa } from '../lib/agenda'
 import GuiaMestre, { useProgressoMestre } from '../components/ajuda/GuiaMestre'
 import { passosDoGuia, quantosFeitos } from '../lib/guia'
+import Saudacao from '../components/painel/Saudacao'
+import MeusPersonagens from '../components/painel/MeusPersonagens'
+import { useMeusPersonagens } from '../hooks/useMeusPersonagens'
+import { lerRecentes } from '../lib/recentes'
 import { usePreferencias } from '../context/PreferenciasContext'
 
 export default function DashboardPage() {
   const { session } = useAuth()
   const { mesas, loading, error, refetch } = useMesas()
   const navigate = useNavigate()
+  const { personagens, loading: carregandoPersonagens } = useMeusPersonagens()
+  const [recentes] = useState(lerRecentes)
   const toast = useToast()
 
   const [showCreate, setShowCreate] = useState(false)
@@ -79,6 +85,8 @@ export default function DashboardPage() {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <BannerConvidado className="mb-6" />
+        <Saudacao mesas={ativas} personagens={personagens} recentes={recentes} />
+        <MeusPersonagens personagens={personagens} loading={carregandoPersonagens} />
         {progresso && !preferencias.guia_dispensado && feitos < passos.length && !souConvidado(session) && (
           <section className="mb-8 rounded-2xl border border-accent-700/50 bg-raised/70 p-5 flex flex-col sm:flex-row sm:items-center gap-4" aria-label="Primeiros passos">
             <div className="flex-1 min-w-0">
@@ -96,7 +104,7 @@ export default function DashboardPage() {
         )}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5 mb-8">
           <div>
-            <h1 className="font-sora text-3xl sm:text-4xl font-bold text-ink tracking-tight">Suas mesas</h1>
+            <h2 className="font-sora text-2xl sm:text-3xl font-bold text-ink tracking-tight">Suas mesas</h2>
             <p className="text-ink-dim mt-1.5">
               {loading ? 'Abrindo o grimório…'
                 : ativas.length === 0 ? 'Nenhuma mesa ativa'

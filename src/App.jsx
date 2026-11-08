@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { PreferenciasProvider } from './context/PreferenciasContext'
@@ -13,6 +13,7 @@ import { ToastProvider } from './components/ui/Toast'
 import { ConfirmarProvider } from './components/ui/Confirmar'
 import EfeitosAmbiente from './components/ui/EfeitosAmbiente'
 import { destinoDepoisDoLogin } from './lib/convite'
+import { tipoDaRota, registrarVisita, lerRecentes, gravarRecentes } from './lib/recentes'
 
 // F52 — cada página grande vira um pedaço próprio do código: quem abre o site
 // baixa só a entrada e o painel; a mesa, a ficha, a sessão e o mapa chegam
@@ -61,9 +62,20 @@ function PublicRoute({ children }) {
   return children
 }
 
+/** F55 — anota a última mesa/ficha/sessão/mapa aberta (só no navegador). */
+function RegistraRecentes() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    const v = tipoDaRota(pathname)
+    if (v) gravarRecentes(registrarVisita(lerRecentes(), v))
+  }, [pathname])
+  return null
+}
+
 function AppRoutes() {
   return (
     <PageTransition>
+      <RegistraRecentes />
       <Suspense fallback={<CarregandoPagina />}>
       <Routes>
         <Route
