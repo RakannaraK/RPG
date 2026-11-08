@@ -5,6 +5,7 @@ import { MiniTrilha } from './PainelFichas'
 import { ordenarPorIniciativa } from '../../lib/iniciativa'
 import { estadoDaHabilidade } from '../../lib/combateAvancado'
 import { podeEditarFicha } from '../../lib/permissoesFicha'
+import { podeAgirNoCombate, caInfo, defesaDoAlvo } from '../../lib/alvosCombate'
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
 import { ChamaArcana } from '../ui/EfeitosAmbiente'
@@ -36,28 +37,6 @@ function hpDoCombatente(c, cardsPorFicha) {
 function rodadasRestantes(cond, rodadaAtual) {
   if (cond.duracao_rodadas == null) return null
   return cond.duracao_rodadas - ((rodadaAtual ?? 1) - (cond.rodada_inicio ?? (rodadaAtual ?? 1)))
-}
-
-// CA base (jogador via card; inimigo via combatente) + soma dos mods de condição
-// tipo 'combate' ativos (ex: Envenenado -2 CA). Fase 14.4.
-function caInfo(c, cardsPorFicha, campoCaId, condsDoComb) {
-  let base = null
-  if (c.ficha_id) {
-    const card = cardsPorFicha[c.ficha_id]
-    if (card && campoCaId != null) {
-      const v = Number(card.combate?.[campoCaId])
-      base = Number.isNaN(v) ? null : v
-    }
-  } else if (c.ca != null) {
-    base = Number(c.ca)
-  }
-  let delta = 0
-  for (const cond of condsDoComb) {
-    const m = cond.modificador_config
-    if (m && m.tipo === 'combate' && m.valor != null) delta += Number(m.valor) || 0
-  }
-  if (base == null && delta === 0) return null
-  return { base: base ?? 0, efetiva: (base ?? 0) + delta, delta }
 }
 
 function CondicaoForm({ onAplicar, onFechar }) {
@@ -228,6 +207,7 @@ function CombatenteRow({
   onUsarHabilidadeReacao = null, // F32.5
   // 24.2 — dano/cura por MARCAS quando a ficha tem trilha que substitui a vida
   onMarcarTrilha, onCurarTrilha,
+  membros = [], onAtualizarCombatente, // F53 — responsável
 }) {
   const estilo = TIPO_ESTILO[c.tipo] || TIPO_ESTILO.inimigo
   const hp = hpDoCombatente(c, cardsPorFicha)
@@ -236,6 +216,8 @@ function CombatenteRow({
   const [addCond, setAddCond] = useState(false)
   const [dc, setDc] = useState('')
   const [pedindoDef, setPedindoDef] = useState(false)
+  const [erroResp, setErroResp] = useState('')
+  const responsavel = c.controlador_id ? membros.find(m => m.usuario_id === c.controlador_id) : null
 
   // F22.6 — defesa ativa: pedido pendente neste combatente e papéis na cena
   const dp = c.defesa_pendente || null
@@ -307,6 +289,26 @@ function CombatenteRow({
           )}
         </span>
 
+        {responsavel && !isMestre && (
+          <span className="text-xs text-ink-dim shrink-0">por {responsavel.nome}</span>
+        )}
+        {isMestre && onAtualizarCombatente && (
+          <select
+            value={c.controlador_id || ''}
+            onChange={async e => {
+              setErroResp('')
+              try { await onAtualizarCombatente(c.id, { controlador_id: e.target.value || null }) }
+              catch (err) { setErroResp(err.message || 'Não foi possível definir o responsável.') }
+            }}
+            className="shrink-0 max-w-[9rem] px-1.5 py-1 min-h-[24px] rounded-lg bg-void border border-border text-ink text-xs"
+            aria-label={`Responsável por ${c.nome}`}
+            title="Quem age por este combatente"
+          >
+            <option value="">Mestre</option>
+            {membros.map(m => <option key={m.usuario_id} value={m.usuario_id}>{m.nome}</option>)}
+          </select>
+        )}
+
         {/* segunda faixa no celular; na mesma linha a partir de sm */}
         <div className="flex items-center gap-2 sm:gap-3 basis-full sm:basis-auto justify-end sm:justify-start">
         {trilhaVida ? (
@@ -348,6 +350,8 @@ function CombatenteRow({
         )}
         </div>
       </div>
+
+      {erroResp && <p className="mt-1 pl-6 text-harm text-xs" role="alert">{erroResp}</p>}
 
       {/* 24.2 — alvo com trilha-vida: dano/cura viram marcar/curar caixinhas */}
       {trilhaVida && (
@@ -560,6 +564,13 @@ export default function CombatePanel({
   // 24.2 — trilha-vida
   onMarcarTrilha,
   onCurarTrilha,
+  // F53 — responsável, ações em vários alvos / área
+  membros = [],
+  onAtualizarCombatente,
+  onAplicarEmAlvos,
+  onEscolherArea = null,
+  alvosArea = [],
+  unidadeArea = 'm',
 }) {
   const [busy, setBusy] = useState(false)
   const [erro, setErro] = useState('')
@@ -574,9 +585,11 @@ export default function CombatePanel({
     condsPorComb[cond.combatente_id].push(cond)
   }
 
-  // Pode definir/rolar iniciativa deste combatente: mestre (todos) ou dono da ficha (o seu)
-  const podeAgir = c =>
-    isMestre || (c.ficha_id && podeEditarFicha(cardsPorFicha[c.ficha_id]?.ficha, meuUserId))
+  // Ações da vez (AcoesCombate → RPC): mestre, dono/editor da ficha ou o responsável (F53)
+  const podeAgir = c => podeAgirNoCombate(c, { isGestor: isMestre, meuUserId, cardsPorFicha })
+  // Controles da linha (iniciativa, condições, dano/cura) gravam direto nas tabelas, que o
+  // RLS libera só para mestre e dono/editor — o responsável age pelo painel de ações.
+  const podeEditarLinha = c => podeAgirNoCombate(c, { isGestor: isMestre, meuUserId, cardsPorFicha, contarResponsavel: false })
 
   // F22.6 — defensor: o dono do alvo (jogador); o mestre responde pelos inimigos
   const souDefensor = c =>
@@ -663,20 +676,26 @@ export default function CombatePanel({
         </div>
       )}
 
-      {/* Ações do personagem ativo (14.6) */}
-      {ativo?.ficha_id && podeAgir(ativo) && cardsPorFicha[ativo.ficha_id] && (
+      {/* Ações do combatente ativo (14.6; F53: também NPC/criatura sem ficha) */}
+      {ativo && podeAgir(ativo) && (
         <div className="rounded-xl border border-amber-800/50 bg-amber-950/20 p-3 space-y-2">
           <p className="text-amber-300 text-xs font-semibold">⚔️ Ações de {ativo.nome}</p>
           <AcoesCombate
-            fichaId={ativo.ficha_id}
+            key={ativo.id}
+            fichaId={cardsPorFicha[ativo.ficha_id] ? ativo.ficha_id : null}
             nome={ativo.nome}
-            modificadoresAtivos={cardsPorFicha[ativo.ficha_id].modificadoresAtivos || []}
-            combateFinais={cardsPorFicha[ativo.ficha_id].combate || {}}
-            hpMax={cardsPorFicha[ativo.ficha_id].hpMax || 0}
+            modificadoresAtivos={cardsPorFicha[ativo.ficha_id]?.modificadoresAtivos || []}
+            combateFinais={cardsPorFicha[ativo.ficha_id]?.combate || {}}
+            hpMax={cardsPorFicha[ativo.ficha_id]?.hpMax || 0}
             mesaId={mesaId}
             sessaoId={sessaoId}
             combatentes={combatentes}
-            onAplicarHp={onAplicarHp}
+            cardsPorFicha={cardsPorFicha}
+            defesaDe={c => defesaDoAlvo(c, { cardsPorFicha, campoCaId, condicoes: condsPorComb[c.id] || [] })}
+            onAplicarEmAlvos={onAplicarEmAlvos}
+            onEscolherArea={onEscolherArea}
+            alvosArea={alvosArea}
+            unidadeArea={unidadeArea}
           />
         </div>
       )}
@@ -708,7 +727,7 @@ export default function CombatePanel({
               condsDoComb={condsPorComb[c.id] || []}
               rodadaAtual={encontro.rodada}
               isMestre={isMestre}
-              podeAgir={podeAgir(c)}
+              podeAgir={podeEditarLinha(c)}
               ativo={ativo?.id === c.id}
               podeSubir={idx > 0}
               podeDescer={idx < ordenados.length - 1}
@@ -734,6 +753,8 @@ export default function CombatePanel({
               onCurarTrilha={onCurarTrilha}
               onDefinirReserva={onDefinirReserva}
               onUsarHabilidadeReacao={onUsarHabilidadeReacao}
+              membros={membros}
+              onAtualizarCombatente={onAtualizarCombatente}
             />
           ))}
           {/* F32.4 — banco de reservas */}

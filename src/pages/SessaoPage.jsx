@@ -9,6 +9,7 @@ import { useAvancarTurno } from '../hooks/useAvancarTurno'
 import { useAplicarHp } from '../hooks/useAplicarHp'
 import { useEncontro } from '../hooks/useEncontro'
 import { useRolagem } from '../hooks/useRolagem'
+import { useMembrosMesa } from '../hooks/useMembrosMesa'
 import { calcularDescanso } from '../lib/restEngine'
 import { planejarDefesa } from '../lib/defesaEngine'
 import { aoUsarHabilidade } from '../lib/combateAvancado'
@@ -68,6 +69,7 @@ export default function SessaoPage() {
   // da ficha (vida temp consumida antes), inimigo → HP do combatente. F32.3: é
   // um hook, porque a virada de turno (aqui e no mapa) aplica efeito contínuo.
   const handleAplicarHp = useAplicarHp({ cards, encontroApi, mesaId, sessaoId })
+  const { membros } = useMembrosMesa(mesaId) // F53 — responsável por combatente
 
   // 14.4 + 20.5 + 32.3 — próximo turno com expiração de condições, custo por
   // turno, recarga/ultimate e dano/cura contínuos (extraído na 26.5 p/ o mapa)
@@ -499,6 +501,9 @@ export default function SessaoPage() {
             onCancelarDefesa={handleCancelarDefesa}
             onMarcarTrilha={handleMarcarTrilha}
             onCurarTrilha={handleCurarTrilha}
+            membros={membros}
+            onAtualizarCombatente={encontroApi.atualizarCombatente}
+            onAplicarEmAlvos={handleAplicarHp.aplicarEmAlvos}
           />
         )}
 

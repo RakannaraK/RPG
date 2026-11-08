@@ -11,6 +11,7 @@ import { useEncontro } from '../hooks/useEncontro'
 import { useAvancarTurno } from '../hooks/useAvancarTurno'
 import { useAplicarHp } from '../hooks/useAplicarHp'
 import { ordenarPorIniciativa } from '../lib/iniciativa'
+import { alvosNaArea } from '../lib/alvosCombate'
 import { adicionarOpNevoa, espalhar, normalizarGrade, normalizarNevoa, tokenVisivelParaJogador } from '../lib/mapaEngine'
 import MapaVisor from '../components/mapa/MapaVisor'
 import PainelCenas from '../components/mapa/PainelCenas'
@@ -21,6 +22,7 @@ import { BarraNevoa, CamadaNevoa, EditorNevoa } from '../components/mapa/Nevoa'
 import {
   BarraDesenho, BarraFerramentas, CamadaDesenhos, CamadaPings, CamadaReguas, EditorDesenho, EditorPing, EditorRegua,
 } from '../components/mapa/Desenhos'
+import { BarraArea, CamadaArea } from '../components/mapa/CamadaArea'
 import { GavetaFicha, MenuCamadas, PainelCombateMapa, PainelRolagens } from '../components/mapa/PainelMesa'
 import PainelChat from '../components/mesa/PainelChat'
 import PainelNotas from '../components/mesa/PainelNotas'
@@ -92,6 +94,9 @@ export default function MapaPage() {
   const [nevoaLocal, setNevoaLocal] = useState(null) // { cenaId, nevoa } — cópia otimista enquanto grava
   const seqNevoa = useRef(0)
   const [aviso, setAviso] = useState('')
+  // F53 — área circular de uma habilidade: { raio (na unidade da grade), centro } enquanto se marca
+  const [area, setArea] = useState(null)
+  const [alvosArea, setAlvosArea] = useState([])
 
   // Gestor = criador OU co-mestre (mesmo critério da SessaoPage, F16.5)
   useEffect(() => {
@@ -142,6 +147,11 @@ export default function MapaPage() {
   const turno = useAvancarTurno({ encontroApi, cards, mesaId, sessaoId: sessaoAtiva?.id, aplicarHp })
   const tokensApi = useTokensMapa(cena?.id, mesaId)
   const desenhosApi = useDesenhosMapa(cena?.id)
+  const cardsPorFicha = useMemo(() => Object.fromEntries(cards.map(c => [c.id, c])), [cards])
+  const campoCa = camposCombate.find(cc => {
+    const n = (cc.nome || '').trim().toLowerCase()
+    return n === 'ca' || n.includes('armadura') || n.includes('defesa')
+  }) || null
 
   // "Ver como jogador" (26.5): o mestre enxerga exatamente o que a mesa enxerga.
   const verTudo = isGestor && !camadas.comoJogador
@@ -204,6 +214,26 @@ export default function MapaPage() {
   const tokensNaTela = verTudo ? tokensVisuais : tokensVisuais.filter(t => tokenVisivelParaJogador(t, nevoa))
   const selecionado = tokensNaTela.find(t => t.id === selecionadoId) || null
   const tamanhoGrade = Number(normalizarGrade(grade).tamanho) > 0 ? Number(normalizarGrade(grade).tamanho) : 70
+
+  // F53 — quem está dentro do círculo (só tokens que esta pessoa enxerga)
+  const gradeNorm = normalizarGrade(grade)
+  const raioPxArea = area ? (area.raio / (Number(gradeNorm.unidade) || 1)) * tamanhoGrade : 0
+  const idsNaArea = area?.centro
+    ? alvosNaArea({ centro: area.centro, raio: area.raio, tokens: tokensNaTela, combatentes: combatentesAtivos, grade: gradeNorm })
+    : []
+  const tokensDentroArea = tokensNaTela.filter(t =>
+    idsNaArea.some(id => { const c = combatentesAtivos.find(x => x.id === id); return t.combatente_id === id || (!t.combatente_id && c?.ficha_id && t.ficha_id === c.ficha_id) }))
+
+  function marcarCentroArea(p) {
+    setArea(a => (a ? { ...a, centro: p } : a))
+    // a régua (broadcast que já existe) mostra o raio para a mesa toda
+    desenhosApi.medir(p, { x: p.x + raioPxArea, y: p.y })
+  }
+  function fecharArea(confirmar) {
+    if (confirmar) setAlvosArea(idsNaArea)
+    desenhosApi.encerrarRegua()
+    setArea(null)
+  }
 
   async function salvarNevoa(nova) {
     const seq = ++seqNevoa.current
@@ -336,6 +366,13 @@ export default function MapaPage() {
             {ferramentaAtiva === 'ping' && (
               <EditorPing ctx={ctx} largura={cena.largura} altura={cena.altura} onPing={desenhosApi.pingar} />
             )}
+            {area && (
+              <CamadaArea
+                ctx={ctx} largura={cena.largura} altura={cena.altura}
+                centro={area.centro} raioPx={raioPxArea} tokensDentro={tokensDentroArea}
+                onCentro={marcarCentroArea}
+              />
+            )}
           </>
         )}
         sobreposicao={ctx => selecionado && (
@@ -434,6 +471,9 @@ export default function MapaPage() {
               onTelaCheia={telaCheiaDisponivel ? alternarTelaCheia : null}
             />
           )}
+          {cena && area && (
+            <BarraArea n={idsNaArea.length} temCentro={!!area.centro} onConfirmar={() => fecharArea(true)} onCancelar={() => fecharArea(false)} />
+          )}
           {cena && ferramentaAtiva === 'nevoa' && (
             <BarraNevoa
               nevoa={nevoa}
@@ -460,7 +500,7 @@ export default function MapaPage() {
 
         {!indisponivel && painelVisivel && (
           <aside
-            className={`absolute sm:static right-0 inset-y-0 z-10 max-w-[92vw] shrink-0 border-l border-border bg-bg ${
+            className={`absolute sm:static right-0 inset-y-0 z-10 max-w-[92vw] shrink-0 border-l border-border bg-bg ${area ? 'max-sm:hidden ' : ''}${
               painelVisivel === 'ficha' ? 'w-[28rem] flex flex-col overflow-hidden'
                 : painelVisivel === 'chat' ? 'w-80 flex flex-col overflow-hidden p-3' : 'w-80 overflow-y-auto'
             }`}
@@ -513,6 +553,16 @@ export default function MapaPage() {
                 onAnterior={encontroApi.turnoAnterior}
                 onFocar={focarCombatente}
                 onAbrirSessao={sessaoAtiva ? () => navigate(`/mesa/${mesaId}/sessao/${sessaoAtiva.id}`) : null}
+                condicoes={encontroApi.condicoes}
+                cardsPorFicha={cardsPorFicha}
+                campoCaId={campoCa?.id || null}
+                meuUserId={meuId}
+                mesaId={mesaId}
+                sessaoId={sessaoAtiva?.id}
+                onAplicarEmAlvos={aplicarHp.aplicarEmAlvos}
+                onEscolherArea={raio => { setArea({ raio, centro: null }); setSelecionadoId(null) }}
+                alvosArea={alvosArea}
+                unidadeArea={gradeNorm.unidade_nome || 'm'}
               />
             ) : (
               <GavetaFicha

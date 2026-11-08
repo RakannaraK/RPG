@@ -2,7 +2,9 @@ import { useState } from 'react'
 import FeedRolagens from '../dados/FeedRolagens'
 import RoladorGenerico from '../dados/RoladorGenerico'
 import PainelMinigames from '../minigames/PainelMinigames'
+import AcoesCombate from '../sessao/AcoesCombate'
 import { ordenarPorIniciativa } from '../../lib/iniciativa'
+import { defesaDoAlvo, podeAgirNoCombate } from '../../lib/alvosCombate'
 
 const BTN = 'px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
 const COR_TIPO = { jogador: 'text-accent-300', aliado: 'text-emerald-300', npc: 'text-amber-300', inimigo: 'text-red-300' }
@@ -36,7 +38,12 @@ export function PainelRolagens({ mesaId, podeRolar, meuId, sessaoId }) {
  * Ordem de iniciativa compacta. "Próximo turno" usa o mesmo fluxo da sessão
  * (expiração de condições + custo por turno). Clicar num nome centraliza o token.
  */
-export function PainelCombateMapa({ encontro, combatentes, isGestor, onProximo, onAnterior, onFocar, onAbrirSessao }) {
+export function PainelCombateMapa({
+  encontro, combatentes, isGestor, onProximo, onAnterior, onFocar, onAbrirSessao,
+  // F53 — ações do combatente da vez, com alvos únicos, vários ou em área
+  condicoes = [], cardsPorFicha = {}, campoCaId = null, meuUserId, mesaId, sessaoId,
+  onAplicarEmAlvos, onEscolherArea, alvosArea = [], unidadeArea = 'm',
+}) {
   const [ocupado, setOcupado] = useState(false)
   const [erro, setErro] = useState('')
   const executar = fn => async () => {
@@ -58,6 +65,9 @@ export function PainelCombateMapa({ encontro, combatentes, isGestor, onProximo, 
 
   const ordem = ordenarPorIniciativa(combatentes)
   const vez = encontro.turno_atual ?? 0
+  const daVez = ordem[Math.min(Math.max(0, vez), Math.max(0, ordem.length - 1))] || null
+  const card = daVez?.ficha_id ? cardsPorFicha[daVez.ficha_id] : null
+  const condicoesDe = id => condicoes.filter(c => c.combatente_id === id)
   return (
     <div className="p-4 space-y-3">
       <div className="flex items-center justify-between">
@@ -89,6 +99,28 @@ export function PainelCombateMapa({ encontro, combatentes, isGestor, onProximo, 
           </li>
         ))}
       </ol>
+      {daVez && podeAgirNoCombate(daVez, { isGestor, meuUserId, cardsPorFicha }) && (
+        <div className="rounded-xl border border-border bg-void p-3 space-y-2">
+          <p className="text-ink text-sm font-semibold">Ações de {daVez.nome}</p>
+          <AcoesCombate
+            key={daVez.id}
+            fichaId={card ? daVez.ficha_id : null}
+            nome={daVez.nome}
+            modificadoresAtivos={card?.modificadoresAtivos || []}
+            combateFinais={card?.combate || {}}
+            hpMax={card?.hpMax || 0}
+            mesaId={mesaId}
+            sessaoId={sessaoId}
+            combatentes={combatentes}
+            cardsPorFicha={cardsPorFicha}
+            defesaDe={c => defesaDoAlvo(c, { cardsPorFicha, campoCaId, condicoes: condicoesDe(c.id) })}
+            onAplicarEmAlvos={onAplicarEmAlvos}
+            onEscolherArea={onEscolherArea}
+            alvosArea={alvosArea}
+            unidadeArea={unidadeArea}
+          />
+        </div>
+      )}
       {onAbrirSessao && (
         <button onClick={onAbrirSessao} className={`${BTN} w-full bg-hover text-ink-dim hover:text-ink`}>Combate completo na sessão ↗</button>
       )}

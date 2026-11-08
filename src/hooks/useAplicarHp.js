@@ -1,3 +1,5 @@
+import { supabase } from '../lib/supabase'
+import { calcularVida, vidaDoAlvo } from '../lib/alvosCombate'
 import { useUpdateFicha } from './useFicha'
 import { useRolagem } from './useRolagem'
 
@@ -7,41 +9,26 @@ import { useRolagem } from './useRolagem'
  * a aplicar efeitos contínuos — o mapa não pode pular o que a sessão faz.
  *
  * Com ficha: gasta a vida temporária antes do dano (F12) e respeita o máximo na
- * cura. Sem ficha (inimigo avulso): mexe no próprio combatente.
+ * cura. Sem ficha (inimigo avulso): mexe no próprio combatente. A regra mora em
+ * lib/alvosCombate (F53), a mesma que monta o plano de vários alvos.
  */
 export function useAplicarHp({ cards = [], encontroApi, mesaId, sessaoId = null }) {
   const { updateFicha } = useUpdateFicha()
   const { registrarEvento } = useRolagem()
+  const cardsPorFicha = Object.fromEntries(cards.map(cd => [cd.id, cd]))
 
-  return async function aplicarHp(c, delta, rotuloCustom = null) {
+  async function aplicarHp(c, delta, rotuloCustom = null) {
     if (!delta || !c) return
     try {
-      if (c.ficha_id) {
-        const card = cards.find(cd => cd.id === c.ficha_id)
-        if (!card) return
-        // F33 — transformado: a vida que muda é a da FORMA (card.ficha é a dela)
-        const idVida = card.ficha?.id || c.ficha_id
-        const max = card.hpMax || card.hpMaxBase || 0
-        const hp = card.hpAtual ?? 0
-        if (delta < 0) {
-          let dano = -delta
-          let temp = card.ficha?.vida_temp_atual ?? 0
-          const patch = {}
-          if (temp > 0) {
-            const consumido = Math.min(temp, dano)
-            temp -= consumido; dano -= consumido
-            patch.vida_temp_atual = temp
-          }
-          patch.hp_atual = hp - dano
-          await updateFicha(idVida, patch)
-        } else {
-          await updateFicha(idVida, { hp_atual: max > 0 ? Math.min(max, hp + delta) : hp + delta })
-        }
+      const vida = vidaDoAlvo(c, cardsPorFicha)
+      if (!vida) return
+      const novo = calcularVida(vida, delta)
+      if (vida.fichaId) {
+        const patch = { hp_atual: novo.hp }
+        if (novo.temp !== vida.temp) patch.vida_temp_atual = novo.temp
+        await updateFicha(vida.fichaId, patch)
       } else {
-        const hp = c.hp_atual ?? 0
-        const max = c.hp_maximo
-        const novo = delta > 0 && max != null ? Math.min(max, hp + delta) : hp + delta
-        await encontroApi.atualizarCombatente(c.id, { hp_atual: novo })
+        await encontroApi.atualizarCombatente(c.id, { hp_atual: novo.hp })
       }
       await registrarEvento({
         mesaId, sessaoId, fichaId: c.ficha_id || null,
@@ -52,4 +39,21 @@ export function useAplicarHp({ cards = [], encontroApi, mesaId, sessaoId = null 
       // silenciado — sem permissão (RLS) ou falha de rede não deve quebrar a UI
     }
   }
+
+  // F53 — várias barras/alvos de uma vez pela RPC (valida quem participa do
+  // encontro). Diferente de aplicarHp, o erro NÃO é engolido: volta em { erro }.
+  async function aplicarEmAlvos(plano, rotulo) {
+    const encontroId = encontroApi?.encontro?.id
+    if (!encontroId) return { erro: 'Não há combate em andamento.' }
+    const { error } = await supabase.rpc('aplicar_resultado_combate', { p_encontro_id: encontroId, p_alvos: plano.escritas })
+    if (error) return { erro: error.message || 'Não foi possível aplicar o resultado.' }
+    await registrarEvento({
+      mesaId, sessaoId, rotulo: `${rotulo}: ${plano.linhas.join(' · ')}`,
+      notacao: '', total: plano.total ?? 0, dados: [],
+    })
+    return {}
+  }
+
+  aplicarHp.aplicarEmAlvos = aplicarEmAlvos
+  return aplicarHp
 }
