@@ -1,5 +1,8 @@
 import { useRef, useState } from 'react'
 import { encaixar, mapaParaTela } from '../../lib/mapaEngine'
+import { LUZES_TOKEN, normalizarAura, normalizarLuzToken, raioParaPx } from '../../lib/luzMapa'
+
+const CORES_AURA = ['#FF5468', '#FFB25E', '#FFE066', '#5EE08A', '#7FA6FF', '#C084FC']
 
 const TAMANHOS_TOKEN =[0.5, 1, 2, 3, 4, 5, 6, 8]
 
@@ -75,6 +78,8 @@ export default function CamadaTokens({ ctx, tokens, largura, altura, selecionado
         const borda = Math.max(d * 0.06, px(2))
         const pct = tk.vida ? Math.min(1, Math.max(0, tk.vida.atual / tk.vida.max)) : 0
         const mostrarNome = d * z >= 24
+        const aura = normalizarAura(tk.aura)
+        const rAura = aura ? r + raioParaPx(aura.raio, ctx.grade) : 0
         return (
           <g
             key={tk.id}
@@ -86,6 +91,17 @@ export default function CamadaTokens({ ctx, tokens, largura, altura, selecionado
             onPointerUp={soltar}
             onPointerCancel={soltar}
           >
+            {aura && (
+              <>
+                <defs>
+                  <radialGradient id={`aura-${tk.id}`}>
+                    <stop offset="0" stopColor={aura.cor} stopOpacity="0.55" />
+                    <stop offset="1" stopColor={aura.cor} stopOpacity="0" />
+                  </radialGradient>
+                </defs>
+                <circle r={rAura} fill={`url(#aura-${tk.id})`} stroke={aura.cor} strokeOpacity="0.6" strokeWidth={px(1)} pointerEvents="none" />
+              </>
+            )}
             {tk.daVez && (
               <circle r={r + px(7)} fill="none" stroke="var(--dice-400)" strokeWidth={px(3)} className="token-turno" />
             )}
@@ -143,6 +159,10 @@ export function MenuToken({ ctx, token, isGestor, onAtualizar, onRemover, onAbri
     const pos = ctx.grade.ativa ? encaixar(token, ctx.grade, novo) : {}
     return tentar(() => onAtualizar(token.id, { tamanho: novo, ...pos }))
   }
+  const luz = normalizarLuzToken(token.luz)
+  const aura = normalizarAura(token.aura)
+  const quadrado = Number(ctx.grade.unidade) > 0 ? Number(ctx.grade.unidade) : 1
+  const mudarAura = patch => tentar(() => onAtualizar(token.id, { aura: patch && { ...(aura || { raio: quadrado }), ...patch } }))
   const BTN = 'h-8 min-w-8 px-2 rounded-lg text-sm text-ink hover:bg-hover transition-colors'
 
   return (
@@ -174,6 +194,30 @@ export function MenuToken({ ctx, token, isGestor, onAtualizar, onRemover, onAbri
             <button onClick={() => onAbrirFicha(token.ficha_id)} className={BTN} title="Abrir ficha">📜</button>
           )}
         </div>
+        {(isGestor || token.podeMover) && (
+          <>
+            <div className="flex flex-wrap items-center justify-center gap-0.5 mt-1">
+              <span className="text-ink-dim text-xs w-9">Luz</span>
+              <button onClick={tentar(() => onAtualizar(token.id, { luz: null }))} className={`${BTN} text-xs ${!luz ? 'bg-hover' : ''}`}>Sem</button>
+              {LUZES_TOKEN.map(l => (
+                <button key={l.id} onClick={tentar(() => onAtualizar(token.id, { luz: { raio: l.raio, cor: l.cor, tremula: l.tremula } }))} className={`${BTN} text-xs ${luz?.cor === l.cor && luz?.raio === l.raio ? 'bg-hover' : ''}`}>{l.nome}</button>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-0.5 mt-1">
+              <span className="text-ink-dim text-xs w-9">Aura</span>
+              <button onClick={mudarAura(null)} className={`${BTN} text-xs ${!aura ? 'bg-hover' : ''}`}>Sem</button>
+              {CORES_AURA.map(c => (
+                <button key={c} onClick={mudarAura({ cor: c })} title={c} aria-label={`Aura ${c}`} className="h-6 w-6 rounded-full border border-border" style={{ background: c, outline: aura?.cor === c ? '2px solid var(--accent-300)' : 'none' }} />
+              ))}
+              {aura && (
+                <>
+                  <button onClick={mudarAura({ raio: Math.max(0.5, aura.raio - quadrado) })} className={BTN} title="Diminuir aura">−</button>
+                  <button onClick={mudarAura({ raio: aura.raio + quadrado })} className={BTN} title="Aumentar aura">+</button>
+                </>
+              )}
+            </div>
+          </>
+        )}
         {erro && <p className="text-harm text-xs text-center mt-1">{erro}</p>}
       </div>
     </div>

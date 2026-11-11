@@ -129,3 +129,19 @@
 @media (prefers-reduced-motion: reduce) {
   .arv-estrela, .arv-pulso { animation: none; }
 }
+
+/* F58 — luz tremulante no mapa: só o brilho anima (a máscara é estática) */
+@keyframes luz-tremula {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  30%      { opacity: .8; transform: scale(.96); }
+  60%      { opacity: .95; transform: scale(1.03); }
+}
+.luz-tremula {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: luz-tremula 1.3s ease-in-out infinite;
+}
+:root[data-movimento="reduzido"] .luz-tremula { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .luz-tremula { animation: none; }
+}
