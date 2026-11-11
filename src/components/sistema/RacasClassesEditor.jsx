@@ -13,6 +13,7 @@ import FormulaInput from './FormulaInput'
 import FaixasEditor from './FaixasEditor'
 import RecompensasEditor from './RecompensasEditor'
 import { PRESET_IDS } from '../../engines/actionSoundEngine'
+import { PACOTE_ESSENCIAL } from '../../lib/extensoes'
 import { tocarPresetAcao } from '../../audio/actionSynth'
 import Botao from '../ui/Botao'
 import { useConfirmar } from '../ui/Confirmar'
@@ -551,6 +552,7 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
   const [editNivelMin, setEditNivelMin] = useState('') // 19.5
   const [editCustoPool, setEditCustoPool] = useState([]) // 20.5
   const [editSomPreset, setEditSomPreset] = useState('') // FV.5a
+  const [editEfeitoVisual, setEditEfeitoVisual] = useState('') // F57
   const [editRecarga, setEditRecarga] = useState('')       // F32.2
   const [editRequer, setEditRequer] = useState([])         // F33.3/F54 — pré-requisitos (ids)
   const [editModo, setEditModo] = useState('todos')         // F54
@@ -577,6 +579,7 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
         nivel_minimo: editNivelMin,
         custo_pool: editTipo === 'ativavel' ? editCustoPool.filter(c => c.pool_id) : [],
         som_preset: editSomPreset,
+        efeito_visual: editEfeitoVisual || null, // F57
         // F32.2 — vazio = sem recarga / não é ultimate
         recarga_turnos: editRecarga === '' ? null : Math.max(0, Number(editRecarga) || 0),
         requer_habilidade_id: editRequer[0] || null, // F33.3 — espelha o 1º
@@ -611,6 +614,7 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
     setEditNivelMin(habilidade.nivel_minimo != null ? String(habilidade.nivel_minimo) : '')
     setEditCustoPool(Array.isArray(habilidade.custo_pool) ? habilidade.custo_pool : [])
     setEditSomPreset(habilidade.som_preset || '')
+    setEditEfeitoVisual(habilidade.efeito_visual || '')
     setEditRecarga(habilidade.recarga_turnos != null ? String(habilidade.recarga_turnos) : '')
     setEditRequer([...new Set([...(habilidade.requer_habilidades_ids || []), habilidade.requer_habilidade_id].filter(id => id && habilidadesTodas.some(h => h.id === id)))])
     setEditModo(habilidade.requer_modo === 'qualquer' ? 'qualquer' : 'todos')
@@ -739,6 +743,17 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
                 <input type="number" value={editNivelMin} onChange={e => setEditNivelMin(e.target.value)}
                   min="1" placeholder="—" className={`${SEL} w-20 text-center`}
                   title="Só é concedida a partir deste nível (da classe de origem; raça/avulsa usam o nível total)." />
+              </div>
+              {/* F57 — efeito visual solto no mapa ao usar/ativar */}
+              <div>
+                <p className="text-purple-400 text-xs mb-1">Efeito visual no mapa</p>
+                <select value={editEfeitoVisual} onChange={e => setEditEfeitoVisual(e.target.value)} className={`${SEL} w-36`}>
+                  <option value="">Nenhum</option>
+                  {PACOTE_ESSENCIAL.efeitos.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
+                  {editEfeitoVisual && !PACOTE_ESSENCIAL.efeitos.some(e => e.id === editEfeitoVisual) && (
+                    <option value={editEfeitoVisual}>{editEfeitoVisual}</option>
+                  )}
+                </select>
               </div>
               {/* FV.5a — som da ação (opcional; vazio = usa o padrão do sistema) */}
               <div>

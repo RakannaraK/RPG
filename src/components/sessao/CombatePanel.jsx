@@ -571,6 +571,8 @@ export default function CombatePanel({
   onEscolherArea = null,
   alvosArea = [],
   unidadeArea = 'm',
+  efeitosVfx = [],
+  onEfeito = null,
 }) {
   const [busy, setBusy] = useState(false)
   const [erro, setErro] = useState('')
@@ -696,6 +698,9 @@ export default function CombatePanel({
             onEscolherArea={onEscolherArea}
             alvosArea={alvosArea}
             unidadeArea={unidadeArea}
+            efeitosVfx={efeitosVfx}
+            onEfeito={onEfeito}
+            atacante={ativo}
           />
         </div>
       )}

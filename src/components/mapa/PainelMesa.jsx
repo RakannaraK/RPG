@@ -43,6 +43,7 @@ export function PainelCombateMapa({
   // F53 — ações do combatente da vez, com alvos únicos, vários ou em área
   condicoes = [], cardsPorFicha = {}, campoCaId = null, meuUserId, mesaId, sessaoId,
   onAplicarEmAlvos, onEscolherArea, alvosArea = [], unidadeArea = 'm',
+  efeitosVfx = [], onEfeito = null,
 }) {
   const [ocupado, setOcupado] = useState(false)
   const [erro, setErro] = useState('')
@@ -118,6 +119,9 @@ export function PainelCombateMapa({
             onEscolherArea={onEscolherArea}
             alvosArea={alvosArea}
             unidadeArea={unidadeArea}
+            efeitosVfx={efeitosVfx}
+            onEfeito={onEfeito}
+            atacante={daVez}
           />
         </div>
       )}
@@ -173,6 +177,8 @@ export function MenuCamadas({ camadas, onCamadas, isGestor }) {
       {item('grade', 'Grade')}
       {item('desenhos', 'Desenhos')}
       {item('tokens', 'Tokens')}
+      {item('efeitos', 'Efeitos da cena')}
+      {item('som', 'Som da cena')}
       {isGestor && item('comoJogador', 'Ver como jogador')}
     </div>
   )

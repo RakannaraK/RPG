@@ -12,7 +12,21 @@ import { useAvancarTurno } from '../hooks/useAvancarTurno'
 import { useAplicarHp } from '../hooks/useAplicarHp'
 import { ordenarPorIniciativa } from '../lib/iniciativa'
 import { alvosNaArea } from '../lib/alvosCombate'
-import { adicionarOpNevoa, espalhar, normalizarGrade, normalizarNevoa, tokenVisivelParaJogador } from '../lib/mapaEngine'
+import { adicionarOpNevoa, espalhar, normalizarGrade, normalizarNevoa, pontoRevelado, tokenVisivelParaJogador } from '../lib/mapaEngine'
+import { colocarNoMapa, normalizarAtmosfera } from '../lib/atmosfera'
+import { fontesDeLuz } from '../lib/luzMapa'
+import { resolverVfx } from '../lib/vfx'
+import { particulasLigadas } from '../lib/personalizacao'
+import { usePreferencias } from '../context/PreferenciasContext'
+import { useExtensoesMesa } from '../hooks/useExtensoesMesa'
+import { useVfxMapa } from '../hooks/useVfxMapa'
+import CapturaMapa from '../components/mapa/CapturaMapa'
+import CamadaAtmosfera from '../components/mapa/CamadaAtmosfera'
+import CamadaLuz from '../components/mapa/CamadaLuz'
+import CamadaVfx from '../components/mapa/CamadaVfx'
+import BarraVfx from '../components/mapa/BarraVfx'
+import PainelAtmosfera from '../components/mapa/PainelAtmosfera'
+import ModalExtensoes from '../components/mapa/ModalExtensoes'
 import MapaVisor from '../components/mapa/MapaVisor'
 import PainelCenas from '../components/mapa/PainelCenas'
 import PainelTokens from '../components/mapa/PainelTokens'
@@ -37,7 +51,7 @@ const telaCheiaDisponivel = typeof document !== 'undefined' && document.fullscre
 
 // Camadas visíveis: preferência de cada pessoa, lembrada neste navegador.
 // "Ver como jogador" não é lembrado (surpreenderia na próxima visita).
-const CAMADAS_PADRAO = { grade: true, desenhos: true, tokens: true, comoJogador: false }
+const CAMADAS_PADRAO = { grade: true, desenhos: true, tokens: true, efeitos: true, som: true, comoJogador: false }
 function lerCamadas() {
   try { return { ...CAMADAS_PADRAO, ...JSON.parse(localStorage.getItem('mapa-camadas') || '{}'), comoJogador: false } }
   catch { return CAMADAS_PADRAO }
@@ -77,7 +91,7 @@ export default function MapaPage() {
   const { mapas, ativo, loading, indisponivel, criar, ativar, atualizar, remover } = useMapas(mesaId)
 
   const [vistaId, setVistaId] = useState(null)
-  const [painel, setPainel] = useState(null) // 'cenas' | 'tokens' | 'rolagens' | 'chat' | 'notas' | 'combate' | 'ficha'
+  const [painel, setPainel] = useState(null) // 'cenas' | 'tokens' | 'atmosfera' | 'rolagens' | 'chat' | 'notas' | 'combate' | 'ficha'
   const chat = useChatMesa(mesaId, meuId) // F29.2
   const [fichaAberta, setFichaAberta] = useState(null)
   const [camadas, setCamadasEstado] = useState(lerCamadas)
@@ -86,7 +100,7 @@ export default function MapaPage() {
   const [rascunho, setRascunho] = useState({ cenaId: null, grade: null })
   const [selecionadoId, setSelecionadoId] = useState(null)
   const visorApi = useRef(null)
-  const [ferramenta, setFerramenta] = useState('mover') // 'mover' | 'desenho' | 'regua' | 'ping' | 'nevoa'
+  const [ferramenta, setFerramenta] = useState('mover') // 'mover' | 'desenho' | 'regua' | 'ping' | 'nevoa' | 'efeito'
   const [configDesenho, setConfigDesenho] = useState({ forma: 'livre', cor: '#FBBF24', espessura: 4 })
   const [rascunhoDesenho, setRascunhoDesenho] = useState(null)
   const [configNevoa, setConfigNevoa] = useState({ modo: 'revelar', forma: 'ret', raio: null })
@@ -97,6 +111,16 @@ export default function MapaPage() {
   // F53 — área circular de uma habilidade: { raio (na unidade da grade), centro } enquanto se marca
   const [area, setArea] = useState(null)
   const [alvosArea, setAlvosArea] = useState([])
+  // F57 — atmosfera (otimista, grava com atraso), "colocar no mapa", efeito de ação
+  const [atmLocal, setAtmLocal] = useState(null) // { cenaId, atmosfera }
+  const gravandoAtm = useRef(null) // { timer, cenaId, nova }
+  const [colocando, setColocando] = useState(null)
+  const [extAberto, setExtAberto] = useState(false)
+  const [efeitoEscolhido, setEfeitoEscolhido] = useState(null)
+  const { preferencias, reduzido } = usePreferencias()
+  const ext = useExtensoesMesa(mesaId)
+  const efeitos = ext.conteudo.efeitos
+  const vfx = useVfxMapa(mesaId)
 
   // Gestor = criador OU co-mestre (mesmo critério da SessaoPage, F16.5)
   useEffect(() => {
@@ -119,11 +143,12 @@ export default function MapaPage() {
     return () => { cancelado = true }
   }, [mesaId, session])
 
-  // Atalhos: V mover · D desenhar · R régua · P ping · N névoa · Esc volta a mover.
+  // Atalhos: V mover · D desenhar · R régua · P ping · N névoa · E efeito · Esc volta a mover.
   useEffect(() => {
-    const atalhos = { v: 'mover', d: 'desenho', r: 'regua', p: 'ping', n: 'nevoa', escape: 'mover' }
+    const atalhos = { v: 'mover', d: 'desenho', r: 'regua', p: 'ping', n: 'nevoa', e: 'efeito', escape: 'mover' }
     const aoTeclar = e => {
       if (e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return
+      if (e.key === 'Escape') setColocando(null)
       const f = atalhos[e.key.toLowerCase()]
       if (!f) return
       setFerramenta(f)
@@ -157,9 +182,9 @@ export default function MapaPage() {
   const verTudo = isGestor && !camadas.comoJogador
   // Mesmas regras do RLS (26.4): gestor sempre; jogador se liberado e não espectador.
   const podeDesenhar = isGestor || (!!cena?.jogadores_desenham && papel !== 'espectador')
-  const ferramentaAtiva = (ferramenta === 'desenho' && !podeDesenhar) || (ferramenta === 'nevoa' && !isGestor) ? 'mover' : ferramenta
+  const ferramentaAtiva = (ferramenta === 'desenho' && !podeDesenhar) || ((ferramenta === 'nevoa' || ferramenta === 'efeito') && !isGestor) ? 'mover' : ferramenta
   // Painéis de gestor não abrem para jogador
-  const painelVisivel = !isGestor && (painel === 'cenas' || painel === 'tokens') ? null : painel
+  const painelVisivel = !isGestor && (painel === 'cenas' || painel === 'tokens' || painel === 'atmosfera') ? null : painel
 
   function setCamadas(c) {
     setCamadasEstado(c)
@@ -214,6 +239,49 @@ export default function MapaPage() {
   const tokensNaTela = verTudo ? tokensVisuais : tokensVisuais.filter(t => tokenVisivelParaJogador(t, nevoa))
   const selecionado = tokensNaTela.find(t => t.id === selecionadoId) || null
   const tamanhoGrade = Number(normalizarGrade(grade).tamanho) > 0 ? Number(normalizarGrade(grade).tamanho) : 70
+
+  // F57 — atmosfera da cena aberta (cópia local enquanto a gravação não sai)
+  const atmSalva = cena && atmLocal?.cenaId === cena.id ? atmLocal.atmosfera : cena?.atmosfera
+  const atmosfera = useMemo(() => normalizarAtmosfera(atmSalva), [atmSalva])
+  const fontes = useMemo(() => fontesDeLuz({ atmosfera, tokens: tokensNaTela, grade }), [atmosfera, tokensNaTela, grade])
+  const densidade = camadas.efeitos === false ? 0
+    : particulasLigadas(preferencias.efeitos, reduzido) ? 1
+      : preferencias.efeitos === 'sutis' && !reduzido ? 0.5 : 0
+  const somVolume = preferencias.som_acao_ativo && camadas.som !== false ? preferencias.som_acao_volume : 0
+  const efeitoAtual = efeitos.find(e => e.id === efeitoEscolhido) || efeitos[0] || null
+  // Efeitos de ação já resolvidos para px do mapa (jogador não vê o que cai só sob a névoa)
+  const ativosVfx = useMemo(() => {
+    const tokens = tokensApi.tokens.map(t => ({ ...t, x: tokensApi.remotos[t.id]?.x ?? t.x, y: tokensApi.remotos[t.id]?.y ?? t.y }))
+    return vfx.eventos.flatMap(e => {
+      const r = resolverVfx(e.evento, { tokens, efeitos, grade })
+      if (!r || (!verTudo && !r.para.some(p => pontoRevelado(nevoa, p)))) return []
+      return [{ ...r, id: e.id, inicio: e.em }]
+    })
+  }, [vfx.eventos, tokensApi.tokens, tokensApi.remotos, efeitos, grade, verTudo, nevoa])
+
+  async function gravarAtmosfera() {
+    const g = gravandoAtm.current
+    if (!g) return
+    clearTimeout(g.timer)
+    gravandoAtm.current = null
+    try {
+      await atualizar(g.cenaId, { atmosfera: g.nova })
+    } catch (err) {
+      setAviso(`A atmosfera não foi salva: ${err.message || 'erro'}`)
+    } finally {
+      if (!gravandoAtm.current) setAtmLocal(null)
+    }
+  }
+  function mudarAtmosfera(nova) {
+    if (!isGestor || !cena) return
+    const norm = normalizarAtmosfera(nova)
+    setAtmLocal({ cenaId: cena.id, atmosfera: norm })
+    if (gravandoAtm.current) clearTimeout(gravandoAtm.current.timer)
+    gravandoAtm.current = { cenaId: cena.id, nova: norm, timer: setTimeout(gravarAtmosfera, 400) }
+  }
+  // Descarrega a gravação pendente ao trocar de cena e ao sair da página
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => () => { gravarAtmosfera() }, [cena?.id])
 
   // F53 — quem está dentro do círculo (só tokens que esta pessoa enxerga)
   const gradeNorm = normalizarGrade(grade)
@@ -333,6 +401,7 @@ export default function MapaPage() {
             {camadas.tokens && (
               <CamadaTokens ctx={ctx} tokens={verTudo ? tokensNaTela : tokensNaTela.filter(t => !t.meu)} {...propsTokens} />
             )}
+            <CamadaLuz atmosfera={atmosfera} fontes={fontes} largura={cena.largura} altura={cena.altura} translucida={verTudo} reduzido={reduzido} />
             <CamadaNevoa nevoa={nevoa} rascunho={rascunhoNevoa} largura={cena.largura} altura={cena.altura} translucida={verTudo} />
             {/* Jogador: o próprio token fica ACIMA da névoa (nunca some para o dono) */}
             {camadas.tokens && !verTudo && (
@@ -366,6 +435,18 @@ export default function MapaPage() {
             {ferramentaAtiva === 'ping' && (
               <EditorPing ctx={ctx} largura={cena.largura} altura={cena.altura} onPing={desenhosApi.pingar} />
             )}
+            {isGestor && colocando && (
+              <CapturaMapa
+                ctx={ctx} largura={cena.largura} altura={cena.altura}
+                onInicio={p => { mudarAtmosfera(colocarNoMapa(atmosfera, colocando, p, Number(gradeNorm.unidade) || 1)); setColocando(null) }}
+              />
+            )}
+            {ferramentaAtiva === 'efeito' && !colocando && efeitoAtual && (
+              <EditorEfeito
+                ctx={ctx} largura={cena.largura} altura={cena.altura}
+                onSoltar={({ de, para }) => vfx.disparar({ efeito: efeitoAtual, de, para: [para] })}
+              />
+            )}
             {area && (
               <CamadaArea
                 ctx={ctx} largura={cena.largura} altura={cena.altura}
@@ -375,15 +456,21 @@ export default function MapaPage() {
             )}
           </>
         )}
-        sobreposicao={ctx => selecionado && (
-          <MenuToken
-            ctx={ctx}
-            token={selecionado}
-            isGestor={isGestor}
-            onAtualizar={tokensApi.atualizar}
-            onRemover={async id => { await tokensApi.remover(id); setSelecionadoId(null) }}
-            onAbrirFicha={abrirFicha}
-          />
+        sobreposicao={ctx => (
+          <>
+            <CamadaAtmosfera atmosfera={atmosfera} vista={ctx.vista} nevoa={nevoa} verTudo={verTudo} densidade={densidade} somVolume={somVolume} grade={grade} />
+            <CamadaVfx ativos={ativosVfx} vista={ctx.vista} densidade={densidade} somAtivo={somVolume > 0} somVolume={somVolume} />
+            {selecionado && (
+              <MenuToken
+                ctx={ctx}
+                token={selecionado}
+                isGestor={isGestor}
+                onAtualizar={tokensApi.atualizar}
+                onRemover={async id => { await tokensApi.remover(id); setSelecionadoId(null) }}
+                onAbrirFicha={abrirFicha}
+              />
+            )}
+          </>
         )}
       />
     )
@@ -442,6 +529,7 @@ export default function MapaPage() {
           {isGestor && !indisponivel && (
             <>
               {botaoPainel('tokens', '●', 'Tokens', { disabled: !cena })}
+              {botaoPainel('atmosfera', '✨', 'Atmosfera', { disabled: !cena })}
               {botaoPainel('cenas', <Ilustra nome="mapa" tamanho={18} />, 'Cenas')}
             </>
           )}
@@ -474,6 +562,13 @@ export default function MapaPage() {
           {cena && area && (
             <BarraArea n={idsNaArea.length} temCentro={!!area.centro} onConfirmar={() => fecharArea(true)} onCancelar={() => fecharArea(false)} />
           )}
+          {cena && isGestor && colocando && (
+            // No celular o painel sai da frente enquanto se escolhe o ponto: o aviso e o cancelar ficam no mapa
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-3 rounded-xl border border-border bg-bg/95 px-3 py-2 shadow-xl text-sm text-ink">
+              <span>Toque no mapa para {colocando.oQue === 'mover' ? 'mover' : 'colocar'}</span>
+              <button type="button" onClick={() => setColocando(null)} className="min-h-[24px] px-2 rounded-lg bg-hover text-ink hover:bg-border">Cancelar</button>
+            </div>
+          )}
           {cena && ferramentaAtiva === 'nevoa' && (
             <BarraNevoa
               nevoa={nevoa}
@@ -484,6 +579,9 @@ export default function MapaPage() {
               onTudo={modo => aplicarOpNevoa({ modo, forma: 'tudo' })}
               onFechar={() => escolherFerramenta('mover')}
             />
+          )}
+          {cena && ferramentaAtiva === 'efeito' && (
+            <BarraVfx efeitos={efeitos} escolhido={efeitoAtual?.id} onEscolher={setEfeitoEscolhido} />
           )}
           {cena && ferramentaAtiva === 'desenho' && (
             <BarraDesenho
@@ -500,12 +598,12 @@ export default function MapaPage() {
 
         {!indisponivel && painelVisivel && (
           <aside
-            className={`absolute sm:static right-0 inset-y-0 z-10 max-w-[92vw] shrink-0 border-l border-border bg-bg ${area ? 'max-sm:hidden ' : ''}${
+            className={`absolute sm:static right-0 inset-y-0 z-10 max-w-[92vw] shrink-0 border-l border-border bg-bg ${area || colocando ? 'max-sm:hidden ' : ''}${
               painelVisivel === 'ficha' ? 'w-[28rem] flex flex-col overflow-hidden'
                 : painelVisivel === 'chat' ? 'w-80 flex flex-col overflow-hidden p-3' : 'w-80 overflow-y-auto'
             }`}
           >
-            {painelVisivel === 'cenas' || (painelVisivel === 'tokens' && !cena) ? (
+            {painelVisivel === 'cenas' || ((painelVisivel === 'tokens' || painelVisivel === 'atmosfera') && !cena) ? (
               <PainelCenas
                 mapas={mapas}
                 cena={cena}
@@ -538,6 +636,16 @@ export default function MapaPage() {
                   />
                 )}
               />
+            ) : painelVisivel === 'atmosfera' ? (
+              <PainelAtmosfera
+                atmosfera={atmosfera}
+                onMudar={mudarAtmosfera}
+                cenas={ext.conteudo.cenas}
+                grade={grade}
+                colocando={colocando}
+                onColocar={setColocando}
+                onAbrirExtensoes={() => setExtAberto(true)}
+              />
             ) : painelVisivel === 'rolagens' ? (
               <PainelRolagens mesaId={mesaId} podeRolar={papel !== 'espectador'} meuId={meuId} sessaoId={sessaoAtiva?.id} />
             ) : painelVisivel === 'chat' ? (
@@ -563,6 +671,8 @@ export default function MapaPage() {
                 onEscolherArea={raio => { setArea({ raio, centro: null }); setSelecionadoId(null) }}
                 alvosArea={alvosArea}
                 unidadeArea={gradeNorm.unidade_nome || 'm'}
+                efeitosVfx={efeitos}
+                onEfeito={vfx.disparar}
               />
             ) : (
               <GavetaFicha
@@ -576,7 +686,25 @@ export default function MapaPage() {
           </aside>
         )}
       </div>
+      <ModalExtensoes aberto={extAberto} onFechar={() => setExtAberto(false)} extensoes={ext.extensoes} onSalvar={ext.salvar} />
     </div>
+  )
+}
+
+/** Ferramenta "Efeito": clique solta no ponto; arrastar mais de 8 px (de tela) lança de um ponto a outro. */
+function EditorEfeito({ ctx, largura, altura, onSoltar }) {
+  const inicio = useRef(null)
+  return (
+    <CapturaMapa
+      ctx={ctx} largura={largura} altura={altura}
+      onInicio={p => { inicio.current = p }}
+      onFim={(p, concluiu) => {
+        const i = inicio.current
+        inicio.current = null
+        if (!concluiu || !i) return
+        onSoltar(Math.hypot(p.x - i.x, p.y - i.y) * ctx.vista.zoom > 8 ? { de: i, para: p } : { de: null, para: p })
+      }}
+    />
   )
 }
 

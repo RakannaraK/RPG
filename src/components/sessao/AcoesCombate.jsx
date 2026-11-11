@@ -22,6 +22,8 @@ export default function AcoesCombate({
   fichaId = null, nome, modificadoresAtivos = [], combateFinais = {}, hpMax = 0,
   mesaId, sessaoId, combatentes = [], cardsPorFicha = {}, defesaDe,
   onAplicarEmAlvos, onEscolherArea = null, alvosArea = [], unidadeArea = 'm',
+  // F57 — efeito visual no mapa depois de aplicar (opcional)
+  efeitosVfx = [], onEfeito = null, atacante = null,
 }) {
   const { itens } = useItens(fichaId)
   const { registrarRolagem } = useRolagem()
@@ -33,6 +35,7 @@ export default function AcoesCombate({
   const [ataques, setAtaques] = useState({}) // chave (item.id | 'livre') → total do último ataque
   const [livre, setLivre] = useState({ rotulo: '', ataque: '', dano: '' })
   const [modal, setModal] = useState(null)
+  const [efeitoId, setEfeitoId] = useState('')
   const [erro, setErro] = useState('')
 
   useEffect(() => {
@@ -80,6 +83,8 @@ export default function AcoesCombate({
   async function rolarArma(item, tipo) {
     const base = resolverNotacao(item.atributos_extras?.[tipo], valoresFinais)
     if (!validarNotacao(base)) return
+    const doItem = item.atributos_extras?.efeito
+    if (efeitosVfx.some(e => e.id === doItem)) setEfeitoId(doItem)
     const { notacaoFinal, percentual } = montarNotacaoComModificadores({
       tipo: tipo === 'ataque' ? 'acerto' : 'dano',
       notacaoBase: base,
@@ -108,6 +113,20 @@ export default function AcoesCombate({
   function abrirModal(rotulo, valor, modo, ataque) {
     if (alvosEscolhidos.length === 0) return // sem alvo = só rolar
     setModal({ rotulo: `${nome}: ${rotulo}`, valor, modo, ataque, alvos: acertosDe(ataque) })
+  }
+
+  // Depois que o modal aplica SEM erro, solta o efeito escolhido no mapa
+  async function aplicarEDisparar(plano, msg) {
+    const res = await onAplicarEmAlvos(plano, msg)
+    if (!res?.erro && efeitoId && onEfeito) {
+      onEfeito({
+        efeitoId,
+        de: atacante ? { comb: atacante.id, ficha: atacante.ficha_id || null } : null,
+        para: modal.alvos.map(a => ({ comb: a.c.id, ficha: a.c.ficha_id || null })),
+        raio: null,
+      })
+    }
+    return res
   }
 
   const selos = ataque => ataque != null && alvosEscolhidos.length > 0 && (
@@ -172,6 +191,13 @@ export default function AcoesCombate({
         )}
       </div>
 
+      {onEfeito && efeitosVfx.length > 0 && (
+        <select value={efeitoId} onChange={e => setEfeitoId(e.target.value)} className={campo} aria-label="Efeito visual">
+          <option value="">Efeito visual: nenhum</option>
+          {efeitosVfx.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
+        </select>
+      )}
+
       {/* Armas da ficha (14.6) */}
       {armas.map(item => {
         const temAtaque = item.atributos_extras?.ataque
@@ -212,7 +238,7 @@ export default function AcoesCombate({
         <ModalAplicarResultado
           rotulo={modal.rotulo} valorInicial={modal.valor} modoInicial={modal.modo} ataque={modal.ataque}
           alvos={modal.alvos} cardsPorFicha={cardsPorFicha} area={modoAlvo === 'area'}
-          onAplicar={onAplicarEmAlvos} onFechar={() => setModal(null)}
+          onAplicar={aplicarEDisparar} onFechar={() => setModal(null)}
         />
       )}
     </div>

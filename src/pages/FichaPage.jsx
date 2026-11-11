@@ -44,6 +44,7 @@ import PainelPoderes from '../components/ficha/PainelPoderes'
 import PainelLinhas from '../components/ficha/PainelLinhas'
 import { podeAtivarHabilidade, planejarTurno } from '../lib/custoHabilidade'
 import Botao from '../components/ui/Botao'
+import { enviarVfx } from '../hooks/useVfxMapa'
 import BarraMacros from '../components/ficha/BarraMacros'
 import CabecalhoImpressao from '../components/ficha/CabecalhoImpressao'
 import { useCategorias } from '../hooks/useCategorias'
@@ -641,11 +642,18 @@ export default function FichaPage() {
   }
   const classesIds = new Set(fonteClasses.map(c => c.classe_id).filter(Boolean))
 
+  // F57 — efeito visual da habilidade no token da ficha dona (enfeite: não espera, engole erro)
+  function soltarEfeitoVisual(hab) {
+    if (!hab?.efeito_visual || !mesaId) return
+    enviarVfx(mesaId, { efeitoId: hab.efeito_visual, de: null, para: [{ ficha: ficha?.forma_de_id || fichaId }] }).catch(() => {})
+  }
+
   // F32.2 — usar habilidade com recarga/ultimate: grava o estado e avisa a mesa
   async function handleUsarHabilidade(hf) {
     try {
       await usarHabilidade(hf.id)
       const hab = hf.habilidade || {}
+      soltarEfeitoVisual(hab)
       // F35.4 — som próprio da habilidade, se o mestre pôs um
       if (hab.midia_url && midiaEhSom(hab.midia_url)) {
         tocarSomProprio(hab.midia_url, { volume: preferencias.som_acao_volume ?? 0.6 })
@@ -977,8 +985,8 @@ export default function FichaPage() {
 
   // 20.5 — ativar uma habilidade debita o custo de pool. Sem recurso, não ativa.
   async function handleToggleHabilidade(habilidadeFichaId, novoEstado) {
+    const hf = habilidadesFicha.find(h => h.id === habilidadeFichaId)
     if (novoEstado) {
-      const hf = habilidadesFicha.find(h => h.id === habilidadeFichaId)
       const check = podeAtivarHabilidade(hf?.habilidade, estadoPoderes)
       if (!check.ok) throw new Error(check.motivo)
       for (const c of check.custos) {
@@ -986,6 +994,7 @@ export default function FichaPage() {
       }
     }
     await toggleHabilidade(habilidadeFichaId, novoEstado)
+    if (novoEstado) soltarEfeitoVisual(hf?.habilidade)
   }
 
   // 20.5 — fora de combate o jogador cobra o próprio turno na mão.

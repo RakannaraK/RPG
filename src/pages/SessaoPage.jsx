@@ -10,6 +10,8 @@ import { useAplicarHp } from '../hooks/useAplicarHp'
 import { useEncontro } from '../hooks/useEncontro'
 import { useRolagem } from '../hooks/useRolagem'
 import { useMembrosMesa } from '../hooks/useMembrosMesa'
+import { useExtensoesMesa } from '../hooks/useExtensoesMesa'
+import { enviarVfx } from '../hooks/useVfxMapa'
 import { calcularDescanso } from '../lib/restEngine'
 import { planejarDefesa } from '../lib/defesaEngine'
 import { aoUsarHabilidade } from '../lib/combateAvancado'
@@ -70,6 +72,7 @@ export default function SessaoPage() {
   // um hook, porque a virada de turno (aqui e no mapa) aplica efeito contínuo.
   const handleAplicarHp = useAplicarHp({ cards, encontroApi, mesaId, sessaoId })
   const { membros } = useMembrosMesa(mesaId) // F53 — responsável por combatente
+  const extensoes = useExtensoesMesa(mesaId) // F57 — efeitos visuais das ações
 
   // 14.4 + 20.5 + 32.3 — próximo turno com expiração de condições, custo por
   // turno, recarga/ultimate e dano/cura contínuos (extraído na 26.5 p/ o mapa)
@@ -504,6 +507,8 @@ export default function SessaoPage() {
             membros={membros}
             onAtualizarCombatente={encontroApi.atualizarCombatente}
             onAplicarEmAlvos={handleAplicarHp.aplicarEmAlvos}
+            efeitosVfx={extensoes.conteudo.efeitos}
+            onEfeito={ev => enviarVfx(mesaId, ev).catch(() => {})}
           />
         )}
 

@@ -201,6 +201,7 @@ export function BarraFerramentas({ ferramenta, onFerramenta, podeDesenhar, isGes
     { id: 'regua', icone: '📏', nome: 'Régua (R)' },
     { id: 'ping', icone: '📍', nome: 'Ping (P) — ou segure o clique parado' },
     isGestor && { id: 'nevoa', icone: '🌫', nome: 'Névoa de guerra (N)' },
+    isGestor && { id: 'efeito', icone: '✨', nome: '✨ Efeito (E)' },
   ].filter(Boolean)
   return (
     <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10" onPointerDown={e => e.stopPropagation()}>

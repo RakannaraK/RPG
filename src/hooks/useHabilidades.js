@@ -80,6 +80,8 @@ export function useHabilidades(sistemaId) {
       updates.custo_pool?.length ? updates.custo_pool : null
     // FV.5a — som da ação (null = sem som próprio; usa o padrão do sistema)
     if (updates.som_preset !== undefined) payload.som_preset = updates.som_preset || null
+    // F57 — efeito visual no mapa (id de efeito; null = nenhum)
+    if (updates.efeito_visual !== undefined) payload.efeito_visual = updates.efeito_visual || null
     // F35.4 — imagem ou som da habilidade (null = nenhuma)
     if (updates.midia_url !== undefined) payload.midia_url = (updates.midia_url || '').trim() || null
     // F33.3 — pré-requisito na árvore (null = raiz)
