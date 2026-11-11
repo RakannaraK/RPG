@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useId } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { caminhoNoBucket, redimensionarImagem } from '../lib/imageUtils'
+import { caminhoNoBucket, redimensionarImagem, extensaoDe } from '../lib/imageUtils'
 
 const INTERVALO_ARRASTE_MS = 66 // ~15 posições/s durante o arraste
 
@@ -140,8 +140,8 @@ export function useTokensMapa(mapaId, mesaId) {
   /** Imagem de token avulso: ≤ 512 px, sempre recomprimida. Devolve a URL pública. */
   async function enviarImagem(arquivo) {
     const comprimida = await redimensionarImagem(arquivo, 512, true)
-    const path = `${session.user.id}/tokens/${mesaId}/${Date.now()}.jpg`
-    const { error } = await supabase.storage.from('fichas-imagens').upload(path, comprimida, { contentType: 'image/jpeg' })
+    const path = `${session.user.id}/tokens/${mesaId}/${Date.now()}.${extensaoDe(comprimida)}`
+    const { error } = await supabase.storage.from('fichas-imagens').upload(path, comprimida, { contentType: comprimida.type })
     if (error) throw error
     return supabase.storage.from('fichas-imagens').getPublicUrl(path).data.publicUrl
   }

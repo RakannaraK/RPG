@@ -1,6 +1,34 @@
+const MAX_ANIMADA = 3 * 1024 * 1024
+
+const ascii = (b, i, txt) => [...txt].every((c, k) => b[i + k] === c.charCodeAt(0))
+const acha = (b, txt, ate = b.length) => { for (let i = 0; i + txt.length <= ate; i++) if (ascii(b, i, txt)) return i; return -1 }
+
+/** F60 — GIF = sempre; WebP = bloco ANIM no cabeçalho; PNG = bloco acTL antes do IDAT. `bytes` = início do arquivo. */
+export function ehAnimada(bytes, mime) {
+  if (mime === 'image/gif') return true
+  if (mime === 'image/webp') return acha(bytes, 'ANIM', 64) >= 0
+  if (mime === 'image/png') {
+    const ac = acha(bytes, 'acTL')
+    if (ac < 0) return false
+    const idat = acha(bytes, 'IDAT')
+    return idat < 0 || ac < idat
+  }
+  return false
+}
+
+/** F60 — extensão do arquivo a enviar: gif | webp | png | jpg. */
+export const extensaoDe = file => ({ 'image/gif': 'gif', 'image/webp': 'webp', 'image/png': 'png' })[file?.type] || 'jpg'
+
 // sempreComprimir: re-encoda em JPEG mesmo quando já cabe (F26 — mapas: um PNG
-// pequeno em pixels pode pesar dezenas de MB).
+// pequeno em pixels pode pesar dezenas de MB). Imagem animada nunca é recomprimida (congelaria no 1º quadro).
 export async function redimensionarImagem(file, maxSize = 1200, sempreComprimir = false) {
+  if (['image/gif', 'image/webp', 'image/png'].includes(file.type)) {
+    const inicio = new Uint8Array(await file.slice(0, 65536).arrayBuffer())
+    if (ehAnimada(inicio, file.type)) {
+      if (file.size > MAX_ANIMADA) throw new Error('Imagem animada grande demais (máximo 3 MB).')
+      return file
+    }
+  }
   return new Promise((resolve, reject) => {
     const img = new Image()
     const objectUrl = URL.createObjectURL(file)

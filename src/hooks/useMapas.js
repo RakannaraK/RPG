@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useId } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { caminhoNoBucket, redimensionarImagem, lerDimensoes } from '../lib/imageUtils'
+import { caminhoNoBucket, redimensionarImagem, lerDimensoes, extensaoDe } from '../lib/imageUtils'
 
 const BUCKET = 'fichas-imagens'
 const MAX_LADO = 4096
@@ -84,9 +84,9 @@ export function useMapas(mesaId) {
       throw new Error('A imagem passa de 10 MB mesmo comprimida. Use uma imagem menor.')
     }
     const { largura, altura } = await lerDimensoes(comprimida)
-    const path = `${session.user.id}/mapas/${mesaId}/${Date.now()}.jpg`
+    const path = `${session.user.id}/mapas/${mesaId}/${Date.now()}.${extensaoDe(comprimida)}`
 
-    const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, comprimida, { contentType: 'image/jpeg' })
+    const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, comprimida, { contentType: comprimida.type })
     if (upErr) throw upErr
     const { data: url } = supabase.storage.from(BUCKET).getPublicUrl(path)
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { redimensionarImagem } from '../lib/imageUtils'
+import { redimensionarImagem, extensaoDe } from '../lib/imageUtils'
 
 /**
  * Fases 41/42 — enciclopédia da mesa.
@@ -84,8 +84,8 @@ export function useEnciclopedia(mesaId, isGestor) {
   /** Imagem do verbete: nome aleatório, para a URL pública não ser adivinhável antes da revelação. */
   async function enviarImagem(file, usuarioId, maxLado = 1200) {
     const resized = await redimensionarImagem(file, maxLado)
-    const path = `${usuarioId}/verbetes/${crypto.randomUUID()}.jpg`
-    const { error } = await supabase.storage.from('fichas-imagens').upload(path, resized, { contentType: 'image/jpeg' })
+    const path = `${usuarioId}/verbetes/${crypto.randomUUID()}.${extensaoDe(resized)}`
+    const { error } = await supabase.storage.from('fichas-imagens').upload(path, resized, { contentType: resized.type })
     if (error) throw new Error(error.message)
     return supabase.storage.from('fichas-imagens').getPublicUrl(path).data.publicUrl
   }

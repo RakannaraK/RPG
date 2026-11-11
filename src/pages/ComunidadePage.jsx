@@ -11,7 +11,7 @@ import {
   nomeDoTipo, ordenarVitrine, textoCurtidas,
 } from '../lib/comunidade'
 import { quandoFoi } from '../lib/notificacoes'
-import { redimensionarImagem } from '../lib/imageUtils'
+import { redimensionarImagem, extensaoDe } from '../lib/imageUtils'
 import { gravarImportacao, prepararImportacao } from '../lib/fichaBanco'
 import { importarSistemaNaMesa } from '../lib/importarSistema'
 import Dice3D from '../components/dados/Dice3D'
@@ -133,8 +133,8 @@ function Publicar({ onPublicar, onFechar, meuId }) {
     setEnviandoImagem(true); setErro('')
     try {
       const reduzida = await redimensionarImagem(file, 1600)
-      const caminho = `${meuId}/comunidade/${crypto.randomUUID()}.jpg`
-      const { error } = await supabase.storage.from('fichas-imagens').upload(caminho, reduzida, { contentType: 'image/jpeg' })
+      const caminho = `${meuId}/comunidade/${crypto.randomUUID()}.${extensaoDe(reduzida)}`
+      const { error } = await supabase.storage.from('fichas-imagens').upload(caminho, reduzida, { contentType: reduzida.type })
       if (error) throw new Error(error.message)
       setImagem(supabase.storage.from('fichas-imagens').getPublicUrl(caminho).data.publicUrl)
       if (!titulo) setTitulo(file.name.replace(/\.[a-z0-9]+$/i, ''))

@@ -8,7 +8,7 @@ import { limiarCritico, dadoPuro, ehCritico, multiplicadorCritico } from '../../
 import { ModificadorForm, labelModificador } from '../sistema/RacasClassesEditor'
 import { tocarSomDado, estimarNumDados } from '../../lib/diceSounds'
 import { usePreferencias } from '../../context/PreferenciasContext'
-import { redimensionarImagem } from '../../lib/imageUtils'
+import { redimensionarImagem, extensaoDe } from '../../lib/imageUtils'
 import { supabase } from '../../lib/supabase'
 import ImageUpload from './ImageUpload'
 import Dice3D from '../dados/Dice3D'
@@ -194,10 +194,10 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
 
       if (selectedFile) {
         const resized = await redimensionarImagem(selectedFile)
-        const path = `${donoId}/${fichaId}/itens/${Date.now()}.jpg`
+        const path = `${donoId}/${fichaId}/itens/${Date.now()}.${extensaoDe(resized)}`
         const { error: uploadErr } = await supabase.storage
           .from('fichas-imagens')
-          .upload(path, resized, { contentType: 'image/jpeg' })
+          .upload(path, resized, { contentType: resized.type })
         if (uploadErr) throw uploadErr
         const { data: urlData } = supabase.storage
           .from('fichas-imagens')

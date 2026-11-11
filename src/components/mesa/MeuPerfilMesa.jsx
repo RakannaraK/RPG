@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
-import { redimensionarImagem } from '../../lib/imageUtils'
+import { redimensionarImagem, extensaoDe } from '../../lib/imageUtils'
 import Botao from '../ui/Botao'
 
 /**
@@ -23,10 +23,10 @@ export default function MeuPerfilMesa({ mesaId, usuarioId, username, apelidoInic
     setErro('')
     try {
       const resized = await redimensionarImagem(file)
-      const path = `${usuarioId}/avatars/${Date.now()}.jpg`
+      const path = `${usuarioId}/avatars/${Date.now()}.${extensaoDe(resized)}`
       const { error: upErr } = await supabase.storage
         .from('fichas-imagens')
-        .upload(path, resized, { contentType: 'image/jpeg' })
+        .upload(path, resized, { contentType: resized.type })
       if (upErr) throw upErr
       const { data } = supabase.storage.from('fichas-imagens').getPublicUrl(path)
       setAvatarUrl(data.publicUrl)

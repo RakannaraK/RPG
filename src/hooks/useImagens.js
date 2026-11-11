@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
-import { redimensionarImagem } from '../lib/imageUtils'
+import { redimensionarImagem, extensaoDe } from '../lib/imageUtils'
 
 export function useImagens(fichaId) {
   const [imagens, setImagens] = useState([])
@@ -30,11 +30,11 @@ export function useImagens(fichaId) {
 
   async function uploadImagem({ donoId, file, tipo, legenda }) {
     const resized = await redimensionarImagem(file)
-    const path = `${donoId}/${fichaId}/${Date.now()}.jpg`
+    const path = `${donoId}/${fichaId}/${Date.now()}.${extensaoDe(resized)}`
 
     const { error: uploadErr } = await supabase.storage
       .from('fichas-imagens')
-      .upload(path, resized, { contentType: 'image/jpeg' })
+      .upload(path, resized, { contentType: resized.type })
     if (uploadErr) throw uploadErr
 
     const { data: urlData } = supabase.storage
