@@ -44,6 +44,7 @@ export function useComunidade() {
     }
     const checagem = validarPublicacao(dados)
     if (!checagem.ok) throw new Error(checagem.erro)
+    if (checagem.conteudo) dados.conteudo = checagem.conteudo
     const { data, error } = await supabase.from('publicacoes').insert(dados).select('*').single()
     if (error) throw new Error(tabelaAusente(error) ? 'Comunidade ainda não ativada neste banco (sql/fase36_comunidade.sql).' : error.message)
     setPublicacoes(prev => [{ ...data, autor: 'você' }, ...prev])

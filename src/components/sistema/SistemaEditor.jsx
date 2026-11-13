@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSistema, useSaveSistema } from '../../hooks/useSistema'
 import { usePools } from '../../hooks/usePools'
+import { useExtensoesMesa } from '../../hooks/useExtensoesMesa'
 import { useLinhasPoder } from '../../hooks/useLinhasPoder'
 import { mergeConfigLayout } from '../../lib/sistemaDefaults'
 import { carregarSistemaCompleto } from '../../lib/carregarSistemaCompleto'
@@ -64,6 +65,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
   const { pools } = usePools(sistemaDB?.id) // 23.4 — p/ escolher o pool da rerolagem
   const { linhas: linhasPoderSistema } = useLinhasPoder(sistemaDB?.id) // 25.3 — p/ threadar em Raças & Classes
   const { saveSistema, loading: saving } = useSaveSistema()
+  const { conteudo: conteudoExt } = useExtensoesMesa(mesaId) // F61.A — efeitos das extensões
 
   const [secao, setSecao] = useState('geral') // F52 — editor em seções
   const [base, setBase] = useState(null)      // o que está salvo no banco (para saber o que mudou)
@@ -434,6 +436,7 @@ export default function SistemaEditor({ mesaId, isMestre }) {
                 sistemaId={sistemaDB?.id} atributos={atributos}
                 camposCombate={configLayout.campos_combate || []} pericias={pericias}
                 pontosStatus={configLayout.pontos_status} linhasPoder={linhasPoderSistema}
+                efeitosVfx={conteudoExt?.efeitos}
               />
             )}
 

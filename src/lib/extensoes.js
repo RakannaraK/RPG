@@ -61,7 +61,7 @@ export function validarPacote(json) {
   if (typeof json === 'string') {
     if (new TextEncoder().encode(json).length > LIMITES.bytesPacote) return falha(`Arquivo grande demais (máximo ${LIMITES.bytesPacote} bytes).`)
     try { p = JSON.parse(json) } catch { return falha('O arquivo não é um JSON válido.') }
-  } else if (JSON.stringify(json ?? null).length > LIMITES.bytesPacote) return falha('Extensão grande demais.')
+  } else if (new TextEncoder().encode(JSON.stringify(json ?? null)).length > LIMITES.bytesPacote) return falha('Extensão grande demais.')
   if (!ehObj(p) || p.formato !== FORMATO || p.versao !== 1) return falha('Não é uma extensão do Dado & Pena (formato ou versão errados).')
   if (!idOk(p.id)) return falha('Identificador (id) da extensão inválido.')
   const cenas = filtrar(p.cenas, normalizarCena, LIMITES.cenasPorPacote, 'Cena', erros)

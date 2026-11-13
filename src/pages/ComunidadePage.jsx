@@ -14,6 +14,8 @@ import { quandoFoi } from '../lib/notificacoes'
 import { redimensionarImagem, extensaoDe } from '../lib/imageUtils'
 import { gravarImportacao, prepararImportacao } from '../lib/fichaBanco'
 import { importarSistemaNaMesa } from '../lib/importarSistema'
+import { validarPacote } from '../lib/extensoes'
+import { instalarNaMesa } from '../hooks/useExtensoesMesa'
 import Dice3D from '../components/dados/Dice3D'
 import { rolarNotacao, validarNotacao } from '../lib/diceNotation'
 import Ilustra from '../components/arte/Ilustra'
@@ -28,7 +30,7 @@ import { useToast } from '../components/ui/Toast'
 import { useConfirmar } from '../components/ui/Confirmar'
 
 // tipo de publicação → desenho da biblioteca de arte (o emoji fica para o conteúdo)
-const ARTE_DO_TIPO = { ficha: 'elmo', criatura: 'garra', sistema: 'tomo', arte: 'moldura' }
+const ARTE_DO_TIPO = { ficha: 'elmo', criatura: 'garra', sistema: 'tomo', extensao: 'lanterna', arte: 'moldura' }
 
 /**
  * Demo sem conta: rola de verdade (mesmo motor do site) e NÃO grava nada em
@@ -89,6 +91,9 @@ function resumoDoArquivo(json) {
     const n = Array.isArray(json.atributos) ? json.atributos.length : 0
     return `${nome}${n ? ` · ${n} atributos` : ''}`
   }
+  if (json?.formato === 'dado-e-pena/extensao') {
+    return `${json.nome || json.id} · ${json.cenas?.length || 0} cena(s) · ${json.efeitos?.length || 0} efeito(s)`
+  }
   return null
 }
 
@@ -114,13 +119,23 @@ function Publicar({ onPublicar, onFechar, meuId }) {
     if (!file) return
     try {
       const json = JSON.parse(await file.text())
+      if (tipo === 'extensao') {
+        const v = validarPacote(json)
+        if (!v.ok) { setConteudo(null); setNomeArquivo(''); setErro(v.erros.join(' ')); return }
+        setConteudo(v.pacote)
+        setNomeArquivo(file.name)
+        if (!titulo) setTitulo(v.pacote.nome)
+        if (!descricao) setDescricao(v.pacote.descricao)
+        setErro(v.erros.join(' '))
+        return
+      }
       setConteudo(json)
       setNomeArquivo(file.name)
       if (!titulo) setTitulo(json?.ficha?.nome_personagem || json?.sistema?.nome || file.name.replace(/\.json$/i, ''))
       setErro('')
     } catch {
       setConteudo(null); setNomeArquivo('')
-      setErro('Não consegui ler esse arquivo. Ele precisa ser o .json que o site exporta (ficha, criatura ou sistema).')
+      setErro('Não consegui ler esse arquivo. Ele precisa ser o .json que o site exporta (ficha, criatura, sistema ou extensão).')
     }
   }
 
@@ -166,7 +181,7 @@ function Publicar({ onPublicar, onFechar, meuId }) {
       <div className="space-y-5">
         <fieldset>
           <legend className="rotulo">O que você vai publicar?</legend>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             {TIPOS_PUBLICACAO.map(t => (
               <button
                 key={t.id} type="button" onClick={() => { setTipo(t.id); setErro('') }} aria-pressed={tipo === t.id}
@@ -249,7 +264,7 @@ function LevarParaMesa({ p, mesas, onLevar, onFechar }) {
   return (
     <Modal
       onFechar={onFechar} bloqueado={ocupado} tamanho="sm"
-      titulo={`Levar “${p.titulo}”`} subtitulo={p.tipo === 'sistema' ? 'O sistema é importado na mesa que você escolher.' : 'Vira uma ficha sua na mesa que você escolher.'}
+      titulo={`Levar “${p.titulo}”`} subtitulo={p.tipo === 'extensao' ? 'A extensão é instalada na mesa que você escolher (só mesas em que você é mestre).' : p.tipo === 'sistema' ? 'O sistema é importado na mesa que você escolher.' : 'Vira uma ficha sua na mesa que você escolher.'}
       rodape={
         <>
           <FecharModal disabled={ocupado} />
@@ -386,8 +401,14 @@ export default function ComunidadePage() {
 
   const minhasMesas = mesas.filter(m => !m.arquivada && (m.role === 'mestre' || m.role === 'co-mestre' || m.role === 'jogador'))
 
+  // extensão só entra em mesa onde sou mestre/co-mestre
+  const mesasDe = p => (p.tipo === 'extensao' ? minhasMesas.filter(m => m.role !== 'jogador') : minhasMesas)
+
   function obter(p) {
-    if (minhasMesas.length === 0) { toast.aviso('Você precisa de uma mesa', { detalhe: 'Crie ou entre numa mesa para levar isto para ela.' }); return }
+    if (mesasDe(p).length === 0) {
+      toast.aviso(p.tipo === 'extensao' ? 'Você precisa ser mestre ou co-mestre de uma mesa.' : 'Você precisa de uma mesa', p.tipo === 'extensao' ? undefined : { detalhe: 'Crie ou entre numa mesa para levar isto para ela.' })
+      return
+    }
     setLevando(p)
   }
 
@@ -397,6 +418,12 @@ export default function ComunidadePage() {
       await importarSistemaNaMesa(mesa.id, p.conteudo)
       setLevando(null)
       toast.ok(`Sistema importado em ${mesa.nome}`)
+      return
+    }
+    if (p.tipo === 'extensao') {
+      await instalarNaMesa(mesa.id, p.conteudo)
+      setLevando(null)
+      toast.ok(`Extensão instalada em ${mesa.nome}`)
       return
     }
     const plano = await prepararImportacao(p.conteudo, mesa.id)
@@ -464,7 +491,7 @@ export default function ComunidadePage() {
 
           <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Tipo">
             {chip(!tipo, 'Tudo', () => setTipo(null), '__tudo')}
-            {TIPOS_PUBLICACAO.map(t => chip(tipo === t.id, <><Ilustra nome={ARTE_DO_TIPO[t.id]} tamanho={16} />{t.nome}{t.id === 'arte' ? 's' : 's'}</>, () => setTipo(tipo === t.id ? null : t.id), t.id))}
+            {TIPOS_PUBLICACAO.map(t => chip(tipo === t.id, <><Ilustra nome={ARTE_DO_TIPO[t.id]} tamanho={16} />{t.id === 'extensao' ? 'Extensões' : `${t.nome}s`}</>, () => setTipo(tipo === t.id ? null : t.id), t.id))}
           </div>
 
           {etiquetas.length > 0 && (
@@ -535,7 +562,7 @@ export default function ComunidadePage() {
         />
       )}
       {levando && (
-        <LevarParaMesa p={levando} mesas={minhasMesas} onLevar={mesa => levarPara(levando, mesa)} onFechar={() => setLevando(null)} />
+        <LevarParaMesa p={levando} mesas={mesasDe(levando)} onLevar={mesa => levarPara(levando, mesa)} onFechar={() => setLevando(null)} />
       )}
     </div>
   )

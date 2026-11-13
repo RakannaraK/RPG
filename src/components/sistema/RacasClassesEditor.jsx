@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { useRacasClasses } from '../../hooks/useRacasClasses'
 import { useHabilidades } from '../../hooks/useHabilidades'
 import { usePools } from '../../hooks/usePools'
@@ -17,6 +17,9 @@ import { PACOTE_ESSENCIAL } from '../../lib/extensoes'
 import { tocarPresetAcao } from '../../audio/actionSynth'
 import Botao from '../ui/Botao'
 import { useConfirmar } from '../ui/Confirmar'
+
+// F61.A — efeitos visuais das extensões instaladas (vazio = pacote Essencial)
+const EfeitosVfxContext = createContext([])
 
 // Fase 12.5 — vocabulário ampliado de efeitos. `grupo` só organiza o dropdown.
 const TIPOS_MOD = [
@@ -553,6 +556,8 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
   const [editCustoPool, setEditCustoPool] = useState([]) // 20.5
   const [editSomPreset, setEditSomPreset] = useState('') // FV.5a
   const [editEfeitoVisual, setEditEfeitoVisual] = useState('') // F57
+  const efeitosCtx = useContext(EfeitosVfxContext)
+  const efeitosVfx = efeitosCtx.length ? efeitosCtx : PACOTE_ESSENCIAL.efeitos
   const [editRecarga, setEditRecarga] = useState('')       // F32.2
   const [editRequer, setEditRequer] = useState([])         // F33.3/F54 — pré-requisitos (ids)
   const [editModo, setEditModo] = useState('todos')         // F54
@@ -749,8 +754,8 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
                 <p className="text-purple-400 text-xs mb-1">Efeito visual no mapa</p>
                 <select value={editEfeitoVisual} onChange={e => setEditEfeitoVisual(e.target.value)} className={`${SEL} w-36`}>
                   <option value="">Nenhum</option>
-                  {PACOTE_ESSENCIAL.efeitos.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
-                  {editEfeitoVisual && !PACOTE_ESSENCIAL.efeitos.some(e => e.id === editEfeitoVisual) && (
+                  {efeitosVfx.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
+                  {editEfeitoVisual && !efeitosVfx.some(e => e.id === editEfeitoVisual) && (
                     <option value={editEfeitoVisual}>{editEfeitoVisual}</option>
                   )}
                 </select>
@@ -1405,7 +1410,7 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
 
 // ──────────────────────────────────────────────────────────
 
-export default function RacasClassesEditor({ sistemaId, atributos, camposCombate, pericias = [], pontosStatus = null, linhasPoder = [] }) {
+export default function RacasClassesEditor({ sistemaId, atributos, camposCombate, pericias = [], pontosStatus = null, linhasPoder = [], efeitosVfx = [] }) {
   const { pools } = usePools(sistemaId) // 20.5 — custo de pool em habilidades
   const {
     racas, classes, loading, error,
@@ -1457,6 +1462,7 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
   }
 
   return (
+    <EfeitosVfxContext.Provider value={efeitosVfx}>
     <div className="space-y-8">
       <SecaoRacaClasse
         titulo="Raças"
@@ -1532,5 +1538,6 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
       {/* Fase 19.6 — recompensas por nível (checklist-guia) */}
       <RecompensasEditor sistemaId={sistemaId} classes={classes} pools={pools} />
     </div>
+    </EfeitosVfxContext.Provider>
   )
 }

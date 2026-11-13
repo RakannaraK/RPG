@@ -4,10 +4,13 @@
  * ficha ao vivo de ninguém, nunca dados da mesa.
  */
 
+import { validarPacote } from './extensoes'
+
 export const TIPOS_PUBLICACAO = [
   { id: 'ficha', nome: 'Ficha', icone: '📜' },
   { id: 'criatura', nome: 'Criatura', icone: '🐾' },
   { id: 'sistema', nome: 'Sistema', icone: '⚙️' },
+  { id: 'extensao', nome: 'Extensão', icone: '✨' },
   { id: 'arte', nome: 'Arte', icone: '🎨' },
 ]
 
@@ -49,6 +52,11 @@ export function validarPublicacao({ tipo, titulo, conteudo, imagem_url } = {}) {
   const bytes = new TextEncoder().encode(JSON.stringify(conteudo)).length
   if (bytes > LIMITE_CONTEUDO_BYTES) {
     return { ok: false, erro: `O arquivo tem ${(bytes / 1_000_000).toFixed(1)} MB; o limite é 1 MB.` }
+  }
+  if (tipo === 'extensao') {
+    // conteúdo não confiável: só o pacote normalizado é gravado
+    const v = validarPacote(conteudo)
+    return v.ok ? { ok: true, conteudo: v.pacote } : { ok: false, erro: v.erros[0] }
   }
   if (tipo === 'sistema') {
     // export de sistema: tem as coleções na raiz (atributos, habilidades…)

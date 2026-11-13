@@ -18,6 +18,18 @@ describe('validarPacote', () => {
     expect(c.sons).toEqual(['vento'])
     expect(r.pacote.efeitos[0]).toMatchObject({ cores: ['#ff0000', '#FFFFFF'], som: null })
   })
+  it('aceita objeto e recusa objeto grande demais', () => {
+    expect(validarPacote(bom()).ok).toBe(true)
+    expect(validarPacote({ ...bom(), descricao: 'x'.repeat(LIMITES.bytesPacote) }).ok).toBe(false)
+  })
+  it('objeto: o limite conta bytes, não caracteres', () => {
+    const n = Math.ceil(LIMITES.bytesPacote / 2) - 100 // 'é' = 2 bytes
+    const p = { ...bom(), descricao: 'é'.repeat(n) }
+    const s = JSON.stringify(p)
+    expect(s.length).toBeLessThan(LIMITES.bytesPacote)
+    expect(new TextEncoder().encode(s).length).toBeGreaterThan(LIMITES.bytesPacote)
+    expect(validarPacote(p).ok).toBe(false)
+  })
   it('recusa formato/versão errados', () => {
     expect(validarPacote({ ...bom(), formato: 'x' }).ok).toBe(false)
     expect(validarPacote({ ...bom(), versao: 2 }).ok).toBe(false)

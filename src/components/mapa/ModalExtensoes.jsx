@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import Modal, { FecharModal } from '../ui/Modal'
 import Botao from '../ui/Botao'
 import { baixarJson } from '../../lib/baixarArquivo'
@@ -67,6 +68,9 @@ export default function ModalExtensoes({ aberto, onFechar, extensoes = [], onSal
         {importadas.length > 0 && (
           <section className="space-y-2">
             <h3 className="text-ink text-sm font-medium">Importadas</h3>
+            <p className="text-ink-dim text-sm">
+              Baixe o .json e publique lá. <Link to="/comunidade" className="text-accent-400 underline">Publicar na Comunidade</Link>
+            </p>
             <ul className="space-y-2">{importadas.map(p => cartao(p, true, true))}</ul>
           </section>
         )}

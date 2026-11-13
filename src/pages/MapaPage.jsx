@@ -13,7 +13,8 @@ import { useAplicarHp } from '../hooks/useAplicarHp'
 import { ordenarPorIniciativa } from '../lib/iniciativa'
 import { alvosNaArea } from '../lib/alvosCombate'
 import { adicionarOpNevoa, espalhar, normalizarGrade, normalizarNevoa, pontoRevelado, tokenVisivelParaJogador } from '../lib/mapaEngine'
-import { colocarNoMapa, normalizarAtmosfera } from '../lib/atmosfera'
+import { alcasDaAtmosfera, atualizarEfeito, atualizarFonte, colocarNoMapa, normalizarAtmosfera } from '../lib/atmosfera'
+import AlcasAtmosfera from '../components/mapa/AlcasAtmosfera'
 import { fontesDeLuz } from '../lib/luzMapa'
 import { resolverVfx } from '../lib/vfx'
 import { particulasLigadas } from '../lib/personalizacao'
@@ -452,6 +453,15 @@ export default function MapaPage() {
                 ctx={ctx} largura={cena.largura} altura={cena.altura}
                 centro={area.centro} raioPx={raioPxArea} tokensDentro={tokensDentroArea}
                 onCentro={marcarCentroArea}
+              />
+            )}
+            {isGestor && painelVisivel === 'atmosfera' && !colocando && (
+              <AlcasAtmosfera
+                alcas={alcasDaAtmosfera(atmosfera, grade)}
+                ctx={ctx} largura={cena.largura} altura={cena.altura}
+                onMover={(tipo, id, x, y) => mudarAtmosfera(
+                  tipo === 'efeito' ? atualizarEfeito(atmosfera, id, { x, y }) : atualizarFonte(atmosfera, id, { x, y }),
+                )}
               />
             )}
           </>

@@ -3,8 +3,21 @@ import { LIMITES } from './efeitosVocabulario'
 import {
   ATMOSFERA_VAZIA, normalizarAtmosfera, adicionarEfeito, atualizarEfeito, removerEfeito,
   adicionarFonte, atualizarFonte, removerFonte, definirLuz, aplicarCena, limparCena,
-  colocarNoMapa, volumesDaAtmosfera, quantasParticulas, tetoParticulas, nascer, mover,
+  colocarNoMapa, volumesDaAtmosfera, quantasParticulas, tetoParticulas, nascer, mover, alcasDaAtmosfera,
 } from './atmosfera'
+
+describe('alcasDaAtmosfera', () => {
+  it('cena inteira não gera alça; efeito local e fonte geram, com raioPx certo', () => {
+    let atm = adicionarEfeito(ATMOSFERA_VAZIA, { tipo: 'chuva' })
+    atm = adicionarEfeito(atm, { tipo: 'fogo', x: 10, y: 20, raio: 3 })
+    atm = adicionarFonte(atm, { x: 5, y: 6, raio: 6, cor: '#FFC27A' })
+    const alcas = alcasDaAtmosfera(atm, { tamanho: 50, unidade: 1.5 })
+    expect(alcas.map(a => a.tipo)).toEqual(['efeito', 'fonte'])
+    expect(alcas[0]).toMatchObject({ x: 10, y: 20, raioPx: 100 })
+    expect(alcas[1]).toMatchObject({ x: 5, y: 6, raioPx: 200 })
+    expect(new Set(alcas.map(a => a.chave)).size).toBe(2)
+  })
+})
 
 const regiao = { x: 0, y: 0, w: 800, h: 600 }
 const local = { cx: 100, cy: 100, r: 50 }

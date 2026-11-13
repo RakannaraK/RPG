@@ -30,6 +30,13 @@ describe('validar publicação', () => {
     expect(validarPublicacao({ tipo: 'arte', titulo: 'Retrato', imagem_url: 'https://x/a.png' })).toEqual({ ok: true })
     expect(validarPublicacao({ tipo: 'criatura', titulo: 'Goblin' }).erro).toMatch(/arquivo exportado/)
   })
+  it('extensão: aceita e devolve o pacote normalizado; recusa inválido com mensagem', () => {
+    const pac = { formato: 'dado-e-pena/extensao', versao: 1, id: 'meu-pacote', nome: 'Meu', efeitos: [{ id: 'e1', nome: 'Ef', forma: 'onda', cores: ['#ff0000'], lixo: 1 }] }
+    const r = validarPublicacao({ tipo: 'extensao', titulo: 'Meu pacote', conteudo: pac })
+    expect(r.ok).toBe(true)
+    expect(r.conteudo.efeitos[0]).toEqual({ id: 'e1', nome: 'Ef', forma: 'onda', cores: ['#ff0000', '#FFFFFF'], som: null })
+    expect(validarPublicacao({ tipo: 'extensao', titulo: 'Meu pacote', conteudo: { ...pac, versao: 9 } }).erro).toMatch(/extensão/)
+  })
   it('recusa arquivo acima de 1 MB', () => {
     const grande = { formato: 'rpg-ficha', tipo: 'ficha', versao: 1, lixo: 'x'.repeat(1_100_000) }
     expect(validarPublicacao({ tipo: 'ficha', titulo: 'Gigante', conteudo: grande }).erro).toMatch(/limite é 1 MB/)
@@ -63,6 +70,6 @@ describe('vitrine', () => {
     expect(textoCurtidas(0)).toBe('0 curtidas')
     expect(nomeDoTipo('criatura')).toBe('Criatura')
     expect(iconeDoTipo('arte')).toBe('🎨')
-    expect(TIPOS_PUBLICACAO).toHaveLength(4)
+    expect(TIPOS_PUBLICACAO).toHaveLength(5)
   })
 })

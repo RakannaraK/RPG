@@ -3,6 +3,7 @@
  * operações de edição e o motor de partículas. O desenho fica em CamadaAtmosfera.
  */
 import { ID_VALIDO, LIMITES, SONS_AMBIENTE, TIPOS_ATMOSFERA, corValida, limitar } from './efeitosVocabulario'
+import { raioParaPx } from './luzMapa'
 import { brilho, mover as moverFundo, nascer as nascerFundo } from './ambiente'
 
 export const COR_ESCURIDAO = '#05070C'
@@ -117,6 +118,19 @@ export function colocarNoMapa(atm, pedido, ponto, unidade = 1) {
     return atualizarFonte(atm, pedido.id, { x, y })
   }
   return atm
+}
+
+/** F61.B — alças arrastáveis: efeitos presos a um ponto e fontes de luz (raioPx já na escala do mapa). */
+export function alcasDaAtmosfera(atm, grade) {
+  const efeitos = atm.efeitos.filter(ehLocal).map(e => ({
+    chave: `efeito:${e.id}`, tipo: 'efeito', id: e.id, x: e.x, y: e.y,
+    raioPx: raioParaPx(e.raio, grade), nome: TIPOS_ATMOSFERA[e.tipo].nome, cor: e.cor || TIPOS_ATMOSFERA[e.tipo].cor,
+  }))
+  const fontes = atm.luz.fontes.map(f => ({
+    chave: `fonte:${f.id}`, tipo: 'fonte', id: f.id, x: f.x, y: f.y,
+    raioPx: raioParaPx(f.raio, grade), nome: 'Fonte de luz', cor: f.cor,
+  }))
+  return [...efeitos, ...fontes]
 }
 
 /** Volume (0–1) de cada laço de som: o maior entre os efeitos que o usam; extras entram com 0,6. */
