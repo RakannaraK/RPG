@@ -14,7 +14,8 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
   - F53 combate em área · F54 árvore de habilidades com pontos · F55 painel "Continuar" · F56 tema padrão "Tinta e Brasa".
   - F57 atmosfera do mapa (11 efeitos + som ambiente) · F58 luz e aura · F59 efeitos de ação (projétil, explosão…) · F60 extensões da mesa e imagens animadas. Tudo em `docs/FASE57_EFEITOS_DO_MAPA.md`.
   - F61 acabamento dos efeitos: editor de habilidade lista efeitos das extensões instaladas, alças para arrastar efeito e luz no mapa, extensão publicável na Comunidade. Em `docs/FASE61_ACABAMENTO_DOS_EFEITOS.md`.
-- Só existe em arquivo, sem commit: a F61 inteira (código, spec e SQL) e este `NOTAS.md`.
+- F61 commitada (`d6b2d92`) mas ainda sem push: o site no ar segue na F60.
+- Não há fase planejada em aberto: tudo que estava nos roteiros (spec original, paridade com o LICH, concorrência 2026-09, redesign, efeitos do mapa) foi feito. O que resta está em Pendências.
 
 ## Decisões (não reabrir sem pedido do usuário)
 
@@ -69,7 +70,8 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
 3. Usuário: ligar "Allow anonymous sign-ins" no Supabase (convidado da F47).
 4. Painéis do Render/Supabase: CSP, e-mail e captcha (sobras da auditoria de 2026-09).
 5. Usuário: testar a F61 com login real — escolher efeito de extensão numa habilidade (Sistema → habilidade → "Efeito visual no mapa"), arrastar alça no mapa, publicar e levar uma extensão pela Comunidade.
-6. Ideias ainda não pedidas (só fazer com ok): RPC que acrescenta extensão no servidor (hoje `instalarNaMesa` lê-altera-grava e pode perder instalação simultânea); publicar direto do modal com o pacote preenchido; paredes e linha de visão.
+6. Ideias ainda não pedidas (só fazer com ok): RPC que acrescenta extensão no servidor (hoje `instalarNaMesa` lê-altera-grava e pode perder instalação simultânea); publicar direto do modal com o pacote preenchido; sobras do redesign (layout interno do Escudo e do Baú, busca global Ctrl+K).
+7. Registrado como NÃO fazer (só reabrir se o usuário pedir): paredes e linha de visão, voz/vídeo, IA, mesa paga/marketplace, cutscenes, multi-idioma.
 
 ## Armadilhas
 
