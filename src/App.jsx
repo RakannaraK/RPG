@@ -11,6 +11,7 @@ import OuvinteDesafios from './components/minigames/OuvinteDesafios'
 import Selo from './components/marca/Selo'
 import { ToastProvider } from './components/ui/Toast'
 import { ConfirmarProvider } from './components/ui/Confirmar'
+import PaletaComandos from './components/ui/PaletaComandos'
 import EfeitosAmbiente from './components/ui/EfeitosAmbiente'
 import { destinoDepoisDoLogin } from './lib/convite'
 import { tipoDaRota, registrarVisita, lerRecentes, gravarRecentes } from './lib/recentes'
@@ -153,6 +154,8 @@ export default function App() {
                 <AppRoutes />
                 {/* F27 — bandeja de dados da mesa (fora da transição de página) */}
                 <OuvinteDadosMesa />
+                {/* F62.D — busca global (Ctrl+K) */}
+                <PaletaComandos />
                 {/* F28 — aviso de desafio de minigame (fora da transição de página) */}
                 <OuvinteDesafios />
               </ConfirmarProvider>

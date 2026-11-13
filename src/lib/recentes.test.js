@@ -1,5 +1,16 @@
 import { describe, it, expect } from 'vitest'
-import { tipoDaRota, registrarVisita } from './recentes'
+import { tipoDaRota, registrarVisita, rotuloDe } from './recentes'
+
+describe('rotuloDe', () => {
+  it('monta o texto por tipo', () => {
+    const mesa = { nome: 'M' }
+    expect(rotuloDe({ tipo: 'ficha' }, mesa, { nome_personagem: 'Ana' })).toBe('Ficha de Ana')
+    expect(rotuloDe({ tipo: 'ficha' }, mesa, null)).toBe('Ficha de Ficha')
+    expect(rotuloDe({ tipo: 'sessao' }, mesa)).toBe('Sessão em M')
+    expect(rotuloDe({ tipo: 'mapa' }, mesa)).toBe('Mapa de M')
+    expect(rotuloDe({ tipo: 'mesa' }, mesa)).toBe('M')
+  })
+})
 
 describe('recentes', () => {
   it('reconhece os 4 tipos e ignora o resto', () => {

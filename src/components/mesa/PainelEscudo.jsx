@@ -8,28 +8,24 @@ import { useRolagem } from '../../hooks/useRolagem'
 import { entradaPara } from '../../lib/tabelasEngine'
 import { rolarNotacao, validarNotacao } from '../../lib/diceNotation'
 import { ordenarPorIniciativa } from '../../lib/iniciativa'
-import { faixasDaBarra, textoVida } from '../../lib/barraVida'
+import { textoVida } from '../../lib/barraVida'
+import Botao from '../ui/Botao'
+import BarraVida from '../ui/BarraVida'
+import CabecalhoSecao from '../ui/CabecalhoSecao'
 import PainelRelogios from './PainelRelogios'
 import PainelOverlay from './PainelOverlay'
 import RoladorGenerico from '../dados/RoladorGenerico'
 
-const CAIXA = 'rounded-xl border border-purple-900 bg-slate-900/60 p-3 space-y-2'
-const TITULO = 'text-purple-300 text-xs font-semibold uppercase tracking-wider'
-
-const COR_NIVEL = { cheia: 'bg-emerald-500', media: 'bg-yellow-500', baixa: 'bg-red-500', vazia: 'bg-red-500' }
+const CAIXA = 'rounded-xl border border-border bg-raised p-4 space-y-3'
 
 /** Barra de vida compacta, com pedaço de escudo (mesmo motor do overlay). */
 function Vida({ card }) {
   const dados = { atual: card.hpAtual ?? 0, maximo: card.hpMax || card.hpMaxBase || 0, temp: card.vidaTemp || 0 }
-  const { pct, pctTemp, nivel } = faixasDaBarra(dados)
   return (
     <div className="flex items-center gap-2">
-      <span className="text-white text-sm truncate flex-1 min-w-0">{card.nome}</span>
-      <div className="w-28 h-2 rounded-full bg-black/60 overflow-hidden flex shrink-0">
-        <div className={COR_NIVEL[nivel]} style={{ width: `${pct}%` }} />
-        {pctTemp > 0 && <div className="bg-sky-400" style={{ width: `${pctTemp}%` }} title="escudo" />}
-      </div>
-      <span className="text-purple-300 text-xs tabular-nums w-20 text-right shrink-0">{textoVida(dados)}</span>
+      <span className="text-ink text-sm truncate flex-1 min-w-0">{card.nome}</span>
+      <BarraVida atual={dados.atual} maximo={dados.maximo} temp={dados.temp} rotulo={`Vida de ${card.nome}`} mostrarTexto={false} className="w-28 shrink-0" />
+      <span className="text-ink-dim text-xs tabular-nums w-20 text-right shrink-0">{textoVida(dados)}</span>
     </div>
   )
 }
@@ -56,19 +52,18 @@ function Tabelas({ tabelas, mesaId, sessaoId }) {
   if (!tabelas.length) return null
   return (
     <div className={CAIXA}>
-      <p className={TITULO}>Tabelas aleatórias</p>
+      <CabecalhoSecao nivel={3} titulo="Tabelas aleatórias" />
       <div className="flex flex-wrap gap-1.5">
         {tabelas.map(t => (
-          <button
-            key={t.id} type="button" onClick={() => rolar(t)}
-            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-purple-800 text-purple-200 text-xs transition-colors"
+          <Botao
+            key={t.id} variante="contorno" tamanho="sm" onClick={() => rolar(t)}
             title={`Rolar ${t.notacao || '1d6'} e mandar ao feed`}
-          >{t.nome || 'tabela'}</button>
+          >{t.nome || 'tabela'}</Botao>
         ))}
       </div>
       {ultimo && (
-        <p className="text-purple-200 text-sm">
-          <span className="text-purple-400 text-xs">{ultimo.nome}{ultimo.valor != null ? ` (${ultimo.valor})` : ''}: </span>
+        <p className="text-ink text-sm">
+          <span className="text-ink-dim text-xs">{ultimo.nome}{ultimo.valor != null ? ` (${ultimo.valor})` : ''}: </span>
           {ultimo.texto}
         </p>
       )}
@@ -92,7 +87,7 @@ export default function PainelEscudo({ mesaId, isGestor }) {
   const daVez = encontro ? ordem[Math.min(Math.max(0, encontro.turno_atual ?? 0), Math.max(0, ordem.length - 1))] : null
   const fixadas = notas.filter(n => n.fixada)
 
-  if (!isGestor) return <p className="text-accent-300 text-sm italic">O escudo é a tela do mestre.</p>
+  if (!isGestor) return <p className="text-ink-dim text-sm">O escudo é a tela do mestre.</p>
 
   return (
     <div className="space-y-4">
@@ -100,25 +95,22 @@ export default function PainelEscudo({ mesaId, isGestor }) {
         <div className="space-y-4">
           {/* Combate */}
           <div className={CAIXA}>
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <p className={TITULO}>Combate</p>
-              {sessaoAtiva && (
-                <button onClick={() => navigate(`/mesa/${mesaId}/sessao/${sessaoAtiva.id}`)} className="text-purple-400 hover:text-white text-xs underline">abrir a sessão</button>
-              )}
-            </div>
+            <CabecalhoSecao nivel={3} titulo="Combate" acoes={sessaoAtiva && (
+              <Botao variante="fantasma" tamanho="sm" onClick={() => navigate(`/mesa/${mesaId}/sessao/${sessaoAtiva.id}`)}>abrir a sessão</Botao>
+            )} />
             {!encontro ? (
-              <p className="text-accent-300 text-xs italic">{sessaoAtiva ? 'Nenhum combate ativo.' : 'Nenhuma sessão ao vivo.'}</p>
+              <p className="text-ink-dim text-sm">{sessaoAtiva ? 'Nenhum combate ativo.' : 'Nenhuma sessão ao vivo.'}</p>
             ) : (
               <>
-                <p className="text-white text-sm">
-                  {encontro.titulo || 'Combate'} · <span className="text-amber-300">rodada {encontro.rodada}</span>
+                <p className="text-ink text-sm">
+                  {encontro.titulo || 'Combate'} · <span className="text-accent-300">rodada {encontro.rodada}</span>
                   {daVez && <> · vez de <b>{daVez.nome}</b></>}
                 </p>
                 <ol className="text-xs space-y-0.5">
                   {ordem.map((c, i) => (
-                    <li key={c.id} className={c.id === daVez?.id ? 'text-amber-300 font-semibold' : 'text-purple-300'}>
-                      {i + 1}. {c.nome} <span className="text-accent-300">{c.iniciativa ?? '—'}</span>
-                      {c.hp_maximo != null && <span className="text-accent-300"> · {c.hp_atual ?? '?'}/{c.hp_maximo}</span>}
+                    <li key={c.id} className={c.id === daVez?.id ? 'text-accent-300 font-semibold' : 'text-ink-dim'}>
+                      {i + 1}. {c.nome} <span className="text-ink-dim">{c.iniciativa ?? '—'}</span>
+                      {c.hp_maximo != null && <span className="text-ink-dim"> · {c.hp_atual ?? '?'}/{c.hp_maximo}</span>}
                     </li>
                   ))}
                 </ol>
@@ -128,9 +120,9 @@ export default function PainelEscudo({ mesaId, isGestor }) {
 
           {/* Vidas do grupo */}
           <div className={CAIXA}>
-            <p className={TITULO}>Vida do grupo</p>
+            <CabecalhoSecao nivel={3} titulo="Vida do grupo" />
             {cards.length === 0
-              ? <p className="text-accent-300 text-xs italic">Nenhum personagem nesta mesa.</p>
+              ? <p className="text-ink-dim text-sm">Nenhum personagem nesta mesa.</p>
               : <div className="space-y-1">{cards.map(c => <Vida key={c.id} card={c} />)}</div>}
           </div>
 
@@ -140,13 +132,13 @@ export default function PainelEscudo({ mesaId, isGestor }) {
         <div className="space-y-4">
           {/* Notas fixadas */}
           <div className={CAIXA}>
-            <p className={TITULO}>Notas fixadas</p>
+            <CabecalhoSecao nivel={3} titulo="Notas fixadas" />
             {fixadas.length === 0
-              ? <p className="text-accent-300 text-xs italic">Fixe uma nota (📌) para ela aparecer aqui.</p>
+              ? <p className="text-ink-dim text-sm">Fixe uma nota (📌) para ela aparecer aqui.</p>
               : fixadas.map(n => (
                 <div key={n.id}>
-                  <p className="text-white text-sm font-medium">{n.titulo || 'Sem título'}</p>
-                  <p className="text-purple-300 text-xs whitespace-pre-wrap">{n.texto}</p>
+                  <p className="text-ink text-sm font-medium">{n.titulo || 'Sem título'}</p>
+                  <p className="text-ink-dim text-xs whitespace-pre-wrap">{n.texto}</p>
                 </div>
               ))}
           </div>
@@ -156,7 +148,7 @@ export default function PainelEscudo({ mesaId, isGestor }) {
           </div>
 
           <div className={CAIXA}>
-            <p className={TITULO}>Rolar</p>
+            <CabecalhoSecao nivel={3} titulo="Rolar" />
             <RoladorGenerico mesaId={mesaId} />
           </div>
 

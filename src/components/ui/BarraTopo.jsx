@@ -4,6 +4,7 @@ import Marca from '../marca/Marca'
 import Sininho from '../notificacoes/Sininho'
 import MenuUsuario from './MenuUsuario'
 import Icone from './Icone'
+import { abrirBusca } from '../../lib/paleta'
 
 /**
  * Fase 52 — cabeçalho único do site. Antes cada página desenhava o seu (6
@@ -44,6 +45,12 @@ export default function BarraTopo({ voltar, titulo, subtitulo, acoes, largura = 
         {children}
         <div className="ml-auto flex items-center gap-0.5 sm:gap-1.5 shrink-0">
           {acoes}
+          {session && (
+            <button
+              type="button" onClick={abrirBusca} aria-label="Buscar (Ctrl+K)" data-dica="Buscar (Ctrl+K)"
+              className="botao-icone"
+            ><Icone nome="busca" tamanho={20} /></button>
+          )}
           {comunidade && (
             <Link
               to="/comunidade" aria-label="Comunidade" data-dica="Fichas, criaturas e sistemas compartilhados"

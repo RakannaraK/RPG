@@ -13,6 +13,13 @@ export function tipoDaRota(pathname) {
   return null
 }
 
+/** Texto do "Continuar" / da busca para uma visita, dados a mesa e a ficha dela. */
+export const rotuloDe = (v, mesa, ficha) => ({
+  ficha: `Ficha de ${ficha?.nome_personagem || 'Ficha'}`,
+  sessao: `Sessão em ${mesa.nome}`,
+  mapa: `Mapa de ${mesa.nome}`,
+}[v.tipo] || mesa.nome)
+
 /** Põe a visita no topo, sem repetir a rota, no máximo 10. */
 export function registrarVisita(lista, visita) {
   return [{ ...visita, em: visita.em ?? Date.now() }, ...(lista || []).filter(v => v.rota !== visita.rota)].slice(0, MAXIMO)

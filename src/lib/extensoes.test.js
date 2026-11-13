@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { validarPacote, conteudoInstalado, instalar, desinstalar, exportarPacote, CATALOGO, PACOTE_ESSENCIAL } from './extensoes'
+import { validarPacote, conteudoInstalado, exportarPacote, CATALOGO, PACOTE_ESSENCIAL } from './extensoes'
 import { LIMITES } from './efeitosVocabulario'
 
 const bom = () => ({
@@ -59,33 +59,20 @@ describe('validarPacote', () => {
   })
 })
 
-describe('instalar / conteudoInstalado', () => {
+describe('conteudoInstalado', () => {
   it('essencial sempre presente', () => {
     const c = conteudoInstalado([])
     expect(c.pacotes).toHaveLength(1)
     expect(c.cenas.map(x => x.nome)).toContain('Noite')
   })
-  it('instala, não duplica e desinstala', () => {
-    let l = instalar([], 'inferno')
-    l = instalar(l, 'inferno')
-    expect(l).toEqual(['inferno'])
-    expect(conteudoInstalado(l).cenas.find(c => c.id === 'arena-de-fogo').pacote).toBe('Inferno')
-    expect(desinstalar(l, 'inferno')).toEqual([])
-  })
-  it('ignora id desconhecido e pacote inválido', () => {
-    expect(instalar([], 'nao-existe')).toEqual([])
-    expect(instalar([], { formato: 'x' })).toEqual([])
+  it('catálogo instalado entra com o nome do pacote', () => {
+    expect(conteudoInstalado(['inferno']).cenas.find(c => c.id === 'arena-de-fogo').pacote).toBe('Inferno')
   })
   it('importado entra normalizado; id repetido fica o primeiro', () => {
-    const l = instalar(['inferno'], bom())
+    const l = ['inferno', bom()]
     expect(l).toHaveLength(2)
     const c = conteudoInstalado([...l, { ...bom(), id: 'outro' }])
     expect(c.cenas.filter(x => x.id === 'c1')).toHaveLength(1)
     expect(c.cenas.find(x => x.id === 'c1').pacote).toBe('Meu')
-  })
-  it('respeita o limite de pacotes', () => {
-    let l = []
-    for (let i = 0; i < LIMITES.pacotes + 2; i++) l = instalar(l, { ...bom(), id: `p${i}` })
-    expect(l).toHaveLength(LIMITES.pacotes)
   })
 })

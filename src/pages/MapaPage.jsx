@@ -696,7 +696,7 @@ export default function MapaPage() {
           </aside>
         )}
       </div>
-      <ModalExtensoes aberto={extAberto} onFechar={() => setExtAberto(false)} extensoes={ext.extensoes} onSalvar={ext.salvar} />
+      <ModalExtensoes aberto={extAberto} onFechar={() => setExtAberto(false)} extensoes={ext.extensoes} onInstalar={ext.instalar} onRemover={ext.remover} />
     </div>
   )
 }

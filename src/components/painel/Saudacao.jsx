@@ -2,12 +2,8 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { usePerfil } from '../../hooks/usePerfil'
 import Icone from '../ui/Icone'
+import { rotuloDe } from '../../lib/recentes'
 
-const rotuloDe = (v, mesa, ficha) => ({
-  ficha: `Ficha de ${ficha?.nome_personagem || 'Ficha'}`,
-  sessao: `Sessão em ${mesa.nome}`,
-  mapa: `Mapa de ${mesa.nome}`,
-}[v.tipo] || mesa.nome)
 
 /** F55 — "Olá, {nome}", data, contagens e o botão de continuar do último recente. */
 export default function Saudacao({ mesas, personagens, recentes }) {

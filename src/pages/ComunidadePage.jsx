@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { souConvidado } from '../lib/convite'
 import MesasAbertas from '../components/comunidade/MesasAbertas'
@@ -98,20 +98,20 @@ function resumoDoArquivo(json) {
 }
 
 /** Publicar: tipo, arquivo exportado (ou imagem da arte), título, descrição e etiquetas. */
-function Publicar({ onPublicar, onFechar, meuId }) {
+function Publicar({ onPublicar, onFechar, meuId, inicial }) {
   const inputRef = useRef(null)
   const imagemRef = useRef(null)
-  const [tipo, setTipo] = useState('criatura')
-  const [titulo, setTitulo] = useState('')
-  const [descricao, setDescricao] = useState('')
+  const [tipo, setTipo] = useState(inicial?.tipo || 'criatura')
+  const [titulo, setTitulo] = useState(inicial?.titulo || '')
+  const [descricao, setDescricao] = useState(inicial?.descricao || '')
   const [etiquetas, setEtiquetas] = useState('')
   const [creditos, setCreditos] = useState('')
   const [imagem, setImagem] = useState('')
   const [enviandoImagem, setEnviandoImagem] = useState(false)
-  const [conteudo, setConteudo] = useState(null)
+  const [conteudo, setConteudo] = useState(inicial?.conteudo || null)
   const [nomeArquivo, setNomeArquivo] = useState('')
   const [ocupado, setOcupado] = useState(false)
-  const [erro, setErro] = useState('')
+  const [erro, setErro] = useState(inicial?.erro || '')
 
   async function escolher(e) {
     const file = e.target.files?.[0]
@@ -369,6 +369,7 @@ function Cartao({ p, logado, curtida, onCurtir, onObter, onDenunciar, onApagar, 
 export default function ComunidadePage() {
   const { session } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const toast = useToast()
   const { confirmar, perguntar } = useConfirmar()
   const logado = !!session
@@ -380,7 +381,18 @@ export default function ComunidadePage() {
   const [etiqueta, setEtiqueta] = useState(null)
   const [busca, setBusca] = useState('')
   const [ordem, setOrdem] = useState('recentes')
-  const [publicando, setPublicando] = useState(false)
+  // F62.B — vem do modal de extensões do mapa; o state da rota é dado não confiável
+  const [inicial, setInicial] = useState(() => {
+    const pub = location.state?.publicar
+    if (pub?.tipo !== 'extensao') return null
+    const v = validarPacote(pub.conteudo)
+    return v.ok
+      ? { tipo: 'extensao', conteudo: v.pacote, titulo: v.pacote.nome, descricao: v.pacote.descricao, erro: v.erros.join(' ') }
+      : { tipo: 'extensao', erro: v.erros.join(' ') }
+  })
+  const [publicando, setPublicando] = useState(!!inicial)
+  // limpa o state da rota (replace) para não reabrir ao recarregar; depois de limpo, a condição fecha e não repete
+  useEffect(() => { if (location.state?.publicar) navigate(location.pathname, { replace: true, state: null }) }, [location.state, location.pathname, navigate])
   const [levando, setLevando] = useState(null) // publicação a levar para uma mesa
 
   // Sem login: a vitrine vem da função pública (anônimo não lê a tabela)
@@ -557,8 +569,8 @@ export default function ComunidadePage() {
 
       {publicando && (
         <Publicar
-          meuId={meuId} onPublicar={publicar}
-          onFechar={publicou => { setPublicando(false); if (publicou) toast.ok('Publicado na comunidade') }}
+          meuId={meuId} onPublicar={publicar} inicial={inicial}
+          onFechar={publicou => { setPublicando(false); setInicial(null); if (publicou) toast.ok('Publicado na comunidade') }}
         />
       )}
       {levando && (

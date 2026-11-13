@@ -1,6 +1,6 @@
 // F57–F60 — aceitação "Arena de fogo": só módulos puros, do pacote à luz e ao efeito de ação.
 import { describe, it, expect } from 'vitest'
-import { conteudoInstalado, instalar, validarPacote } from './extensoes'
+import { conteudoInstalado, validarPacote } from './extensoes'
 import { aplicarCena, colocarNoMapa, normalizarAtmosfera, volumesDaAtmosfera, adicionarFonte, ehLocal } from './atmosfera'
 import { fontesDeLuz } from './luzMapa'
 import { resolverVfx } from './vfx'
@@ -9,7 +9,7 @@ import { LIMITES } from './efeitosVocabulario'
 const grade = { tamanho: 70, unidade: 1.5 }
 
 describe('Arena de fogo (F57–F60)', () => {
-  const extensoes = instalar([], 'inferno')
+  const extensoes = ['inferno'] // desde a F62 quem monta a lista é o servidor (RPC instalar_extensao)
   const { cenas, efeitos } = conteudoInstalado(extensoes)
   const arena = cenas.find(c => c.nome === 'Arena de fogo')
 

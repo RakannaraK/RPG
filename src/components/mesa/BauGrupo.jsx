@@ -3,9 +3,10 @@ import { useBau } from '../../hooks/useBau'
 import { fichasQueUso, validarItemBau } from '../../lib/bau'
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
+import Icone from '../ui/Icone'
+import CabecalhoSecao from '../ui/CabecalhoSecao'
+import EstadoVazio from '../ui/EstadoVazio'
 import { useConfirmar } from '../ui/Confirmar'
-
-const CAMPO = 'px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 
 /**
  * Fase 49 — baú do grupo: o que ninguém está carregando. Jogador guarda pela
@@ -36,20 +37,20 @@ export default function BauGrupo({ mesaId, meuId, isGestor, podeEscrever, fichas
   }
 
   return (
-    <section className="rounded-xl border border-border bg-raised p-5 space-y-3" aria-labelledby="titulo-bau">
-      <div className="flex flex-wrap items-center gap-3">
-        <Ilustra nome="bau" tamanho={28} className="shrink-0" />
-        <div className="flex-1 min-w-[12rem]">
-          <h2 id="titulo-bau" className="text-ink font-semibold">Baú do grupo</h2>
-          <p className="text-ink-dim text-xs">O que ninguém está carregando. Guarde pelo inventário da ficha e pegue daqui.</p>
-        </div>
-        {isGestor && !novo && <Botao variante="secundario" tamanho="sm" onClick={() => setNovo({ nome: '', descricao: '' })}>+ Pôr no baú</Botao>}
+    <section className="rounded-xl border border-border bg-raised p-4 space-y-3" aria-labelledby="titulo-bau">
+      <div className="flex items-start gap-3">
+        <Ilustra nome="bau" tamanho={28} className="shrink-0 mt-0.5" />
+        <CabecalhoSecao
+          className="flex-1 min-w-0" nivel={3} titulo={<span id="titulo-bau">Baú do grupo</span>}
+          descricao="O que ninguém está carregando. Guarde pelo inventário da ficha e pegue daqui."
+          acoes={isGestor && !novo && <Botao variante="secundario" tamanho="sm" onClick={() => setNovo({ nome: '', descricao: '' })}>+ Pôr no baú</Botao>}
+        />
       </div>
 
       {novo && (
         <form onSubmit={porSaque} className="flex flex-wrap items-center gap-2">
-          <input value={novo.nome} onChange={e => setNovo(n => ({ ...n, nome: e.target.value }))} maxLength={120} placeholder="Ex.: Poção de cura" aria-label="Nome do item" className={`${CAMPO} flex-1 min-w-[10rem]`} autoFocus />
-          <input value={novo.descricao} onChange={e => setNovo(n => ({ ...n, descricao: e.target.value }))} placeholder="Descrição (opcional)" aria-label="Descrição do item" className={`${CAMPO} flex-[2] min-w-[12rem]`} />
+          <input value={novo.nome} onChange={e => setNovo(n => ({ ...n, nome: e.target.value }))} maxLength={120} placeholder="Ex.: Poção de cura" aria-label="Nome do item" className="campo flex-1 min-w-[10rem]" autoFocus />
+          <input value={novo.descricao} onChange={e => setNovo(n => ({ ...n, descricao: e.target.value }))} placeholder="Descrição (opcional)" aria-label="Descrição do item" className="campo flex-[2] min-w-[12rem]" />
           <Botao type="submit" variante="primario" tamanho="sm" disabled={ocupado === 'saque'}>Pôr</Botao>
           <Botao variante="fantasma" tamanho="sm" onClick={() => setNovo(null)}>Cancelar</Botao>
         </form>
@@ -57,14 +58,14 @@ export default function BauGrupo({ mesaId, meuId, isGestor, podeEscrever, fichas
 
       {podeEscrever && minhas.length > 1 && bau.itens.length > 0 && (
         <label className="flex items-center gap-2 text-xs text-ink-dim">Pegar para
-          <select value={fichaAlvo} onChange={e => setDestino(e.target.value)} className={`${CAMPO} py-1.5`}>
+          <select value={fichaAlvo} onChange={e => setDestino(e.target.value)} className={"campo"}>
             {minhas.map(f => <option key={f.id} value={f.id}>{f.nome_personagem}</option>)}
           </select>
         </label>
       )}
 
       {bau.itens.length === 0 ? (
-        <p className="text-ink-dim text-sm italic">O baú está vazio.</p>
+        <EstadoVazio compacto arte="bau" titulo="O baú está vazio." />
       ) : (
         <ul className="divide-y divide-border/60">
           {bau.itens.map(item => (
@@ -81,10 +82,10 @@ export default function BauGrupo({ mesaId, meuId, isGestor, podeEscrever, fichas
               )}
               {isGestor && (
                 <button
-                  type="button" aria-label={`Tirar "${item.nome}" do baú`} title="Tirar do baú"
+                  type="button" aria-label={`Tirar "${item.nome}" do baú`} data-dica="Tirar do baú"
                   onClick={async () => (await confirmar({ titulo: 'Tirar do baú?', mensagem: `${item.nome} deixa de existir.`, confirmar: 'Tirar', perigo: true })) && acao(`t${item.id}`, () => bau.tirar(item.id))}
-                  className="min-w-[28px] min-h-[28px] rounded-lg text-ink-dim hover:text-ink hover:bg-slate-700 inline-flex items-center justify-center"
-                ><Ilustra nome="lixeira" tamanho={14} /></button>
+                  className="botao-icone hover:!text-harm"
+                ><Icone nome="lixeira" tamanho={18} /></button>
               )}
             </li>
           ))}

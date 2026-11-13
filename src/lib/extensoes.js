@@ -73,8 +73,6 @@ export function validarPacote(json) {
   }
 }
 
-const idDe = x => (typeof x === 'string' ? x : x?.id)
-
 /** Essencial + catálogo instalado + importados válidos. Id repetido: fica o primeiro. */
 export function conteudoInstalado(extensoes) {
   const pacotes = [PACOTE_ESSENCIAL]
@@ -90,24 +88,5 @@ export function conteudoInstalado(extensoes) {
   }
   return { pacotes, cenas, efeitos }
 }
-
-/** id do catálogo (texto) ou pacote importado (objeto, validado aqui). Devolve a lista nova. */
-export function instalar(extensoes, idOuPacote) {
-  const atual = lista(extensoes)
-  let item = idOuPacote
-  if (typeof item === 'string') {
-    if (!CATALOGO.some(c => c.id === item)) return atual
-  } else {
-    const v = validarPacote(item)
-    if (!v.ok) return atual
-    item = v.pacote
-  }
-  const id = idDe(item)
-  if (id === PACOTE_ESSENCIAL.id) return atual
-  const resto = atual.filter(x => idDe(x) !== id)
-  return resto.length >= LIMITES.pacotes ? atual : [...resto, item]
-}
-
-export const desinstalar = (extensoes, id) => lista(extensoes).filter(x => idDe(x) !== id)
 
 export const exportarPacote = pacote => JSON.stringify(pacote, null, 2)
