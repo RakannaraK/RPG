@@ -6,15 +6,15 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
 ## Estado
 
 - Site de fichas de RPG + mesa virtual. React + Vite, JavaScript puro (sem TypeScript), Tailwind v3, Supabase (Postgres, RLS, Realtime, Storage), three + cannon-es (dados 3D), Vitest.
-- Publicado: GitHub `RakannaraK/RPG`, deploy no Render a partir do `main`. Último commit no ar: `cf94ddf` (F60). CI verde.
-- Números da última conferência: 1053 testes passando, lint 0 erros (108 avisos antigos), build ok.
-- Todos os SQLs de `sql/` até `fase61_extensao_na_comunidade.sql` já foram rodados no Supabase.
+- Publicado: GitHub `RakannaraK/RPG`, deploy no Render a partir do `main`. Último commit de fase no ar: `dc1eecb` (F62), enviado em 2026-11-13.
+- Números da última conferência: 1058 testes passando, lint 0 erros (108 avisos antigos), build ok.
+- Todos os SQLs de `sql/` até `fase62_extensoes_no_servidor.sql` já foram rodados no Supabase.
 - Fases recentes (spec de cada uma em `docs/`, com seção "Como ficou"):
   - F52 redesign completo (componentes em `src/components/ui/`).
   - F53 combate em área · F54 árvore de habilidades com pontos · F55 painel "Continuar" · F56 tema padrão "Tinta e Brasa".
   - F57 atmosfera do mapa (11 efeitos + som ambiente) · F58 luz e aura · F59 efeitos de ação (projétil, explosão…) · F60 extensões da mesa e imagens animadas. Tudo em `docs/FASE57_EFEITOS_DO_MAPA.md`.
   - F61 acabamento dos efeitos: editor de habilidade lista efeitos das extensões instaladas, alças para arrastar efeito e luz no mapa, extensão publicável na Comunidade. Em `docs/FASE61_ACABAMENTO_DOS_EFEITOS.md`.
-- F61 commitada (`d6b2d92`) mas ainda sem push: o site no ar segue na F60.
+  - F62 sobras: extensão instalada/removida por RPC no servidor, publicar extensão direto do modal, Escudo e Baú no padrão do redesign, busca global (Ctrl+K). Em `docs/FASE62_SOBRAS.md`.
 - Não há fase planejada em aberto: tudo que estava nos roteiros (spec original, paridade com o LICH, concorrência 2026-09, redesign, efeitos do mapa) foi feito. O que resta está em Pendências.
 
 ## Decisões (não reabrir sem pedido do usuário)
@@ -47,7 +47,8 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
   - `atmosfera.js` efeitos de cena · `luzMapa.js` luz e aura · `vfx.js` efeitos de ação · `extensoes.js` + `extensoes/catalogo.js` pacotes · `imageUtils.js` upload (animada passa sem recompressão até 3 MB).
 - Hooks centrais: `useSessaoFichas` (painel ao vivo), `useEncontro` (combate), `useRolagem`, `useMapas`, `useTokensMapa`, `useVfxMapa` (+ `enviarVfx` para página sem mapa), `useExtensoesMesa`.
 - Mapa: `components/mapa/MapaVisor.jsx` (um SVG; `camadas(ctx)` dentro, `sobreposicao(ctx)` por cima), `CapturaMapa` (gestos), `CamadaTokens`, `Nevoa`, `CamadaLuz`, `CamadaAtmosfera`, `CamadaVfx`, `CamadaArea`, `AlcasAtmosfera` (arrastar efeito e luz), `PainelAtmosfera`, `ModalExtensoes`, `BarraVfx`.
-- Comunidade: `lib/comunidade.js` (`TIPOS_PUBLICACAO`, `validarPublicacao`), `pages/ComunidadePage.jsx`; extensão vai para a mesa por `instalarNaMesa` (em `hooks/useExtensoesMesa.js`).
+- Comunidade: `lib/comunidade.js` (`TIPOS_PUBLICACAO`, `validarPublicacao`), `pages/ComunidadePage.jsx`; extensão vai para a mesa por `instalarNaMesa` (em `hooks/useExtensoesMesa.js`). Instalar e remover extensão é sempre pelas RPCs `instalar_extensao` / `remover_extensao` (travam a linha da mesa); `definir_extensoes` ficou no banco sem uso.
+- Busca global: `lib/paleta.js` (itens, filtro, `abrirBusca`) e `components/ui/PaletaComandos.jsx`, montado uma vez no `App.jsx`. Rótulo dos recentes: `rotuloDe` em `lib/recentes.js`.
 - Combate: `components/sessao/CombatePanel.jsx`, `AcoesCombate.jsx`, `ModalAplicarResultado.jsx`.
 - Editor de sistema: `components/sistema/` (`RacasClassesEditor.jsx` tem o formulário de efeitos e o "Efeito visual no mapa").
 - Som: `src/lib/diceSounds.js` (`getAudioContext` compartilhado), `src/audio/actionSynth.js` (13 presets), `src/audio/somAmbiente.js` (7 laços).
@@ -69,8 +70,8 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
 2. Usuário: teste clicado do combate em área (F53) com login real.
 3. Usuário: ligar "Allow anonymous sign-ins" no Supabase (convidado da F47).
 4. Painéis do Render/Supabase: CSP, e-mail e captcha (sobras da auditoria de 2026-09).
-5. Usuário: testar a F61 com login real — escolher efeito de extensão numa habilidade (Sistema → habilidade → "Efeito visual no mapa"), arrastar alça no mapa, publicar e levar uma extensão pela Comunidade.
-6. Ideias ainda não pedidas (só fazer com ok): RPC que acrescenta extensão no servidor (hoje `instalarNaMesa` lê-altera-grava e pode perder instalação simultânea); publicar direto do modal com o pacote preenchido; sobras do redesign (layout interno do Escudo e do Baú, busca global Ctrl+K).
+5. Usuário: testar a F61 com login real — escolher efeito de extensão numa habilidade (Sistema → habilidade → "Efeito visual no mapa"), arrastar alça no mapa, publicar e levar uma extensão pela Comunidade. E a F62: Ctrl+K, aba Escudo, Baú, instalar/remover extensão e "Publicar na Comunidade" no modal.
+6. Ideias ainda não pedidas (só fazer com ok): busca global procurar dentro do conteúdo das mesas (verbetes, itens, fichas); refazer os componentes embutidos no Escudo (relógios, rolador, overlay).
 7. Registrado como NÃO fazer (só reabrir se o usuário pedir): paredes e linha de visão, voz/vídeo, IA, mesa paga/marketplace, cutscenes, multi-idioma.
 
 ## Armadilhas
@@ -87,4 +88,7 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
 - Agente que morre por limite de uso não grava nada: retomar pelo id com SendMessage, não recriar.
 - Rótulo de filtro da Comunidade era `nome + "s"` e gerou "Extensãos": tipo com plural irregular leva plural explícito.
 - Tela alterada depois da verificação no navegador precisa ser reconferida (a F61 mudou o formulário de publicar após a revisão).
+- Ao apagar função de uma lib, procurar o uso também nos testes de aceitação (`src/lib/fase*.acceptance.test.js`): a F62 quebrou o da F57.
+- Prop criada num componente e não repassada por quem o monta passa em lint e testes; só a tela mostra (formulário de publicar da F62).
+- `EstadoVazio` é alto (arte + respiro): dentro de cartão pequeno, usar uma linha de texto.
 - Efeito de partícula com borda dura parece confete: fogo e neblina usam gradiente radial macio (`CamadaAtmosfera`).
