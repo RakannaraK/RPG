@@ -8,7 +8,7 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
 - Site de fichas de RPG + mesa virtual. React + Vite, JavaScript puro (sem TypeScript), Tailwind v3, Supabase (Postgres, RLS, Realtime, Storage), three + cannon-es (dados 3D), Vitest.
 - Publicado: GitHub `RakannaraK/RPG`, deploy no Render a partir do `main`. Último commit de fase no ar: `fd7c86f` (F67), enviado em 2026-11-19.
 - Números da última conferência: 1124 testes passando, lint 0 erros (108 avisos antigos), build ok.
-- Todos os SQLs de `sql/` até `fase67_busca_no_conteudo.sql` já foram rodados no Supabase.
+- Todos os SQLs de `sql/` até `fase68_responsavel_no_combate.sql` já foram rodados no Supabase.
 - Fases recentes (spec de cada uma em `docs/`, com seção "Como ficou"):
   - F52 redesign completo (componentes em `src/components/ui/`).
   - F53 combate em área · F54 árvore de habilidades com pontos · F55 painel "Continuar" · F56 tema padrão "Tinta e Brasa".
@@ -21,6 +21,7 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
   - F65 chamada de voz e vídeo (`docs/FASE65_VOZ_E_VIDEO.md`). Só o dono confere a autorização do canal privado e a chamada em redes diferentes (login real, duas pessoas).
   - F66 multi-idioma, o site inteiro em pt, en e es (`docs/FASE66_MULTI_IDIOMA.md`). 3456 textos, todos traduzidos, e o teste de cobertura exige tradução completa. Texto novo de interface entra em `t()` com tradução em `src/i18n/{en,es}/<area>.js`; `npm run i18n -- --faltando --sem-gravar` mostra o que falta.
 - F67 PUBLICADA (2026-11-19, `fd7c86f`, `docs/FASE67_BUSCA_ESCUDO_TURN.md`): busca do Ctrl+K dentro das mesas (fichas, itens, baú, verbetes; SQL `fase67_busca_no_conteudo.sql` rodado e testado por papel), Relógios e Overlay do Escudo no padrão, e TURN da Cloudflare por Edge Function (`supabase/functions/turn-credenciais/index.js`, que o dono publica pelo painel).
+- F68 (2026-11-19): o responsável por uma criatura privada no combate (F53) lê os itens e os atributos dela enquanto o combate está ativo (`sql/fase68_responsavel_no_combate.sql`, rodado e testado). Detalhes no fim de `docs/FASE67_BUSCA_ESCUDO_TURN.md`.
   - O limite de uso de 5 horas do plano interrompe os executores. Rodar 2 ou 3 de cada vez e retomar pelo id com SendMessage.
 
 ## Decisões (não reabrir sem pedido do usuário)
@@ -80,10 +81,12 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
 4. Painéis do Render/Supabase: CSP, e-mail e captcha (sobras da auditoria de 2026-09).
 5. Usuário: testar a F61 com login real — escolher efeito de extensão numa habilidade (Sistema → habilidade → "Efeito visual no mapa"), arrastar alça no mapa, publicar e levar uma extensão pela Comunidade. E a F62: Ctrl+K, aba Escudo, Baú, instalar/remover extensão e "Publicar na Comunidade" no modal.
 6. Usuário: testar F63–F66 com login real — chamada entre duas pessoas em redes diferentes (sem TURN), não membro barrado no canal da chamada, cinemática chegando ao vivo ao jogador, site em inglês e espanhol com dados reais.
-7. Usuário: publicar o TURN (passos em `docs/FASE67_BUSCA_ESCUDO_TURN.md`, seção "O que o dono faz") e testar a chamada pelo 4G. DECIDIR: 12 tabelas filhas da ficha deixam membro ler o conteúdo de ficha privada pela API (lista e correção na F67, "Achado fora da fase").
+7. Usuário: publicar o TURN (passos em `docs/FASE67_BUSCA_ESCUDO_TURN.md`, seção "O que o dono faz") e testar a chamada pelo 4G.
 8. Registrado como NÃO fazer (só reabrir se o usuário pedir): mesa paga/marketplace. IA: adiada pelo dono em 2026-11-13 (cobra por uso e precisa de chave de API que só ele cria).
 
 ## Armadilhas
+
+- RLS: subconsulta numa política (`ficha_id IN (SELECT id FROM fichas …)`) também passa pela RLS de `fichas`. Não concluir "vaza" só lendo o texto da política: testar antes e depois em transação desfeita. Em teste, VIEW temporária precisa de `WITH (security_invoker = true)`, senão ignora a RLS.
 
 - i18n: ao renomear uma variável local `t` (para não esconder o `t()` importado), trocar TODAS as referências. `t.x` no `t` importado não dá erro de lint e quebrou a luz dos tokens em `luzMapa.js`.
 

@@ -91,7 +91,6 @@ Decisão: Cloudflare Realtime TURN.
 
 ## Fora desta fase
 
-- A regra antiga "membros veem itens" (em `itens_ficha`) deixa qualquer membro ler os itens de fichas privadas pela API. A busca não expõe esses itens, porque junta com `fichas`. A política é corrigida à parte, com o ok do dono.
 - Índice para a busca: só se ela ficar lenta.
 
 ## Como ficou
@@ -128,20 +127,8 @@ Decisão: Cloudflare Realtime TURN.
   - Chamada: com a função respondendo, a conexão usa a lista do TURN; com 404, usa só o STUN e entra sem erro.
 - Não conferido: a função publicada de verdade, chamando a Cloudflare, e a chamada pelo 4G. Os dois dependem do dono.
 
-### Achado fora da fase (decisão do dono)
+### Conferido depois: não há vazamento nas tabelas filhas da ficha
 
-Em 12 tabelas filhas da ficha, a regra de leitura "membros veem …" não olha `privada`. Pela API, qualquer membro da mesa lê o conteúdo de fichas privadas e de criaturas privadas do mestre. As tabelas são:
-- `itens_ficha`;
-- `valores_atributos`;
-- `valores_combate`;
-- `pericias_ficha`;
-- `habilidades_ficha`;
-- `linhas_ficha`;
-- `estados_ficha`;
-- `condicoes_manuais_ficha`;
-- `trilhas_ficha`;
-- `imagens_ficha`;
-- `descansos_log`;
-- `xp_log`.
+A suspeita registrada aqui antes estava errada. As regras "membros veem …" das 12 tabelas filhas (itens, valores, perícias, habilidades…) consultam `fichas` por dentro, e essa consulta já passa pela regra de leitura de `fichas`. Por isso o conteúdo de ficha privada já fica escondido de quem não pode ver a ficha. Foi conferido em transação desfeita: o jogador não lê os itens de uma criatura privada do mestre, e lê os da ficha pública, os da ficha em que é leitor e os da própria.
 
-A tela não mostra esses dados, e a busca também não. A correção é trocar a condição por `ficha_id IN (SELECT id FROM fichas)`, que segue a regra da ficha. Só que pode esconder do jogador algo que hoje ele vê, como a vida de uma criatura privada no mapa ou no combate.
+O mesmo teste mostrou que o jogador que é "responsável" por uma criatura privada num combate (F53) também não lê os itens e atributos dela. O dono pediu para liberar, e isso foi feito na F68 (`sql/fase68_responsavel_no_combate.sql`, já rodado). O responsável lê só os itens e os atributos da criatura, e só enquanto o combate estiver ativo e ele não estiver na reserva. A ficha em si e o resto do conteúdo continuam escondidos. Conferido em transação desfeita, inclusive que nada mudou para o jogador comum.
