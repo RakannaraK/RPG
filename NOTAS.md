@@ -6,8 +6,8 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
 ## Estado
 
 - Site de fichas de RPG + mesa virtual. React + Vite, JavaScript puro (sem TypeScript), Tailwind v3, Supabase (Postgres, RLS, Realtime, Storage), three + cannon-es (dados 3D), Vitest.
-- Publicado: GitHub `RakannaraK/RPG`, deploy no Render a partir do `main`. Último commit de fase no ar: `9d20e2e` (F63–F66), enviado em 2026-11-19.
-- Números da última conferência: 1117 testes passando, lint 0 erros (108 avisos antigos), build ok.
+- Publicado: GitHub `RakannaraK/RPG`, deploy no Render a partir do `main`. Último commit de fase no ar: `fd7c86f` (F67), enviado em 2026-11-19.
+- Números da última conferência: 1124 testes passando, lint 0 erros (108 avisos antigos), build ok.
 - Todos os SQLs de `sql/` até `fase67_busca_no_conteudo.sql` já foram rodados no Supabase.
 - Fases recentes (spec de cada uma em `docs/`, com seção "Como ficou"):
   - F52 redesign completo (componentes em `src/components/ui/`).
@@ -20,7 +20,7 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
   - F64 cinemáticas (`docs/FASE64_CINEMATICAS.md`).
   - F65 chamada de voz e vídeo (`docs/FASE65_VOZ_E_VIDEO.md`). Só o dono confere a autorização do canal privado e a chamada em redes diferentes (login real, duas pessoas).
   - F66 multi-idioma, o site inteiro em pt, en e es (`docs/FASE66_MULTI_IDIOMA.md`). 3456 textos, todos traduzidos, e o teste de cobertura exige tradução completa. Texto novo de interface entra em `t()` com tradução em `src/i18n/{en,es}/<area>.js`; `npm run i18n -- --faltando --sem-gravar` mostra o que falta.
-- F67 PRONTA E SEM COMMIT (2026-11-19, `docs/FASE67_BUSCA_ESCUDO_TURN.md`): busca do Ctrl+K dentro das mesas (fichas, itens, baú, verbetes; SQL `fase67_busca_no_conteudo.sql` rodado e testado por papel), Relógios e Overlay do Escudo no padrão, e TURN da Cloudflare por Edge Function (`supabase/functions/turn-credenciais/index.js`, que o dono publica pelo painel).
+- F67 PUBLICADA (2026-11-19, `fd7c86f`, `docs/FASE67_BUSCA_ESCUDO_TURN.md`): busca do Ctrl+K dentro das mesas (fichas, itens, baú, verbetes; SQL `fase67_busca_no_conteudo.sql` rodado e testado por papel), Relógios e Overlay do Escudo no padrão, e TURN da Cloudflare por Edge Function (`supabase/functions/turn-credenciais/index.js`, que o dono publica pelo painel).
   - O limite de uso de 5 horas do plano interrompe os executores. Rodar 2 ou 3 de cada vez e retomar pelo id com SendMessage.
 
 ## Decisões (não reabrir sem pedido do usuário)
