@@ -1,21 +1,26 @@
 # NOTAS — Dado & Pena
 
 Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite: ~150 linhas (condensar, não acumular).
-Última atualização: 2026-11-13.
+Última atualização: 2026-11-19.
 
 ## Estado
 
 - Site de fichas de RPG + mesa virtual. React + Vite, JavaScript puro (sem TypeScript), Tailwind v3, Supabase (Postgres, RLS, Realtime, Storage), three + cannon-es (dados 3D), Vitest.
 - Publicado: GitHub `RakannaraK/RPG`, deploy no Render a partir do `main`. Último commit de fase no ar: `dc1eecb` (F62), enviado em 2026-11-13.
-- Números da última conferência: 1058 testes passando, lint 0 erros (108 avisos antigos), build ok.
-- Todos os SQLs de `sql/` até `fase62_extensoes_no_servidor.sql` já foram rodados no Supabase.
+- Números da última conferência: 1117 testes passando, lint 0 erros (108 avisos antigos), build ok.
+- Todos os SQLs de `sql/` até `fase65_chamada.sql` já foram rodados no Supabase.
 - Fases recentes (spec de cada uma em `docs/`, com seção "Como ficou"):
   - F52 redesign completo (componentes em `src/components/ui/`).
   - F53 combate em área · F54 árvore de habilidades com pontos · F55 painel "Continuar" · F56 tema padrão "Tinta e Brasa".
   - F57 atmosfera do mapa (11 efeitos + som ambiente) · F58 luz e aura · F59 efeitos de ação (projétil, explosão…) · F60 extensões da mesa e imagens animadas. Tudo em `docs/FASE57_EFEITOS_DO_MAPA.md`.
   - F61 acabamento dos efeitos: editor de habilidade lista efeitos das extensões instaladas, alças para arrastar efeito e luz no mapa, extensão publicável na Comunidade. Em `docs/FASE61_ACABAMENTO_DOS_EFEITOS.md`.
   - F62 sobras: extensão instalada/removida por RPC no servidor, publicar extensão direto do modal, Escudo e Baú no padrão do redesign, busca global (Ctrl+K). Em `docs/FASE62_SOBRAS.md`.
-- Não há fase planejada em aberto: tudo que estava nos roteiros (spec original, paridade com o LICH, concorrência 2026-09, redesign, efeitos do mapa) foi feito. O que resta está em Pendências.
+- PRONTAS E SEM COMMIT (2026-11-19). O dono reabriu em 2026-11-13 quatro itens que eram "não fazer". Os SQLs `fase63`, `fase64` e `fase65` já foram rodados e testados por papel.
+  - F63 paredes e linha de visão (`docs/FASE63_PAREDES_E_VISAO.md`).
+  - F64 cinemáticas (`docs/FASE64_CINEMATICAS.md`).
+  - F65 chamada de voz e vídeo (`docs/FASE65_VOZ_E_VIDEO.md`). Só o dono confere a autorização do canal privado e a chamada em redes diferentes (login real, duas pessoas).
+  - F66 multi-idioma, o site inteiro em pt, en e es (`docs/FASE66_MULTI_IDIOMA.md`). 3456 textos, todos traduzidos, e o teste de cobertura exige tradução completa. Texto novo de interface entra em `t()` com tradução em `src/i18n/{en,es}/<area>.js`; `npm run i18n -- --faltando --sem-gravar` mostra o que falta.
+  - O limite de uso de 5 horas do plano interrompe os executores. Rodar 2 ou 3 de cada vez e retomar pelo id com SendMessage.
 
 ## Decisões (não reabrir sem pedido do usuário)
 
@@ -30,7 +35,9 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
 - Fórmulas: gramática é contrato, parser próprio, nunca `eval`. Ordem dos bônus (F18): base → somas → percentuais aditivos → multiplicar → definir.
 - Máximos de pool e slots são derivados da fórmula, nunca gravados. Nível total = soma das classes.
 - Ids de `src/lib/efeitosVocabulario.js` entram em JSON gravado: só acrescentar, nunca renomear ou remover.
-- Luz do mapa não bloqueia visão (sem paredes nem linha de visão). Máscara estática; só o brilho treme.
+- Luz do mapa: máscara estática, só o brilho treme. Desde a F63 há paredes: a luz é recortada por elas e a linha de visão do jogador é só visual (como a névoa de guerra).
+- Texto de interface: escrito em português DENTRO de `t()` (F66); o português é a chave, sem tradução cai no português, e trocar de idioma recarrega a página.
+- Chamada de voz (F65): canal PRIVADO do Realtime `chamada:<mesa>` com política em `realtime.messages`; sem TURN (só STUN público), ajustável por `VITE_ICE_SERVERS`.
 - Preferência de movimento reduzido e de partículas é respeitada em todo efeito (`usePreferencias`, `particulasLigadas`).
 - Commit e push só quando o usuário pedir.
 
@@ -72,9 +79,11 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
 4. Painéis do Render/Supabase: CSP, e-mail e captcha (sobras da auditoria de 2026-09).
 5. Usuário: testar a F61 com login real — escolher efeito de extensão numa habilidade (Sistema → habilidade → "Efeito visual no mapa"), arrastar alça no mapa, publicar e levar uma extensão pela Comunidade. E a F62: Ctrl+K, aba Escudo, Baú, instalar/remover extensão e "Publicar na Comunidade" no modal.
 6. Ideias ainda não pedidas (só fazer com ok): busca global procurar dentro do conteúdo das mesas (verbetes, itens, fichas); refazer os componentes embutidos no Escudo (relógios, rolador, overlay).
-7. Registrado como NÃO fazer (só reabrir se o usuário pedir): paredes e linha de visão, voz/vídeo, IA, mesa paga/marketplace, cutscenes, multi-idioma.
+7. Registrado como NÃO fazer (só reabrir se o usuário pedir): mesa paga/marketplace. IA: adiada pelo dono em 2026-11-13 (cobra por uso e precisa de chave de API que só ele cria).
 
 ## Armadilhas
+
+- i18n: ao renomear uma variável local `t` (para não esconder o `t()` importado), trocar TODAS as referências. `t.x` no `t` importado não dá erro de lint e quebrou a luz dos tokens em `luzMapa.js`.
 
 - Supabase pausa por inatividade: `psql` responde "tenant/user not found" e o DNS some. Solução: "Restore project" no painel.
 - Remover linha com Edit cujo trecho começa em `\n` pode grudar duas linhas (quebrou o `App.jsx`). Rodar o build depois de tirar qualquer página de teste temporária.

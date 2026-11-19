@@ -13,6 +13,8 @@
  * (null = −∞ / +∞). Redução aplicada sobre o dano já final (F18/crítico), com piso.
  */
 
+import { t } from '../i18n'
+
 const eff = (v, aberto) => (v == null || v === '') ? aberto : Number(v)
 
 /** Faixa cuja janela cobre a diferença. null se nenhuma. */
@@ -64,14 +66,14 @@ export function resolverDefesa({ ataque = 0, defesa = 0, dano = 0, faixas = [] }
  * @returns {{ danoFinal, condicao, narracao, contraAtaque } | null}
  *   condicao = null | { combatente_id, nome, descricao, duracao_rodadas }
  */
-export function planejarDefesa(dp, cfg = {}, alvoNome = 'Alvo') {
+export function planejarDefesa(dp, cfg = {}, alvoNome = t('Alvo')) {
   if (!dp) return null
   const r = dp.resposta
 
   // Sem resposta ou "não reagir" → dano cheio (fallback do mestre; nunca trava).
   if (!r || r.opcao_id === 'nao_reagir') {
     return { danoFinal: Number(dp.dano) || 0, condicao: null, contraAtaque: false,
-      narracao: `${alvoNome} não reagiu — dano cheio (${Number(dp.dano) || 0})` }
+      narracao: t('{alvo} não reagiu — dano cheio ({dano})', { alvo: alvoNome, dano: Number(dp.dano) || 0 }) }
   }
 
   const res = resolverDefesa({ ataque: dp.ataque, defesa: r.defesa_total, dano: dp.dano, faixas: cfg.faixas || [] })
@@ -84,15 +86,15 @@ export function planejarDefesa(dp, cfg = {}, alvoNome = 'Alvo') {
     const condicao = (cond?.nome && dp.atacante_combatente_id)
       ? { combatente_id: dp.atacante_combatente_id, nome: cond.nome, descricao: cond.descricao, duracao_rodadas: cond.duracao_rodadas }
       : null
-    const narracao = `${alvoNome} contra-atacou (${r.defesa_total} vs ${dp.ataque}, ${sinal})`
-      + (condicao && dp.atacante_nome ? ` — ${dp.atacante_nome} sofre ${cond.nome}` : '')
-      + ` — sofre ${danoFinal}, pode contra-atacar`
+    const narracao = t('{alvo} contra-atacou ({defesa} vs {ataque}, {sinal})', { alvo: alvoNome, defesa: r.defesa_total, ataque: dp.ataque, sinal })
+      + (condicao && dp.atacante_nome ? t(' — {atacante} sofre {condicao}', { atacante: dp.atacante_nome, condicao: cond.nome }) : '')
+      + t(' — sofre {dano}, pode contra-atacar', { dano: danoFinal })
     return { danoFinal, condicao, narracao, contraAtaque: true }
   }
 
   const danoFinal = res.danoReduzido
-  const narracao = `${alvoNome} ${r.opcao_nome} (${r.defesa_total} vs ${dp.ataque}, ${sinal})`
-    + (res.faixa ? `: −${res.reducao}% → ${danoFinal}` : `: sem redução → ${danoFinal}`)
+  const narracao = t('{alvo} {opcao} ({defesa} vs {ataque}, {sinal})', { alvo: alvoNome, opcao: r.opcao_nome, defesa: r.defesa_total, ataque: dp.ataque, sinal })
+    + (res.faixa ? t(': −{reducao}% → {dano}', { reducao: res.reducao, dano: danoFinal }) : t(': sem redução → {dano}', { dano: danoFinal }))
   return { danoFinal, condicao: null, narracao, contraAtaque: false }
 }
 
@@ -103,7 +105,7 @@ export function planejarDefesa(dp, cfg = {}, alvoNome = 'Alvo') {
  */
 export function validarFaixasDefesa(faixas) {
   const fs = faixas
-  if (!Array.isArray(fs) || fs.length === 0) return { valida: false, erro: 'Defina ao menos uma faixa.' }
+  if (!Array.isArray(fs) || fs.length === 0) return { valida: false, erro: t('Defina ao menos uma faixa.') }
 
   const ord = fs
     .map(f => ({ f, de: eff(f.de, -Infinity), ate: eff(f.ate, Infinity) }))
@@ -111,17 +113,22 @@ export function validarFaixasDefesa(faixas) {
 
   for (let k = 0; k < ord.length; k++) {
     const { f, de, ate } = ord[k]
-    const rotulo = `Faixa ${k + 1}`
-    if (!Number.isFinite(de) && de !== -Infinity) return { valida: false, erro: `${rotulo}: "de" inválido.` }
-    if (ate < de) return { valida: false, erro: `${rotulo}: "até" menor que "de".` }
-    if (f.reducao_percentual == null || f.reducao_percentual === '') return { valida: false, erro: `${rotulo}: defina a redução %.` }
-    if (de === -Infinity && k !== 0) return { valida: false, erro: 'Só a primeira faixa pode ser aberta embaixo (sem "de").' }
-    if (ate === Infinity && k !== ord.length - 1) return { valida: false, erro: 'Só a última faixa pode ser aberta em cima (sem "até").' }
+    const rotulo = t('Faixa {n}', { n: k + 1 })
+    if (!Number.isFinite(de) && de !== -Infinity) return { valida: false, erro: t('{rotulo}: "de" inválido.', { rotulo }) }
+    if (ate < de) return { valida: false, erro: t('{rotulo}: "até" menor que "de".', { rotulo }) }
+    if (f.reducao_percentual == null || f.reducao_percentual === '') return { valida: false, erro: t('{rotulo}: defina a redução %.', { rotulo }) }
+    if (de === -Infinity && k !== 0) return { valida: false, erro: t('Só a primeira faixa pode ser aberta embaixo (sem "de").') }
+    if (ate === Infinity && k !== ord.length - 1) return { valida: false, erro: t('Só a última faixa pode ser aberta em cima (sem "até").') }
     if (k > 0) {
       const prevAte = ord[k - 1].ate
-      if (de <= prevAte) return { valida: false, erro: `As faixas ${k} e ${k + 1} se sobrepõem.` }
-      if (de !== prevAte + 1) return { valida: false, erro: `Buraco entre as faixas ${k} e ${k + 1}: "de" deveria ser ${prevAte + 1}.` }
+      if (de <= prevAte) return { valida: false, erro: t('As faixas {a} e {b} se sobrepõem.', { a: k, b: k + 1 }) }
+      if (de !== prevAte + 1) return { valida: false, erro: t('Buraco entre as faixas {a} e {b}: "de" deveria ser {de}.', { a: k, b: k + 1, de: prevAte + 1 }) }
     }
   }
   return { valida: true }
+}
+
+/** O campo de combate é a defesa (CA)? Heurística pelo nome, em pt/en/es. */
+export function ehCampoDefesa(nome) {
+  return /(defes|defens|armadura|armou?r|(?<!\p{L})(ca|ac)(?!\p{L}))/iu.test(nome || '')
 }

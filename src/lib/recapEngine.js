@@ -9,6 +9,8 @@
  * (cura, subida de nível, descanso, crítico anunciado) — valem tanto quanto.
  */
 
+import { t } from '../i18n'
+
 function temDados(r) {
   return Array.isArray(r?.resultados?.dados) && r.resultados.dados.length > 0
 }
@@ -27,7 +29,7 @@ export function resumirSessao(rolagens = []) {
 
   const mapaAutores = new Map()
   for (const r of lista) {
-    const nome = r?.autor_nome || 'Alguém'
+    const nome = r?.autor_nome || t('Alguém')
     const atual = mapaAutores.get(nome) || { nome, total: 0, criticos: 0 }
     atual.total += 1
     if (r?.resultados?.critico) atual.criticos += 1

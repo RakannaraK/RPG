@@ -5,20 +5,22 @@
  * "Salvar sistema": nome/descrição, atributos, perícias e as opções do layout.
  */
 
+import { t } from '../i18n'
+
 export const SECOES_SISTEMA = [
-  { id: 'geral', rotulo: 'Geral', icone: 'ajustes', descricao: 'Nome, descrição e o arquivo do sistema (exportar).' },
-  { id: 'atributos', rotulo: 'Atributos', icone: 'dado', descricao: 'As características das fichas e como cada uma é gerada: dados, valor fixo ou pontos.' },
-  { id: 'ficha', rotulo: 'Ficha', icone: 'editar', descricao: 'O que aparece na ficha: perícias, combate, vida, como as rolagens se resolvem e a progressão.' },
-  { id: 'racas', rotulo: 'Raças e classes', icone: 'pessoas', descricao: 'Origens e classes com os bônus e as habilidades de cada uma. Salva na hora.' },
-  { id: 'descansos', rotulo: 'Descansos', icone: 'relogio', descricao: 'O que cada tipo de descanso recupera: vida, recursos e espaços.' },
-  { id: 'recursos', rotulo: 'Recursos', icone: 'raio', descricao: 'Pontos gastáveis (mana, fôlego…) e espaços de magia. As listas salvam na hora.' },
-  { id: 'poderes', rotulo: 'Poderes', icone: 'magia', descricao: 'Catálogo de poderes, magias ou técnicas, e linhas de poder. As listas salvam na hora.' },
-  { id: 'maestria', rotulo: 'Maestria e itens', icone: 'espada', descricao: 'Maestria por uso e categorias de item.' },
-  { id: 'simulador', rotulo: 'Simulador', icone: 'play', descricao: 'Teste o sistema numa ficha de mentira antes de usar com os jogadores.' },
+  { id: 'geral', rotulo: t('Geral'), icone: 'ajustes', descricao: t('Nome, descrição e o arquivo do sistema (exportar).') },
+  { id: 'atributos', rotulo: t('Atributos'), icone: 'dado', descricao: t('As características das fichas e como cada uma é gerada: dados, valor fixo ou pontos.') },
+  { id: 'ficha', rotulo: t('Ficha'), icone: 'editar', descricao: t('O que aparece na ficha: perícias, combate, vida, como as rolagens se resolvem e a progressão.') },
+  { id: 'racas', rotulo: t('Raças e classes'), icone: 'pessoas', descricao: t('Origens e classes com os bônus e as habilidades de cada uma. Salva na hora.') },
+  { id: 'descansos', rotulo: t('Descansos'), icone: 'relogio', descricao: t('O que cada tipo de descanso recupera: vida, recursos e espaços.') },
+  { id: 'recursos', rotulo: t('Recursos'), icone: 'raio', descricao: t('Pontos gastáveis (mana, fôlego…) e espaços de magia. As listas salvam na hora.') },
+  { id: 'poderes', rotulo: t('Poderes'), icone: 'magia', descricao: t('Catálogo de poderes, magias ou técnicas, e linhas de poder. As listas salvam na hora.') },
+  { id: 'maestria', rotulo: t('Maestria e itens'), icone: 'espada', descricao: t('Maestria por uso e categorias de item.') },
+  { id: 'simulador', rotulo: t('Simulador'), icone: 'play', descricao: t('Teste o sistema numa ficha de mentira antes de usar com os jogadores.') },
 ]
 
 // opções do layout que moram em seções próprias (o resto é da seção "Ficha")
-const CONFIG_DE_SECAO = { descansos: 'descansos', poderes_rotulo: 'poderes', slots: 'recursos' }
+const CONFIG_DE_SECAO = { descansos: 'descansos', poderes_rotulo: t('poderes'), slots: 'recursos' }
 
 const igual = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null)
 

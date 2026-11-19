@@ -5,6 +5,7 @@ import { configDoJogo } from '../../lib/minigames/resultado'
 import { situacaoDesafio, tituloDesafio } from '../../lib/minigames/desafios'
 import SeletorJogo from './SeletorJogo'
 import JogoMinigame from './JogoMinigame'
+import { t, tn } from '../../i18n'
 
 const BTN = 'px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
 const INP = 'w-full bg-void border border-border rounded-lg px-2.5 py-1.5 text-sm text-ink'
@@ -20,14 +21,14 @@ export default function PainelDesafios({ mesaId, meuId, isGestor, podeJogar = tr
   const [jogando, setJogando] = useState(null)
   const [erro, setErro] = useState('')
 
-  if (indisponivel) return <p className="text-ink-dim text-sm">Desafios ainda não ativados neste banco.</p>
+  if (indisponivel) return <p className="text-ink-dim text-sm">{t('Desafios ainda não ativados neste banco.')}</p>
 
   const abertos = desafios.filter(d => d.status === 'aberto')
   const encerrados = desafios.filter(d => d.status === 'encerrado').slice(0, 5)
 
   async function tentar(fn) {
     setErro('')
-    try { await fn() } catch (err) { setErro(err.message || 'Falhou.') }
+    try { await fn() } catch (err) { setErro(err.message || t('Falhou.')) }
   }
 
   return (
@@ -41,7 +42,7 @@ export default function PainelDesafios({ mesaId, meuId, isGestor, podeJogar = tr
       )}
 
       {abertos.length === 0 ? (
-        <p className="text-ink-dim text-sm">Nenhum desafio aberto.</p>
+        <p className="text-ink-dim text-sm">{t('Nenhum desafio aberto.')}</p>
       ) : (
         <ul className="space-y-3">
           {abertos.map(d => (
@@ -63,7 +64,7 @@ export default function PainelDesafios({ mesaId, meuId, isGestor, podeJogar = tr
 
       {encerrados.length > 0 && (
         <details>
-          <summary className="cursor-pointer text-ink-dim text-xs font-semibold uppercase tracking-wider">Encerrados recentes</summary>
+          <summary className="cursor-pointer text-ink-dim text-xs font-semibold uppercase tracking-wider">{t('Encerrados recentes')}</summary>
           <ul className="mt-2 space-y-1.5">
             {encerrados.map(d => {
               const s = situacaoDesafio(d, resultados, nomeDe)
@@ -72,7 +73,7 @@ export default function PainelDesafios({ mesaId, meuId, isGestor, podeJogar = tr
                   <span className="text-ink">{tituloDesafio(d)}</span>
                   {d.motivo && <span className="text-ink-dim"> · {d.motivo}</span>}
                   <span className="block text-ink-dim text-xs">
-                    {s.classificados.length ? s.classificados.map(r => `${r.posicao}º ${r.nome} ${r.pontos}`).join(' · ') : 'ninguém jogou'}
+                    {s.classificados.length ? s.classificados.map(r => `${r.posicao}º ${r.nome} ${r.pontos}`).join(' · ') : t('ninguém jogou')}
                   </span>
                 </li>
               )
@@ -88,7 +89,7 @@ export default function PainelDesafios({ mesaId, meuId, isGestor, podeJogar = tr
           dificuldade={jogando.dificuldade}
           config={jogando.config}
           semente={jogando.semente}
-          titulo={jogando.motivo || 'Desafio'}
+          titulo={jogando.motivo || t('Desafio')}
           onResultado={async resultado => {
             await registrar({ tipo: jogando.tipo, dificuldade: jogando.dificuldade, resultado, desafioId: jogando.id, sessaoId })
             marcarRespondido(jogando.id)
@@ -126,7 +127,7 @@ function NovoDesafio({ membros, meuId, onCriar }) {
       setMotivo('')
       setMeta('')
     } catch (err) {
-      setErro(err.message || 'Não foi possível lançar.')
+      setErro(err.message || t('Não foi possível lançar.'))
     } finally {
       setOcupado(false)
     }
@@ -134,9 +135,9 @@ function NovoDesafio({ membros, meuId, onCriar }) {
 
   return (
     <details className="rounded-xl border border-border bg-void">
-      <summary className="cursor-pointer px-3 py-2 text-ink text-sm font-semibold">📣 Lançar desafio</summary>
+      <summary className="cursor-pointer px-3 py-2 text-ink text-sm font-semibold">{t('📣 Lançar desafio')}</summary>
       <div className="p-3 pt-1 space-y-3">
-        <input className={INP} placeholder="Motivo (ex: quem alcança a corda primeiro?)" value={motivo} onChange={e => setMotivo(e.target.value)} />
+        <input className={INP} placeholder={t('Motivo (ex: quem alcança a corda primeiro?)')} value={motivo} onChange={e => setMotivo(e.target.value)} />
         <SeletorJogo
           tipo={tipo} onTipo={setTipo}
           dificuldade={dificuldade} onDificuldade={setDificuldade}
@@ -144,22 +145,22 @@ function NovoDesafio({ membros, meuId, onCriar }) {
           onParametro={(chave, valor) => setPersonalizada(p => ({ ...p, [tipo]: { ...(p[tipo] || {}), [chave]: valor } }))}
         />
         <fieldset>
-          <legend className="text-ink-dim text-xs mb-1">Participantes ({participantes.length})</legend>
+          <legend className="text-ink-dim text-xs mb-1">{t('Participantes ({n})', { n: participantes.length })}</legend>
           <div className="flex flex-wrap gap-1.5">
             {podemJogar.map(m => (
               <label key={m.usuario_id} className={`${BTN} cursor-pointer ${participantes.includes(m.usuario_id) ? 'bg-accent-700 text-sobre-acento' : 'bg-hover text-ink'}`}>
                 <input type="checkbox" className="sr-only" checked={participantes.includes(m.usuario_id)} onChange={() => alternar(m.usuario_id)} />
-                {m.nome}{m.usuario_id === meuId ? ' (você)' : ''}
+                {m.nome}{m.usuario_id === meuId ? ` ${t('(você)')}` : ''}
               </label>
             ))}
           </div>
         </fieldset>
         <label className="block">
-          <span className="text-ink-dim text-xs">Meta de pontos (opcional)</span>
-          <input type="number" min="0" className={INP} value={meta} onChange={e => setMeta(e.target.value)} placeholder="sem meta" />
+          <span className="text-ink-dim text-xs">{t('Meta de pontos (opcional)')}</span>
+          <input type="number" min="0" className={INP} value={meta} onChange={e => setMeta(e.target.value)} placeholder={t('sem meta')} />
         </label>
         <button onClick={lancar} disabled={ocupado || participantes.length === 0} className={`${BTN} w-full bg-accent-600 hover:bg-accent-500 text-sobre-acento font-semibold`}>
-          {ocupado ? 'Lançando…' : `Lançar para ${participantes.length} ${participantes.length === 1 ? 'pessoa' : 'pessoas'}`}
+          {ocupado ? t('Lançando…') : tn(participantes.length, 'Lançar para {n} pessoa', 'Lançar para {n} pessoas')}
         </button>
         {erro && <p className="text-harm text-sm">{erro}</p>}
       </div>
@@ -174,7 +175,7 @@ function CartaoDesafio({ desafio, situacao, nomeDe, isGestor, possoJogar, onJoga
       <div>
         <p className="text-ink font-semibold">{tituloDesafio(desafio)}</p>
         {desafio.motivo && <p className="text-ink-dim text-sm">{desafio.motivo}</p>}
-        {desafio.meta != null && <p className="text-dice-400 text-xs">Meta: {desafio.meta} pontos</p>}
+        {desafio.meta != null && <p className="text-dice-400 text-xs">{t('Meta: {n} pontos', { n: desafio.meta })}</p>}
       </div>
       <ol className="space-y-1">
         {situacao.classificados.map(r => (
@@ -189,26 +190,26 @@ function CartaoDesafio({ desafio, situacao, nomeDe, isGestor, possoJogar, onJoga
           <li key={id} className="flex items-center gap-2 text-sm text-ink-dim">
             <span className="w-7 text-right">⏳</span>
             <span className="flex-1 min-w-0 truncate">{nomeDe(id)}</span>
-            <span className="text-xs">aguardando</span>
+            <span className="text-xs">{t('aguardando')}</span>
           </li>
         ))}
       </ol>
       <div className="flex flex-wrap gap-1.5">
         {possoJogar && (
-          <button onClick={onJogar} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-sobre-acento font-semibold`}>🎮 Jogar agora</button>
+          <button onClick={onJogar} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-sobre-acento font-semibold`}>{t('🎮 Jogar agora')}</button>
         )}
         {isGestor && (
           <button onClick={() => onEncerrar(situacao)} className={`${BTN} bg-hover text-ink hover:bg-border`}>
-            {situacao.completo ? 'Encerrar e publicar' : 'Encerrar assim mesmo'}
+            {situacao.completo ? t('Encerrar e publicar') : t('Encerrar assim mesmo')}
           </button>
         )}
         {isGestor && (confirmarCancelar ? (
           <>
-            <button onClick={onCancelar} className={`${BTN} bg-red-700 hover:bg-red-600 text-white`}>Cancelar desafio</button>
-            <button onClick={() => setConfirmarCancelar(false)} className={`${BTN} bg-hover text-ink`}>Não</button>
+            <button onClick={onCancelar} className={`${BTN} bg-red-700 hover:bg-red-600 text-white`}>{t('Cancelar desafio')}</button>
+            <button onClick={() => setConfirmarCancelar(false)} className={`${BTN} bg-hover text-ink`}>{t('Não')}</button>
           </>
         ) : (
-          <button onClick={() => setConfirmarCancelar(true)} className={`${BTN} text-ink-dim hover:text-harm`} title="Apaga o desafio e as respostas">✕</button>
+          <button onClick={() => setConfirmarCancelar(true)} className={`${BTN} text-ink-dim hover:text-harm`} title={t('Apaga o desafio e as respostas')}>✕</button>
         ))}
       </div>
     </li>

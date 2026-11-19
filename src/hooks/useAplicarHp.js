@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase'
 import { calcularVida, vidaDoAlvo } from '../lib/alvosCombate'
 import { useUpdateFicha } from './useFicha'
 import { useRolagem } from './useRolagem'
+import { t } from '../i18n'
 
 /**
  * Aplica dano (delta < 0) ou cura (delta > 0) a um combatente e avisa no feed.
@@ -32,7 +33,7 @@ export function useAplicarHp({ cards = [], encontroApi, mesaId, sessaoId = null 
       }
       await registrarEvento({
         mesaId, sessaoId, fichaId: c.ficha_id || null,
-        rotulo: rotuloCustom || `${c.nome} ${delta < 0 ? `sofreu ${-delta} de dano` : `recuperou ${delta} de vida`}`,
+        rotulo: rotuloCustom || delta < 0 ? t('{nome} sofreu {n} de dano', { nome: c.nome, n: -delta }) : t('{nome} recuperou {n} de vida', { nome: c.nome, n: delta }),
         notacao: '', total: Math.abs(delta), dados: [],
       })
     } catch {
@@ -44,9 +45,9 @@ export function useAplicarHp({ cards = [], encontroApi, mesaId, sessaoId = null 
   // encontro). Diferente de aplicarHp, o erro NÃO é engolido: volta em { erro }.
   async function aplicarEmAlvos(plano, rotulo) {
     const encontroId = encontroApi?.encontro?.id
-    if (!encontroId) return { erro: 'Não há combate em andamento.' }
+    if (!encontroId) return { erro: t('Não há combate em andamento.') }
     const { error } = await supabase.rpc('aplicar_resultado_combate', { p_encontro_id: encontroId, p_alvos: plano.escritas })
-    if (error) return { erro: error.message || 'Não foi possível aplicar o resultado.' }
+    if (error) return { erro: error.message || t('Não foi possível aplicar o resultado.') }
     await registrarEvento({
       mesaId, sessaoId, rotulo: `${rotulo}: ${plano.linhas.join(' · ')}`,
       notacao: '', total: plano.total ?? 0, dados: [],

@@ -5,6 +5,7 @@ import {
   filtrarPoderes, opcoesDeFiltro, ordenarPoderes,
 } from '../../lib/poderes'
 import { atendeNivelMinimo } from '../../lib/requisitos'
+import { t } from '../../i18n'
 
 const INP = 'px-2 py-1 rounded-lg bg-void border border-border text-ink text-xs placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500'
 
@@ -24,7 +25,7 @@ function CartaPoder({
   const base = circuloBaseDoPoder(poder)
   const naoPreparado = usaPreparacao && !linha.preparado
 
-  const bloqueio = naoPreparado ? 'Poder não preparado.' : (check.ok ? null : check.motivo)
+  const bloqueio = naoPreparado ? t('Poder não preparado.') : (check.ok ? null : check.motivo)
 
   async function usar(circulo) {
     setErro('')
@@ -34,7 +35,7 @@ function CartaPoder({
       const r = await onUsar(poder, circulo)
       setResultado(r || null)
     } catch (e) {
-      setErro(e.message || 'Não foi possível usar o poder.')
+      setErro(e.message || t('Não foi possível usar o poder.'))
     } finally {
       setOcupado(false)
     }
@@ -61,7 +62,7 @@ function CartaPoder({
           <span className="text-ink text-sm font-medium">{poder.nome}</span>
           {poder.acao && <span className="text-ink-dim text-xs ml-1.5">{poder.acao}</span>}
           {cd != null && (
-            <span className="text-temp text-xs ml-1.5 font-mono" title="Classe de Dificuldade">CD {cd}</span>
+            <span className="text-temp text-xs ml-1.5 font-mono" title={t('Classe de Dificuldade')}>{t('CD {cd}', { cd })}</span>
           )}
           <span className="block text-ink-dim text-xs">
             {descreverCusto(poder.custo, estado.poolsPorId)}
@@ -80,25 +81,25 @@ function CartaPoder({
         {isDono && (
           <span className="flex items-center gap-1.5 shrink-0">
             {usaPreparacao && (
-              <label className="text-ink-dim text-xs flex items-center gap-1 cursor-pointer" title="Preparado">
+              <label className="text-ink-dim text-xs flex items-center gap-1 cursor-pointer" title={t('Preparado')}>
                 <input type="checkbox" checked={!!linha.preparado}
                   onChange={e => onPreparar(linha.id, e.target.checked).catch(x => setErro(x.message))}
                   className="accent-accent-500" />
-                prep
+                {t('prep')}
               </label>
             )}
             <button
               onClick={iniciar}
               disabled={ocupado || !!bloqueio}
-              title={bloqueio || 'Usar o poder'}
+              title={bloqueio || t('Usar o poder')}
               className="px-2.5 py-1 text-xs font-medium rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Usar
+              {t('Usar')}
             </button>
             {linha.origem === 'manual' && (
               <button onClick={() => onEsquecer(linha.id).catch(x => setErro(x.message))}
                 className="w-5 h-5 flex items-center justify-center text-ink-dim hover:text-harm transition-colors"
-                title="Esquecer poder">×</button>
+                title={t('Esquecer poder')}>×</button>
             )}
           </span>
         )}
@@ -109,16 +110,16 @@ function CartaPoder({
       {/* Escolha do círculo */}
       {escolhendo && (
         <div className="border-t border-border/60 pt-1.5 flex flex-wrap items-center gap-1.5">
-          <span className="text-ink-dim text-xs">Em qual círculo?</span>
+          <span className="text-ink-dim text-xs">{t('Em qual círculo?')}</span>
           {check.circulos.map(c => (
             <button key={c} onClick={() => usar(c)} disabled={ocupado}
               className="px-2 py-0.5 text-xs rounded-lg bg-void border border-border text-ink hover:border-dice-500 hover:text-dice-400 transition-colors disabled:opacity-50"
-              title={c > base ? `Elevado: ${montarNotacaoUso(poder, c)}` : undefined}>
+              title={c > base ? t('Elevado: {notacao}', { notacao: montarNotacaoUso(poder, c) }) : undefined}>
               {c}º{c > base && <span className="text-dice-500"> ↑</span>}
             </button>
           ))}
           <button onClick={() => setEscolhendo(false)} className="text-ink-dim hover:text-ink text-xs ml-1">
-            cancelar
+            {t('cancelar')}
           </button>
         </div>
       )}
@@ -132,7 +133,7 @@ function CartaPoder({
           {resultado.tipo === 'cura' && onCurar && (
             <button onClick={() => { onCurar(resultado.total); setResultado(null) }}
               className="px-2 py-0.5 text-xs font-medium rounded-lg bg-ok/80 hover:bg-ok text-ink transition-colors">
-              Aplicar à vida
+              {t('Aplicar à vida')}
             </button>
           )}
           <button onClick={() => setResultado(null)} className="text-ink-dim hover:text-ink text-xs ml-auto">✕</button>
@@ -164,7 +165,7 @@ function AdicionarPoder({ catalogo, jaTem, estado, classesIds, onAprender }) {
     return (
       <button onClick={() => setAberto(true)}
         className="text-xs px-3 py-1.5 rounded-lg border border-dashed border-border text-accent-300 hover:text-ink hover:border-accent-500 transition-colors">
-        + Aprender poder
+        {t('+ Aprender poder')}
       </button>
     )
   }
@@ -173,9 +174,9 @@ function AdicionarPoder({ catalogo, jaTem, estado, classesIds, onAprender }) {
     <div className="border-t border-border pt-2 space-y-1.5">
       <div className="flex gap-2 items-center">
         <input type="text" value={busca} onChange={e => setBusca(e.target.value)} autoFocus
-          placeholder="Buscar no catálogo" className={`${INP} flex-1`} />
+          placeholder={t('Buscar no catálogo')} className={`${INP} flex-1`} />
         <button onClick={() => { setAberto(false); setBusca('') }}
-          className="text-ink-dim hover:text-ink text-xs">fechar</button>
+          className="text-ink-dim hover:text-ink text-xs">{t('fechar')}</button>
       </div>
       <div className="max-h-48 overflow-y-auto space-y-1">
         {elegiveis.map(p => (
@@ -192,7 +193,7 @@ function AdicionarPoder({ catalogo, jaTem, estado, classesIds, onAprender }) {
           </button>
         ))}
         {elegiveis.length === 0 && (
-          <p className="text-ink-dim text-xs">Nenhum poder elegível — confira classe e nível mínimo.</p>
+          <p className="text-ink-dim text-xs">{t('Nenhum poder elegível — confira classe e nível mínimo.')}</p>
         )}
       </div>
       {erro && <p className="text-harm text-xs">{erro}</p>}
@@ -206,7 +207,7 @@ function AdicionarPoder({ catalogo, jaTem, estado, classesIds, onAprender }) {
  * "Usar" fica desabilitado com o motivo.
  */
 export default function PainelPoderes({
-  rotulo = 'Poderes',
+  rotulo = t('Poderes'),
   catalogo = [],
   poderesFicha = [],
   estado,             // { totaisSlots, usadosSlots, atualDoPool, poolsPorId, contexto }
@@ -244,12 +245,12 @@ export default function PainelPoderes({
         <p className="text-ink text-sm font-semibold">{rotulo}</p>
         <div className="flex items-center gap-2">
           {usaPreparacao && (
-            <span className="text-ink-dim text-xs">{preparados} preparado(s)</span>
+            <span className="text-ink-dim text-xs">{t('{n} preparado(s)', { n: preparados })}</span>
           )}
           {opcoes.circulos.length > 0 && (
             <select value={filtroCirculo} onChange={e => setFiltroCirculo(e.target.value)} className={INP}>
-              <option value="">Todo círculo</option>
-              <option value={-1}>Sem círculo</option>
+              <option value="">{t('Todo círculo')}</option>
+              <option value={-1}>{t('Sem círculo')}</option>
               {opcoes.circulos.map(c => <option key={c} value={c}>{c}º</option>)}
             </select>
           )}
@@ -258,7 +259,7 @@ export default function PainelPoderes({
 
       {usaPreparacao && isDono && (
         <p className="text-ink-dim text-xs">
-          Trocar preparados é livre aqui — a convenção de "só em descanso" fica com a mesa.
+          {t('Trocar preparados é livre aqui — a convenção de "só em descanso" fica com a mesa.')}
         </p>
       )}
 
@@ -280,7 +281,7 @@ export default function PainelPoderes({
         ))}
         {visiveis.length === 0 && (
           <p className="text-ink-dim text-xs">
-            {poderesFicha.length === 0 ? 'Nenhum poder ainda.' : 'Nenhum poder nesse círculo.'}
+            {poderesFicha.length === 0 ? t('Nenhum poder ainda.') : t('Nenhum poder nesse círculo.')}
           </p>
         )}
       </div>

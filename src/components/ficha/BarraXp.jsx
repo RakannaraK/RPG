@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { progressoXp, modoProgressao } from '../../lib/progressaoEngine'
+import { t, locale } from '../../i18n'
 
-const fmt = n => Number(n || 0).toLocaleString('pt-BR')
+const fmt = n => Number(n || 0).toLocaleString(locale())
 
 /**
  * Fase 19.3 — XP, barra de progresso e subida de nível.
@@ -38,7 +39,7 @@ export default function BarraXp({
     // Fórmula de progressão quebrada: não derruba a ficha
     return (
       <div className="bg-raised border border-harm/60 rounded-2xl p-3 text-sm text-harm">
-        ⚠ Curva de progressão inválida: {e.message}
+        {t('⚠ Curva de progressão inválida: {erro}', { erro: e.message })}
       </div>
     )
   }
@@ -54,7 +55,7 @@ export default function BarraXp({
       await onAddXp(n)
       setDelta('')
     } catch (e) {
-      setErro(e.message || 'Não foi possível alterar o XP.')
+      setErro(e.message || t('Não foi possível alterar o XP.'))
     } finally {
       setOcupado(false)
     }
@@ -69,7 +70,7 @@ export default function BarraXp({
       setSubiuPara(novo ?? null)
       setTimeout(() => setSubiuPara(null), 4000)
     } catch (e) {
-      setErro(e.message || 'Não foi possível subir de nível.')
+      setErro(e.message || t('Não foi possível subir de nível.'))
     } finally {
       setOcupado(false)
     }
@@ -85,20 +86,20 @@ export default function BarraXp({
     <div className="bg-raised border border-border rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-baseline gap-2 flex-wrap">
-          <span className="text-ink-dim text-xs font-medium uppercase tracking-[.12em]">Nível</span>
+          <span className="text-ink-dim text-xs font-medium uppercase tracking-[.12em]">{t('Nível')}</span>
           <span className={`text-xl font-bold transition-colors duration-700 ${subiuPara ? 'text-dice-400' : 'text-ink'}`}>
             {nivelTotal}
           </span>
           {subiuPara && (
             <span className="text-dice-400 text-xs font-semibold bg-dice-700/60 border border-dice-500/60 px-2 py-0.5 rounded-full animate-pulse">
-              ✨ Subiu para o nível {subiuPara}!
+              {t('✨ Subiu para o nível {n}!', { n: subiuPara })}
             </span>
           )}
           {modo !== 'nenhum' && (
             <span className="text-ink-dim text-sm font-mono ml-1">
               {fmt(xp)}
               {prog.prox != null && <span className="text-ink-dim"> / {fmt(prog.prox)} XP</span>}
-              {prog.noMaximo && <span className="text-ink-dim"> XP (nível máximo)</span>}
+              {prog.noMaximo && <span className="text-ink-dim"> {t('XP (nível máximo)')}</span>}
             </span>
           )}
         </div>
@@ -119,7 +120,7 @@ export default function BarraXp({
                 onClick={() => aplicarXp(delta)}
                 disabled={ocupado || !delta}
                 className="px-2.5 py-1 text-xs font-medium rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors disabled:opacity-40"
-                title="Adicionar XP (use negativo para remover)"
+                title={t('Adicionar XP (use negativo para remover)')}
               >
                 + XP
               </button>
@@ -136,7 +137,7 @@ export default function BarraXp({
                   : 'bg-accent-700 hover:bg-accent-600'             // modo sem XP: botão discreto
               }`}
             >
-              ⬆ Subir de nível
+              {t('⬆ Subir de nível')}
             </button>
           )}
         </div>
@@ -155,9 +156,9 @@ export default function BarraXp({
           </div>
           <p className="text-xs mt-1">
             {prog.podeSubir ? (
-              <span className="text-dice-400 font-semibold">Nível disponível!</span>
+              <span className="text-dice-400 font-semibold">{t('Nível disponível!')}</span>
             ) : (
-              <span className="text-ink-dim">Faltam {fmt(prog.faltam)} XP para o nível {nivelTotal + 1}</span>
+              <span className="text-ink-dim">{t('Faltam {faltam} XP para o nível {n}', { faltam: fmt(prog.faltam), n: nivelTotal + 1 })}</span>
             )}
           </p>
         </div>
@@ -166,7 +167,7 @@ export default function BarraXp({
       {/* Escolha da classe que recebe o nível (multiclasse) */}
       {escolhendo && (
         <div className="border-t border-border pt-3 space-y-2">
-          <p className="text-accent-300 text-sm">Em qual classe colocar o nível?</p>
+          <p className="text-accent-300 text-sm">{t('Em qual classe colocar o nível?')}</p>
           <div className="flex flex-wrap gap-2">
             {classesFicha.map(cf => (
               <button
@@ -175,14 +176,14 @@ export default function BarraXp({
                 disabled={ocupado}
                 className="px-3 py-1.5 text-sm rounded-lg bg-void border border-border text-ink hover:border-dice-500 hover:text-dice-400 transition-colors disabled:opacity-50"
               >
-                {cf.classe?.nome || 'Classe'} <span className="text-ink-dim">{cf.nivel} → {cf.nivel + 1}</span>
+                {cf.classe?.nome || t('Classe')} <span className="text-ink-dim">{cf.nivel} → {cf.nivel + 1}</span>
               </button>
             ))}
             <button
               onClick={() => setEscolhendo(false)}
               className="px-2 py-1.5 text-sm text-ink-dim hover:text-ink transition-colors"
             >
-              Cancelar
+              {t('Cancelar')}
             </button>
           </div>
         </div>

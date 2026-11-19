@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 import { clampEstado, faixaAtivaDoEstado, calorDoEstado } from '../../lib/estadosEngine'
 
 /**
@@ -24,7 +25,7 @@ function Estado({ cfg, valor, isDono, onSet }) {
   return (
     <div className={`rounded-xl border px-3 py-2 transition-colors duration-300 ${corPorCalor(calor)}`}>
       <div className="flex items-center gap-2">
-        <span className="text-xs font-semibold uppercase tracking-[.12em]">{cfg.nome || 'Estado'}</span>
+        <span className="text-xs font-semibold uppercase tracking-[.12em]">{cfg.nome || t('Estado')}</span>
         {isDono && (
           <button onClick={() => onSet(cfg, v - 1)} disabled={noMin}
             className="w-5 h-5 flex items-center justify-center rounded-lg bg-void/60 hover:bg-raised disabled:opacity-30 text-sm leading-none transition-colors">−</button>

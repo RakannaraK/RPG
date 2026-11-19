@@ -11,6 +11,7 @@ import Dice3D from './Dice3D'
 import { bandejaSuportada } from './BandejaDados'
 import Ilustra from '../arte/Ilustra'
 import { naturalD20 } from '../../lib/natural'
+import { t, tn, locale } from '../../i18n'
 
 const COR_TXT = { verde: 'text-ok', ambar: 'text-dice-400', vermelho: 'text-harm', roxo: 'text-accent-300' }
 const COR_CARD = { verde: 'border-ok/50', ambar: 'border-dice-500/50', vermelho: 'border-harm/50', roxo: 'border-border' }
@@ -49,7 +50,7 @@ function ResultadoModo({ rolagem, animando, ehMeu, minhaSkin }) {
           return (
             <div key={i} className={`flex flex-col items-center gap-0.5 rounded-lg ${d.sucesso ? 'ring-1 ring-ok/70' : ''} ${d.especial ? 'ring-1 ring-harm/80' : ''}`}>
               {base}
-              {d.especial && <span className="text-harm text-xs leading-none">esp.</span>}
+              {d.especial && <span className="text-harm text-xs leading-none">{t('esp.')}</span>}
             </div>
           )
         })}
@@ -75,13 +76,13 @@ function tempoRelativo(ts) {
   if (!ts) return ''
   const diff = Date.now() - new Date(ts).getTime()
   const seg = Math.floor(diff / 1000)
-  if (seg < 10) return 'agora'
-  if (seg < 60) return `${seg}s atrás`
+  if (seg < 10) return t('agora')
+  if (seg < 60) return t('{n}s atrás', { n: seg })
   const min = Math.floor(seg / 60)
-  if (min < 60) return `${min}min atrás`
+  if (min < 60) return t('{n}min atrás', { n: min })
   const h = Math.floor(min / 60)
-  if (h < 24) return `${h}h atrás`
-  return new Date(ts).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+  if (h < 24) return t('{n}h atrás', { n: h })
+  return new Date(ts).toLocaleDateString(locale(), { day: '2-digit', month: '2-digit' })
 }
 
 function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
@@ -120,12 +121,12 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
           {/* sorteada no servidor: ninguém escolheu esse número (quem forjar pela API fica sem o selo) */}
           {destaque && (
             <span className={`text-xs font-bold uppercase tracking-wider shrink-0 ${destaque === 'critico' ? 'text-dice-400' : 'text-harm'}`}>
-              {destaque === 'critico' ? (natural === 'critico' ? '20 natural' : 'crítico') : '1 natural'}
+              {destaque === 'critico' ? (natural === 'critico' ? t('20 natural') : t('crítico')) : t('1 natural')}
             </span>
           )}
           {rolagem.verificada && (
-            <span className="text-ok text-xs shrink-0 inline-flex items-center gap-1" title="Sorteada no servidor: ninguém escolheu esse número">
-              <Ilustra nome="escudo" tamanho={12} /> verificada
+            <span className="text-ok text-xs shrink-0 inline-flex items-center gap-1" title={t('Sorteada no servidor: ninguém escolheu esse número')}>
+              <Ilustra nome="escudo" tamanho={12} /> {t('verificada')}
             </span>
           )}
         </div>
@@ -144,7 +145,7 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
                 descartado={d.descartado}
                 skin={minhaSkin}
               />
-              {d.descartado && <span className="text-harm text-xs">desc.</span>}
+              {d.descartado && <span className="text-harm text-xs">{t('desc.')}</span>}
             </div>
           ))
         ) : (
@@ -164,7 +165,7 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
           ))
         )}
         <div className="flex items-baseline gap-1.5 ml-1">
-          <span className="text-ink-dim text-xs">Total:</span>
+          <span className="text-ink-dim text-xs">{t('Total:')}</span>
           <span className="text-2xl font-mono font-bold text-dice-400 leading-none">{total}</span>
         </div>
       </div>}
@@ -184,7 +185,7 @@ function RolagemCard({ rolagem, animando, ehMeu, minhaSkin, nomeExibicao }) {
       )}
 
       {descartados.length > 0 && (
-        <p className="text-harm text-xs">descartados: {descartados.join(', ')}</p>
+        <p className="text-harm text-xs">{t('descartados: {lista}', { lista: descartados.join(', ') })}</p>
       )}
     </div>
   )
@@ -300,7 +301,7 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
   if (loading) {
     return (
       <div className="py-6 text-center text-ink-dim text-sm">
-        Carregando histórico...
+        {t('Carregando histórico...')}
       </div>
     )
   }
@@ -317,9 +318,9 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
     return (
       <div className="py-10 text-center border border-dashed border-border rounded-2xl">
         <Ilustra nome="d20" tamanho={56} className="mx-auto mb-2" />
-        <p className="text-ink-dim text-sm">Nenhuma rolagem ainda.</p>
+        <p className="text-ink-dim text-sm">{t('Nenhuma rolagem ainda.')}</p>
         <p className="text-ink-dim text-xs mt-1">
-          As rolagens aparecem aqui em tempo real para todos na mesa.
+          {t('As rolagens aparecem aqui em tempo real para todos na mesa.')}
         </p>
       </div>
     )
@@ -328,13 +329,13 @@ export default function FeedRolagens({ mesaId, onNovaRolagem, desde = null, ate 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-ink-dim text-xs">{rolagens.length} {rolagens.length === 1 ? 'rolagem' : 'rolagens'}</span>
+        <span className="text-ink-dim text-xs">{tn(rolagens.length, '{n} rolagem', '{n} rolagens')}</span>
         <button
           type="button"
           onClick={() => setRolagens([])}
           className="text-xs text-ink-dim hover:text-ink transition-colors px-1 py-1 min-h-[24px]"
         >
-          Limpar visualização
+          {t('Limpar visualização')}
         </button>
       </div>
       <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1">

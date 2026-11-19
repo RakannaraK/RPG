@@ -2,6 +2,7 @@
 // Arquivo importado é entrada NÃO confiável: tudo passa por validarPacote (só o vocabulário de efeitosVocabulario.js).
 import { TIPOS_ATMOSFERA, SONS_AMBIENTE, FORMAS_VFX, SONS_VFX, LIMITES, ID_VALIDO, corValida, limitar, textoCurto } from './efeitosVocabulario'
 import { PACOTE_ESSENCIAL, CATALOGO } from './extensoes/catalogo'
+import { t } from '../i18n'
 
 export { PACOTE_ESSENCIAL, CATALOGO }
 const FORMATO = 'dado-e-pena/extensao'
@@ -45,8 +46,8 @@ function filtrar(itens, normalizar, max, rotulo, erros) {
   const bons = []
   lista(itens).forEach((it, i) => {
     const n = normalizar(it)
-    if (!n || vistos.has(n.id)) { erros.push(`${rotulo} ${i + 1} descartado(a): inválido(a) ou repetido(a).`); return }
-    if (bons.length >= max) { erros.push(`${rotulo} ${i + 1} descartado(a): limite de ${max}.`); return }
+    if (!n || vistos.has(n.id)) { erros.push(t('{rotulo} {n} descartado(a): inválido(a) ou repetido(a).', { rotulo, n: i + 1 })); return }
+    if (bons.length >= max) { erros.push(t('{rotulo} {n} descartado(a): limite de {max}.', { rotulo, n: i + 1, max })); return }
     vistos.add(n.id)
     bons.push(n)
   })
@@ -59,14 +60,14 @@ export function validarPacote(json) {
   const falha = msg => ({ ok: false, pacote: null, erros: [msg, ...erros] })
   let p = json
   if (typeof json === 'string') {
-    if (new TextEncoder().encode(json).length > LIMITES.bytesPacote) return falha(`Arquivo grande demais (máximo ${LIMITES.bytesPacote} bytes).`)
-    try { p = JSON.parse(json) } catch { return falha('O arquivo não é um JSON válido.') }
-  } else if (new TextEncoder().encode(JSON.stringify(json ?? null)).length > LIMITES.bytesPacote) return falha('Extensão grande demais.')
-  if (!ehObj(p) || p.formato !== FORMATO || p.versao !== 1) return falha('Não é uma extensão do Dado & Pena (formato ou versão errados).')
-  if (!idOk(p.id)) return falha('Identificador (id) da extensão inválido.')
-  const cenas = filtrar(p.cenas, normalizarCena, LIMITES.cenasPorPacote, 'Cena', erros)
-  const efeitos = filtrar(p.efeitos, normalizarEfeito, LIMITES.efeitosPorPacote, 'Efeito', erros)
-  if (!cenas.length && !efeitos.length) return falha('A extensão não tem nenhuma cena nem efeito válido.')
+    if (new TextEncoder().encode(json).length > LIMITES.bytesPacote) return falha(t('Arquivo grande demais (máximo {bytes} bytes).', { bytes: LIMITES.bytesPacote }))
+    try { p = JSON.parse(json) } catch { return falha(t('O arquivo não é um JSON válido.')) }
+  } else if (new TextEncoder().encode(JSON.stringify(json ?? null)).length > LIMITES.bytesPacote) return falha(t('Extensão grande demais.'))
+  if (!ehObj(p) || p.formato !== FORMATO || p.versao !== 1) return falha(t('Não é uma extensão do Dado & Pena (formato ou versão errados).'))
+  if (!idOk(p.id)) return falha(t('Identificador (id) da extensão inválido.'))
+  const cenas = filtrar(p.cenas, normalizarCena, LIMITES.cenasPorPacote, t('Cena'), erros)
+  const efeitos = filtrar(p.efeitos, normalizarEfeito, LIMITES.efeitosPorPacote, t('Efeito'), erros)
+  if (!cenas.length && !efeitos.length) return falha(t('A extensão não tem nenhuma cena nem efeito válido.'))
   return {
     ok: true, erros,
     pacote: { formato: FORMATO, versao: 1, id: p.id, nome: textoCurto(p.nome) || p.id, descricao: textoCurto(p.descricao, 200), autor: textoCurto(p.autor), cenas, efeitos },

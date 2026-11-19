@@ -7,6 +7,7 @@ import {
   definirLuz, aplicarCena, limparCena, ehLocal,
 } from '../../lib/atmosfera'
 import { normalizarGrade } from '../../lib/mapaEngine'
+import { t } from '../../i18n'
 
 const INP = 'w-full bg-void border border-border rounded-lg px-2.5 py-1.5 text-sm text-ink focus:outline-none focus:border-accent-500'
 const TITULO = 'text-ink-dim text-xs font-semibold uppercase tracking-wider mb-2'
@@ -32,18 +33,18 @@ export default function PainelAtmosfera({ atmosfera, onMudar, cenas = [], grade,
     <div className="p-4 space-y-6">
       {colocando && (
         <div className="rounded-xl border border-accent-500 bg-raised p-2 flex items-center gap-2">
-          <p className="flex-1 text-sm text-ink">Clique no mapa para colocar…</p>
-          <Botao tamanho="sm" onClick={() => onColocar(null)}>Cancelar</Botao>
+          <p className="flex-1 text-sm text-ink">{t('Clique no mapa para colocar…')}</p>
+          <Botao tamanho="sm" onClick={() => onColocar(null)}>{t('Cancelar')}</Botao>
         </div>
       )}
 
       <section>
-        <h2 className={TITULO}>Cenas prontas</h2>
+        <h2 className={TITULO}>{t('Cenas prontas')}</h2>
         {cenas.length === 0 ? (
-          <p className="text-ink-dim text-sm">Nenhuma cena instalada.</p>
+          <p className="text-ink-dim text-sm">{t('Nenhuma cena instalada.')}</p>
         ) : pacotes.map(pacote => (
           <div key={pacote} className="mb-2">
-            <p className="text-ink-dim text-xs mb-1">{pacote}</p>
+            <p className="text-ink-dim text-xs mb-1">{pacote === 'Cenas' ? t('Cenas') : pacote}</p>
             <div className="flex flex-wrap gap-1.5">
               {cenas.filter(c => (c.pacote || 'Cenas') === pacote).map(c => (
                 <Botao key={c.id} tamanho="sm" onClick={() => onMudar(aplicarCena(atmosfera, c))}>{c.nome}</Botao>
@@ -51,43 +52,43 @@ export default function PainelAtmosfera({ atmosfera, onMudar, cenas = [], grade,
             </div>
           </div>
         ))}
-        <Botao tamanho="sm" variante="contorno" onClick={() => onMudar(limparCena(atmosfera))}>Limpar cena</Botao>
+        <Botao tamanho="sm" variante="contorno" onClick={() => onMudar(limparCena(atmosfera))}>{t('Limpar cena')}</Botao>
       </section>
 
       <section className="space-y-2">
-        <h2 className={TITULO}>Efeitos ({atmosfera.efeitos.length}/{LIMITES.efeitos})</h2>
-        {atmosfera.efeitos.length === 0 && <p className="text-ink-dim text-sm">Nenhum efeito nesta cena.</p>}
+        <h2 className={TITULO}>{t('Efeitos ({n}/{max})', { n: atmosfera.efeitos.length, max: LIMITES.efeitos })}</h2>
+        {atmosfera.efeitos.length === 0 && <p className="text-ink-dim text-sm">{t('Nenhum efeito nesta cena.')}</p>}
         <ul className="space-y-2">
           {atmosfera.efeitos.map(e => {
-            const t = TIPOS_ATMOSFERA[e.tipo]
+            const tp = TIPOS_ATMOSFERA[e.tipo]
             return (
               <li key={e.id} className="rounded-xl border border-border bg-void p-2 space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <p className="flex-1 min-w-0 text-ink text-sm font-medium truncate">{t.nome}</p>
-                  <span className="text-ink-dim text-xs">{ehLocal(e) ? 'no mapa' : 'cena inteira'}</span>
-                  <Botao tamanho="icone" variante="fantasma" title="Remover efeito" aria-label={`Remover ${t.nome}`} onClick={() => onMudar(removerEfeito(atmosfera, e.id))}>
+                  <p className="flex-1 min-w-0 text-ink text-sm font-medium truncate">{tp.nome}</p>
+                  <span className="text-ink-dim text-xs">{ehLocal(e) ? t('no mapa') : t('cena inteira')}</span>
+                  <Botao tamanho="icone" variante="fantasma" title={t('Remover efeito')} aria-label={t('Remover {nome}', { nome: tp.nome })} onClick={() => onMudar(removerEfeito(atmosfera, e.id))}>
                     <Icone nome="lixeira" tamanho={16} />
                   </Botao>
                 </div>
                 <label className="flex items-center gap-2 text-xs text-ink-dim">
-                  <span className="w-20 shrink-0">Intensidade</span>
+                  <span className="w-20 shrink-0">{t('Intensidade')}</span>
                   <input type="range" min="0.1" max="1" step="0.05" className="flex-1" value={e.intensidade}
                     onChange={ev => onMudar(atualizarEfeito(atmosfera, e.id, { intensidade: Number(ev.target.value) }))} />
                 </label>
                 <div className="flex items-center gap-2 text-xs text-ink-dim">
-                  <span className="w-20 shrink-0">Cor</span>
-                  <input type="color" aria-label={`Cor de ${t.nome}`} className={COR} value={e.cor || t.cor}
+                  <span className="w-20 shrink-0">{t('Cor')}</span>
+                  <input type="color" aria-label={t('Cor de {nome}', { nome: tp.nome })} className={COR} value={e.cor || tp.cor}
                     onChange={ev => onMudar(atualizarEfeito(atmosfera, e.id, { cor: ev.target.value }))} />
-                  {e.cor && <Botao tamanho="sm" variante="fantasma" onClick={() => onMudar(atualizarEfeito(atmosfera, e.id, { cor: null }))}>Padrão</Botao>}
+                  {e.cor && <Botao tamanho="sm" variante="fantasma" onClick={() => onMudar(atualizarEfeito(atmosfera, e.id, { cor: null }))}>{t('Padrão')}</Botao>}
                 </div>
                 {ehLocal(e) && (
                   <div className="flex items-center gap-2 text-xs text-ink-dim">
                     <label className="flex items-center gap-2 flex-1">
-                      <span className="w-20 shrink-0">Raio ({unidade})</span>
+                      <span className="w-20 shrink-0">{t('Raio ({unidade})', { unidade })}</span>
                       <input type="number" min="0.5" max="60" step="0.5" className={INP} value={e.raio}
                         onChange={ev => onMudar(atualizarEfeito(atmosfera, e.id, { raio: Number(ev.target.value) }))} />
                     </label>
-                    <Botao tamanho="sm" onClick={() => onColocar({ oQue: 'mover', id: e.id })}>Mover</Botao>
+                    <Botao tamanho="sm" onClick={() => onColocar({ oQue: 'mover', id: e.id })}>{t('Mover')}</Botao>
                   </div>
                 )}
               </li>
@@ -96,55 +97,55 @@ export default function PainelAtmosfera({ atmosfera, onMudar, cenas = [], grade,
         </ul>
         <div className="space-y-1.5 pt-1">
           <label className="block">
-            <span className="text-ink-dim text-xs">Adicionar efeito</span>
+            <span className="text-ink-dim text-xs">{t('Adicionar efeito')}</span>
             <select className={INP} value={tipo} onChange={ev => setTipo(ev.target.value)}>
-              {Object.entries(TIPOS_ATMOSFERA).map(([id, t]) => <option key={id} value={id}>{t.nome}</option>)}
+              {Object.entries(TIPOS_ATMOSFERA).map(([id, tp]) => <option key={id} value={id}>{tp.nome}</option>)}
             </select>
           </label>
           <div className="flex gap-1.5">
-            <Botao tamanho="sm" variante="primario" className="flex-1" onClick={() => onMudar(adicionarEfeito(atmosfera, { tipo }))}>Na cena inteira</Botao>
+            <Botao tamanho="sm" variante="primario" className="flex-1" onClick={() => onMudar(adicionarEfeito(atmosfera, { tipo }))}>{t('Na cena inteira')}</Botao>
             <Botao tamanho="sm" className="flex-1" disabled={!!TIPOS_ATMOSFERA[tipo].soCena}
-              title={TIPOS_ATMOSFERA[tipo].soCena ? 'Este efeito só vale para a cena inteira' : undefined}
-              onClick={() => onColocar({ oQue: 'efeito', tipo })}>Colocar no mapa</Botao>
+              title={TIPOS_ATMOSFERA[tipo].soCena ? t('Este efeito só vale para a cena inteira') : undefined}
+              onClick={() => onColocar({ oQue: 'efeito', tipo })}>{t('Colocar no mapa')}</Botao>
           </div>
         </div>
       </section>
 
       <section className="space-y-2">
-        <h2 className={TITULO}>Luz</h2>
+        <h2 className={TITULO}>{t('Luz')}</h2>
         <label className="flex items-center gap-2 text-xs text-ink-dim">
-          <span className="w-20 shrink-0">Escuridão</span>
+          <span className="w-20 shrink-0">{t('Escuridão')}</span>
           <input type="range" min="0" max="0.95" step="0.05" className="flex-1" value={atmosfera.luz.escuridao}
             onChange={ev => onMudar(definirLuz(atmosfera, { escuridao: Number(ev.target.value) }))} />
         </label>
         <div className="flex items-center gap-2 text-xs text-ink-dim">
-          <span className="w-20 shrink-0">Cor</span>
-          <input type="color" aria-label="Cor da escuridão" className={COR} value={atmosfera.luz.cor}
+          <span className="w-20 shrink-0">{t('Cor')}</span>
+          <input type="color" aria-label={t('Cor da escuridão')} className={COR} value={atmosfera.luz.cor}
             onChange={ev => onMudar(definirLuz(atmosfera, { cor: ev.target.value }))} />
         </div>
-        <Botao tamanho="sm" onClick={() => onColocar({ oQue: 'luz' })}>Colocar luz</Botao>
+        <Botao tamanho="sm" onClick={() => onColocar({ oQue: 'luz' })}>{t('Colocar luz')}</Botao>
         <ul className="space-y-2">
           {atmosfera.luz.fontes.map((f, i) => (
             <li key={f.id} className="rounded-xl border border-border bg-void p-2 space-y-1.5">
               <div className="flex items-center gap-2">
-                <p className="flex-1 text-ink text-sm font-medium">Luz {i + 1}</p>
-                <Botao tamanho="sm" onClick={() => onColocar({ oQue: 'mover', id: f.id })}>Mover</Botao>
-                <Botao tamanho="icone" variante="fantasma" title="Remover luz" aria-label={`Remover luz ${i + 1}`} onClick={() => onMudar(removerFonte(atmosfera, f.id))}>
+                <p className="flex-1 text-ink text-sm font-medium">{t('Luz {n}', { n: i + 1 })}</p>
+                <Botao tamanho="sm" onClick={() => onColocar({ oQue: 'mover', id: f.id })}>{t('Mover')}</Botao>
+                <Botao tamanho="icone" variante="fantasma" title={t('Remover luz')} aria-label={t('Remover luz {n}', { n: i + 1 })} onClick={() => onMudar(removerFonte(atmosfera, f.id))}>
                   <Icone nome="lixeira" tamanho={16} />
                 </Botao>
               </div>
               <div className="flex items-center gap-2 text-xs text-ink-dim">
                 <label className="flex items-center gap-2 flex-1">
-                  <span className="shrink-0">Raio ({unidade})</span>
+                  <span className="shrink-0">{t('Raio ({unidade})', { unidade })}</span>
                   <input type="number" min="0.5" max="60" step="0.5" className={INP} value={f.raio}
                     onChange={ev => onMudar(atualizarFonte(atmosfera, f.id, { raio: Number(ev.target.value) }))} />
                 </label>
-                <input type="color" aria-label={`Cor da luz ${i + 1}`} className={COR} value={f.cor}
+                <input type="color" aria-label={t('Cor da luz {n}', { n: i + 1 })} className={COR} value={f.cor}
                   onChange={ev => onMudar(atualizarFonte(atmosfera, f.id, { cor: ev.target.value }))} />
               </div>
               <label className="flex items-center gap-2 text-sm text-ink">
                 <input type="checkbox" checked={f.tremula} onChange={ev => onMudar(atualizarFonte(atmosfera, f.id, { tremula: ev.target.checked }))} />
-                Trêmula
+                {t('Trêmula')}
               </label>
             </li>
           ))}
@@ -152,12 +153,12 @@ export default function PainelAtmosfera({ atmosfera, onMudar, cenas = [], grade,
       </section>
 
       <section className="space-y-2">
-        <h2 className={TITULO}>Som</h2>
+        <h2 className={TITULO}>{t('Som')}</h2>
         <label className="flex items-center gap-2 text-sm text-ink">
           <input type="checkbox" checked={atmosfera.som} onChange={ev => onMudar({ ...atmosfera, som: ev.target.checked })} />
-          Som da cena para todos
+          {t('Som da cena para todos')}
         </label>
-        <p className="text-ink-dim text-xs">Os efeitos já trazem seu som. Extras (até {LIMITES.sons}):</p>
+        <p className="text-ink-dim text-xs">{t('Os efeitos já trazem seu som. Extras (até {max}):', { max: LIMITES.sons })}</p>
         <div className="grid grid-cols-2 gap-1">
           {extras.map(id => (
             <label key={id} className="flex items-center gap-2 text-sm text-ink">
@@ -170,7 +171,7 @@ export default function PainelAtmosfera({ atmosfera, onMudar, cenas = [], grade,
         </div>
       </section>
 
-      <Botao tamanho="sm" variante="contorno" onClick={onAbrirExtensoes}>Extensões</Botao>
+      <Botao tamanho="sm" variante="contorno" onClick={onAbrirExtensoes}>{t('Extensões')}</Botao>
     </div>
   )
 }

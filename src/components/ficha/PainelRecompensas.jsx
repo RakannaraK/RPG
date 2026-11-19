@@ -1,4 +1,5 @@
 import { juntarRecompensas, contarPendentes } from '../../lib/recompensas'
+import { t, tn } from '../../i18n'
 
 /**
  * Fase 19.6 — checklist de recompensas de nível.
@@ -21,17 +22,17 @@ export default function PainelRecompensas({
   return (
     <div className="bg-raised border border-border rounded-2xl p-4 space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-ink text-sm font-semibold">Recompensas de nível</p>
+        <p className="text-ink text-sm font-semibold">{t('Recompensas de nível')}</p>
         {pendentes > 0 && (
           <span className="text-dice-400 text-xs font-semibold bg-dice-700/50 border border-dice-700/60 px-2 py-0.5 rounded-full">
-            {pendentes} pendente{pendentes > 1 ? 's' : ''}
+            {tn(pendentes, '{n} pendente', '{n} pendentes')}
           </span>
         )}
       </div>
 
       {pendentes > 0 && (
         <p className="text-ink-dim text-xs">
-          Aplique cada uma nas telas normais da ficha e marque aqui quando terminar.
+          {t('Aplique cada uma nas telas normais da ficha e marque aqui quando terminar.')}
         </p>
       )}
 
@@ -39,7 +40,7 @@ export default function PainelRecompensas({
         {lista.map(rf => {
           const r = rf.recompensa
           const classe = r.classe_id ? classes.find(c => c.id === r.classe_id) : null
-          const escala = classe ? `${classe.nome} ${r.nivel}` : `nível ${r.nivel}`
+          const escala = classe ? `${classe.nome} ${r.nivel}` : t('nível {n}', { n: r.nivel })
           return (
             <label
               key={rf.id}

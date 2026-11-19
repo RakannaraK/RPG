@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useRolagem } from './useRolagem'
 import { useMembrosMesa } from './useMembrosMesa'
 import { resumoResultado, rotuloFeed } from '../lib/minigames/resultado'
+import { t } from '../i18n'
 
 // ponytail: últimos 1000 resultados da mesa bastam para ranking/estatísticas; paginar se uma mesa jogar muito mais
 const LIMITE_RESULTADOS = 1000
@@ -10,10 +11,10 @@ const LIMITE_RESULTADOS = 1000
 const tabelaAusente = e => e?.code === '42P01' || e?.code === 'PGRST205'
 
 function mensagem(e) {
-  if (e?.code === '42501') return 'Sem permissão para registrar (espectador, mesa arquivada ou desafio encerrado).'
-  if (e?.code === '23505') return 'Você já jogou este desafio.'
-  if (tabelaAusente(e)) return 'Ranking ainda não ativado neste banco (sql/fase28_minigames.sql).'
-  return e?.message || 'Não foi possível registrar.'
+  if (e?.code === '42501') return t('Sem permissão para registrar (espectador, mesa arquivada ou desafio encerrado).')
+  if (e?.code === '23505') return t('Você já jogou este desafio.')
+  if (tabelaAusente(e)) return t('Ranking ainda não ativado neste banco (sql/fase28_minigames.sql).')
+  return e?.message || t('Não foi possível registrar.')
 }
 
 /**
@@ -30,7 +31,7 @@ export async function registrarResultado({ mesaId, registrarEvento, tipo, dificu
   if (error && (desafioId || !tabelaAusente(error))) throw new Error(mensagem(error))
   await registrarEvento({
     mesaId, fichaId, sessaoId,
-    rotulo: `${rotuloFeed(tipo, dificuldade)}${desafioId ? ' · desafio' : ''}`,
+    rotulo: `${rotuloFeed(tipo, dificuldade)}${desafioId ? ' · ' + t('desafio') : ''}`,
     notacao: resumoResultado(tipo, resultado),
     total: resultado.pontos,
     dados: [],

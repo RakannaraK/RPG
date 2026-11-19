@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { chaveOcorrencia, proximaOcorrencia, textoQuando } from '../lib/agenda'
+import { t } from '../i18n'
 
 /**
  * Fase 40 — agenda da mesa: sessões marcadas no mundo real e quem vai.
@@ -64,7 +65,7 @@ export function useAgenda(mesaId) {
       await supabase.rpc('notificar_mesa', {
         p_mesa_id: mesaId,
         p_tipo: 'agenda',
-        p_titulo: evento.id ? 'Sessão remarcada' : 'Sessão marcada',
+        p_titulo: evento.id ? t('Sessão remarcada') : t('Sessão marcada'),
         p_corpo: prox ? `${data.titulo ? data.titulo + ' — ' : ''}${textoQuando(prox.inicio)}` : (data.titulo || ''),
         p_link: `/mesa/${mesaId}`,
       })

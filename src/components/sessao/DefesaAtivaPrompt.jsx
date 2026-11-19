@@ -4,6 +4,7 @@ import { useRolagem } from '../../hooks/useRolagem'
 import { resolverNotacaoFormula, validarNotacao } from '../../lib/diceNotation'
 import { calcularValoresFinais } from '../../lib/modifierEngine'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 /**
  * Fase 22.6 — prompt de defesa ativa para o DEFENSOR (dono do alvo; o mestre
@@ -70,7 +71,7 @@ export default function DefesaAtivaPrompt({
     if (!validarNotacao(resolvida)) return
     await registrarRolagem({
       mesaId, sessaoId, fichaId,
-      rotulo: `⚔ Contra-ataque de ${combatente.nome}`,
+      rotulo: t('⚔ Contra-ataque de {nome}', { nome: String(combatente.nome ?? '') }),
       notacao: resolvida,
     })
   }
@@ -83,16 +84,16 @@ export default function DefesaAtivaPrompt({
       try {
         resolvida = resolverNotacaoFormula(opcao.notacao || '', montarContexto()).notacao
       } catch (e) {
-        setErro(`Não consegui resolver "${opcao.notacao}" (${e.message}). Use o valor manual.`)
+        setErro(t('Não consegui resolver "{notacao}" ({erro}). Use o valor manual.', { notacao: String(opcao.notacao ?? ''), erro: String(e.message ?? '') }))
         return
       }
       if (!validarNotacao(resolvida)) {
-        setErro(`Notação inválida após resolver: "${resolvida}". Use o valor manual.`)
+        setErro(t('Notação inválida após resolver: "{notacao}". Use o valor manual.', { notacao: resolvida }))
         return
       }
       const res = await registrarRolagem({
         mesaId, sessaoId, fichaId,
-        rotulo: `${opcao.nome} — ${combatente.nome}`,
+        rotulo: t('{reacao} — {nome}', { reacao: String(opcao.nome ?? ''), nome: String(combatente.nome ?? '') }),
         notacao: resolvida,
       })
       await onResponder(combatente, {
@@ -124,7 +125,7 @@ export default function DefesaAtivaPrompt({
     setBusy(true)
     try {
       await onResponder(combatente, {
-        opcao_id: 'nao_reagir', opcao_nome: 'Não reagir', contra_ataque: false, defesa_total: null,
+        opcao_id: 'nao_reagir', opcao_nome: t('Não reagir'), contra_ataque: false, defesa_total: null,
       })
     } finally { setBusy(false) }
   }
@@ -135,9 +136,9 @@ export default function DefesaAtivaPrompt({
   return (
     <div className="mt-1.5 ml-6 rounded-lg border border-sky-600/60 bg-sky-950/40 p-2.5 space-y-2">
       <p className="text-sky-200 text-xs">
-        🛡 <span className="font-semibold">{combatente.nome}</span> sob ataque
-        {dp.atacante_nome ? ` de ${dp.atacante_nome}` : ''}
-        {dp.ataque != null ? ` (acerto ${dp.ataque})` : ''} — dano <span className="font-bold">{dp.dano}</span>. Reagir?
+        🛡 <span className="font-semibold">{combatente.nome}</span>{t(' sob ataque')}
+        {dp.atacante_nome ? t(' de {nome}', { nome: String(dp.atacante_nome) }) : ''}
+        {dp.ataque != null ? t(' (acerto {n})', { n: dp.ataque }) : ''}{t(' — dano ')}<span className="font-bold">{dp.dano}</span>{t('. Reagir?')}
       </p>
       <div className="flex flex-wrap gap-1.5">
         {opcoes.map(o => (
@@ -156,9 +157,9 @@ export default function DefesaAtivaPrompt({
             <select
               value={habEscolhida} onChange={e => setHabEscolhida(e.target.value)}
               className="px-1.5 py-1 rounded-lg bg-void border border-border text-white text-xs"
-              aria-label="Responder com habilidade"
+              aria-label={t('Responder com habilidade')}
             >
-              <option value="">com habilidade…</option>
+              <option value="">{t('com habilidade…')}</option>
               {habilidadesProntas.map(hf => <option key={hf.id} value={hf.id}>{hf.habilidade?.nome}</option>)}
             </select>
             <button
@@ -169,14 +170,14 @@ export default function DefesaAtivaPrompt({
               }}
               disabled={trabalhando || !habEscolhida}
               className="px-2 py-1 text-xs bg-dice-700 hover:bg-dice-600 disabled:opacity-50 text-white rounded-lg transition-colors"
-              title="Usa a habilidade como reação: rola a reação e a habilidade entra em recarga"
-            >✨ Usar</button>
+              title={t('Usa a habilidade como reação: rola a reação e a habilidade entra em recarga')}
+            >{t('✨ Usar')}</button>
           </span>
         )}
         <Botao variante="secundario" tamanho="sm"
           onClick={naoReagir}
           disabled={trabalhando} className="text-slate-200">
-          Não reagir
+          {t('Não reagir')}
         </Botao>
       </div>
       {erro && (
@@ -185,14 +186,14 @@ export default function DefesaAtivaPrompt({
           <div className="flex items-center gap-1.5">
             <select value={opcaoManual} onChange={e => setOpcaoManual(e.target.value)}
               className="px-1.5 py-1 rounded-lg bg-void border border-border text-white text-xs">
-              <option value="">reação…</option>
+              <option value="">{t('reação…')}</option>
               {opcoes.map(o => <option key={o.id} value={o.id}>{o.nome}</option>)}
             </select>
             <input type="number" value={manual} onChange={e => setManual(e.target.value)}
-              placeholder="defesa" className="w-20 px-1.5 py-1 rounded-lg bg-void border border-border text-white text-xs text-center" />
+              placeholder={t('defesa')} className="w-20 px-1.5 py-1 rounded-lg bg-void border border-border text-white text-xs text-center" />
             <button onClick={usarManual} disabled={trabalhando || !opcaoManual || manual === ''}
               className="px-2 py-1 text-xs bg-sky-800 hover:bg-sky-700 disabled:opacity-50 text-white rounded-lg transition-colors">
-              usar
+              {t('usar')}
             </button>
           </div>
         </div>

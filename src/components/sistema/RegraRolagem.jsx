@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { aplicarRegra, calcularEstatisticas } from '../../lib/dice'
+import { t } from '../../i18n'
 
 const LADOS_OPCOES = [4, 6, 8, 10, 12, 20, 100]
 
@@ -44,7 +45,7 @@ function SimulacaoDados({ resultado }) {
 
   return (
     <div className="mt-3 p-3 bg-slate-900 rounded-lg">
-      <p className="text-xs text-purple-400 mb-2">Simulação:</p>
+      <p className="text-xs text-purple-400 mb-2">{t('Simulação:')}</p>
       <div className="flex flex-wrap gap-2 mb-2">
         {ordenados.map((v, i) => {
           const mantidoIdx = mantidos.indexOf(v)
@@ -70,7 +71,7 @@ function SimulacaoDados({ resultado }) {
         )}
       </div>
       <p className="text-purple-200 text-sm">
-        Total: <span className="text-white font-bold text-lg">{resultado.valor}</span>
+        {t('Total:')} <span className="text-white font-bold text-lg">{resultado.valor}</span>
       </p>
     </div>
   )
@@ -120,7 +121,7 @@ export default function RegraRolagem({ value, onChange }) {
     <div className="space-y-4">
       {/* Tipo */}
       <div>
-        <p className="text-xs text-purple-300 font-medium mb-2">Tipo de regra</p>
+        <p className="text-xs text-purple-300 font-medium mb-2">{t('Tipo de regra')}</p>
         <div className="flex gap-2">
           {['dados', 'fixo', 'pontos'].map(tipo => (
             <button
@@ -133,7 +134,7 @@ export default function RegraRolagem({ value, onChange }) {
                   : 'bg-slate-800 border-purple-800 text-purple-400 hover:border-purple-600'
               }`}
             >
-              {tipo}
+              {{ dados: t('dados'), fixo: t('fixo'), pontos: t('pontos') }[tipo]}
             </button>
           ))}
         </div>
@@ -144,14 +145,14 @@ export default function RegraRolagem({ value, onChange }) {
           {/* Quantidade e lados */}
           <div className="grid grid-cols-2 gap-4">
             <SliderField
-              label="Quantidade de dados"
+              label={t('Quantidade de dados')}
               value={regra.quantidade}
               min={1}
               max={10}
               onChange={v => update('quantidade', v)}
             />
             <div>
-              <p className="text-xs text-purple-300 mb-1">Lados do dado</p>
+              <p className="text-xs text-purple-300 mb-1">{t('Lados do dado')}</p>
               <select
                 value={regra.lados}
                 onChange={e => update('lados', Number(e.target.value))}
@@ -167,14 +168,14 @@ export default function RegraRolagem({ value, onChange }) {
           {/* Descartar */}
           <div className="grid grid-cols-2 gap-4">
             <SliderField
-              label="Descartar menores"
+              label={t('Descartar menores')}
               value={regra.descartar_menores}
               min={0}
               max={Math.max(0, maxDescartar - regra.descartar_maiores)}
               onChange={v => update('descartar_menores', v)}
             />
             <SliderField
-              label="Descartar maiores"
+              label={t('Descartar maiores')}
               value={regra.descartar_maiores}
               min={0}
               max={Math.max(0, maxDescartar - regra.descartar_menores)}
@@ -184,7 +185,7 @@ export default function RegraRolagem({ value, onChange }) {
 
           {/* Bônus fixo */}
           <SliderField
-            label="Bônus fixo"
+            label={t('Bônus fixo')}
             value={regra.bonus_fixo ?? 0}
             min={-10}
             max={20}
@@ -195,7 +196,7 @@ export default function RegraRolagem({ value, onChange }) {
 
       {regra.tipo === 'fixo' && (
         <div>
-          <label className="block text-xs text-purple-300 mb-1">Valor fixo</label>
+          <label className="block text-xs text-purple-300 mb-1">{t('Valor fixo')}</label>
           <input
             type="number"
             min={0}
@@ -209,7 +210,7 @@ export default function RegraRolagem({ value, onChange }) {
 
       {regra.tipo === 'pontos' && (
         <div>
-          <label className="block text-xs text-purple-300 mb-1">Total de pontos para distribuir</label>
+          <label className="block text-xs text-purple-300 mb-1">{t('Total de pontos para distribuir')}</label>
           <input
             type="number"
             min={1}
@@ -218,7 +219,7 @@ export default function RegraRolagem({ value, onChange }) {
             onChange={e => onChange({ ...regra, pool_total: Number(e.target.value) })}
             className="w-full px-3 py-2 bg-void border border-border text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
-          <p className="text-accent-300 text-xs mt-1">Os jogadores distribuem esses pontos entre os atributos.</p>
+          <p className="text-accent-300 text-xs mt-1">{t('Os jogadores distribuem esses pontos entre os atributos.')}</p>
         </div>
       )}
 
@@ -226,19 +227,19 @@ export default function RegraRolagem({ value, onChange }) {
       {stats && (
         <div className="bg-slate-900 rounded-lg px-4 py-3 space-y-1">
           <p className="text-xs text-purple-400">
-            Fórmula: <span className="text-amber-400 font-mono font-semibold">
+            {t('Fórmula:')} <span className="text-amber-400 font-mono font-semibold">
               {regra.tipo === 'dados'
-                ? `${regra.quantidade}d${regra.lados}${regra.descartar_menores > 0 ? ` descartar ${regra.descartar_menores}↓` : ''}${regra.descartar_maiores > 0 ? ` descartar ${regra.descartar_maiores}↑` : ''}${regra.bonus_fixo > 0 ? ` +${regra.bonus_fixo}` : regra.bonus_fixo < 0 ? ` ${regra.bonus_fixo}` : ''}`
-                : regra.tipo === 'fixo' ? `Valor ${regra.valor ?? 10}`
-                : `${regra.pool_total ?? 27} pts`
+                ? `${regra.quantidade}d${regra.lados}${regra.descartar_menores > 0 ? ' ' + t('descartar {n}', { n: regra.descartar_menores }) + '↓' : ''}${regra.descartar_maiores > 0 ? ' ' + t('descartar {n}', { n: regra.descartar_maiores }) + '↑' : ''}${regra.bonus_fixo > 0 ? ` +${regra.bonus_fixo}` : regra.bonus_fixo < 0 ? ` ${regra.bonus_fixo}` : ''}`
+                : regra.tipo === 'fixo' ? t('Valor {n}', { n: regra.valor ?? 10 })
+                : t('{n} pts', { n: regra.pool_total ?? 27 })
               }
             </span>
           </p>
           <p className="text-xs text-purple-400">
-            Resultados possíveis: <span className="text-white">{stats.min}</span>
+            {t('Resultados possíveis:')} <span className="text-white">{stats.min}</span>
             <span className="text-accent-300"> – </span>
             <span className="text-white">{stats.max}</span>
-            <span className="text-accent-300"> (média {stats.media})</span>
+            <span className="text-accent-300"> {t('(média {n})', { n: stats.media })}</span>
           </p>
         </div>
       )}
@@ -251,7 +252,7 @@ export default function RegraRolagem({ value, onChange }) {
             onClick={simular}
             className="w-full py-2 text-sm bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors"
           >
-            🎲 Simular rolagem
+            {t('🎲 Simular rolagem')}
           </button>
           <SimulacaoDados resultado={simulacao} />
         </div>

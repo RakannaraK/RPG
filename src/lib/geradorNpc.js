@@ -4,10 +4,11 @@
  * As frases são neutras de gênero de propósito; só o nome e o ofício flexionam.
  */
 import { proximo } from './minigames/semente'
+import { t } from '../i18n'
 
 export const ESTILOS_NOME = [
-  { id: 'brasileiro', nome: 'Brasileiro' },
-  { id: 'fantasia', nome: 'Fantasia' },
+  { id: 'brasileiro', nome: t('Brasileiro') },
+  { id: 'fantasia', nome: t('Fantasia') },
 ]
 
 const NOMES_BR = {
@@ -126,7 +127,7 @@ export function gerarNpc({ estilo = 'brasileiro', s = 1 } = {}) {
   return { npc, s }
 }
 
-const maiuscula = t => (t ? t[0].toLocaleUpperCase('pt-BR') + t.slice(1) : t)
+const maiuscula = txt => (txt ? txt[0].toLocaleUpperCase('pt-BR') + txt.slice(1) : txt)
 
 /** NPC -> linha de verbete da enciclopédia (F41). Segredo e gancho vão para as notas do mestre. */
 export function npcParaVerbete(npc) {
@@ -139,7 +140,7 @@ export function npcParaVerbete(npc) {
       personalidade: `${maiuscula(npc.personalidade)}; ${npc.maneirismo}.`,
       motivacao: maiuscula(npc.motivacao) + '.',
     },
-    segredo: `Segredo: ${npc.segredo}.\nGancho: ${npc.gancho}.`,
+    segredo: t('Segredo: {segredo}.\nGancho: {gancho}.', { segredo: npc.segredo, gancho: npc.gancho }),
     corpo: '',
     tags: ['gerado'],
   }

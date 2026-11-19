@@ -1,4 +1,5 @@
 import { faixasDaBarra, textoVida } from '../../lib/barraVida'
+import { t } from '../../i18n'
 
 const CORES = {
   cheia: 'bg-ok',
@@ -6,7 +7,7 @@ const CORES = {
   baixa: 'bg-harm barra-listrada',
   vazia: 'bg-harm',
 }
-const ROTULOS = { cheia: 'saudável', media: 'ferido', baixa: 'muito ferido', vazia: 'caído' }
+const ROTULOS = { cheia: t('saudável'), media: t('ferido'), baixa: t('muito ferido'), vazia: t('caído') }
 
 /**
  * Fase 52 — barra de vida animada. A barra desliza quando a vida sobe ou
@@ -14,7 +15,7 @@ const ROTULOS = { cheia: 'saudável', media: 'ferido', baixa: 'muito ferido', va
  * barra fica LISTRADA — dá para perceber mesmo sem distinguir as cores.
  * Vida temporária entra como um pedaço azul depois da vida.
  */
-export default function BarraVida({ atual, maximo, temp = 0, rotulo = 'Vida', mostrarTexto = true, altura = 'h-2', className = '' }) {
+export default function BarraVida({ atual, maximo, temp = 0, rotulo = t('Vida'), mostrarTexto = true, altura = 'h-2', className = '' }) {
   if (!Number(maximo)) return null
   const { pct, pctTemp, nivel } = faixasDaBarra({ atual, maximo, temp })
   return (
@@ -26,9 +27,9 @@ export default function BarraVida({ atual, maximo, temp = 0, rotulo = 'Vida', mo
         </div>
       )}
       <div
-        role="progressbar" aria-label={`${rotulo}: ${ROTULOS[nivel]}`}
+        role="progressbar" aria-label={t('{rotulo}: {estado}', { rotulo, estado: ROTULOS[nivel] })}
         aria-valuemin={0} aria-valuemax={Number(maximo)} aria-valuenow={Math.max(0, Number(atual) || 0)}
-        aria-valuetext={`${textoVida({ atual, maximo, temp })}, ${ROTULOS[nivel]}`}
+        aria-valuetext={t('{texto}, {estado}', { texto: textoVida({ atual, maximo, temp }), estado: ROTULOS[nivel] })}
         className={`relative ${altura} rounded-full bg-void/80 ring-1 ring-inset ring-border/70 overflow-hidden`}
       >
         {/* largura (não scaleX) para as listras não esticarem; só anima quando a vida muda */}

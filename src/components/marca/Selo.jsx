@@ -16,7 +16,7 @@ export default function Selo({ tamanho = 28, pulso = false, className = '' }) {
     <svg
       width={tamanho} height={tamanho} viewBox="0 0 32 32"
       className={`${pulso ? 'selo-pulso' : ''} ${className}`}
-      role="img" aria-label="Selo do Dado & Pena"
+      role="img" aria-label={t('Selo do Dado & Pena')}
     >
       {/* d20 — contorno e face, na cor do acento do tema */}
       <g
@@ -52,3 +52,4 @@ export default function Selo({ tamanho = 28, pulso = false, className = '' }) {
     </svg>
   )
 }
+import { t } from '../../i18n'

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { faixasDaBarra, textoVida } from '../lib/barraVida'
+import { t } from '../i18n'
 
 const INTERVALO = 3000 // ms — o overlay não usa Realtime (é anônimo); pergunta de novo
 
@@ -14,7 +15,7 @@ function BarraVida({ atual, maximo, temp, numeros }) {
     <div className="w-full">
       <div className="h-2.5 w-full rounded-full bg-black/60 overflow-hidden flex" style={{ boxShadow: '0 0 0 1px rgba(255,255,255,.25)' }}>
         <div style={{ width: `${pct}%`, background: COR_NIVEL[nivel] }} />
-        {pctTemp > 0 && <div style={{ width: `${pctTemp}%`, background: '#38bdf8' }} title="escudo" />}
+        {pctTemp > 0 && <div style={{ width: `${pctTemp}%`, background: '#38bdf8' }} title={t('escudo')} />}
       </div>
       {numeros && (
         <p className="text-xs text-white/90 text-center mt-0.5 tabular-nums" style={{ textShadow: '0 1px 2px #000' }}>
@@ -56,7 +57,7 @@ export default function OverlayPage() {
     async function buscar() {
       const { data, error } = await supabase.rpc('overlay_dados', { p_token: token })
       if (!vivo) return
-      if (error) { setErro('Overlay ainda não ativado neste banco (sql/fase34_overlay.sql).'); return }
+      if (error) { setErro(t('Overlay ainda não ativado neste banco (sql/fase34_overlay.sql).')); return }
       setErro('')
       setDados(data ?? null)
     }
@@ -68,7 +69,7 @@ export default function OverlayPage() {
   if (erro) return <p className="p-4 text-red-300 text-sm">{erro}</p>
   if (dados === undefined) return null
   if (dados === null) {
-    return <p className="p-4 text-white/70 text-sm" style={{ textShadow: '0 1px 2px #000' }}>Link do overlay inválido.</p>
+    return <p className="p-4 text-white/70 text-sm" style={{ textShadow: '0 1px 2px #000' }}>{t('Link do overlay inválido.')}</p>
   }
 
   const cfg = dados.config || {}
@@ -81,8 +82,8 @@ export default function OverlayPage() {
     <div className="p-3" style={{ fontSize: `${escala}rem` }}>
       {dados.turno && (
         <div className="mb-2 inline-block rounded-xl bg-black/55 px-3 py-1.5" style={{ backdropFilter: 'blur(2px)' }}>
-          <span className="text-amber-300 text-sm font-bold">⚔ Rodada {dados.turno.rodada}</span>
-          {dados.turno.de && <span className="text-white text-sm"> · vez de <b>{dados.turno.de}</b></span>}
+          <span className="text-amber-300 text-sm font-bold">{t('⚔ Rodada {n}', { n: dados.turno.rodada })}</span>
+          {dados.turno.de && <span className="text-white text-sm"> · {t('vez de')} <b>{dados.turno.de}</b></span>}
         </div>
       )}
 

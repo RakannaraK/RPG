@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useId } from 'react'
 import { planejarTroca } from '../lib/combateAvancado'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /**
  * Fase 14 — encontro de combate dentro de uma sessão.
@@ -68,7 +69,7 @@ export function useEncontro(sessaoId, mesaId) {
       if (enc) await carregarCombatentes(enc.id)
       else { setCombatentes([]); setCondicoes([]) }
     } catch (err) {
-      setError(err.message || 'Erro ao carregar combate.')
+      setError(err.message || t('Erro ao carregar combate.'))
     } finally {
       setLoading(false)
     }
@@ -116,7 +117,7 @@ export function useEncontro(sessaoId, mesaId) {
   async function iniciarCombate(titulo) {
     const { data, error: err } = await supabase
       .from('encontros')
-      .insert({ sessao_id: sessaoId, mesa_id: mesaId, titulo: (titulo || '').trim() || 'Combate', ativo: true, rodada: 1, turno_atual: 0 })
+      .insert({ sessao_id: sessaoId, mesa_id: mesaId, titulo: (titulo || '').trim() || t('Combate'), ativo: true, rodada: 1, turno_atual: 0 })
       .select()
       .single()
     if (err) throw err
@@ -163,7 +164,7 @@ export function useEncontro(sessaoId, mesaId) {
     const qtd = Math.max(1, Number(quantidade) || 1)
     const hpN = hp !== '' && hp != null ? Number(hp) : null
     const caN = ca !== '' && ca != null ? Number(ca) : null
-    const base = (nome || '').trim() || (tipo === 'aliado' ? 'Aliado' : tipo === 'npc' ? 'NPC' : 'Inimigo')
+    const base = (nome || '').trim() || (tipo === 'aliado' ? t('Aliado') : tipo === 'npc' ? t('NPC') : t('Inimigo'))
     const linhas = Array.from({ length: qtd }, (_, i) => ({
       encontro_id: encontro.id,
       ficha_id: null,
@@ -284,7 +285,7 @@ export function useEncontro(sessaoId, mesaId) {
   async function aplicarCondicao(combatenteId, { nome, descricao, duracaoRodadas, modificadorConfig, efeitoTurno = null }) {
     const payload = {
       combatente_id: combatenteId,
-      nome: (nome || '').trim() || 'Condição',
+      nome: (nome || '').trim() || t('Condição'),
       descricao: (descricao || '').trim() || null,
       duracao_rodadas: duracaoRodadas !== '' && duracaoRodadas != null ? Number(duracaoRodadas) : null,
       rodada_inicio: encontro?.rodada ?? 1,

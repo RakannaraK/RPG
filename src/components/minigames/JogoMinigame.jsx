@@ -6,13 +6,14 @@ import JogoMemoria from './JogoMemoria'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import { tocarPresetAcao } from '../../audio/actionSynth'
 import Modal from '../ui/Modal'
+import { t } from '../../i18n'
 
 const COMPONENTE = { roda: JogoRodaRunica, cronometro: JogoCronometro, memoria: JogoMemoria }
 
 const INSTRUCOES = {
-  roda: 'Toque na roda (ou aperte espaço) quando o ponteiro estiver dentro da runa acesa. Acertos seguidos formam combos que multiplicam os pontos. Tocar fora ou deixar a runa passar custa uma vida.',
-  cronometro: 'Pare o cronômetro o mais perto possível do tempo alvo. Ele some no meio do caminho: conte de cabeça. Botão PARAR ou espaço.',
-  memoria: 'Memorize a ordem das runas antes que desapareçam e repita tocando nelas (ou nas teclas 1–9). Cada rodada tem uma runa a mais. Errou, acabou.',
+  roda: t('Toque na roda (ou aperte espaço) quando o ponteiro estiver dentro da runa acesa. Acertos seguidos formam combos que multiplicam os pontos. Tocar fora ou deixar a runa passar custa uma vida.'),
+  cronometro: t('Pare o cronômetro o mais perto possível do tempo alvo. Ele some no meio do caminho: conte de cabeça. Botão PARAR ou espaço.'),
+  memoria: t('Memorize a ordem das runas antes que desapareçam e repita tocando nelas (ou nas teclas 1–9). Cada rodada tem uma runa a mais. Errou, acabou.'),
 }
 
 /**
@@ -56,7 +57,7 @@ export default function JogoMinigame({ tipo, dificuldade, config, semente, titul
       await onResultado(r)
       setEnvio({ estado: 'enviado', erro: '' })
     } catch (err) {
-      setEnvio({ estado: 'erro', erro: err.message || 'Não foi possível enviar.' })
+      setEnvio({ estado: 'erro', erro: err.message || t('Não foi possível enviar.') })
     }
   }
 
@@ -74,14 +75,14 @@ export default function JogoMinigame({ tipo, dificuldade, config, semente, titul
           <>
             <p className="text-ink text-sm leading-relaxed text-center">{INSTRUCOES[tipo]}</p>
             <div className="flex gap-2">
-              <button onClick={() => setFase('contagem')} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-sobre-acento`} autoFocus>Começar</button>
-              <button onClick={onFechar} className={`${BTN} bg-hover text-ink hover:bg-border`}>Agora não</button>
+              <button onClick={() => setFase('contagem')} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-sobre-acento`} autoFocus>{t('Começar')}</button>
+              <button onClick={onFechar} className={`${BTN} bg-hover text-ink hover:bg-border`}>{t('Agora não')}</button>
             </div>
           </>
         )}
 
         {fase === 'contagem' && (
-          <p key={contagem} className="text-dice-400 text-7xl font-bold tabular-nums py-10" aria-live="assertive">{contagem || 'Já!'}</p>
+          <p key={contagem} className="text-dice-400 text-7xl font-bold tabular-nums py-10" aria-live="assertive">{contagem || t('Já!')}</p>
         )}
 
         {fase === 'jogando' && <Jogo config={config} semente={semente} onFim={terminar} onSom={onSom} />}
@@ -92,16 +93,16 @@ export default function JogoMinigame({ tipo, dificuldade, config, semente, titul
             <p className="text-ink text-sm text-center">{resumoResultado(tipo, resultado)}</p>
             {onResultado && (
               <p className={`text-xs ${envio.estado === 'erro' ? 'text-harm' : 'text-ink-dim'}`} aria-live="polite">
-                {envio.estado === 'enviando' && 'Enviando para a mesa…'}
-                {envio.estado === 'enviado' && '✓ Enviado para a mesa'}
-                {envio.estado === 'erro' && `Não foi enviado: ${envio.erro}`}
+                {envio.estado === 'enviando' && t('Enviando para a mesa…')}
+                {envio.estado === 'enviado' && t('✓ Enviado para a mesa')}
+                {envio.estado === 'erro' && t('Não foi enviado: {erro}', { erro: String(envio.erro ?? '') })}
               </p>
             )}
             <div className="flex gap-2">
               {onJogarDeNovo && (
-                <button onClick={onJogarDeNovo} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-sobre-acento`}>Jogar de novo</button>
+                <button onClick={onJogarDeNovo} className={`${BTN} bg-accent-600 hover:bg-accent-500 text-sobre-acento`}>{t('Jogar de novo')}</button>
               )}
-              <button onClick={onFechar} className={`${BTN} bg-hover text-ink hover:bg-border`} autoFocus={!onJogarDeNovo}>Fechar</button>
+              <button onClick={onFechar} className={`${BTN} bg-hover text-ink hover:bg-border`} autoFocus={!onJogarDeNovo}>{t('Fechar')}</button>
             </div>
           </>
         )}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /**
  * Fase 24.4 — valores dos ESTADOS de uma ficha (estados_ficha).
@@ -23,7 +24,7 @@ export function useEstadosFicha(fichaId) {
       if (err) throw err
       setLinhas(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar estados da ficha.')
+      setError(err.message || t('Erro ao carregar estados da ficha.'))
     } finally {
       setLoading(false)
     }
@@ -59,7 +60,7 @@ export function useEstadosFicha(fichaId) {
           ? prev.map(l => (l.estado_id === estadoId ? anterior : l))
           : prev.filter(l => l.estado_id !== estadoId)
       )
-      throw new Error(err.message || 'Não foi possível salvar o estado.')
+      throw new Error(err.message || t('Não foi possível salvar o estado.'))
     }
   }
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /**
  * Fase 12.6 — condições manuais (interruptores situacionais) de uma ficha.
@@ -28,7 +29,7 @@ export function useCondicoesManuais(fichaId) {
       for (const row of data || []) mapa[row.modificador_id] = row.ativa === true
       setCondicoesManuais(mapa)
     } catch (err) {
-      setError(err.message || 'Erro ao carregar condições manuais.')
+      setError(err.message || t('Erro ao carregar condições manuais.'))
     } finally {
       setLoading(false)
     }
@@ -52,7 +53,7 @@ export function useCondicoesManuais(fichaId) {
     } catch (err) {
       // Reverte se o banco falhar
       setCondicoesManuais(prev => ({ ...prev, [modificadorId]: anterior }))
-      setError(err.message || 'Erro ao salvar condição.')
+      setError(err.message || t('Erro ao salvar condição.'))
     }
   }
 

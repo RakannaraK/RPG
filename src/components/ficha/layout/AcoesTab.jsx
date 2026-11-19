@@ -6,6 +6,7 @@ import { montarNotacaoComModificadores } from '../../../lib/rollModifiers'
 import { tocarSomDado, estimarNumDados } from '../../../lib/diceSounds'
 import { usePreferencias } from '../../../context/PreferenciasContext'
 import Dice3D from '../../dados/Dice3D'
+import { t } from '../../../i18n'
 
 // Resumo legível das parcelas que vieram de modificadores (Fase 12.2)
 function DetalheModificadores({ detalhamento }) {
@@ -87,7 +88,7 @@ export default function AcoesTab({ fichaId, mesaId, valoresFinais = {}, modifica
       const res = await registrarRolagem({
         mesaId,
         fichaId,
-        rotulo: `${item.nome} — ${campo === 'ataque' ? 'Ataque' : 'Dano'}`,
+        rotulo: `${item.nome} — ${campo === 'ataque' ? t('Ataque') : t('Dano')}`,
         notacao: notacaoFinal,
         percentual,
       })
@@ -112,10 +113,10 @@ export default function AcoesTab({ fichaId, mesaId, valoresFinais = {}, modifica
   if (armas.length === 0) {
     return (
       <div className="text-center py-10 text-ink-dim text-sm">
-        Nenhuma arma ou ação disponível.
+        {t('Nenhuma arma ou ação disponível.')}
         <p className="text-xs mt-1 text-ink-dim">
-          Em Inventário, adicione itens com as chaves <span className="font-mono">ataque</span> ou{' '}
-          <span className="font-mono">dano</span> em atributos extras.
+          {t('Em Inventário, adicione itens com as chaves')} <span className="font-mono">ataque</span> {t('ou')}{' '}
+          <span className="font-mono">dano</span> {t('em atributos extras.')}
         </p>
       </div>
     )
@@ -176,7 +177,7 @@ export default function AcoesTab({ fichaId, mesaId, valoresFinais = {}, modifica
 
             {ataqueState?.resultado && (
               <RollCompact
-                label="Ataque"
+                label={t('Ataque')}
                 resultado={ataqueState.resultado}
                 rolando={ataqueState.rolando}
                 onClose={() => clearRoll(ataqueKey)}
@@ -186,7 +187,7 @@ export default function AcoesTab({ fichaId, mesaId, valoresFinais = {}, modifica
             )}
             {danoState?.resultado && (
               <RollCompact
-                label="Dano"
+                label={t('Dano')}
                 resultado={danoState.resultado}
                 rolando={danoState.rolando}
                 onClose={() => clearRoll(danoKey)}

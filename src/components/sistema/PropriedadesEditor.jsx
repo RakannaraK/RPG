@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { usePropriedades } from '../../hooks/usePropriedades'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 /** Texto curto do efeito mecânico de uma propriedade. */
 function descreverEfeito(cfg) {
   if (!cfg) return null
-  const alvo = cfg.tipo === 'dano' ? 'dano' : 'acerto'
+  const alvo = cfg.tipo === 'dano' ? t('dano') : t('acerto')
   const partes = []
   if (cfg.percentual_rolagem) partes.push(`+${cfg.percentual_rolagem}%`)
   if (cfg.dados_extras) partes.push(`+${cfg.dados_extras}`)
@@ -30,8 +31,8 @@ export default function PropriedadesEditor({ sistemaId, categorias = [] }) {
 
   async function adicionar() {
     setErro('')
-    if (!f.nome.trim()) { setErro('Informe o nome da propriedade.'); return }
-    if (!f.descricao.trim()) { setErro('Descreva a regra da propriedade.'); return }
+    if (!f.nome.trim()) { setErro(t('Informe o nome da propriedade.')); return }
+    if (!f.descricao.trim()) { setErro(t('Descreva a regra da propriedade.')); return }
     let modificador_config = null
     if (temEfeito) {
       modificador_config = {
@@ -46,16 +47,15 @@ export default function PropriedadesEditor({ sistemaId, categorias = [] }) {
       await criarPropriedade({ ...f, modificador_config })
       setF({ nome: '', sigla: '', descricao: '', maestria_minima: '', categoria_id: '' })
       setTemEfeito(false); setEfeito({ tipo: 'dano', percentual_rolagem: '', dados_extras: '', valor: '' })
-    } catch (e) { setErro(e.message || 'Erro ao criar propriedade.') }
+    } catch (e) { setErro(e.message || t('Erro ao criar propriedade.')) }
     finally { setSalvando(false) }
   }
 
   return (
     <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
-      <p className="text-purple-200 text-sm font-semibold">Propriedades desbloqueáveis</p>
+      <p className="text-purple-200 text-sm font-semibold">{t('Propriedades desbloqueáveis')}</p>
       <p className="text-accent-300 text-xs">
-        Regras que "ligam" na arma ao atingir um nível de maestria — "Crítico" (req 2),
-        "Dupla" (req 4). O efeito mecânico é opcional; sem ele, é texto-guia.
+        {t('Regras que "ligam" na arma ao atingir um nível de maestria — "Crítico" (req 2), "Dupla" (req 4). O efeito mecânico é opcional; sem ele, é texto-guia.')}
       </p>
 
       {propriedades.length > 0 && (
@@ -65,12 +65,12 @@ export default function PropriedadesEditor({ sistemaId, categorias = [] }) {
             const ef = descreverEfeito(p.modificador_config)
             return (
               <div key={p.id} className="flex items-start gap-2 bg-purple-950/40 border border-purple-800 rounded-lg px-2.5 py-1.5">
-                <span className="text-amber-400 text-xs font-mono shrink-0 mt-0.5 w-14">maestria {p.maestria_minima}</span>
+                <span className="text-amber-400 text-xs font-mono shrink-0 mt-0.5 w-14">{t('maestria {n}', { n: String(p.maestria_minima ?? '') })}</span>
                 <span className="min-w-0 flex-1">
                   <span className="text-white text-xs font-medium">{p.nome}</span>
                   {p.sigla && <span className="text-accent-300 text-xs ml-1.5 font-mono">[{p.sigla}]</span>}
                   {cat && <span className="text-accent-300 text-xs ml-1.5">{cat.nome}</span>}
-                  {!cat && <span className="text-accent-300 text-xs ml-1.5">geral</span>}
+                  {!cat && <span className="text-accent-300 text-xs ml-1.5">{t('geral')}</span>}
                   <span className="block text-accent-300 text-xs">{p.descricao}</span>
                   {ef && <span className="block text-amber-500/80 text-xs font-mono">↗ {ef}</span>}
                 </span>
@@ -85,45 +85,45 @@ export default function PropriedadesEditor({ sistemaId, categorias = [] }) {
       <div className="border-t border-purple-900/50 pt-2 space-y-2">
         <div className="flex flex-wrap gap-2 items-center">
           <input type="text" value={f.nome} onChange={e => set({ nome: e.target.value })}
-            placeholder="Nome (ex: Crítico)" className={`${INP} flex-1 min-w-[9rem]`} />
+            placeholder={t('Nome (ex: Crítico)')} className={`${INP} flex-1 min-w-[9rem]`} />
           <input type="text" value={f.sigla} onChange={e => set({ sigla: e.target.value })}
-            placeholder="Sigla" className={`${INP} w-16`} />
-          <span className="text-accent-300 text-xs">req.</span>
+            placeholder={t('Sigla')} className={`${INP} w-16`} />
+          <span className="text-accent-300 text-xs">{t('req.')}</span>
           <input type="number" min={0} value={f.maestria_minima} onChange={e => set({ maestria_minima: e.target.value })}
             placeholder="0" className={`${INP} w-14 text-center`} />
           <select value={f.categoria_id} onChange={e => set({ categoria_id: e.target.value })} className={INP}>
-            <option value="">Geral</option>
+            <option value="">{t('Geral')}</option>
             {categorias.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select>
         </div>
         <input type="text" value={f.descricao} onChange={e => set({ descricao: e.target.value })}
-          placeholder="A regra (o que a propriedade faz)" className={`${INP} w-full`} />
+          placeholder={t('A regra (o que a propriedade faz)')} className={`${INP} w-full`} />
 
         {/* Efeito mecânico opcional */}
         <label className="text-purple-400 text-xs flex items-center gap-1.5 cursor-pointer">
           <input type="checkbox" checked={temEfeito} onChange={e => setTemEfeito(e.target.checked)} className="accent-purple-500" />
-          efeito mecânico ao usar a arma
+          {t('efeito mecânico ao usar a arma')}
         </label>
         {temEfeito && (
           <div className="flex flex-wrap gap-2 items-center pl-4">
             <select value={efeito.tipo} onChange={e => setEfeito({ ...efeito, tipo: e.target.value })} className={INP}>
-              <option value="dano">no dano</option>
-              <option value="acerto">no acerto</option>
+              <option value="dano">{t('no dano')}</option>
+              <option value="acerto">{t('no acerto')}</option>
             </select>
             <span className="flex items-center gap-1">
               <input type="number" value={efeito.percentual_rolagem} onChange={e => setEfeito({ ...efeito, percentual_rolagem: e.target.value })}
-                placeholder="%" className={`${INP} w-14 text-center`} title="Percentual sobre o total (F18)" />
+                placeholder="%" className={`${INP} w-14 text-center`} title={t('Percentual sobre o total (F18)')} />
               <span className="text-accent-300 text-xs">%</span>
             </span>
             <input type="text" value={efeito.dados_extras} onChange={e => setEfeito({ ...efeito, dados_extras: e.target.value })}
-              placeholder="dados (ex: 1d6)" className={`${INP} w-28 font-mono`} />
+              placeholder={t('dados (ex: 1d6)')} className={`${INP} w-28 font-mono`} />
             <input type="text" value={efeito.valor} onChange={e => setEfeito({ ...efeito, valor: e.target.value })}
-              placeholder="fixo" className={`${INP} w-16 text-center`} />
+              placeholder={t('fixo')} className={`${INP} w-16 text-center`} />
           </div>
         )}
 
         <Botao variante="primario" tamanho="sm" onClick={adicionar} disabled={salvando}>
-          {salvando ? '...' : '+ Adicionar propriedade'}
+          {salvando ? '...' : t('+ Adicionar propriedade')}
         </Botao>
       </div>
 

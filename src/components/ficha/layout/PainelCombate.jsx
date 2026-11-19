@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useValoresCombate } from '../../../hooks/useValoresCombate'
 import { avaliarFormula } from '../../../lib/formulaEngine'
+import { t } from '../../../i18n'
 
 // 17.4 — valor de um campo calculado (read-only). Falha alto e claro: "—" + erro no tooltip
 function calcularCampo(campo, contextoFormula) {
@@ -27,7 +28,7 @@ export default function PainelCombate({ campos, fichaId, isDono, contextoFormula
       setEditando(prev => { const n = { ...prev }; delete n[campoId]; return n })
       setErros(prev => { const n = { ...prev }; delete n[campoId]; return n })
     } catch (err) {
-      setErros(prev => ({ ...prev, [campoId]: err.message || 'Erro' }))
+      setErros(prev => ({ ...prev, [campoId]: err.message || t('Erro') }))
     }
   }
 
@@ -36,7 +37,7 @@ export default function PainelCombate({ campos, fichaId, isDono, contextoFormula
   return (
     <div className="bg-raised border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-border">
-        <p className="text-ink text-sm font-semibold">Combate</p>
+        <p className="text-ink text-sm font-semibold">{t('Combate')}</p>
       </div>
       <div className="grid grid-cols-2 gap-px bg-void/30 p-px">
         {campos.map(campo => {

@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { renderDie } from '../../lib/diceRenderer'
 import { getSkin } from '../../lib/diceSkins'
 import { criarMaterialSkin } from '../../lib/materialDado'
+import { t } from '../../i18n'
 
 // Este componente concentra TODO o código three.js. É carregado via lazy() pelo
 // Dice3D, então o three.js fica num chunk separado fora do bundle inicial.
@@ -130,8 +131,8 @@ export default function Dice3DWebGL({ lados, resultado, rolando, descartado, ski
         }
 
     function animate(now) {
-      const t = Math.min((now - start) / duration, 1)
-      const e = 1 - Math.pow(1 - t, 3) // ease-out cubic
+      const prog = Math.min((now - start) / duration, 1)
+      const e = 1 - Math.pow(1 - prog, 3) // ease-out cubic
 
       three.mesh.rotation.x = startRot.x + totalRot.x * e
       three.mesh.rotation.y = startRot.y + totalRot.y * e
@@ -139,7 +140,7 @@ export default function Dice3DWebGL({ lados, resultado, rolando, descartado, ski
 
       renderDie(three.scene, three.camera, canvas)
 
-      if (t < 1) {
+      if (prog < 1) {
         frameRef.current = requestAnimationFrame(animate)
       } else {
         setShowNum(true)
@@ -160,7 +161,9 @@ export default function Dice3DWebGL({ lados, resultado, rolando, descartado, ski
   return (
     <div
       role="img"
-      aria-label={`Dado d${lados}, resultado ${resultado}${descartado ? ' (descartado)' : ''}`}
+      aria-label={descartado
+        ? t('Dado d{lados}, resultado {resultado} (descartado)', { lados, resultado })
+        : t('Dado d{lados}, resultado {resultado}', { lados, resultado })}
       className="relative inline-flex items-center justify-center"
       style={{ width: 64, height: 64, opacity: descartado ? 0.35 : 1 }}
     >

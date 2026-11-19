@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import RegraRolagem from './RegraRolagem'
+import { t } from '../../i18n'
 
 export default function AtributoEditor({ atributo, onChange, onRemove, index }) {
   const [expanded, setExpanded] = useState(!atributo.nome)
@@ -17,7 +18,7 @@ export default function AtributoEditor({ atributo, onChange, onRemove, index }) 
         <span className="text-accent-300 text-xs font-mono w-5 text-center">{index + 1}</span>
         <input
           type="text"
-          placeholder="Nome do atributo (ex: Força)"
+          placeholder={t('Nome do atributo (ex: Força)')}
           value={atributo.nome}
           onChange={e => updateField('nome', e.target.value)}
           className="flex-1 min-h-[28px] bg-transparent text-white placeholder-ink-dim font-medium focus:outline-none text-sm"
@@ -25,20 +26,20 @@ export default function AtributoEditor({ atributo, onChange, onRemove, index }) 
         />
         <div className="flex items-center gap-2">
           {isNew && (
-            <span className="text-xs bg-purple-900 text-purple-400 px-2 py-0.5 rounded-full">novo</span>
+            <span className="text-xs bg-purple-900 text-purple-400 px-2 py-0.5 rounded-full">{t('novo')}</span>
           )}
           <button
             type="button"
             onClick={() => setExpanded(v => !v)}
             className="text-purple-400 hover:text-white text-xs px-2 py-1 rounded-lg transition-colors"
           >
-            {expanded ? '▲ Fechar' : '▼ Editar'}
+            {expanded ? t('▲ Fechar') : t('▼ Editar')}
           </button>
           <button
             type="button"
             onClick={onRemove}
             className="text-red-500 hover:text-red-400 text-xs px-2 py-1 rounded-lg transition-colors"
-            title="Remover atributo"
+            title={t('Remover atributo')}
           >
             ✕
           </button>
@@ -49,23 +50,23 @@ export default function AtributoEditor({ atributo, onChange, onRemove, index }) 
         <div className="border-t border-purple-900 px-4 py-4 space-y-4">
           {/* 24.3 — override de exibição (NULL = padrão do sistema, aba Layout) */}
           <div className="flex items-center gap-2">
-            <label className="text-xs text-purple-300">Exibição:</label>
+            <label className="text-xs text-purple-300">{t('Exibição:')}</label>
             <select
               value={atributo.exibicao || ''}
               onChange={e => updateField('exibicao', e.target.value || null)}
               className="px-2 py-1 rounded-lg bg-void border border-border text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
             >
-              <option value="">Padrão do sistema</option>
-              <option value="numero">Número</option>
-              <option value="dots">Dots (bolinhas)</option>
+              <option value="">{t('Padrão do sistema')}</option>
+              <option value="numero">{t('Número')}</option>
+              <option value="dots">{t('Dots (bolinhas)')}</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-xs text-purple-300 mb-1">Descrição (opcional)</label>
+            <label className="block text-xs text-purple-300 mb-1">{t('Descrição (opcional)')}</label>
             <input
               type="text"
-              placeholder="Ex: Mede a força física do personagem"
+              placeholder={t('Ex: Mede a força física do personagem')}
               value={atributo.descricao || ''}
               onChange={e => updateField('descricao', e.target.value)}
               className="w-full px-3 py-2 bg-void border border-border text-white placeholder-ink-dim rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -73,7 +74,7 @@ export default function AtributoEditor({ atributo, onChange, onRemove, index }) 
           </div>
 
           <div>
-            <p className="text-xs text-purple-300 font-medium mb-3">Regra de rolagem</p>
+            <p className="text-xs text-purple-300 font-medium mb-3">{t('Regra de rolagem')}</p>
             <RegraRolagem
               value={atributo.regra_rolagem}
               onChange={regra => updateField('regra_rolagem', regra)}

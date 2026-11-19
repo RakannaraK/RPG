@@ -9,6 +9,7 @@ import { mergeConfigLayout } from '../../lib/sistemaDefaults'
 import Modal, { FecharModal } from '../ui/Modal'
 import Botao from '../ui/Botao'
 import Icone from '../ui/Icone'
+import { t } from '../../i18n'
 
 export default function FichaCreate({ mesaId, onCriada, onFechar }) {
   const { session } = useAuth()
@@ -65,7 +66,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
   function irParaStep1() {
     setErro('')
     if (!info.nome_personagem.trim()) {
-      setErro('O nome do personagem é obrigatório.')
+      setErro(t('O nome do personagem é obrigatório.'))
       return
     }
     setStep(1)
@@ -76,7 +77,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
 
     const semConfirmar = atributos.filter(a => !valores[a.id]?.confirmado)
     if (semConfirmar.length > 0) {
-      setErro(`Confirme o valor de: ${semConfirmar.map(a => a.nome).join(', ')}`)
+      setErro(t('Confirme o valor de: {lista}', { lista: semConfirmar.map(a => a.nome).join(', ') }))
       return
     }
 
@@ -124,7 +125,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
 
       onCriada(ficha)
     } catch (err) {
-      setErro(err.message || 'Erro ao criar ficha.')
+      setErro(err.message || t('Erro ao criar ficha.'))
     }
   }
 
@@ -138,17 +139,17 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
   return (
     <Modal
       onFechar={onFechar} bloqueado={criando}
-      titulo="Nova ficha de personagem"
-      subtitulo={step === 0 ? 'Passo 1 de 2 — Informações básicas' : 'Passo 2 de 2 — Atributos'}
+      titulo={t('Nova ficha de personagem')}
+      subtitulo={step === 0 ? t('Passo 1 de 2 — Informações básicas') : t('Passo 2 de 2 — Atributos')}
       rodape={step === 0 ? (
         <>
           <FecharModal />
-          <Botao variante="primario" onClick={irParaStep1}>Próximo <Icone nome="seta-dir" tamanho={16} /></Botao>
+          <Botao variante="primario" onClick={irParaStep1}>{t('Próximo')} <Icone nome="seta-dir" tamanho={16} /></Botao>
         </>
       ) : (
         <>
-          <Botao variante="fantasma" onClick={() => { setErro(''); setStep(0) }}><Icone nome="seta-esq" tamanho={16} /> Voltar</Botao>
-          <Botao variante="primario" onClick={handleSalvar} disabled={criando}>{criando ? 'Salvando…' : 'Salvar ficha'}</Botao>
+          <Botao variante="fantasma" onClick={() => { setErro(''); setStep(0) }}><Icone nome="seta-esq" tamanho={16} /> {t('Voltar')}</Botao>
+          <Botao variante="primario" onClick={handleSalvar} disabled={criando}>{criando ? t('Salvando…') : t('Salvar ficha')}</Botao>
         </>
       )}
     >
@@ -157,11 +158,11 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-ink mb-1">
-                  Nome do personagem *
+                  {t('Nome do personagem *')}
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: Aldric, o Valoroso"
+                  placeholder={t('Ex: Aldric, o Valoroso')}
                   value={info.nome_personagem}
                   onChange={e => setInfoField('nome_personagem', e.target.value)}
                   autoFocus
@@ -170,7 +171,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-ink mb-1">Raça</label>
+                  <label className="block text-sm font-medium text-ink mb-1">{t('Raça')}</label>
                   {racas.length > 0 ? (
                     <select
                       value={info.raca_id ?? ''}
@@ -181,7 +182,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                       }}
                       className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                     >
-                      <option value="">Nenhuma</option>
+                      <option value="">{t('Nenhuma')}</option>
                       {racas.map(r => (
                         <option key={r.id} value={r.id}>{r.nome}</option>
                       ))}
@@ -189,7 +190,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                   ) : (
                     <input
                       type="text"
-                      placeholder="Ex: Elfo, Humano"
+                      placeholder={t('Ex: Elfo, Humano')}
                       value={info.raca}
                       onChange={e => setInfoField('raca', e.target.value)}
                       className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
@@ -197,7 +198,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-ink mb-1">Classe</label>
+                  <label className="block text-sm font-medium text-ink mb-1">{t('Classe')}</label>
                   {classes.length > 0 ? (
                     <select
                       value={info.classe_id ?? ''}
@@ -208,7 +209,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                       }}
                       className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
                     >
-                      <option value="">Nenhuma</option>
+                      <option value="">{t('Nenhuma')}</option>
                       {classes.map(c => (
                         <option key={c.id} value={c.id}>{c.nome}</option>
                       ))}
@@ -216,7 +217,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                   ) : (
                     <input
                       type="text"
-                      placeholder="Ex: Guerreiro, Mago"
+                      placeholder={t('Ex: Guerreiro, Mago')}
                       value={info.classe}
                       onChange={e => setInfoField('classe', e.target.value)}
                       className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
@@ -226,7 +227,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-ink mb-1">Nível</label>
+                  <label className="block text-sm font-medium text-ink mb-1">{t('Nível')}</label>
                   <input
                     type="number"
                     min={1}
@@ -238,12 +239,12 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-ink mb-1">
-                    HP máximo
+                    {t('HP máximo')}
                   </label>
                   <input
                     type="number"
                     min={1}
-                    placeholder="Ex: 45"
+                    placeholder={t('Ex: 45')}
                     value={info.hp_maximo}
                     onChange={e => setInfoField('hp_maximo', e.target.value)}
                     className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
@@ -254,16 +255,16 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
           ) : (
             <div className="space-y-5">
               {loadingSistema ? (
-                <div className="py-8 text-center text-ink-dim">Carregando sistema...</div>
+                <div className="py-8 text-center text-ink-dim">{t('Carregando sistema...')}</div>
               ) : atributos.length === 0 ? (
                 <div className="py-8 text-center border border-dashed border-border rounded-xl">
                   <p className="text-accent-300 text-sm">
                     {sistema
-                      ? 'O sistema desta mesa não tem atributos definidos.'
-                      : 'Esta mesa não tem sistema configurado.'}
+                      ? t('O sistema desta mesa não tem atributos definidos.')
+                      : t('Esta mesa não tem sistema configurado.')}
                   </p>
                   <p className="text-ink-dim text-xs mt-1">
-                    A ficha será criada sem atributos.
+                    {t('A ficha será criada sem atributos.')}
                   </p>
                 </div>
               ) : (
@@ -289,7 +290,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                         </div>
                         {confirmado && (
                           <div className="text-right shrink-0">
-                            <p className="text-ok text-xs">✓ confirmado</p>
+                            <p className="text-ok text-xs">{t('✓ confirmado')}</p>
                             <p className="text-ink font-bold text-xl">
                               {valores[a.id]?.valor}
                             </p>
@@ -300,11 +301,11 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                       {!confirmado && isPontos && (
                         <div className="space-y-2">
                           <p className="text-ink-dim text-xs">
-                            Sistema de pontos — pool:{' '}
+                            {t('Sistema de pontos — pool:')}{' '}
                             <span className="text-dice-400 font-bold">
                               {a.regra_rolagem.pool_total || 27}
                             </span>{' '}
-                            pts
+                            {t('pts')}
                           </p>
                           <div className="flex gap-2">
                             <input
@@ -322,7 +323,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                               onClick={() => confirmarPontos(a.id)}
                               className="px-4 py-2 text-sm bg-ok/80 hover:bg-ok text-ink font-semibold rounded-lg transition-colors"
                             >
-                              ✓ Confirmar
+                              {t('✓ Confirmar')}
                             </button>
                           </div>
                         </div>
@@ -346,7 +347,7 @@ export default function FichaCreate({ mesaId, onCriada, onFechar }) {
                           }
                           className="text-xs text-ink-dim hover:text-ink transition-colors"
                         >
-                          Rolar novamente
+                          {t('Rolar novamente')}
                         </button>
                       )}
                     </div>

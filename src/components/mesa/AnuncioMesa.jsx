@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { textoVagas, validarAnuncio } from '../../lib/mesasAbertas'
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
+import { t } from '../../i18n'
 
 const CAMPO = 'px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 
@@ -60,26 +61,26 @@ export default function AnuncioMesa({ mesaId }) {
       <div className="flex flex-wrap items-center gap-3">
         <Ilustra nome="pessoas" tamanho={28} className="shrink-0" />
         <div className="flex-1 min-w-[12rem]">
-          <h2 id="titulo-anuncio" className="text-ink font-semibold">Procurar jogadores</h2>
+          <h2 id="titulo-anuncio" className="text-ink font-semibold">{t('Procurar jogadores')}</h2>
           <p className="text-ink-dim text-xs">
             {anuncio?.ativo
-              ? `Anunciada na Comunidade · ${textoVagas(anuncio.vagas)}`
-              : anuncio?.vagas === 0 ? 'As vagas foram preenchidas e o anúncio saiu da Comunidade. Edite para abrir mais.'
-                : anuncio ? 'Anúncio pausado (não aparece na Comunidade).' : 'Anuncie a mesa na Comunidade; quem se interessar pede uma vaga e você decide.'}
+              ? t('Anunciada na Comunidade · {vagas}', { vagas: textoVagas(anuncio.vagas) })
+              : anuncio?.vagas === 0 ? t('As vagas foram preenchidas e o anúncio saiu da Comunidade. Edite para abrir mais.')
+                : anuncio ? t('Anúncio pausado (não aparece na Comunidade).') : t('Anuncie a mesa na Comunidade; quem se interessar pede uma vaga e você decide.')}
           </p>
         </div>
         {!editando && (
           <div className="flex flex-wrap gap-2">
             <Botao variante={anuncio ? 'contorno' : 'primario'} tamanho="sm"
               onClick={() => setEditando({ sistema: anuncio?.sistema || '', quando: anuncio?.quando || '', vagas: anuncio?.vagas || 1, iniciantes: !!anuncio?.iniciantes, descricao: anuncio?.descricao || '' })}
-            >{anuncio ? 'Editar anúncio' : 'Anunciar na Comunidade'}</Botao>
+            >{anuncio ? t('Editar anúncio') : t('Anunciar na Comunidade')}</Botao>
             {anuncio && anuncio.vagas > 0 && (
               <Botao variante="secundario" tamanho="sm" disabled={ocupado === 'pausar'}
                 onClick={() => acao('pausar', async () => {
                   const { error } = await supabase.from('anuncios_mesa').update({ ativo: !anuncio.ativo, updated_at: new Date().toISOString() }).eq('mesa_id', mesaId)
                   if (error) throw new Error(error.message)
                 })}
-              >{anuncio.ativo ? 'Pausar' : 'Retomar'}</Botao>
+              >{anuncio.ativo ? t('Pausar') : t('Retomar')}</Botao>
             )}
           </div>
         )}
@@ -88,24 +89,24 @@ export default function AnuncioMesa({ mesaId }) {
       {editando && (
         <form onSubmit={salvar} className="space-y-2">
           <div className="grid gap-2 sm:grid-cols-[1fr_1fr_6rem]">
-            <input value={editando.sistema} onChange={e => setEditando(x => ({ ...x, sistema: e.target.value }))} maxLength={60} placeholder="Sistema (ex.: D&D 5e, Tormenta20)" aria-label="Sistema" className={CAMPO} />
-            <input value={editando.quando} onChange={e => setEditando(x => ({ ...x, quando: e.target.value }))} maxLength={120} placeholder="Quando (ex.: sábados 20h, quinzenal)" aria-label="Quando" className={CAMPO} />
-            <input type="number" min={1} max={20} value={editando.vagas} onChange={e => setEditando(x => ({ ...x, vagas: e.target.value }))} aria-label="Vagas" className={CAMPO} />
+            <input value={editando.sistema} onChange={e => setEditando(x => ({ ...x, sistema: e.target.value }))} maxLength={60} placeholder={t('Sistema (ex.: D&D 5e, Tormenta20)')} aria-label={t('Sistema')} className={CAMPO} />
+            <input value={editando.quando} onChange={e => setEditando(x => ({ ...x, quando: e.target.value }))} maxLength={120} placeholder={t('Quando (ex.: sábados 20h, quinzenal)')} aria-label={t('Quando')} className={CAMPO} />
+            <input type="number" min={1} max={20} value={editando.vagas} onChange={e => setEditando(x => ({ ...x, vagas: e.target.value }))} aria-label={t('Vagas')} className={CAMPO} />
           </div>
-          <textarea value={editando.descricao} onChange={e => setEditando(x => ({ ...x, descricao: e.target.value }))} maxLength={1000} rows={3} placeholder="Como é a campanha: tom, tema, o que você espera de quem entrar…" aria-label="Descrição da campanha" className={`${CAMPO} w-full`} />
+          <textarea value={editando.descricao} onChange={e => setEditando(x => ({ ...x, descricao: e.target.value }))} maxLength={1000} rows={3} placeholder={t('Como é a campanha: tom, tema, o que você espera de quem entrar…')} aria-label={t('Descrição da campanha')} className={`${CAMPO} w-full`} />
           <label className="flex items-center gap-2 text-sm text-ink min-h-[24px]">
-            <input type="checkbox" checked={editando.iniciantes} onChange={e => setEditando(x => ({ ...x, iniciantes: e.target.checked }))} /> Aceita iniciantes
+            <input type="checkbox" checked={editando.iniciantes} onChange={e => setEditando(x => ({ ...x, iniciantes: e.target.checked }))} /> {t('Aceita iniciantes')}
           </label>
           <div className="flex flex-wrap items-center gap-2">
-            <Botao type="submit" variante="primario" tamanho="sm" disabled={ocupado === 'salvar'}>{ocupado === 'salvar' ? 'Salvando…' : 'Publicar anúncio'}</Botao>
-            <Botao variante="fantasma" tamanho="sm" onClick={() => setEditando(null)}>Cancelar</Botao>
+            <Botao type="submit" variante="primario" tamanho="sm" disabled={ocupado === 'salvar'}>{ocupado === 'salvar' ? t('Salvando…') : t('Publicar anúncio')}</Botao>
+            <Botao variante="fantasma" tamanho="sm" onClick={() => setEditando(null)}>{t('Cancelar')}</Botao>
           </div>
         </form>
       )}
 
       {pedidos.length > 0 && (
         <div className="space-y-2 border-t border-border pt-3">
-          <p className="text-xs uppercase tracking-wider font-semibold text-ink-dim">Pedidos de vaga ({pedidos.length})</p>
+          <p className="text-xs uppercase tracking-wider font-semibold text-ink-dim">{t('Pedidos de vaga ({n})', { n: pedidos.length })}</p>
           <ul className="space-y-2">
             {pedidos.map(p => (
               <li key={p.id} className="rounded-lg border border-border bg-void/40 p-3 flex flex-wrap items-start gap-2">
@@ -113,8 +114,8 @@ export default function AnuncioMesa({ mesaId }) {
                   <p className="text-ink text-sm font-medium">{p.nome}</p>
                   {p.mensagem && <p className="text-ink-dim text-sm whitespace-pre-wrap">{p.mensagem}</p>}
                 </div>
-                <Botao variante="primario" tamanho="sm" disabled={ocupado === p.id} onClick={() => responder(p, true)}>Aceitar</Botao>
-                <Botao variante="fantasma" tamanho="sm" disabled={ocupado === p.id} onClick={() => responder(p, false)}>Recusar</Botao>
+                <Botao variante="primario" tamanho="sm" disabled={ocupado === p.id} onClick={() => responder(p, true)}>{t('Aceitar')}</Botao>
+                <Botao variante="fantasma" tamanho="sm" disabled={ocupado === p.id} onClick={() => responder(p, false)}>{t('Recusar')}</Botao>
               </li>
             ))}
           </ul>

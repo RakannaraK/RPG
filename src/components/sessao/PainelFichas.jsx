@@ -5,6 +5,7 @@
  */
 import { memo } from 'react'
 import { podeEditarFicha } from '../../lib/permissoesFicha'
+import { t } from '../../i18n'
 
 function corVida(pct) {
   if (pct > 50) return 'bg-green-500'
@@ -51,7 +52,7 @@ function ChipEstado({ chip }) {
 const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false, onToggleCondicao }) {
   const hpMax = card.hpMax || card.hpMaxBase || 0
   const pct = hpMax > 0 ? Math.min(100, Math.max(0, (card.hpAtual / hpMax) * 100)) : 0
-  const subtitulo = [card.racaNome, card.classeNome, card.nivel ? `Nível ${card.nivel}` : null]
+  const subtitulo = [card.racaNome, card.classeNome, card.nivel ? t('Nível {n}', { n: card.nivel }) : null]
     .filter(Boolean)
     .join(' · ')
   const temModVida = card.hpMax !== card.hpMaxBase
@@ -81,7 +82,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
       ) : (
         <div>
           <div className="flex items-baseline justify-between mb-1">
-            <span className="text-purple-400 text-xs uppercase tracking-wider">Vida</span>
+            <span className="text-purple-400 text-xs uppercase tracking-wider">{t('Vida')}</span>
             <span className="text-white text-sm font-semibold">
               {card.hpAtual}
               <span className="text-accent-300 font-normal"> / {hpMax || '—'}</span>
@@ -94,14 +95,14 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
             <div className={`h-full rounded-full transition-all duration-500 ${corVida(pct)}`} style={{ width: `${pct}%` }} />
           </div>
           {card.vidaTemp > 0 && (
-            <p className="text-sky-400 text-xs mt-1 font-medium">+{card.vidaTemp} vida temporária</p>
+            <p className="text-sky-400 text-xs mt-1 font-medium">{t('+{n} vida temporária', { n: card.vidaTemp })}</p>
           )}
         </div>
       )}
 
       {/* Demais trilhas (24.2) — ao vivo */}
-      {(card.trilhas || []).filter(t => !t.substitui_vida).map(t => (
-        <MiniTrilha key={t.id} trilha={t} />
+      {(card.trilhas || []).filter(tr => !tr.substitui_vida).map(tr => (
+        <MiniTrilha key={tr.id} trilha={tr} />
       ))}
 
       {/* Estados em destaque (24.4) — Fome/Sanidade ao vivo */}
@@ -141,19 +142,19 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
       {/* 22.7 — interruptores situacionais do dono (ex: CA 17/19/21), ao vivo */}
       {souDono && (card.togglesManuais || []).length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {card.togglesManuais.map(t => (
+          {card.togglesManuais.map(tg => (
             <button
-              key={t.id}
-              onClick={() => onToggleCondicao?.(card.id, t.id, !t.ativo)}
+              key={tg.id}
+              onClick={() => onToggleCondicao?.(card.id, tg.id, !tg.ativo)}
               className={`text-xs px-2 py-0.5 rounded-lg border transition-colors ${
-                t.ativo
+                tg.ativo
                   ? 'bg-amber-800/70 border-amber-500/70 text-amber-100'
                   : 'bg-slate-900/60 border-slate-600/50 text-slate-400 hover:border-amber-600/60 hover:text-amber-200'
               }`}
-              title={t.ativo ? 'Ligado — clique p/ desligar' : 'Desligado — clique p/ ligar'}
+              title={tg.ativo ? t('Ligado — clique p/ desligar') : t('Desligado — clique p/ ligar')}
             >
-              {t.ativo ? '◉' : '○'} {t.rotulo}
-              {t.caDelta != null && <span className="ml-1 font-mono">{t.caDelta >= 0 ? `+${t.caDelta}` : t.caDelta} CA</span>}
+              {tg.ativo ? '◉' : '○'} {tg.rotulo}
+              {tg.caDelta != null && <span className="ml-1 font-mono">{tg.caDelta >= 0 ? `+${tg.caDelta}` : tg.caDelta} {t('CA')}</span>}
             </button>
           ))}
         </div>
@@ -170,7 +171,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
                 className={`flex items-center gap-1.5 rounded-lg px-2 py-1 border ${
                   vazio ? 'bg-red-950/40 border-red-900/60' : 'bg-slate-900/60 border-sky-900/50'
                 }`}
-                title={p.tipo === 'dados' ? 'Reserva de dados' : 'Pontos'}
+                title={p.tipo === 'dados' ? t('Reserva de dados') : t('Pontos')}
               >
                 <span className="text-sky-400 text-xs uppercase tracking-wide">{p.nome}</span>
                 <span className={`text-sm font-bold leading-none ${vazio ? 'text-red-400' : 'text-white'}`}>
@@ -193,7 +194,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
                 className={`flex items-center gap-1 rounded-lg px-2 py-1 border ${
                   esgotado ? 'bg-red-950/40 border-red-900/60' : 'bg-slate-900/60 border-amber-900/50'
                 }`}
-                title={`Slots de ${s.circulo}º círculo`}>
+                title={t('Slots de {n}º círculo', { n: s.circulo })}>
                 <span className="text-amber-400 text-xs font-mono">{s.circulo}º</span>
                 <span className={`text-sm font-bold leading-none ${esgotado ? 'text-red-400' : 'text-white'}`}>
                   {s.disponivel}<span className="text-accent-300 font-normal">/{s.total}</span>
@@ -210,7 +211,7 @@ const FichaCard = memo(function FichaCard({ card, camposCombate, souDono = false
           {card.chips.map(chip => <ChipEstado key={chip.key} chip={chip} />)}
         </div>
       ) : (
-        <p className="text-ink-dim text-xs pt-1 border-t border-purple-900/40">Sem estados ativos</p>
+        <p className="text-ink-dim text-xs pt-1 border-t border-purple-900/40">{t('Sem estados ativos')}</p>
       )}
     </div>
   )
@@ -239,7 +240,7 @@ export default function PainelFichas({ cards = [], camposCombate = [], loading, 
     return (
       <div className="rounded-2xl border border-dashed border-purple-800/60 bg-slate-900/30 py-14 text-center">
         <div className="text-3xl mb-2">🛡️</div>
-        <p className="text-purple-400 text-sm">Nenhuma ficha nesta mesa ainda.</p>
+        <p className="text-purple-400 text-sm">{t('Nenhuma ficha nesta mesa ainda.')}</p>
       </div>
     )
   }

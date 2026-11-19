@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /**
  * Fase 20.1 — catálogo de pools do sistema (CRUD do mestre/co-mestre).
@@ -22,7 +23,7 @@ export function usePools(sistemaId) {
       if (err) throw err
       setPools(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar pools.')
+      setError(err.message || t('Erro ao carregar pools.'))
     } finally {
       setLoading(false)
     }
@@ -87,7 +88,7 @@ export function usePoolsFicha(fichaId) {
       if (err) throw err
       setLinhas(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar pools da ficha.')
+      setError(err.message || t('Erro ao carregar pools da ficha.'))
     } finally {
       setLoading(false)
     }
@@ -121,7 +122,7 @@ export function usePoolsFicha(fichaId) {
           ? prev.map(l => (l.pool_id === poolId ? anterior : l))
           : prev.filter(l => l.pool_id !== poolId)
       )
-      throw new Error(err.message || 'Não foi possível atualizar o pool.')
+      throw new Error(err.message || t('Não foi possível atualizar o pool.'))
     }
   }
 

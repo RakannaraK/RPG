@@ -1,6 +1,7 @@
 import { validarFormula } from '../../lib/formulaEngine'
 import { validarEscala } from '../../lib/poderes'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 const INP = 'px-2 py-1 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
@@ -34,7 +35,7 @@ export function CustoEditor({ custo = [], pools = [], onChange }) {
           <div key={i} className="flex items-center gap-1.5 flex-wrap">
             {c.tipo === 'pool' ? (
               <>
-                <span className="text-accent-300 text-xs w-10">gasta</span>
+                <span className="text-accent-300 text-xs w-10">{t('gasta')}</span>
                 <input
                   type="text"
                   value={c.quantidade ?? ''}
@@ -42,17 +43,17 @@ export function CustoEditor({ custo = [], pools = [], onChange }) {
                   placeholder="3 ou piso(nivel/2)"
                   spellCheck={false}
                   className={`${INP} w-32 font-mono ${qtdInvalida ? 'border-red-600' : ''}`}
-                  title="Aceita número ou fórmula"
+                  title={t('Aceita número ou fórmula')}
                 />
                 <select value={c.pool_id || ''} onChange={e => set(i, { pool_id: e.target.value })} className={INP}>
-                  <option value="">Recurso...</option>
+                  <option value="">{t('Recurso...')}</option>
                   {pools.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
                 </select>
               </>
             ) : (
               <>
-                <span className="text-accent-300 text-xs w-10">slot</span>
-                <span className="text-purple-400 text-xs">círculo mínimo</span>
+                <span className="text-accent-300 text-xs w-10">{t('slot')}</span>
+                <span className="text-purple-400 text-xs">{t('círculo mínimo')}</span>
                 <input
                   type="number"
                   min={0}
@@ -64,7 +65,7 @@ export function CustoEditor({ custo = [], pools = [], onChange }) {
             )}
             <button type="button" onClick={() => remover(i)}
               className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors"
-              title="Remover custo">×</button>
+              title={t('Remover custo')}>×</button>
           </div>
         )
       })}
@@ -72,16 +73,16 @@ export function CustoEditor({ custo = [], pools = [], onChange }) {
       <div className="flex gap-1.5">
         <Botao variante="contorno" tamanho="sm" type="button" onClick={addPool} disabled={pools.length === 0}
          
-          title={pools.length === 0 ? 'Crie um recurso na aba Recursos' : 'Custo em recurso'}>
-          + recurso
+          title={pools.length === 0 ? t('Crie um recurso na aba Recursos') : t('Custo em recurso')}>
+          {t('+ recurso')}
         </Botao>
         <Botao variante="contorno" tamanho="sm" type="button" onClick={addSlot} disabled={temSlot}
          
-          title={temSlot ? 'Só um custo de slot por poder' : 'Custo em slot de círculo'}>
-          + slot
+          title={temSlot ? t('Só um custo de slot por poder') : t('Custo em slot de círculo')}>
+          {t('+ slot')}
         </Botao>
       </div>
-      {custo.length === 0 && <p className="text-accent-300 text-xs">Sem custo.</p>}
+      {custo.length === 0 && <p className="text-accent-300 text-xs">{t('Sem custo.')}</p>}
     </div>
   )
 }
@@ -118,10 +119,10 @@ export function EscalaEditor({ escala, onChange }) {
     <div className="space-y-1.5">
       {faixas.map((f, i) => (
         <div key={i} className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-accent-300 text-xs">círculo</span>
+          <span className="text-accent-300 text-xs">{t('círculo')}</span>
           <input type="number" value={f.de ?? ''} onChange={e => set(i, { de: Number(e.target.value) })}
             className={`${INP} w-14 text-center`} />
-          <span className="text-accent-300 text-xs">até</span>
+          <span className="text-accent-300 text-xs">{t('até')}</span>
           <input type="number" value={f.ate ?? ''} placeholder="∞"
             onChange={e => set(i, { ate: e.target.value === '' ? null : Number(e.target.value) })}
             className={`${INP} w-14 text-center`} />
@@ -129,15 +130,15 @@ export function EscalaEditor({ escala, onChange }) {
           <input type="text" value={f.valor_extra_por_circulo ?? ''}
             onChange={e => set(i, { valor_extra_por_circulo: e.target.value })}
             placeholder="1d8" spellCheck={false} className={`${INP} w-20 font-mono`} />
-          <span className="text-accent-300 text-xs">por círculo acima</span>
+          <span className="text-accent-300 text-xs">{t('por círculo acima')}</span>
           <button type="button" onClick={() => remover(i)}
             className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
         </div>
       ))}
       <Botao variante="contorno" tamanho="sm" type="button" onClick={adicionar}>
-        + faixa
+        {t('+ faixa')}
       </Botao>
-      {faixas.length === 0 && <p className="text-accent-300 text-xs">Não escala com o círculo.</p>}
+      {faixas.length === 0 && <p className="text-accent-300 text-xs">{t('Não escala com o círculo.')}</p>}
       {status && !status.valida && <p className="text-red-400 text-xs">⚠ {status.erro}</p>}
     </div>
   )

@@ -3,6 +3,7 @@ import { estadoDaHabilidade } from '../../../lib/combateAvancado'
 import { midiaEhSom } from '../../../lib/personalizacao'
 import { tocarSomProprio } from '../../../audio/somProprio'
 import { custosDeTurno, descreverCustoTurno } from '../../../lib/custoHabilidade'
+import { t, tn } from '../../../i18n'
 
 function Toggle({ ativa, onChange }) {
   return (
@@ -11,7 +12,7 @@ function Toggle({ ativa, onChange }) {
       className={`relative w-10 h-5 rounded-full transition-colors duration-200 focus:outline-none shrink-0 ${
         ativa ? 'bg-accent-600' : 'bg-hover'
       }`}
-      title={ativa ? 'Desativar' : 'Ativar'}
+      title={ativa ? t('Desativar') : t('Ativar')}
     >
       <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-ink shadow-sm transition-transform duration-200 ${
         ativa ? 'translate-x-5' : 'translate-x-0'
@@ -64,9 +65,9 @@ function EstadoCombate({ hf, isDono, onUsar, onAjustarCarga, onLiberarRecarga })
   return (
     <div className="flex flex-wrap items-center gap-2 mt-2">
       {est.ehUltimate && (
-        <span className="flex items-center gap-1" title={`Carga ${est.carga}/${est.cargaMax}`}>
-          <span className="text-ink-dim text-xs">Ultimate</span>
-          <span className="flex gap-0.5" aria-label={`Carga ${est.carga} de ${est.cargaMax}`}>
+        <span className="flex items-center gap-1" title={t('Carga {atual}/{max}', { atual: est.carga, max: est.cargaMax })}>
+          <span className="text-ink-dim text-xs">{t('Ultimate')}</span>
+          <span className="flex gap-0.5" aria-label={t('Carga {atual} de {max}', { atual: est.carga, max: est.cargaMax })}>
             {Array.from({ length: est.cargaMax }, (_, i) => (
               <span key={i} className={`w-2.5 h-2.5 rounded-full border ${i < est.carga ? 'bg-dice-400 border-dice-300' : 'bg-void border-border'}`} />
             ))}
@@ -74,9 +75,9 @@ function EstadoCombate({ hf, isDono, onUsar, onAjustarCarga, onLiberarRecarga })
           {isDono && (
             <>
               <button onClick={() => onAjustarCarga?.(hf.id, -1)} disabled={est.carga <= 0}
-                className="w-5 h-5 rounded-lg bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs" title="Menos carga">−</button>
+                className="w-5 h-5 rounded-lg bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs" title={t('Menos carga')}>−</button>
               <button onClick={() => onAjustarCarga?.(hf.id, +1)} disabled={est.carga >= est.cargaMax}
-                className="w-5 h-5 rounded-lg bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs" title="Mais carga">+</button>
+                className="w-5 h-5 rounded-lg bg-hover hover:bg-border disabled:opacity-30 text-ink text-xs" title={t('Mais carga')}>+</button>
             </>
           )}
         </span>
@@ -87,18 +88,18 @@ function EstadoCombate({ hf, isDono, onUsar, onAjustarCarga, onLiberarRecarga })
         </span>
       )}
       {isDono && est.emRecarga && (
-        <button onClick={() => onLiberarRecarga?.(hf.id)} className="text-ink-dim text-xs hover:text-ink underline" title="Tirar da recarga">pronta</button>
+        <button onClick={() => onLiberarRecarga?.(hf.id)} className="text-ink-dim text-xs hover:text-ink underline" title={t('Tirar da recarga')}>{t('pronta')}</button>
       )}
       {isDono && (
         <button
           onClick={() => onUsar?.(hf)}
           disabled={!est.pronta}
           className="px-2 py-1 text-xs rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-40 disabled:cursor-not-allowed text-sobre-acento font-semibold"
-          title={est.pronta ? 'Usar (entra em recarga / gasta a carga)' : est.motivo}
-        >⚡ Usar</button>
+          title={est.pronta ? t('Usar (entra em recarga / gasta a carga)') : est.motivo}
+        >{t('⚡ Usar')}</button>
       )}
       {temRecarga && !est.emRecarga && (
-        <span className="text-ink-dim text-xs">recarga {hab.recarga_turnos} turno{hab.recarga_turnos === 1 ? '' : 's'}</span>
+        <span className="text-ink-dim text-xs">{tn(hab.recarga_turnos, 'recarga {n} turno', 'recarga {n} turnos')}</span>
       )}
     </div>
   )
@@ -113,16 +114,16 @@ function MidiaHabilidade({ hab, volume }) {
       <button
         type="button" onClick={() => tocarSomProprio(url, { volume })}
         className="text-xs px-2 py-1 rounded-lg bg-hover text-ink hover:bg-border transition-colors"
-        title="Ouvir o som desta habilidade"
-      >🔊 som</button>
+        title={t('Ouvir o som desta habilidade')}
+      >{t('🔊 som')}</button>
     )
   }
   return <img src={url} alt="" className="w-10 h-10 rounded-lg object-cover border border-border shrink-0" />
 }
 
 function OrigemBadge({ origem }) {
-  if (origem === 'raca')   return <span className="text-xs px-1.5 py-0.5 rounded-full bg-hover border border-accent-700/60 text-accent-400">Raça</span>
-  if (origem === 'classe') return <span className="text-xs px-1.5 py-0.5 rounded-full bg-hover border border-temp/50 text-temp">Classe</span>
+  if (origem === 'raca')   return <span className="text-xs px-1.5 py-0.5 rounded-full bg-hover border border-accent-700/60 text-accent-400">{t('Raça')}</span>
+  if (origem === 'classe') return <span className="text-xs px-1.5 py-0.5 rounded-full bg-hover border border-temp/50 text-temp">{t('Classe')}</span>
   return null
 }
 
@@ -146,7 +147,7 @@ function AcoesPontuais({ hf, onUsarAcao, isDono }) {
               ehCura ? 'bg-ok/80 hover:bg-ok' : 'bg-temp/80 hover:bg-temp'
             }`}
           >
-            {ehCura ? `💚 Curar ${valor}` : `🛡 +${valor} vida temp`}
+            {ehCura ? t('💚 Curar {valor}', { valor }) : t('🛡 +{valor} vida temp', { valor })}
           </button>
         )
       })}
@@ -156,15 +157,15 @@ function AcoesPontuais({ hf, onUsarAcao, isDono }) {
 
 // 19.4 — rastreabilidade: qual faixa está valendo agora. Ex: "(faixa 11–16, nível 13)"
 function rotuloFaixa(m, nomes = {}) {
-  if (m._faixaErro) return ' (fora das faixas)'
+  if (m._faixaErro) return t(' (fora das faixas)')
   const fa = m._faixaAtiva
   if (!fa) return ''
   const intervalo = fa.ate == null ? `${fa.de}+` : `${fa.de}–${fa.ate}`
   const v = String(fa.variavel || 'nivel')
   const escala = v.startsWith('nivel:')
-    ? `nível de ${nomes[v.slice('nivel:'.length)] || v.slice('nivel:'.length)}`
-    : 'nível'
-  return ` (faixa ${intervalo}, ${escala} ${fa.valorVariavel})`
+    ? t('nível de {nome}', { nome: String(nomes[v.slice('nivel:'.length)] || v.slice('nivel:'.length)) })
+    : t('nível')
+  return t(' (faixa {intervalo}, {escala} {valor})', { intervalo, escala, valor: String(fa.valorVariavel) })
 }
 
 // Descrição curta e legível do efeito de um modificador (Fase 12.7). Resolve o
@@ -184,19 +185,19 @@ function descreverEfeito(m, nomes = {}) {
   const acDano = [v && comSinal(v), extra && comSinal(extra), m.percentual_rolagem && `+${m.percentual_rolagem}%`].filter(Boolean).join(' ')
   const base = (() => {
     switch (m.tipo) {
-      case 'acerto':          return `Acerto ${acDano}`.trim()
-      case 'dano':            return `Dano ${acDano}`.trim()
-      case 'resistencia':     return `Resistência: ${alvoTxt || v}`
-      case 'imunidade':       return `Imunidade: ${alvoTxt || v}`
-      case 'vulnerabilidade': return `Vulnerabilidade: ${alvoTxt || v}`
-      case 'vantagem':        return `Vantagem${nomeAlvo ? ` em ${nomeAlvo}` : ''}`
-      case 'desvantagem':     return `Desvantagem${nomeAlvo ? ` em ${nomeAlvo}` : ''}`
-      case 'vida_max':        return `Vida máx ${sinalPre}${v}${suf}`
-      case 'vida_temp':       return `Vida temp +${v}`
-      case 'cura':            return `Cura ${v}`
-      case 'vida_temp_acao':  return `Vida temp ${v}`
-      case 'atributo':        return `${nomeAlvo || 'Atributo'} ${sinalPre}${v}${suf}`
-      case 'combate':         return `${nomeAlvo || 'Combate'} ${sinalPre}${v}${suf}`
+      case 'acerto':          return t('Acerto {v}', { v: acDano }).trim()
+      case 'dano':            return t('Dano {v}', { v: acDano }).trim()
+      case 'resistencia':     return t('Resistência: {v}', { v: alvoTxt || v })
+      case 'imunidade':       return t('Imunidade: {v}', { v: alvoTxt || v })
+      case 'vulnerabilidade': return t('Vulnerabilidade: {v}', { v: alvoTxt || v })
+      case 'vantagem':        return nomeAlvo ? t('Vantagem em {nome}', { nome: nomeAlvo }) : t('Vantagem')
+      case 'desvantagem':     return nomeAlvo ? t('Desvantagem em {nome}', { nome: nomeAlvo }) : t('Desvantagem')
+      case 'vida_max':        return t('Vida máx {v}', { v: `${sinalPre}${v}${suf}` })
+      case 'vida_temp':       return t('Vida temp +{v}', { v })
+      case 'cura':            return t('Cura {v}', { v })
+      case 'vida_temp_acao':  return t('Vida temp {v}', { v })
+      case 'atributo':        return `${nomeAlvo || t('Atributo')} ${sinalPre}${v}${suf}`
+      case 'combate':         return `${nomeAlvo || t('Combate')} ${sinalPre}${v}${suf}`
       default:                return m.tipo
     }
   })()
@@ -205,14 +206,14 @@ function descreverEfeito(m, nomes = {}) {
 
 // Texto curto da condição de um modificador (auto/manual), ou null se incondicional.
 function descreverCondicao(m) {
-  if (m.condicao_tipo === 'manual') return (m.condicao_config?.rotulo || '').trim() || 'manual'
+  if (m.condicao_tipo === 'manual') return (m.condicao_config?.rotulo || '').trim() || t('manual')
   if (m.condicao_tipo === 'auto') {
     const c = m.condicao_config || {}
-    if (c.metrica === 'vida_percent')    return `se vida ${c.operador || ''} ${c.valor}%`
-    if (c.metrica === 'nivel')           return `se nível ${c.operador || ''} ${c.valor}`
-    if (c.metrica === 'habilidade_ativa') return 'se habilidade ativa'
-    if (c.metrica === 'formula') return `se ${c.formula} ${c.operador} ${c.valor}`
-    return 'condicional'
+    if (c.metrica === 'vida_percent')    return t('se vida {op} {valor}%', { op: String(c.operador || ''), valor: String(c.valor ?? '') })
+    if (c.metrica === 'nivel')           return t('se nível {op} {valor}', { op: String(c.operador || ''), valor: String(c.valor ?? '') })
+    if (c.metrica === 'habilidade_ativa') return t('se habilidade ativa')
+    if (c.metrica === 'formula') return t('se {formula} {op} {valor}', { formula: String(c.formula ?? ''), op: String(c.operador ?? ''), valor: String(c.valor ?? '') })
+    return t('condicional')
   }
   return null
 }
@@ -236,7 +237,7 @@ function ResumoEfeitos({ modificadores = [], idsAtivos, nomes = {}, emJogo }) {
           <span
             key={m.id}
             className={`inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-lg border ${base}`}
-            title={cond ? (ativo ? 'Ativo agora' : 'Inativo — condição não satisfeita') : undefined}
+            title={cond ? (ativo ? t('Ativo agora') : t('Inativo — condição não satisfeita')) : undefined}
           >
             {cond && (
               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${ativo ? 'bg-ok' : 'bg-border'}`} />
@@ -255,10 +256,10 @@ function CondicoesManuais({ condicoes, estado, onToggle, isDono, nomes = {} }) {
   if (!condicoes || condicoes.length === 0) return null
   return (
     <div className="space-y-2">
-      <p className="text-ink-dim text-xs font-medium uppercase tracking-[.12em]">Condições situacionais</p>
+      <p className="text-ink-dim text-xs font-medium uppercase tracking-[.12em]">{t('Condições situacionais')}</p>
       {condicoes.map(m => {
         const ativa = estado?.[m.id] === true
-        const rotulo = (m.condicao_config?.rotulo || '').trim() || 'Condição'
+        const rotulo = (m.condicao_config?.rotulo || '').trim() || t('Condição')
         return (
           <div
             key={m.id}
@@ -275,7 +276,7 @@ function CondicoesManuais({ condicoes, estado, onToggle, isDono, nomes = {} }) {
                     ? 'bg-ok/15 border border-ok/50 text-ok'
                     : 'bg-hover border border-border text-ink-dim'
                 }`}>
-                  {ativa ? 'Ativa' : 'Inativa'}
+                  {ativa ? t('Ativa') : t('Inativa')}
                 </span>
               )}
               <div className="flex-1 min-w-0">
@@ -325,14 +326,14 @@ export default function PainelHabilidades({
     const semRecurso = novoEstado && hab?.recurso_max != null && (hf.recurso_atual ?? hab.recurso_max) <= 0
     setAvisos(prev => {
       const n = { ...prev }
-      if (semRecurso) n[hf.id] = `Sem ${hab.recurso_nome || 'usos'} disponíveis — ativada mesmo assim.`
+      if (semRecurso) n[hf.id] = t('Sem {nome} disponíveis — ativada mesmo assim.', { nome: String(hab.recurso_nome || t('usos')) })
       else delete n[hf.id]
       return n
     })
     if (semRecurso) setTimeout(() => setAvisos(prev => { const n = { ...prev }; delete n[hf.id]; return n }), 4000)
     // 20.5 — ativar pode falhar por falta de recurso (pool): o motivo vira aviso
     Promise.resolve(onToggle(hf.id, novoEstado)).catch(e => {
-      setAvisos(prev => ({ ...prev, [hf.id]: e.message || 'Não foi possível ativar.' }))
+      setAvisos(prev => ({ ...prev, [hf.id]: e.message || t('Não foi possível ativar.') }))
       setTimeout(() => setAvisos(prev => { const n = { ...prev }; delete n[hf.id]; return n }), 5000)
     })
   }
@@ -360,14 +361,14 @@ export default function PainelHabilidades({
   const disponíveis = habilidades.filter(h => !fichaIds.has(h.id))
 
   async function handleAdicionar() {
-    if (!selecionada) { setAddErro('Selecione uma habilidade.'); return }
+    if (!selecionada) { setAddErro(t('Selecione uma habilidade.')); return }
     setAdicionando(true)
     setAddErro('')
     try {
       await onAdicionar(selecionada)
       setSelecionada('')
     } catch (err) {
-      setAddErro(err.message || 'Erro ao adicionar.')
+      setAddErro(err.message || t('Erro ao adicionar.'))
     } finally {
       setAdicionando(false)
     }
@@ -376,9 +377,9 @@ export default function PainelHabilidades({
   if (habilidadesFicha.length === 0 && habilidades.length === 0 && condicoesManuaisDisponiveis.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-ink-dim text-sm">Nenhuma habilidade configurada no sistema.</p>
+        <p className="text-ink-dim text-sm">{t('Nenhuma habilidade configurada no sistema.')}</p>
         <p className="text-ink-dim text-xs mt-1">
-          Configure habilidades em Sistema → Raças & Classes.
+          {t('Configure habilidades em Sistema → Raças & Classes.')}
         </p>
       </div>
     )
@@ -390,7 +391,7 @@ export default function PainelHabilidades({
       {/* Ativáveis */}
       {ativaveis.length > 0 && (
         <div className="space-y-2">
-          <p className="text-ink-dim text-xs font-medium uppercase tracking-[.12em]">Ativáveis</p>
+          <p className="text-ink-dim text-xs font-medium uppercase tracking-[.12em]">{t('Ativáveis')}</p>
           {ativaveis.map(hf => {
             const hab = hf.habilidade
             if (!hab) return null
@@ -421,7 +422,7 @@ export default function PainelHabilidades({
                             ? 'bg-ok/15 border border-ok/50 text-ok'
                             : 'bg-hover border border-border text-ink-dim'
                         }`}>
-                          {hf.ativa ? 'Ativa' : 'Inativa'}
+                          {hf.ativa ? t('Ativa') : t('Inativa')}
                         </span>
                       )}
                     </div>
@@ -444,7 +445,7 @@ export default function PainelHabilidades({
                     <button
                       onClick={() => onRemover(hf.id)}
                       className="p-1 text-harm/70 hover:text-harm transition-colors shrink-0 mt-0.5"
-                      title="Remover"
+                      title={t('Remover')}
                     >✕</button>
                   )}
                 </div>
@@ -457,7 +458,7 @@ export default function PainelHabilidades({
       {/* Passivas */}
       {passivas.length > 0 && (
         <div className="space-y-2">
-          <p className="text-ink-dim text-xs font-medium uppercase tracking-[.12em]">Passivas</p>
+          <p className="text-ink-dim text-xs font-medium uppercase tracking-[.12em]">{t('Passivas')}</p>
           {passivas.map(hf => {
             const hab = hf.habilidade
             if (!hab) return null
@@ -468,7 +469,7 @@ export default function PainelHabilidades({
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-ink font-medium text-sm">{hab.nome}</p>
                       <span className="text-xs px-1.5 py-0.5 rounded-full bg-ok/15 border border-ok/50 text-ok">
-                        Sempre ativa
+                        {t('Sempre ativa')}
                       </span>
                       <OrigemBadge origem={hf.origem} />
                     </div>
@@ -489,7 +490,7 @@ export default function PainelHabilidades({
                     <button
                       onClick={() => onRemover(hf.id)}
                       className="p-1 text-harm/70 hover:text-harm transition-colors shrink-0"
-                      title="Remover"
+                      title={t('Remover')}
                     >✕</button>
                   )}
                 </div>
@@ -511,9 +512,9 @@ export default function PainelHabilidades({
       {/* Estado vazio */}
       {habilidadesFicha.length === 0 && condicoesManuaisDisponiveis.length === 0 && (
         <div className="text-center py-5 border border-dashed border-border rounded-xl">
-          <p className="text-ink-dim text-sm">Nenhuma habilidade nesta ficha.</p>
+          <p className="text-ink-dim text-sm">{t('Nenhuma habilidade nesta ficha.')}</p>
           {isDono && disponíveis.length > 0 && (
-            <p className="text-ink-dim text-xs mt-1">Adicione uma abaixo.</p>
+            <p className="text-ink-dim text-xs mt-1">{t('Adicione uma abaixo.')}</p>
           )}
         </div>
       )}
@@ -525,7 +526,7 @@ export default function PainelHabilidades({
             onClick={onRecuperarRecursos}
             className="w-full py-1.5 text-xs bg-hover hover:bg-border text-accent-300 hover:text-ink rounded-lg transition-colors"
           >
-            ♻ Recuperar todos os recursos
+            {t('♻ Recuperar todos os recursos')}
           </button>
         </div>
       )}
@@ -533,17 +534,17 @@ export default function PainelHabilidades({
       {/* Adicionar habilidade */}
       {isDono && disponíveis.length > 0 && (
         <div className="border-t border-border/60 pt-4 space-y-2">
-          <p className="text-ink-dim text-xs font-medium uppercase tracking-[.12em]">Adicionar habilidade</p>
+          <p className="text-ink-dim text-xs font-medium uppercase tracking-[.12em]">{t('Adicionar habilidade')}</p>
           <div className="flex gap-2">
             <select
               value={selecionada}
               onChange={e => { setSelecionada(e.target.value); setAddErro('') }}
               className="flex-1 px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-1 focus:ring-accent-500"
             >
-              <option value="">Selecionar habilidade...</option>
+              <option value="">{t('Selecionar habilidade...')}</option>
               {disponíveis.map(h => (
                 <option key={h.id} value={h.id}>
-                  {h.nome} — {h.tipo === 'passiva' ? 'Passiva' : 'Ativável'}
+                  {h.nome} — {h.tipo === 'passiva' ? t('Passiva') : t('Ativável')}
                 </option>
               ))}
             </select>
@@ -552,7 +553,7 @@ export default function PainelHabilidades({
               disabled={adicionando || !selecionada}
               className="px-3 py-1.5 bg-accent-700 hover:bg-accent-600 disabled:opacity-50 text-sobre-acento text-sm rounded-lg transition-colors shrink-0"
             >
-              {adicionando ? '...' : '+ Adicionar'}
+              {adicionando ? '...' : t('+ Adicionar')}
             </button>
           </div>
           {addErro && <p className="text-harm text-xs">{addErro}</p>}
@@ -563,15 +564,15 @@ export default function PainelHabilidades({
       {comCustoTurno.length > 0 && (
         <div className="border-t border-border pt-3 mt-3 space-y-1.5">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <p className="text-dice-400 text-xs font-medium">Custo por turno</p>
+            <p className="text-dice-400 text-xs font-medium">{t('Custo por turno')}</p>
             {isDono && onPagarTurno && (
               <button
                 onClick={handlePagarTurno}
                 disabled={pagando}
                 className="px-2.5 py-1 text-xs font-medium rounded-lg bg-dice-700 hover:bg-dice-500 text-ink transition-colors disabled:opacity-50"
-                title="Fora de combate. Dentro do combate, a sessão cobra ao avançar o turno."
+                title={t('Fora de combate. Dentro do combate, a sessão cobra ao avançar o turno.')}
               >
-                {pagando ? '...' : 'Pagar turno'}
+                {pagando ? '...' : t('Pagar turno')}
               </button>
             )}
           </div>
@@ -589,15 +590,15 @@ export default function PainelHabilidades({
       {/* 19.5 — habilidades futuras da classe: visíveis para planejar, inativas */}
       {habilidadesBloqueadas.length > 0 && (
         <div className="border-t border-border pt-3 mt-3 space-y-1.5">
-          <p className="text-ink-dim text-xs font-medium">Ainda bloqueadas</p>
+          <p className="text-ink-dim text-xs font-medium">{t('Ainda bloqueadas')}</p>
           {habilidadesBloqueadas.map(h => (
             <div
               key={h.id}
               className="flex items-center justify-between gap-2 bg-void/40 border border-border/50 rounded-lg px-2.5 py-1.5 opacity-60"
-              title={`Disponível ao atingir o nível ${h.nivel_minimo}`}
+              title={t('Disponível ao atingir o nível {n}', { n: String(h.nivel_minimo ?? '') })}
             >
               <span className="text-accent-300 text-sm truncate">🔒 {h.nome}</span>
-              <span className="text-dice-500/80 text-xs font-mono shrink-0">nv {h.nivel_minimo}</span>
+              <span className="text-dice-500/80 text-xs font-mono shrink-0">{t('nv {n}', { n: String(h.nivel_minimo ?? '') })}</span>
             </div>
           ))}
         </div>

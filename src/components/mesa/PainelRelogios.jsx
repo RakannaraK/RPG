@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRelogios } from '../../hooks/useRelogios'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
@@ -39,13 +40,13 @@ export default function PainelRelogios({ mesaId, isGestor }) {
   if (loading || indisponivel) return null
 
   async function handleCriar() {
-    if (!nome.trim()) { setErro('Dê um nome ao relógio.'); return }
+    if (!nome.trim()) { setErro(t('Dê um nome ao relógio.')); return }
     setCriando(true); setErro('')
     try {
       await criar({ nome, segmentos })
       setNome(''); setSegmentos(6)
     } catch (e) {
-      setErro(e.message || 'Erro ao criar o relógio.')
+      setErro(e.message || t('Erro ao criar o relógio.'))
     } finally {
       setCriando(false)
     }
@@ -56,14 +57,14 @@ export default function PainelRelogios({ mesaId, isGestor }) {
   return (
     <div className="space-y-3">
       <div>
-        <p className="text-purple-200 font-medium text-sm">Relógios da campanha</p>
+        <p className="text-purple-200 font-medium text-sm">{t('Relógios da campanha')}</p>
         <p className="text-accent-300 text-xs mt-0.5">
-          O que está em andamento no mundo, entre uma sessão e outra.
+          {t('O que está em andamento no mundo, entre uma sessão e outra.')}
         </p>
       </div>
 
       {relogios.length === 0 && (
-        <p className="text-accent-300 text-xs italic">Nenhum relógio ainda.</p>
+        <p className="text-accent-300 text-xs italic">{t('Nenhum relógio ainda.')}</p>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -87,7 +88,7 @@ export default function PainelRelogios({ mesaId, isGestor }) {
             <Segmentos preenchido={r.preenchido} segmentos={r.segmentos} />
 
             {r.concluido && (
-              <p className="text-amber-300 text-xs font-semibold">✓ Completo</p>
+              <p className="text-amber-300 text-xs font-semibold">{t('✓ Completo')}</p>
             )}
 
             {isGestor && (
@@ -103,7 +104,7 @@ export default function PainelRelogios({ mesaId, isGestor }) {
                 <button
                   type="button" onClick={() => remover(r.id)}
                   className="ml-auto text-red-800 hover:text-red-500 transition-colors px-1 text-sm"
-                  title="Remover relógio"
+                  title={t('Remover relógio')}
                 >✕</button>
               </div>
             )}
@@ -115,17 +116,17 @@ export default function PainelRelogios({ mesaId, isGestor }) {
         <div className="flex gap-2 flex-wrap items-center border-t border-purple-900/60 pt-3">
           <input
             type="text" value={nome} onChange={e => setNome(e.target.value)}
-            placeholder="Novo relógio (ex: Investigação do Inquisidor)"
+            placeholder={t('Novo relógio (ex: Investigação do Inquisidor)')}
             className={`${INP} flex-1 min-w-[12rem]`}
           />
           <input
             type="number" min={1} max={24} value={segmentos}
             onChange={e => setSegmentos(Number(e.target.value) || 6)}
-            className={`${INP} w-16 text-center`} title="Segmentos"
+            className={`${INP} w-16 text-center`} title={t('Segmentos')}
           />
           <Botao variante="primario" tamanho="sm"
             type="button" onClick={handleCriar} disabled={criando}>
-            {criando ? '...' : '+ Criar'}
+            {criando ? '...' : t('+ Criar')}
           </Botao>
           {erro && <p className="text-red-400 text-xs w-full">{erro}</p>}
         </div>

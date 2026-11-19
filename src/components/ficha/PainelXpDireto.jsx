@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { validarCompra } from '../../lib/purchaseEngine'
+import { t, locale } from '../../i18n'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-xs placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500'
 
 function tempo(ts) {
-  return ts ? new Date(ts).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : ''
+  return ts ? new Date(ts).toLocaleDateString(locale(), { day: '2-digit', month: '2-digit' }) : ''
 }
 
 /**
@@ -44,7 +45,7 @@ export default function PainelXpDireto({
     try {
       await onComprar(categoria, alvo, validacao)
       setAlvoId('')
-    } catch (e) { setErro(e.message || 'Erro na compra.') }
+    } catch (e) { setErro(e.message || t('Erro na compra.')) }
     finally { setBusy(false) }
   }
 
@@ -56,7 +57,7 @@ export default function PainelXpDireto({
     try {
       await onConceder(n, motivo.trim())
       setQtd(''); setMotivo(''); setAba(null)
-    } catch (e) { setErro(e.message || 'Erro ao conceder.') }
+    } catch (e) { setErro(e.message || t('Erro ao conceder.')) }
     finally { setBusy(false) }
   }
 
@@ -64,38 +65,38 @@ export default function PainelXpDireto({
   function descreverLinha(l) {
     const d = l.detalhe || {}
     if (l.tipo === 'gasto' && d.para != null) {
-      const nomeAlvo = nomes[d.alvo_id] || d.alvo_id || 'alvo'
+      const nomeAlvo = nomes[d.alvo_id] || d.alvo_id || t('alvo')
       return `${nomeAlvo} ${d.de} → ${d.para}`
     }
-    if (l.tipo === 'ganho') return d.motivo || 'XP concedido'
-    return d.motivo || 'Ajuste'
+    if (l.tipo === 'ganho') return d.motivo || t('XP concedido')
+    return d.motivo || t('Ajuste')
   }
 
   return (
     <div className="bg-raised border border-dice-500/60 rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-3 flex-wrap">
         <div>
-          <p className="text-dice-400 text-xs uppercase tracking-[.12em] font-medium">Experiência</p>
+          <p className="text-dice-400 text-xs uppercase tracking-[.12em] font-medium">{t('Experiência')}</p>
           <p className="text-ink font-bold text-3xl leading-tight">
-            {saldo} <span className="text-dice-500/70 text-sm font-normal">XP disponível</span>
+            {saldo} <span className="text-dice-500/70 text-sm font-normal">{t('XP disponível')}</span>
           </p>
         </div>
         <div className="ml-auto flex gap-2 flex-wrap">
           {isDono && categorias.length > 0 && (
             <button onClick={() => setAba(aba === 'gastar' ? null : 'gastar')}
               className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${aba === 'gastar' ? 'bg-dice-500 text-ink' : 'bg-dice-700 hover:bg-dice-500 text-ink'}`}>
-              Gastar XP
+              {t('Gastar XP')}
             </button>
           )}
           {(isDono || souGestor) && (
             <button onClick={() => setAba(aba === 'conceder' ? null : 'conceder')}
               className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${aba === 'conceder' ? 'bg-accent-600 text-sobre-acento' : 'bg-hover hover:bg-accent-700 text-sobre-acento'}`}>
-              + Conceder
+              {t('+ Conceder')}
             </button>
           )}
           <button onClick={() => setAba(aba === 'historico' ? null : 'historico')}
             className="px-3 py-1.5 text-sm rounded-lg border border-border text-accent-300 hover:text-ink hover:border-accent-500 transition-colors">
-            Histórico
+            {t('Histórico')}
           </button>
         </div>
       </div>
@@ -105,17 +106,17 @@ export default function PainelXpDireto({
         <div className="space-y-2 border-t border-border/50 pt-2">
           <div className="flex items-center gap-2 flex-wrap">
             <select value={catId} onChange={e => { setCatId(e.target.value); setAlvoId('') }} className={INP}>
-              <option value="">— categoria —</option>
+              <option value="">{t('— categoria —')}</option>
               {categorias.map(c => <option key={c.id} value={c.id}>{c.nome || c.alvo}</option>)}
             </select>
             {categoria && (
               alvos.length > 0 ? (
                 <select value={alvoId} onChange={e => setAlvoId(e.target.value)} className={INP}>
-                  <option value="">— o quê? —</option>
-                  {alvos.map(a => <option key={a.id} value={a.id}>{a.nome} ({a.valor}){a.fora ? ' — fora' : ''}</option>)}
+                  <option value="">{t('— o quê? —')}</option>
+                  {alvos.map(a => <option key={a.id} value={a.id}>{a.nome} ({a.valor}){a.fora ? t(' — fora') : ''}</option>)}
                 </select>
               ) : (
-                <span className="text-ink-dim text-xs">Nenhum alvo disponível nesta categoria.</span>
+                <span className="text-ink-dim text-xs">{t('Nenhum alvo disponível nesta categoria.')}</span>
               )
             )}
           </div>
@@ -132,25 +133,25 @@ export default function PainelXpDireto({
               {validacao.permitida ? (
                 <button onClick={confirmarCompra} disabled={busy}
                   className="ml-auto px-3 py-1 text-sm bg-dice-700 hover:bg-dice-500 disabled:opacity-50 text-ink rounded-lg transition-colors">
-                  {busy ? '…' : 'Confirmar compra'}
+                  {busy ? '…' : t('Confirmar compra')}
                 </button>
               ) : (
                 <span className="ml-auto text-harm text-xs">{validacao.motivoBloqueio}</span>
               )}
             </div>
           )}
-          <p className="text-ink-dim text-xs">Compra é definitiva (+1 por vez); correções só via ajuste do mestre.</p>
+          <p className="text-ink-dim text-xs">{t('Compra é definitiva (+1 por vez); correções só via ajuste do mestre.')}</p>
         </div>
       )}
 
       {/* Conceder XP (mestre/dono) com motivo */}
       {aba === 'conceder' && (
         <div className="flex items-center gap-2 flex-wrap border-t border-border/50 pt-2">
-          <input type="number" min={1} value={qtd} onChange={e => setQtd(e.target.value)} placeholder="XP" className={`${INP} w-20`} />
-          <input type="text" value={motivo} onChange={e => setMotivo(e.target.value)} placeholder="motivo (ex: Sessão 12)" className={`${INP} flex-1 min-w-[10rem]`} />
+          <input type="number" min={1} value={qtd} onChange={e => setQtd(e.target.value)} placeholder={t('XP')} className={`${INP} w-20`} />
+          <input type="text" value={motivo} onChange={e => setMotivo(e.target.value)} placeholder={t('motivo (ex: Sessão 12)')} className={`${INP} flex-1 min-w-[10rem]`} />
           <button onClick={confirmarConcessao} disabled={busy || !Number(qtd)}
             className="px-3 py-1.5 text-sm bg-accent-700 hover:bg-accent-600 disabled:opacity-50 text-sobre-acento rounded-lg transition-colors">
-            Conceder
+            {t('Conceder')}
           </button>
         </div>
       )}
@@ -158,7 +159,7 @@ export default function PainelXpDireto({
       {/* Histórico legível */}
       {aba === 'historico' && (
         <div className="border-t border-border/50 pt-2 space-y-1 max-h-64 overflow-y-auto">
-          {log.length === 0 && <p className="text-ink-dim text-xs">Nenhum registro ainda.</p>}
+          {log.length === 0 && <p className="text-ink-dim text-xs">{t('Nenhum registro ainda.')}</p>}
           {log.map(l => (
             <div key={l.id} className="flex items-baseline gap-2 text-xs">
               <span className={`font-mono font-bold shrink-0 w-12 text-right ${l.quantidade >= 0 ? 'text-ok' : 'text-harm'}`}>

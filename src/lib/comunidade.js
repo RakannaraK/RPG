@@ -5,20 +5,21 @@
  */
 
 import { validarPacote } from './extensoes'
+import { t } from '../i18n'
 
 export const TIPOS_PUBLICACAO = [
-  { id: 'ficha', nome: 'Ficha', icone: '📜' },
-  { id: 'criatura', nome: 'Criatura', icone: '🐾' },
-  { id: 'sistema', nome: 'Sistema', icone: '⚙️' },
-  { id: 'extensao', nome: 'Extensão', icone: '✨' },
-  { id: 'arte', nome: 'Arte', icone: '🎨' },
+  { id: 'ficha', nome: t('Ficha'), icone: '📜' },
+  { id: 'criatura', nome: t('Criatura'), icone: '🐾' },
+  { id: 'sistema', nome: t('Sistema'), icone: '⚙️' },
+  { id: 'extensao', nome: t('Extensão'), icone: '✨' },
+  { id: 'arte', nome: t('Arte'), icone: '🎨' },
 ]
 
 export const LIMITE_CONTEUDO_BYTES = 1_000_000
 export const DENUNCIAS_PARA_ESCONDER = 3
 
-export const nomeDoTipo = tipo => TIPOS_PUBLICACAO.find(t => t.id === tipo)?.nome || tipo
-export const iconeDoTipo = tipo => TIPOS_PUBLICACAO.find(t => t.id === tipo)?.icone || '📦'
+export const nomeDoTipo = tipo => TIPOS_PUBLICACAO.find(tp => tp.id === tipo)?.nome || tipo
+export const iconeDoTipo = tipo => TIPOS_PUBLICACAO.find(tp => tp.id === tipo)?.icone || '📦'
 
 /** "fantasia, baixo nível" → ['fantasia', 'baixo nível'] (sem repetir, até 8). */
 export function normalizarEtiquetas(texto) {
@@ -40,18 +41,18 @@ export function normalizarEtiquetas(texto) {
  * @returns {{ ok: true } | { ok: false, erro: string }}
  */
 export function validarPublicacao({ tipo, titulo, conteudo, imagem_url } = {}) {
-  if (!TIPOS_PUBLICACAO.some(t => t.id === tipo)) return { ok: false, erro: 'Escolha o que está publicando.' }
-  const t = String(titulo || '').trim()
-  if (t.length < 2) return { ok: false, erro: 'Dê um título (pelo menos 2 letras).' }
-  if (t.length > 120) return { ok: false, erro: 'O título passou de 120 letras.' }
+  if (!TIPOS_PUBLICACAO.some(tp => tp.id === tipo)) return { ok: false, erro: t('Escolha o que está publicando.') }
+  const tit = String(titulo || '').trim()
+  if (tit.length < 2) return { ok: false, erro: t('Dê um título (pelo menos 2 letras).') }
+  if (tit.length > 120) return { ok: false, erro: t('O título passou de 120 letras.') }
   if (tipo === 'arte') {
-    if (!String(imagem_url || '').trim()) return { ok: false, erro: 'Arte precisa de uma imagem.' }
+    if (!String(imagem_url || '').trim()) return { ok: false, erro: t('Arte precisa de uma imagem.') }
     return { ok: true }
   }
-  if (!conteudo || typeof conteudo !== 'object') return { ok: false, erro: 'Escolha o arquivo exportado (.json).' }
+  if (!conteudo || typeof conteudo !== 'object') return { ok: false, erro: t('Escolha o arquivo exportado (.json).') }
   const bytes = new TextEncoder().encode(JSON.stringify(conteudo)).length
   if (bytes > LIMITE_CONTEUDO_BYTES) {
-    return { ok: false, erro: `O arquivo tem ${(bytes / 1_000_000).toFixed(1)} MB; o limite é 1 MB.` }
+    return { ok: false, erro: t('O arquivo tem {mb} MB; o limite é 1 MB.', { mb: (bytes / 1_000_000).toFixed(1) }) }
   }
   if (tipo === 'extensao') {
     // conteúdo não confiável: só o pacote normalizado é gravado
@@ -60,9 +61,9 @@ export function validarPublicacao({ tipo, titulo, conteudo, imagem_url } = {}) {
   }
   if (tipo === 'sistema') {
     // export de sistema: tem as coleções na raiz (atributos, habilidades…)
-    if (!Array.isArray(conteudo.atributos) && !conteudo.sistema) return { ok: false, erro: 'Este arquivo não parece um sistema exportado.' }
+    if (!Array.isArray(conteudo.atributos) && !conteudo.sistema) return { ok: false, erro: t('Este arquivo não parece um sistema exportado.') }
   } else if (conteudo.formato !== 'rpg-ficha' || conteudo.tipo !== 'ficha') {
-    return { ok: false, erro: 'Este arquivo não parece uma ficha exportada do RPG Ficha.' }
+    return { ok: false, erro: t('Este arquivo não parece uma ficha exportada do RPG Ficha.') }
   }
   return { ok: true }
 }

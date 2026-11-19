@@ -16,6 +16,7 @@
  */
 import { avaliarFormula } from './formulaEngine.js'
 import { resolverNotacaoFormula } from './diceNotation.js'
+import { t } from '../i18n'
 
 /** A expressão contém dados (é rolada)? Ex: "1d6 + 10". */
 export function ehRolado(expr) {
@@ -84,17 +85,17 @@ export function custoDistribuicao(distribuicao = {}, custoPorPonto = 1) {
 export function validarDistribuicao({ distribuicao = {}, disponiveis = 0, custo_por_ponto = 1, valoresBase = {}, maximo_por_atributo = null }) {
   for (const k of Object.keys(distribuicao)) {
     const d = Math.floor(Number(distribuicao[k]) || 0)
-    if (d < 0) return { valido: false, custo: 0, restante: disponiveis, erro: 'Não é possível remover pontos já distribuídos.' }
+    if (d < 0) return { valido: false, custo: 0, restante: disponiveis, erro: t('Não é possível remover pontos já distribuídos.') }
     if (maximo_por_atributo != null) {
       const novo = (Number(valoresBase[k]) || 0) + d
       if (novo > Number(maximo_por_atributo)) {
-        return { valido: false, custo: 0, restante: disponiveis, erro: `Teto de ${maximo_por_atributo} por atributo excedido.` }
+        return { valido: false, custo: 0, restante: disponiveis, erro: t('Teto de {max} por atributo excedido.', { max: maximo_por_atributo }) }
       }
     }
   }
   const custo = custoDistribuicao(distribuicao, custo_por_ponto)
   if (custo > Number(disponiveis)) {
-    return { valido: false, custo, restante: Number(disponiveis) - custo, erro: 'Pontos insuficientes.' }
+    return { valido: false, custo, restante: Number(disponiveis) - custo, erro: t('Pontos insuficientes.') }
   }
   return { valido: true, custo, restante: Number(disponiveis) - custo }
 }

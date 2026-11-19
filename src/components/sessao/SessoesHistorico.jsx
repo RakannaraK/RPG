@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { t, locale } from '../../i18n'
 
 function fmtData(ts) {
   if (!ts) return ''
-  return new Date(ts).toLocaleString('pt-BR', {
+  return new Date(ts).toLocaleString(locale(), {
     day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
   })
 }
@@ -51,7 +52,7 @@ export default function SessoesHistorico({ mesaId }) {
         onClick={() => setAberto(a => !a)}
         className="text-purple-400 text-xs hover:text-purple-200 transition-colors"
       >
-        {aberto ? '▾' : '▸'} Sessões anteriores ({sessoes.length})
+        {aberto ? '▾' : '▸'} {t('Sessões anteriores ({n})', { n: sessoes.length })}
       </button>
       {aberto && (
         <ul className="mt-2 space-y-1.5">
@@ -61,7 +62,7 @@ export default function SessoesHistorico({ mesaId }) {
                 onClick={() => navigate(`/mesa/${mesaId}/sessao/${s.id}`)}
                 className="w-full text-left flex items-center justify-between gap-2 bg-slate-800/60 border border-purple-900/50 hover:border-purple-700 rounded-lg px-3 py-2 transition-colors"
               >
-                <span className="text-purple-200 text-sm truncate">{s.titulo || 'Sessão'}</span>
+                <span className="text-purple-200 text-sm truncate">{s.titulo || t('Sessão')}</span>
                 <span className="text-accent-300 text-xs shrink-0">
                   {fmtData(s.iniciada_em)}
                   {fmtDuracao(s.iniciada_em, s.encerrada_em) && ` · ${fmtDuracao(s.iniciada_em, s.encerrada_em)}`}

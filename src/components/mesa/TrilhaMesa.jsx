@@ -6,6 +6,7 @@ import { tocarPresetAcao } from '../../audio/actionSynth'
 import { EFEITOS_MESA, extrairVideo, posicaoAgora, precisaAjustar } from '../../lib/trilha'
 import Botao from '../ui/Botao'
 import Icone from '../ui/Icone'
+import { t } from '../../i18n'
 
 // F52 — cada efeito tem ícone e uma reação própria no botão (só nele, nunca na tela)
 const ICONE_EFEITO = {
@@ -27,7 +28,7 @@ function carregarYouTube() {
       window.onYouTubeIframeAPIReady = () => { anterior?.(); ok(window.YT) }
       const s = document.createElement('script')
       s.src = 'https://www.youtube.com/iframe_api'
-      s.onerror = () => { apiYouTube = null; falha(new Error('Não foi possível carregar o YouTube.')) }
+      s.onerror = () => { apiYouTube = null; falha(new Error(t('Não foi possível carregar o YouTube.'))) }
       document.head.appendChild(s)
     })
   }
@@ -169,12 +170,12 @@ export default function TrilhaMesa({ mesaId, isGestor, reservarEspaco = true }) 
   async function tocarLink(e) {
     e.preventDefault()
     const v = extrairVideo(link)
-    if (!v) { setErro('Cole o link de um vídeo do YouTube.'); return }
+    if (!v) { setErro(t('Cole o link de um vídeo do YouTube.')); return }
     await acao(() => atualizar({ video_id: v.id, titulo: null, tocando: true, posicao_s: v.inicio, marcado_em: agoraISO() }))
     setLink('')
   }
 
-  const titulo = videoId ? (estado.titulo || 'Música do YouTube') : 'Trilha e efeitos'
+  const titulo = videoId ? (estado.titulo || t('Música do YouTube')) : t('Trilha e efeitos')
   const tocando = !!videoId && !!estado?.tocando
   const caixa = 'trilha-caixa fixed bottom-4 left-4 z-menu max-w-[calc(100vw-2rem)] rounded-2xl border border-border bg-raised/95 backdrop-blur-md shadow-nivel-3'
   const ROTULO = 'text-ink-dim text-xs font-semibold uppercase tracking-wider'
@@ -187,7 +188,7 @@ export default function TrilhaMesa({ mesaId, isGestor, reservarEspaco = true }) 
   // portal: dentro da página, um ancestral com animação/transform prende o `fixed`
   // ao conteúdo em vez da tela (a barra rolava junto e tampava botões)
   return createPortal(
-    <section ref={secaoRef} aria-label="Trilha e efeitos da mesa" className={recolhido ? `${caixa} w-auto p-1.5 pr-2 flex items-center gap-2` : `${caixa} pop-entra w-80 p-3 space-y-3`}>
+    <section ref={secaoRef} aria-label={t('Trilha e efeitos da mesa')} className={recolhido ? `${caixa} w-auto p-1.5 pr-2 flex items-center gap-2` : `${caixa} pop-entra w-80 p-3 space-y-3`}>
       {/* o mesmo div nos dois tamanhos: trocar de lugar recriaria o tocador */}
       {ativo && <div ref={alvoRef} className={`${recolhido ? 'w-16 h-9' : 'w-full aspect-video'} shrink-0 rounded-lg overflow-hidden bg-void [&_iframe]:w-full [&_iframe]:h-full`} />}
       {recolhido ? (
@@ -198,18 +199,18 @@ export default function TrilhaMesa({ mesaId, isGestor, reservarEspaco = true }) 
             </span>
           )}
           <div className="min-w-0 max-w-[11rem]">
-            <p className="text-sm text-ink font-medium truncate" title={titulo}>{videoId ? titulo : 'Trilha e efeitos'}</p>
+            <p className="text-sm text-ink font-medium truncate" title={titulo}>{videoId ? titulo : t('Trilha e efeitos')}</p>
             {videoId && (
               <p className="text-xs text-ink-dim flex items-center gap-1.5">
                 <span className={`equalizador ${tocando ? '' : 'parado'}`} aria-hidden="true"><i /><i /><i /></span>
-                {tocando ? 'Tocando agora' : 'Pausada'}
+                {tocando ? t('Tocando agora') : t('Pausada')}
               </p>
             )}
           </div>
           {bloqueado && ativo
-            ? <Botao variante="primario" tamanho="sm" onClick={destravar}>Ouvir</Botao>
+            ? <Botao variante="primario" tamanho="sm" onClick={destravar}>{t('Ouvir')}</Botao>
             : (
-              <button className="botao-icone" aria-expanded={false} aria-label="Abrir trilha e efeitos" data-dica="Abrir" onClick={() => setRecolhido(false)}>
+              <button className="botao-icone" aria-expanded={false} aria-label={t('Abrir trilha e efeitos')} data-dica={t('Abrir')} onClick={() => setRecolhido(false)}>
                 <Icone nome="chevron-cima" tamanho={18} />
               </button>
             )}
@@ -217,62 +218,62 @@ export default function TrilhaMesa({ mesaId, isGestor, reservarEspaco = true }) 
       ) : (<>
       <div className="flex items-center gap-2">
         <Icone nome="volume" tamanho={18} className="text-accent-300" />
-        <p className="flex-1 text-ink text-sm font-semibold">Trilha e efeitos</p>
-        <button className="botao-icone !min-w-[32px] !min-h-[32px]" aria-expanded aria-label="Recolher trilha e efeitos" data-dica="Recolher" onClick={() => setRecolhido(true)}>
+        <p className="flex-1 text-ink text-sm font-semibold">{t('Trilha e efeitos')}</p>
+        <button className="botao-icone !min-w-[32px] !min-h-[32px]" aria-expanded aria-label={t('Recolher trilha e efeitos')} data-dica={t('Recolher')} onClick={() => setRecolhido(true)}>
           <Icone nome="chevron-baixo" tamanho={18} />
         </button>
       </div>
 
       {/* ── Trilha ── */}
       <div className="space-y-2">
-        <p className={ROTULO}>Trilha</p>
+        <p className={ROTULO}>{t('Trilha')}</p>
         {videoId ? (
           <div className="rounded-xl bg-void/70 border border-border/70 p-2.5 space-y-2">
             <div className="flex items-center gap-2">
               <span className={`equalizador ${tocando ? '' : 'parado'}`} aria-hidden="true"><i /><i /><i /></span>
               <div className="min-w-0 flex-1">
-                <p className="text-xs text-ink-dim">{tocando ? 'Tocando agora' : 'Pausada'}</p>
+                <p className="text-xs text-ink-dim">{tocando ? t('Tocando agora') : t('Pausada')}</p>
                 <p className="text-sm text-ink truncate" title={titulo}>{titulo}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <button
                 className="botao-icone !min-w-[32px] !min-h-[32px]" aria-pressed={!ouvir}
-                aria-label={ouvir ? 'Silenciar para mim' : 'Ouvir'} data-dica={ouvir ? 'Silenciar para mim' : 'Ouvir'} data-dica-lado="dir"
+                aria-label={ouvir ? t('Silenciar para mim') : t('Ouvir')} data-dica={ouvir ? t('Silenciar para mim') : t('Ouvir')} data-dica-lado="dir"
                 onClick={() => setOuvir(o => !o)}
               ><Icone nome={ouvir ? 'volume' : 'mudo'} tamanho={18} /></button>
               {ouvir && (
                 <input
-                  type="range" min={0} max={100} value={volume} aria-label="Volume da trilha (só para você)"
+                  type="range" min={0} max={100} value={volume} aria-label={t('Volume da trilha (só para você)')}
                   onChange={e => setVolume(Number(e.target.value))} className="flex-1 min-w-0 accent-accent-500"
                 />
               )}
             </div>
           </div>
         ) : (
-          <p className="text-ink-dim text-sm">{isGestor ? 'Cole um link do YouTube: a mesa toda ouve, no mesmo ponto da música.' : 'Nenhuma música tocando.'}</p>
+          <p className="text-ink-dim text-sm">{isGestor ? t('Cole um link do YouTube: a mesa toda ouve, no mesmo ponto da música.') : t('Nenhuma música tocando.')}</p>
         )}
         {bloqueado && ativo && (
-          <Botao variante="primario" tamanho="sm" className="w-full" onClick={destravar}>Clique para ouvir a trilha</Botao>
+          <Botao variante="primario" tamanho="sm" className="w-full" onClick={destravar}>{t('Clique para ouvir a trilha')}</Botao>
         )}
 
         {isGestor && videoId && (
           <div className="flex flex-wrap gap-1">
             {estado.tocando
-              ? <Botao variante="secundario" tamanho="sm" onClick={() => acao(() => atualizar({ tocando: false, posicao_s: posicao(), marcado_em: agoraISO() }))}><Icone nome="pausa" tamanho={14} /> Pausar</Botao>
-              : <Botao variante="primario" tamanho="sm" onClick={() => acao(() => atualizar({ tocando: true, marcado_em: agoraISO() }))}><Icone nome="play" tamanho={14} /> Continuar</Botao>}
-            <Botao variante="secundario" tamanho="sm" onClick={() => acao(() => atualizar({ posicao_s: 0, marcado_em: agoraISO() }))}>Do começo</Botao>
+              ? <Botao variante="secundario" tamanho="sm" onClick={() => acao(() => atualizar({ tocando: false, posicao_s: posicao(), marcado_em: agoraISO() }))}><Icone nome="pausa" tamanho={14} /> {t('Pausar')}</Botao>
+              : <Botao variante="primario" tamanho="sm" onClick={() => acao(() => atualizar({ tocando: true, marcado_em: agoraISO() }))}><Icone nome="play" tamanho={14} /> {t('Continuar')}</Botao>}
+            <Botao variante="secundario" tamanho="sm" onClick={() => acao(() => atualizar({ posicao_s: 0, marcado_em: agoraISO() }))}>{t('Do começo')}</Botao>
             <Botao
               variante={estado.repetir ? 'primario' : 'contorno'} tamanho="sm" aria-pressed={!!estado.repetir}
               onClick={() => acao(() => atualizar({ repetir: !estado.repetir, posicao_s: posicao(), marcado_em: agoraISO() }))}
-            >Repetir</Botao>
-            <Botao variante="fantasma" tamanho="sm" onClick={() => acao(() => atualizar({ video_id: null, titulo: null, tocando: false, posicao_s: 0, marcado_em: agoraISO() }))}>Tirar</Botao>
+            >{t('Repetir')}</Botao>
+            <Botao variante="fantasma" tamanho="sm" onClick={() => acao(() => atualizar({ video_id: null, titulo: null, tocando: false, posicao_s: 0, marcado_em: agoraISO() }))}>{t('Tirar')}</Botao>
           </div>
         )}
         {isGestor && (
           <form onSubmit={tocarLink} className="flex gap-1.5">
-            <input value={link} onChange={e => setLink(e.target.value)} placeholder="Link do YouTube" aria-label="Link do YouTube" className="campo flex-1 min-w-0 !min-h-[34px] !py-1.5 !text-sm" />
-            <Botao type="submit" variante="primario" tamanho="sm"><Icone nome="play" tamanho={14} /> Tocar</Botao>
+            <input value={link} onChange={e => setLink(e.target.value)} placeholder={t('Link do YouTube')} aria-label={t('Link do YouTube')} className="campo flex-1 min-w-0 !min-h-[34px] !py-1.5 !text-sm" />
+            <Botao type="submit" variante="primario" tamanho="sm"><Icone nome="play" tamanho={14} /> {t('Tocar')}</Botao>
           </form>
         )}
       </div>
@@ -280,7 +281,7 @@ export default function TrilhaMesa({ mesaId, isGestor, reservarEspaco = true }) 
       {/* ── Efeitos rápidos (só o mestre dispara; todo mundo ouve) ── */}
       {isGestor && (
         <div className="space-y-2 pt-3 border-t border-border/70">
-          <p className={ROTULO}>Efeitos rápidos <span className="normal-case tracking-normal font-normal">· a mesa toda ouve</span></p>
+          <p className={ROTULO}>{t('Efeitos rápidos')} <span className="normal-case tracking-normal font-normal">{t('· a mesa toda ouve')}</span></p>
           <div className="grid grid-cols-3 gap-1.5">
             {EFEITOS_MESA.map(ef => {
               const anim = animando?.id === ef.id

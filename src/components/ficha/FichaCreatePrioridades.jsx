@@ -10,6 +10,7 @@ import Modal, { FecharModal } from '../ui/Modal'
 import Botao from '../ui/Botao'
 import Icone from '../ui/Icone'
 import Esqueleto from '../ui/Esqueleto'
+import { t } from '../../i18n'
 import {
   prioridadeDoGrupo, validarOrdemGrupos, valorFinalMembro,
   validarDistribuicaoGrupo, validarPontosLivres,
@@ -72,7 +73,7 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
           membros: grupo.membros, prioridade, alocacao,
           basePorMembro: etapaAtual.base_por_membro, maximoPorMembro: etapaAtual.maximo_por_membro,
         })
-        if (!r.valido) return { valido: false, erro: `${grupo.nome}: ${r.erro}` }
+        if (!r.valido) return { valido: false, erro: t('{grupo}: {erro}', { grupo: grupo.nome, erro: r.erro }) }
       }
       return { valido: true }
     }
@@ -89,10 +90,10 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
   function irProxima() {
     setErro('')
     if (fase === 0) {
-      if (!info.nome_personagem.trim()) { setErro('O nome do personagem é obrigatório.'); return }
+      if (!info.nome_personagem.trim()) { setErro(t('O nome do personagem é obrigatório.')); return }
     } else if (etapaAtual) {
       const v = validarEtapaAtual()
-      if (!v.valido) { setErro(v.erro || 'Distribuição incompleta.'); return }
+      if (!v.valido) { setErro(v.erro || t('Distribuição incompleta.')); return }
     }
     setFase(f => Math.min(totalFases - 1, f + 1))
   }
@@ -180,21 +181,21 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
       try {
         await registrarEvento({
           mesaId, fichaId: ficha.id,
-          rotulo: `${ficha.nome_personagem} foi criado por prioridades`,
+          rotulo: t('{nome} foi criado por prioridades', { nome: ficha.nome_personagem }),
           notacao: '', total: 0, dados: [],
         })
       } catch { /* log é best-effort */ }
 
       onCriada(ficha)
     } catch (err) {
-      setErro(err.message || 'Erro ao criar ficha.')
+      setErro(err.message || t('Erro ao criar ficha.'))
     }
   }
 
   if (loadingSistema) {
     return (
-      <Modal onFechar={onFechar} titulo="Nova ficha — criação por prioridades" subtitulo="Carregando o sistema…">
-        <div className="space-y-3" role="status" aria-label="Carregando"><Esqueleto className="h-10" /><Esqueleto className="h-24" /><Esqueleto className="h-10 w-2/3" /></div>
+      <Modal onFechar={onFechar} titulo={t('Nova ficha — criação por prioridades')} subtitulo={t('Carregando o sistema…')}>
+        <div className="space-y-3" role="status" aria-label={t('Carregando')}><Esqueleto className="h-10" /><Esqueleto className="h-24" /><Esqueleto className="h-10 w-2/3" /></div>
       </Modal>
     )
   }
@@ -202,16 +203,16 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
   return (
     <Modal
       onFechar={onFechar} bloqueado={criando}
-      titulo="Nova ficha — criação por prioridades"
-      subtitulo={`Passo ${fase + 1} de ${totalFases}`}
+      titulo={t('Nova ficha — criação por prioridades')}
+      subtitulo={t('Passo {n} de {total}', { n: fase + 1, total: totalFases })}
       rodape={
         <>
           {fase === 0
             ? <FecharModal />
-            : <Botao variante="fantasma" onClick={irAnterior}><Icone nome="seta-esq" tamanho={16} /> Voltar</Botao>}
+            : <Botao variante="fantasma" onClick={irAnterior}><Icone nome="seta-esq" tamanho={16} /> {t('Voltar')}</Botao>}
           {fase === totalFases - 1
-            ? <Botao variante="primario" onClick={finalizar} disabled={criando}>{criando ? 'Salvando…' : 'Finalizar'}</Botao>
-            : <Botao variante="primario" onClick={irProxima}>Próximo <Icone nome="seta-dir" tamanho={16} /></Botao>}
+            ? <Botao variante="primario" onClick={finalizar} disabled={criando}>{criando ? t('Salvando…') : t('Finalizar')}</Botao>
+            : <Botao variante="primario" onClick={irProxima}>{t('Próximo')} <Icone nome="seta-dir" tamanho={16} /></Botao>}
         </>
       }
     >
@@ -219,34 +220,34 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
           {fase === 0 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-ink mb-1">Nome do personagem *</label>
-                <input type="text" placeholder="Ex: Aldric, o Valoroso" value={info.nome_personagem} autoFocus
+                <label className="block text-sm font-medium text-ink mb-1">{t('Nome do personagem *')}</label>
+                <input type="text" placeholder={t('Ex: Aldric, o Valoroso')} value={info.nome_personagem} autoFocus
                   onChange={e => setInfo(prev => ({ ...prev, nome_personagem: e.target.value }))} className={INP} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-ink mb-1">Raça</label>
+                  <label className="block text-sm font-medium text-ink mb-1">{t('Raça')}</label>
                   <select value={info.raca_id ?? ''} onChange={e => setInfo(prev => ({ ...prev, raca_id: e.target.value || null }))} className={INP}>
-                    <option value="">Nenhuma</option>
+                    <option value="">{t('Nenhuma')}</option>
                     {racas.map(r => <option key={r.id} value={r.id}>{r.nome}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-ink mb-1">Classe</label>
+                  <label className="block text-sm font-medium text-ink mb-1">{t('Classe')}</label>
                   <select value={info.classe_id ?? ''} onChange={e => setInfo(prev => ({ ...prev, classe_id: e.target.value || null }))} className={INP}>
-                    <option value="">Nenhuma</option>
+                    <option value="">{t('Nenhuma')}</option>
                     {classes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
                   </select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-ink mb-1">Nível</label>
+                  <label className="block text-sm font-medium text-ink mb-1">{t('Nível')}</label>
                   <input type="number" min={1} value={info.nivel} onChange={e => setInfo(prev => ({ ...prev, nivel: e.target.value }))} className={INP} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-ink mb-1">HP máximo</label>
-                  <input type="number" min={1} placeholder="Ex: 45" value={info.hp_maximo} onChange={e => setInfo(prev => ({ ...prev, hp_maximo: e.target.value }))} className={INP} />
+                  <label className="block text-sm font-medium text-ink mb-1">{t('HP máximo')}</label>
+                  <input type="number" min={1} placeholder={t('Ex: 45')} value={info.hp_maximo} onChange={e => setInfo(prev => ({ ...prev, hp_maximo: e.target.value }))} className={INP} />
                 </div>
               </div>
             </div>
@@ -259,9 +260,9 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
             const nomePorId = Object.fromEntries(catalogo.map(x => [x.id, x.nome]))
             return (
               <div className="space-y-4">
-                <p className="text-ink font-semibold">{etapaAtual.nome || 'Prioridades'}</p>
+                <p className="text-ink font-semibold">{etapaAtual.nome || t('Prioridades')}</p>
                 <div>
-                  <p className="text-ink-dim text-xs mb-1.5">Clique nos grupos na ordem de prioridade (1º = maior valor):</p>
+                  <p className="text-ink-dim text-xs mb-1.5">{t('Clique nos grupos na ordem de prioridade (1º = maior valor):')}</p>
                   <div className="flex flex-wrap gap-2">
                     {etapaAtual.grupos.map(g => {
                       const pos = ordem.indexOf(g.id)
@@ -271,7 +272,7 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
                           className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
                             pos !== -1 ? 'bg-accent-700 border-accent-500 text-sobre-acento' : 'bg-void border-border text-accent-300 hover:border-accent-500'
                           }`}>
-                          {pos !== -1 && <span className="font-mono mr-1">{pos + 1}º</span>}{g.nome}
+                          {pos !== -1 && <span className="font-mono mr-1">{t('{n}º', { n: pos + 1 })}</span>}{g.nome}
                         </button>
                       )
                     })}
@@ -320,10 +321,10 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
             }
             return (
               <div className="space-y-3">
-                <p className="text-ink font-semibold">{etapaAtual.nome || 'Pontos livres'}</p>
-                <p className={`text-xs font-mono ${gasto === etapaAtual.pontos ? 'text-ok' : 'text-dice-400'}`}>{gasto} / {etapaAtual.pontos} pontos</p>
+                <p className="text-ink font-semibold">{etapaAtual.nome || t('Pontos livres')}</p>
+                <p className={`text-xs font-mono ${gasto === etapaAtual.pontos ? 'text-ok' : 'text-dice-400'}`}>{t('{gasto} / {total} pontos', { gasto, total: etapaAtual.pontos })}</p>
                 {itensIds.length === 0 ? (
-                  <p className="text-ink-dim text-xs">Nenhum item disponível (confira as linhas nativas da raça/classe escolhida).</p>
+                  <p className="text-ink-dim text-xs">{t('Nenhum item disponível (confira as linhas nativas da raça/classe escolhida).')}</p>
                 ) : itensIds.map(id => (
                   <div key={id} className="flex items-center gap-2">
                     <span className="text-accent-300 text-sm flex-1">{nomePorId[id] || id}</span>
@@ -337,22 +338,22 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
 
           {etapaAtual?.tipo === 'texto_guia' && (
             <div className="space-y-2">
-              <p className="text-ink font-semibold">{etapaAtual.nome || 'Toques finais'}</p>
+              <p className="text-ink font-semibold">{etapaAtual.nome || t('Toques finais')}</p>
               <p className="text-accent-300 text-sm whitespace-pre-wrap">{etapaAtual.descricao}</p>
             </div>
           )}
 
           {fase === totalFases - 1 && (
             <div className="space-y-3">
-              <p className="text-ink font-semibold">Revisão</p>
+              <p className="text-ink font-semibold">{t('Revisão')}</p>
               <div className="rounded-xl border border-border bg-raised p-3 space-y-1">
-                <p className="text-accent-300 text-sm"><span className="text-ink-dim">Nome:</span> {info.nome_personagem}</p>
-                {racaEscolhida && <p className="text-accent-300 text-sm"><span className="text-ink-dim">Raça:</span> {racaEscolhida.nome}</p>}
-                {classeEscolhida && <p className="text-accent-300 text-sm"><span className="text-ink-dim">Classe:</span> {classeEscolhida.nome}</p>}
+                <p className="text-accent-300 text-sm"><span className="text-ink-dim">{t('Nome:')}</span> {info.nome_personagem}</p>
+                {racaEscolhida && <p className="text-accent-300 text-sm"><span className="text-ink-dim">{t('Raça:')}</span> {racaEscolhida.nome}</p>}
+                {classeEscolhida && <p className="text-accent-300 text-sm"><span className="text-ink-dim">{t('Classe:')}</span> {classeEscolhida.nome}</p>}
               </div>
               {Object.keys(valoresAtributosFinais()).length > 0 && (
                 <div className="rounded-xl border border-border bg-raised p-3">
-                  <p className="text-ink-dim text-xs mb-1">Atributos</p>
+                  <p className="text-ink-dim text-xs mb-1">{t('Atributos')}</p>
                   {Object.entries(valoresAtributosFinais()).map(([id, v]) => (
                     <p key={id} className="text-ink text-xs">{(atributos.find(a => a.id === id)?.nome) || id}: <span className="text-ink font-bold">{v}</span></p>
                   ))}
@@ -360,7 +361,7 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
               )}
               {Object.keys(periciasFinais()).length > 0 && (
                 <div className="rounded-xl border border-border bg-raised p-3">
-                  <p className="text-ink-dim text-xs mb-1">Perícias</p>
+                  <p className="text-ink-dim text-xs mb-1">{t('Perícias')}</p>
                   {Object.entries(periciasFinais()).map(([id, v]) => (
                     <p key={id} className="text-ink text-xs">{(pericias.find(p => p.id === id)?.nome) || id}: <span className="text-ink font-bold">{v}</span></p>
                   ))}
@@ -368,7 +369,7 @@ export default function FichaCreatePrioridades({ mesaId, onCriada, onFechar }) {
               )}
               {Object.keys(linhasFinais()).length > 0 && (
                 <div className="rounded-xl border border-border bg-raised p-3">
-                  <p className="text-ink-dim text-xs mb-1">Linhas de poder</p>
+                  <p className="text-ink-dim text-xs mb-1">{t('Linhas de poder')}</p>
                   {Object.entries(linhasFinais()).map(([id, v]) => (
                     <p key={id} className="text-ink text-xs">{(linhasPoder.find(l => l.id === id)?.nome) || id}: <span className="text-ink font-bold">{v}</span></p>
                   ))}

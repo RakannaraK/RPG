@@ -26,6 +26,7 @@ import CapaMesa from '../components/mesa/CapaMesa'
 import SeletorCapa from '../components/mesa/SeletorCapa'
 import AgendaMesa from '../components/mesa/AgendaMesa'
 import PainelEnciclopedia from '../components/mesa/PainelEnciclopedia'
+import PainelCinematicas from '../components/cinematica/PainelCinematicas'
 import TrilhaMesa from '../components/mesa/TrilhaMesa'
 import XCard from '../components/mesa/XCard'
 import PainelLimites from '../components/mesa/PainelLimites'
@@ -48,9 +49,16 @@ import EstadoVazio from '../components/ui/EstadoVazio'
 import Esqueleto, { EsqueletoCartoes } from '../components/ui/Esqueleto'
 import CartaoFicha from '../components/mesa/CartaoFicha'
 import { capaDaMesa } from '../lib/capas'
+import { t, tn } from '../i18n'
 
 const TABS = ['Fichas', 'Bestiário', 'Enciclopédia', 'Dados', 'Chat', 'Resumo', 'Sistema', 'Membros']
-const TABS_GESTOR = ['Escudo'] // F34.3 — só mestre/co-mestre
+const TABS_GESTOR = ['Escudo', 'Cinemáticas'] // F34.3 — só mestre/co-mestre
+// o id da aba fica em português (vai no link ?aba=); só o rótulo é traduzido
+const ROTULO_ABA = {
+  Fichas: t('Fichas'), 'Bestiário': t('Bestiário'), 'Enciclopédia': t('Enciclopédia'), Dados: t('Dados'),
+  Chat: t('Chat'), Resumo: t('Resumo'), Sistema: t('Sistema'), Membros: t('Membros'),
+  Escudo: t('Escudo'), 'Cinemáticas': t('Cinemáticas'),
+}
 
 
 export default function MesaPage() {
@@ -128,7 +136,7 @@ export default function MesaPage() {
 
         if (mesaError) throw mesaError
         // RLS: não-membros não recebem a linha da mesa
-        if (!mesaData) throw new Error('Mesa não encontrada ou você não tem acesso a ela.')
+        if (!mesaData) throw new Error(t('Mesa não encontrada ou você não tem acesso a ela.'))
 
         const { data: membrosData, error: membrosError } = await supabase
           .from('membros_mesa')
@@ -147,7 +155,7 @@ export default function MesaPage() {
         setMembros(membrosData || [])
         setMeuRole(meu.role)
       } catch (err) {
-        setError(err.message || 'Erro ao carregar mesa.')
+        setError(err.message || t('Erro ao carregar mesa.'))
       } finally {
         setLoading(false)
       }
@@ -170,9 +178,9 @@ export default function MesaPage() {
     marcar(true)
     setTimeout(() => marcar(false), 1800)
   }
-  const copiarCodigo = () => { copiar(mesa.codigo_convite, setCopiado); toast.ok('Código copiado') }
+  const copiarCodigo = () => { copiar(mesa.codigo_convite, setCopiado); toast.ok(t('Código copiado')) }
   // F47 — o link entra direto, com conta ou como convidado
-  const copiarLink = () => { copiar(linkDeConvite(window.location.origin, mesa.codigo_convite), setLinkCopiado); toast.ok('Link de convite copiado') }
+  const copiarLink = () => { copiar(linkDeConvite(window.location.origin, mesa.codigo_convite), setLinkCopiado); toast.ok(t('Link de convite copiado')) }
 
   async function handleDeleteMesa() {
     setDeletingMesa(true)
@@ -185,7 +193,7 @@ export default function MesaPage() {
       if (err) throw err
       navigate('/dashboard')
     } catch (err) {
-      setDeleteMesaError(err.message || 'Erro ao deletar mesa.')
+      setDeleteMesaError(err.message || t('Erro ao deletar mesa.'))
       setDeletingMesa(false)
     }
   }
@@ -203,7 +211,7 @@ export default function MesaPage() {
       if (err) throw err
       navigate('/dashboard')
     } catch (err) {
-      setLeaveError(err.message || 'Erro ao sair da mesa.')
+      setLeaveError(err.message || t('Erro ao sair da mesa.'))
       setLeaving(false)
     }
   }
@@ -226,7 +234,7 @@ export default function MesaPage() {
   }
 
   async function handleTransferirPosse() {
-    if (!novoDonoId) { setTransferError('Escolha o novo dono.'); return }
+    if (!novoDonoId) { setTransferError(t('Escolha o novo dono.')); return }
     setTransferring(true)
     setTransferError('')
     try {
@@ -245,7 +253,7 @@ export default function MesaPage() {
       ))
       setShowTransferir(false)
     } catch (err) {
-      setTransferError(err.message || 'Erro ao transferir posse.')
+      setTransferError(err.message || t('Erro ao transferir posse.'))
     } finally {
       setTransferring(false)
     }
@@ -253,8 +261,8 @@ export default function MesaPage() {
 
   async function handleRegenerarConvite() {
     const ok = await confirmar({
-      titulo: 'Gerar novo código?', confirmar: 'Gerar novo código',
-      mensagem: 'O código e o link antigos deixam de funcionar na hora. Quem já é membro continua na mesa.',
+      titulo: t('Gerar novo código?'), confirmar: t('Gerar novo código'),
+      mensagem: t('O código e o link antigos deixam de funcionar na hora. Quem já é membro continua na mesa.'),
     })
     if (!ok) return
     setRegenerating(true)
@@ -263,9 +271,9 @@ export default function MesaPage() {
       const { data: novo, error: err } = await supabase.rpc('regenerar_convite', { p_mesa_id: id })
       if (err) throw err
       setMesa(prev => ({ ...prev, codigo_convite: novo }))
-      toast.ok('Novo código gerado')
+      toast.ok(t('Novo código gerado'))
     } catch (err) {
-      setRegenError(err.message || 'Erro ao gerar novo código.')
+      setRegenError(err.message || t('Erro ao gerar novo código.'))
     } finally {
       setRegenerating(false)
     }
@@ -286,7 +294,7 @@ export default function MesaPage() {
       setMembroToExpel(null)
       refetchFichas() // fichas do expulso viram órfãs
     } catch (err) {
-      setExpelError(err.message || 'Erro ao expulsar.')
+      setExpelError(err.message || t('Erro ao expulsar.'))
     } finally {
       setExpelling(false)
     }
@@ -301,7 +309,7 @@ export default function MesaPage() {
       setFichaToDelete(null)
       refetchFichas()
     } catch (err) {
-      setDeleteFichaError(err.message || 'Erro ao deletar ficha órfã.')
+      setDeleteFichaError(err.message || t('Erro ao deletar ficha órfã.'))
     }
   }
 
@@ -318,7 +326,7 @@ export default function MesaPage() {
       setFichaToDelete(null)
       refetchFichas()
     } catch (err) {
-      setDeleteFichaError(err.message || 'Erro ao deletar ficha.')
+      setDeleteFichaError(err.message || t('Erro ao deletar ficha.'))
       setDeletingFicha(false)
     }
   }
@@ -326,8 +334,8 @@ export default function MesaPage() {
   if (loading) {
     return (
       <div className="min-h-screen">
-        <BarraTopo voltar={{ para: '/dashboard', rotulo: 'Suas mesas' }} />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6" role="status" aria-label="Carregando a mesa">
+        <BarraTopo voltar={{ para: '/dashboard', rotulo: t('Suas mesas') }} />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6" role="status" aria-label={t('Carregando a mesa')}>
           <div className="rounded-3xl border border-border bg-raised/50 p-5 sm:p-8 pt-24 sm:pt-28">
             <Esqueleto className="h-5 w-24 mb-4" />
             <Esqueleto className="h-9 w-2/3 sm:w-1/2 mb-3" />
@@ -343,10 +351,10 @@ export default function MesaPage() {
   if (error) {
     return (
       <div className="min-h-screen">
-        <BarraTopo voltar={{ para: '/dashboard', rotulo: 'Suas mesas' }} />
+        <BarraTopo voltar={{ para: '/dashboard', rotulo: t('Suas mesas') }} />
         <div className="max-w-xl mx-auto px-4 py-16">
-          <EstadoVazio arte="porta" titulo="Não foi possível abrir esta mesa" descricao={error}>
-            <Botao variante="primario" onClick={() => navigate('/dashboard')}>Voltar para suas mesas</Botao>
+          <EstadoVazio arte="porta" titulo={t('Não foi possível abrir esta mesa')} descricao={error}>
+            <Botao variante="primario" onClick={() => navigate('/dashboard')}>{t('Voltar para suas mesas')}</Botao>
           </EstadoVazio>
         </div>
       </div>
@@ -364,14 +372,14 @@ export default function MesaPage() {
   // F30.2 — pasta nasce ao mover a primeira ficha para ela (sem tabela de pastas)
   async function moverParaPasta(f) {
     const nome = await perguntar({
-      titulo: 'Mover para pasta', mensagem: `Em qual pasta fica "${f.nome_personagem}"? Deixe vazio para tirar da pasta.`,
-      rotulo: 'Pasta', valor: f.pasta || '', placeholder: 'Ex.: Heróis, Vilões, Aliados', maxLength: 60, confirmar: 'Mover',
+      titulo: t('Mover para pasta'), mensagem: t('Em qual pasta fica "{nome}"? Deixe vazio para tirar da pasta.', { nome: f.nome_personagem }),
+      rotulo: t('Pasta'), valor: f.pasta || '', placeholder: t('Ex.: Heróis, Vilões, Aliados'), maxLength: 60, confirmar: t('Mover'),
     })
     if (nome === null) return
     const { error: err } = await supabase
       .from('fichas').update({ pasta: nome.trim().slice(0, 60) || null }).eq('id', f.id)
-    if (err) toast.erro('Não foi possível mover', { detalhe: err.message })
-    else { refetchFichas(); toast.ok(nome.trim() ? `Movida para "${nome.trim()}"` : 'Tirada da pasta') }
+    if (err) toast.erro(t('Não foi possível mover'), { detalhe: err.message })
+    else { refetchFichas(); toast.ok(nome.trim() ? t('Movida para "{nome}"', { nome: nome.trim() }) : t('Tirada da pasta')) }
   }
 
   async function handleArquivar(novoValor) {
@@ -399,7 +407,7 @@ export default function MesaPage() {
 
   const abas = [...TABS, ...(isGestor ? TABS_GESTOR : [])].map(tab => ({
     id: tab,
-    rotulo: tab,
+    rotulo: ROTULO_ABA[tab] || tab,
     contador: tab === 'Dados' ? novasRolagens : tab === 'Chat' ? chat.naoLidas : 0,
     selo: tab === 'Escudo' ? <Icone nome="cadeado" tamanho={14} className="text-ink-dim" /> : null,
   }))
@@ -408,17 +416,17 @@ export default function MesaPage() {
   return (
     <div className="min-h-screen">
       <BarraTopo
-        voltar={{ para: '/dashboard', rotulo: 'Suas mesas' }}
+        voltar={{ para: '/dashboard', rotulo: t('Suas mesas') }}
         acoes={
           <>
             {!arquivada && <XCard mesaId={id} isGestor={isGestor} />}
-            <Link to={`/mesa/${id}/mapa`} aria-label="Mapa da mesa" data-dica="Mapa da mesa" className="botao-icone lg:px-3 lg:gap-2">
-              <Icone nome="mapa" tamanho={20} /><span className="hidden lg:inline text-sm">Mapa</span>
+            <Link to={`/mesa/${id}/mapa`} aria-label={t('Mapa da mesa')} data-dica={t('Mapa da mesa')} className="botao-icone lg:px-3 lg:gap-2">
+              <Icone nome="mapa" tamanho={20} /><span className="hidden lg:inline text-sm">{t('Mapa')}</span>
             </Link>
             {!isCriador && (
               <button
                 onClick={() => { setLeaveError(''); setDeletarFichas(false); setShowLeave(true) }}
-                aria-label="Sair da mesa" data-dica="Sair da mesa" className="botao-icone hover:!text-harm"
+                aria-label={t('Sair da mesa')} data-dica={t('Sair da mesa')} className="botao-icone hover:!text-harm"
               ><Icone nome="porta" tamanho={20} /></button>
             )}
           </>
@@ -427,7 +435,7 @@ export default function MesaPage() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* ── Herói da campanha: qual mesa, meu papel, quem joga e a sessão ── */}
-        <section className="relative mt-5 sm:mt-6 overflow-hidden rounded-3xl border border-border bg-raised/50 shadow-nivel-2" aria-label="A mesa">
+        <section className="relative mt-5 sm:mt-6 overflow-hidden rounded-3xl border border-border bg-raised/50 shadow-nivel-2" aria-label={t('A mesa')}>
           <div className="absolute inset-x-0 top-0" aria-hidden="true">
             <CapaMesa capa={capaDaMesa(mesa)} altura={150} />
           </div>
@@ -438,7 +446,7 @@ export default function MesaPage() {
                 <SeloPapel papel={meuRole} />
                 {arquivada && (
                   <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border border-amber-700/60 text-amber-200 bg-amber-950/50">
-                    <Icone nome="cadeado" tamanho={12} /> Arquivada
+                    <Icone nome="cadeado" tamanho={12} /> {t('Arquivada')}
                   </span>
                 )}
               </div>
@@ -447,7 +455,7 @@ export default function MesaPage() {
               <button
                 onClick={() => setActiveTab('Membros')}
                 className="mt-5 inline-flex items-center gap-3 rounded-full pr-3 hover:bg-hover/60 transition-colors duration-rapida"
-                aria-label={`${membros.length} pessoas na mesa — ver membros`}
+                aria-label={t('{n} pessoas na mesa — ver membros', { n: membros.length })}
               >
                 <span className="flex -space-x-2">
                   {membros.slice(0, 5).map(m => (
@@ -455,7 +463,7 @@ export default function MesaPage() {
                   ))}
                 </span>
                 <span className="text-sm text-ink-dim">
-                  {membros.length} {membros.length === 1 ? 'pessoa' : 'pessoas'}{membros.length > 5 ? ` (+${membros.length - 5})` : ''}
+                  {tn(membros.length, '{n} pessoa', '{n} pessoas')}{membros.length > 5 ? ` (+${membros.length - 5})` : ''}
                 </span>
               </button>
             </div>
@@ -467,8 +475,8 @@ export default function MesaPage() {
         {/* Arquivada (16.8) — somente leitura */}
         {arquivada && (
           <div className="mt-4 rounded-2xl border border-amber-800/50 bg-amber-950/30 px-5 py-4 flex items-center justify-between gap-3 flex-wrap">
-            <p className="text-amber-200 text-sm">Esta mesa está arquivada: dá para ler tudo, mas nada muda.</p>
-            {isCriador && <Botao variante="dado" tamanho="sm" onClick={() => handleArquivar(false)}>Desarquivar</Botao>}
+            <p className="text-amber-200 text-sm">{t('Esta mesa está arquivada: dá para ler tudo, mas nada muda.')}</p>
+            {isCriador && <Botao variante="dado" tamanho="sm" onClick={() => handleArquivar(false)}>{t('Desarquivar')}</Botao>}
           </div>
         )}
 
@@ -486,7 +494,7 @@ export default function MesaPage() {
       <div className="sticky top-16 z-[15] mt-8 bg-bg/80 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <Abas
-            rotulo="Seções da mesa" abas={abas} atual={activeTab} idPainel="painel-da-mesa"
+            rotulo={t('Seções da mesa')} abas={abas} atual={activeTab} idPainel="painel-da-mesa"
             onTrocar={tab => { setActiveTab(tab); if (tab === 'Dados') setNovasRolagens(0) }}
           />
         </div>
@@ -495,12 +503,12 @@ export default function MesaPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
 
         {activeTab !== 'Sistema' && (
-        <div key={activeTab} id="painel-da-mesa" role="tabpanel" aria-label={activeTab} className="entra-aba py-8">
+        <div key={activeTab} id="painel-da-mesa" role="tabpanel" aria-label={ROTULO_ABA[activeTab] || activeTab} className="entra-aba py-8">
           {activeTab === 'Fichas' && (
             <div className="space-y-6">
               <CabecalhoSecao
-                titulo="Personagens"
-                descricao={loadingFichas ? 'Carregando…' : fichas.length > 0 ? `${fichas.length} ficha${fichas.length > 1 ? 's' : ''} nesta mesa` : 'Nenhuma ficha ainda'}
+                titulo={t('Personagens')}
+                descricao={loadingFichas ? t('Carregando…') : fichas.length > 0 ? tn(fichas.length, '{n} ficha nesta mesa', '{n} fichas nesta mesa') : t('Nenhuma ficha ainda')}
                 acoes={podeEscrever && (
                   <>
                     <ImportarFicha
@@ -509,7 +517,7 @@ export default function MesaPage() {
                       onImportada={novoId => { refetchFichas(); navigate(`/mesa/${id}/ficha/${novoId}`) }}
                     />
                     <Botao variante="primario" onClick={() => setShowFichaCreate(true)}>
-                      <Icone nome="mais" tamanho={18} /> Nova ficha
+                      <Icone nome="mais" tamanho={18} /> {t('Nova ficha')}
                     </Botao>
                   </>
                 )}
@@ -519,13 +527,13 @@ export default function MesaPage() {
                 <EsqueletoCartoes quantos={2} className="grid gap-4 md:grid-cols-2" altura="h-32" />
               ) : fichas.length === 0 ? (
                 <EstadoVazio
-                  arte="pergaminho" titulo="Nenhuma ficha criada"
+                  arte="pergaminho" titulo={t('Nenhuma ficha criada')}
                   descricao={podeEscrever
-                    ? 'Crie o seu primeiro personagem para começar a aventura.'
-                    : arquivada ? 'Mesa arquivada: somente leitura.' : 'Como espectador, você acompanha as fichas dos outros.'}
+                    ? t('Crie o seu primeiro personagem para começar a aventura.')
+                    : arquivada ? t('Mesa arquivada: somente leitura.') : t('Como espectador, você acompanha as fichas dos outros.')}
                 >
                   {podeEscrever && (
-                    <Botao variante="primario" onClick={() => setShowFichaCreate(true)}><Icone nome="mais" tamanho={18} /> Criar ficha</Botao>
+                    <Botao variante="primario" onClick={() => setShowFichaCreate(true)}><Icone nome="mais" tamanho={18} /> {t('Criar ficha')}</Botao>
                   )}
                 </EstadoVazio>
               ) : (
@@ -560,7 +568,7 @@ export default function MesaPage() {
                         <summary className="cursor-pointer list-none inline-flex items-center gap-2 text-ink font-medium mb-3 select-none rounded-lg hover:text-accent-300 transition-colors duration-rapida">
                           <Icone nome="chevron-dir" tamanho={16} className="transition-transform duration-normal group-open/pasta:rotate-90 text-ink-dim" />
                           <Icone nome="pasta" tamanho={18} className="text-dice-400" />
-                          {pasta ?? 'Sem pasta'} <span className="text-ink-dim font-normal text-sm">({daPasta.length})</span>
+                          {pasta ?? t('Sem pasta')} <span className="text-ink-dim font-normal text-sm">({daPasta.length})</span>
                         </summary>
                         {cartoes}
                       </details>
@@ -574,7 +582,7 @@ export default function MesaPage() {
                   mesaId={id}
                   onCriada={ficha => {
                     setShowFichaCreate(false)
-                    toast.ok('Ficha criada', { detalhe: ficha.nome_personagem })
+                    toast.ok(t('Ficha criada'), { detalhe: ficha.nome_personagem })
                     refetchFichas()
                     navigate(`/mesa/${id}/ficha/${ficha.id}`)
                   }}
@@ -603,23 +611,23 @@ export default function MesaPage() {
               <div className="space-y-10">
                 {podeEscrever && (
                   <section className="space-y-4">
-                    <CabecalhoSecao titulo="Rolar dados" descricao="O resultado aparece para a mesa toda, no histórico ao lado." />
+                    <CabecalhoSecao titulo={t('Rolar dados')} descricao={t('O resultado aparece para a mesa toda, no histórico ao lado.')} />
                     <RoladorGenerico mesaId={id} />
                   </section>
                 )}
                 {/* F28 — minigames: resultado vai ao feed ao lado */}
                 <section className="space-y-4">
-                  <CabecalhoSecao titulo="Minigames" nivel={3} />
+                  <CabecalhoSecao titulo={t('Minigames')} nivel={3} />
                   <PainelMinigames mesaId={id} meuId={session?.user?.id} podeJogar={podeEscrever} />
                 </section>
                 {/* F28.5 — desafios: o mestre põe vários jogadores na mesma partida */}
                 <section className="space-y-4">
-                  <CabecalhoSecao titulo="Desafios" nivel={3} />
+                  <CabecalhoSecao titulo={t('Desafios')} nivel={3} />
                   <PainelDesafios mesaId={id} meuId={session?.user?.id} isGestor={isGestor} podeJogar={podeEscrever} />
                 </section>
               </div>
               <section className="space-y-4 lg:sticky lg:top-32">
-                <CabecalhoSecao titulo="Histórico" descricao="Rolagens da mesa, das mais novas para as mais antigas." />
+                <CabecalhoSecao titulo={t('Histórico')} descricao={t('Rolagens da mesa, das mais novas para as mais antigas.')} />
                 <FeedRolagens mesaId={id} onNovaRolagem={() => setNovasRolagens(n => n + 1)} />
               </section>
             </div>
@@ -638,7 +646,7 @@ export default function MesaPage() {
               <PainelRelogios mesaId={id} isGestor={isGestor} />
               {/* F29.3 — notas privadas ou compartilhadas */}
               <section className="space-y-3">
-                <CabecalhoSecao titulo="Notas" descricao="Só suas, ou compartilhadas com a mesa." nivel={3} />
+                <CabecalhoSecao titulo={t('Notas')} descricao={t('Só suas, ou compartilhadas com a mesa.')} nivel={3} />
                 <PainelNotas mesaId={id} meuId={session?.user?.id} />
               </section>
               <RecapSessao mesaId={id} />
@@ -651,12 +659,14 @@ export default function MesaPage() {
             <PainelEscudo mesaId={id} isGestor={isGestor} />
           )}
 
+          {activeTab === 'Cinemáticas' && isGestor && <PainelCinematicas mesaId={id} />}
+
           {activeTab === 'Membros' && (
             <div className="grid gap-6 grid-cols-1 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] items-start">
               <div className="space-y-6">
-                <section className="rounded-2xl border border-border bg-raised/70 overflow-hidden" aria-label="Membros">
+                <section className="rounded-2xl border border-border bg-raised/70 overflow-hidden" aria-label={t('Membros')}>
                   <div className="px-5 py-4 border-b border-border/70">
-                    <CabecalhoSecao titulo={`Membros (${membros.length})`} nivel={3} descricao="Quem está nesta mesa e com qual papel." />
+                    <CabecalhoSecao titulo={t('Membros ({n})', { n: membros.length })} nivel={3} descricao={t('Quem está nesta mesa e com qual papel.')} />
                   </div>
                   <ul className="divide-y divide-border/60">
                     {membros.map(m => (
@@ -666,7 +676,7 @@ export default function MesaPage() {
                           <div className="min-w-0">
                             <p className="text-ink text-sm font-medium truncate">
                               {nomeDoMembro(m)}
-                              {m.usuario.id === session?.user?.id && <span className="text-ink-dim font-normal"> (você)</span>}
+                              {m.usuario.id === session?.user?.id && <span className="text-ink-dim font-normal"> {t('(você)')}</span>}
                             </p>
                             {m.apelido && <p className="text-ink-dim text-xs truncate">{m.usuario.username}</p>}
                           </div>
@@ -678,11 +688,11 @@ export default function MesaPage() {
                               value={m.role}
                               onChange={e => handleDefinirRole(m.usuario.id, e.target.value)}
                               className="campo !min-h-[34px] !py-1 !px-2 !text-sm"
-                              aria-label={`Papel de ${nomeDoMembro(m)}`}
+                              aria-label={t('Papel de {nome}', { nome: nomeDoMembro(m) })}
                             >
-                              <option value="co-mestre">Co-mestre</option>
-                              <option value="jogador">Jogador</option>
-                              <option value="espectador">Espectador</option>
+                              <option value="co-mestre">{t('Co-mestre')}</option>
+                              <option value="jogador">{t('Jogador')}</option>
+                              <option value="espectador">{t('Espectador')}</option>
                             </select>
                           ) : (
                             <SeloPapel papel={m.role} />
@@ -690,7 +700,7 @@ export default function MesaPage() {
                           {podeExpulsar(m) && (
                             <button
                               onClick={() => { setExpelError(''); setMembroToExpel(m) }}
-                              aria-label={`Expulsar ${nomeDoMembro(m)}`} data-dica="Expulsar da mesa"
+                              aria-label={t('Expulsar {nome}', { nome: nomeDoMembro(m) })} data-dica={t('Expulsar da mesa')}
                               className="botao-icone hover:!text-harm"
                             ><Icone nome="x" tamanho={18} /></button>
                           )}
@@ -701,22 +711,22 @@ export default function MesaPage() {
                 </section>
 
                 {isGestor && (
-                  <section className="rounded-2xl border border-border bg-raised/70 p-5 space-y-4" aria-label="Convite">
-                    <CabecalhoSecao titulo="Convidar jogadores" nivel={3} descricao="Mande o link: quem abrir entra direto na mesa, com conta ou como convidado." />
+                  <section className="rounded-2xl border border-border bg-raised/70 p-5 space-y-4" aria-label={t('Convite')}>
+                    <CabecalhoSecao titulo={t('Convidar jogadores')} nivel={3} descricao={t('Mande o link: quem abrir entra direto na mesa, com conta ou como convidado.')} />
                     <div className="flex flex-wrap items-center gap-2">
                       <code className="flex-1 min-w-[12rem] text-center font-mono text-xl tracking-[0.25em] text-ink bg-void border border-border rounded-xl py-3 px-4 uppercase select-all">
                         {mesa?.codigo_convite}
                       </code>
                       <Botao variante={copiado ? 'secundario' : 'primario'} tamanho="lg" onClick={copiarCodigo} aria-live="polite">
-                        <Icone nome={copiado ? 'check' : 'copiar'} tamanho={18} /> {copiado ? 'Copiado' : 'Copiar código'}
+                        <Icone nome={copiado ? 'check' : 'copiar'} tamanho={18} /> {copiado ? t('Copiado') : t('Copiar código')}
                       </Botao>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <Botao variante="contorno" onClick={copiarLink}>
-                        <Icone nome={linkCopiado ? 'check' : 'link'} tamanho={16} /> {linkCopiado ? 'Link copiado' : 'Copiar link de convite'}
+                        <Icone nome={linkCopiado ? 'check' : 'link'} tamanho={16} /> {linkCopiado ? t('Link copiado') : t('Copiar link de convite')}
                       </Botao>
                       <Botao variante="fantasma" onClick={handleRegenerarConvite} disabled={regenerating}>
-                        {regenerating ? 'Gerando…' : 'Gerar novo código'}
+                        {regenerating ? t('Gerando…') : t('Gerar novo código')}
                       </Botao>
                     </div>
                     {regenError && <p className="aviso-erro" role="alert">{regenError}</p>}
@@ -745,42 +755,42 @@ export default function MesaPage() {
                 <BaixarMesa mesaId={id} nome={mesa?.nome} />
 
                 {isCriador && (
-                  <section className="rounded-2xl border border-border bg-raised/50 p-5 space-y-5" aria-label="Administração da mesa">
-                    <CabecalhoSecao titulo="Administração" nivel={3} descricao="Só o dono da mesa vê esta parte." />
+                  <section className="rounded-2xl border border-border bg-raised/50 p-5 space-y-5" aria-label={t('Administração da mesa')}>
+                    <CabecalhoSecao titulo={t('Administração')} nivel={3} descricao={t('Só o dono da mesa vê esta parte.')} />
                     {/* Capa da mesa (37.4) */}
                     <SeletorCapa mesaId={id} capaAtual={mesa?.capa || null} onTrocou={capa => setMesa(prev => ({ ...prev, capa }))} />
 
                     {/* Transferir posse (16.4) */}
                     {membros.length > 1 && (
                       <div className="pt-5 border-t border-border/60">
-                        <p className="text-ink text-sm font-medium">Transferir posse</p>
-                        <p className="text-ink-dim text-sm mt-0.5 mb-3">Passe a mesa para outro membro. Você deixa de ser o dono e vira co-mestre.</p>
+                        <p className="text-ink text-sm font-medium">{t('Transferir posse')}</p>
+                        <p className="text-ink-dim text-sm mt-0.5 mb-3">{t('Passe a mesa para outro membro. Você deixa de ser o dono e vira co-mestre.')}</p>
                         <Botao variante="contorno" onClick={() => { setTransferError(''); setNovoDonoId(''); setShowTransferir(true) }}>
-                          Transferir posse da mesa
+                          {t('Transferir posse da mesa')}
                         </Botao>
                       </div>
                     )}
 
                     {/* Arquivar mesa (16.8) */}
                     <div className="pt-5 border-t border-border/60">
-                      <p className="text-ink text-sm font-medium">{arquivada ? 'Mesa arquivada' : 'Arquivar mesa'}</p>
+                      <p className="text-ink text-sm font-medium">{arquivada ? t('Mesa arquivada') : t('Arquivar mesa')}</p>
                       <p className="text-ink-dim text-sm mt-0.5 mb-3">
                         {arquivada
-                          ? 'A mesa está em somente leitura. Desarquive para voltar a jogar.'
-                          : 'Guarda a mesa em somente leitura (sem novas sessões, fichas ou rolagens). Pode ser desarquivada depois.'}
+                          ? t('A mesa está em somente leitura. Desarquive para voltar a jogar.')
+                          : t('Guarda a mesa em somente leitura (sem novas sessões, fichas ou rolagens). Pode ser desarquivada depois.')}
                       </p>
                       <Botao variante="secundario" onClick={() => handleArquivar(!arquivada)}>
-                        {arquivada ? 'Desarquivar mesa' : 'Arquivar mesa'}
+                        {arquivada ? t('Desarquivar mesa') : t('Arquivar mesa')}
                       </Botao>
                     </div>
 
                     {/* Apagar mesa — zona de perigo, separada */}
                     <div className="pt-5 border-t border-red-900/50">
-                      <p className="text-red-300 text-sm font-medium">Apagar mesa</p>
+                      <p className="text-red-300 text-sm font-medium">{t('Apagar mesa')}</p>
                       <p className="text-ink-dim text-sm mt-0.5 mb-3">
-                        Apaga a mesa, as fichas, o sistema e o histórico. Não tem como desfazer; para só parar de jogar, arquive.
+                        {t('Apaga a mesa, as fichas, o sistema e o histórico. Não tem como desfazer; para só parar de jogar, arquive.')}
                       </p>
-                      <Botao variante="perigo" onClick={() => setShowDeleteMesa(true)}>Apagar esta mesa</Botao>
+                      <Botao variante="perigo" onClick={() => setShowDeleteMesa(true)}>{t('Apagar esta mesa')}</Botao>
                     </div>
                   </section>
                 )}
@@ -795,7 +805,7 @@ export default function MesaPage() {
         {sistemaVisto && (
           <div
             hidden={activeTab !== 'Sistema'} id={activeTab === 'Sistema' ? 'painel-da-mesa' : undefined}
-            role="tabpanel" aria-label="Sistema" className="entra-aba py-8"
+            role="tabpanel" aria-label={t('Sistema')} className="entra-aba py-8"
           >
             <SistemaEditor mesaId={id} isMestre={isGestor} />
           </div>
@@ -806,16 +816,16 @@ export default function MesaPage() {
       {showDeleteMesa && (
         <Modal
           onFechar={() => { setShowDeleteMesa(false); setDeleteMesaError('') }} bloqueado={deletingMesa}
-          tamanho="sm" tom="perigo" titulo="Apagar a mesa?"
+          tamanho="sm" tom="perigo" titulo={t('Apagar a mesa?')}
           rodape={
             <>
               <FecharModal disabled={deletingMesa} />
-              <Botao variante="perigo" onClick={handleDeleteMesa} disabled={deletingMesa}>{deletingMesa ? 'Apagando…' : 'Apagar mesa'}</Botao>
+              <Botao variante="perigo" onClick={handleDeleteMesa} disabled={deletingMesa}>{deletingMesa ? t('Apagando…') : t('Apagar mesa')}</Botao>
             </>
           }
         >
-          <p className="text-ink text-sm"><strong>{mesa?.nome}</strong> será apagada com todas as fichas, o sistema, as imagens e o histórico de sessões.</p>
-          <p className="text-ink-dim text-sm mt-2">Esta ação não pode ser desfeita. Se a ideia é só parar de jogar, arquive a mesa.</p>
+          <p className="text-ink text-sm"><strong>{mesa?.nome}</strong> {t('será apagada com todas as fichas, o sistema, as imagens e o histórico de sessões.')}</p>
+          <p className="text-ink-dim text-sm mt-2">{t('Esta ação não pode ser desfeita. Se a ideia é só parar de jogar, arquive a mesa.')}</p>
           {deleteMesaError && <p className="aviso-erro mt-3" role="alert">{deleteMesaError}</p>}
         </Modal>
       )}
@@ -824,7 +834,7 @@ export default function MesaPage() {
       {fichaToDelete && (
         <Modal
           onFechar={() => { setFichaToDelete(null); setDeleteFichaError('') }} bloqueado={deletingFicha}
-          tamanho="sm" tom="perigo" titulo="Apagar ficha?"
+          tamanho="sm" tom="perigo" titulo={t('Apagar ficha?')}
           rodape={
             <>
               <FecharModal disabled={deletingFicha} />
@@ -835,14 +845,14 @@ export default function MesaPage() {
                     ? handleDeleteFicha()          // própria → delete direto (RLS dono)
                     : handleDeletarFichaOrfa(fichaToDelete) // órfã → RPC (gestor)
                 )}
-              >{deletingFicha ? 'Apagando…' : 'Apagar ficha'}</Botao>
+              >{deletingFicha ? t('Apagando…') : t('Apagar ficha')}</Botao>
             </>
           }
         >
           <p className="text-ink text-sm">
-            <strong>{fichaToDelete.nome_personagem}</strong> será apagada com todos os atributos, equipamentos e imagens.
+            <strong>{fichaToDelete.nome_personagem}</strong> {t('será apagada com todos os atributos, equipamentos e imagens.')}
           </p>
-          <p className="text-ink-dim text-sm mt-2">Esta ação não pode ser desfeita.</p>
+          <p className="text-ink-dim text-sm mt-2">{t('Esta ação não pode ser desfeita.')}</p>
           {deleteFichaError && <p className="aviso-erro mt-3" role="alert">{deleteFichaError}</p>}
         </Modal>
       )}
@@ -851,26 +861,26 @@ export default function MesaPage() {
       {showLeave && (
         <Modal
           onFechar={() => { setShowLeave(false); setLeaveError('') }} bloqueado={leaving}
-          tamanho="sm" titulo="Sair da mesa?"
-          subtitulo={`Você deixa ${mesa?.nome || 'a mesa'} e ela sai da sua lista.`}
+          tamanho="sm" titulo={t('Sair da mesa?')}
+          subtitulo={t('Você deixa {nome} e ela sai da sua lista.', { nome: mesa?.nome || t('a mesa') })}
           rodape={
             <>
               <FecharModal disabled={leaving} />
               <Botao variante={deletarFichas ? 'perigo' : 'primario'} onClick={handleLeaveMesa} disabled={leaving}>
-                {leaving ? 'Saindo…' : 'Sair da mesa'}
+                {leaving ? t('Saindo…') : t('Sair da mesa')}
               </Botao>
             </>
           }
         >
           <fieldset className="space-y-2">
-            <legend className="text-ink text-sm mb-2">O que fazer com as suas fichas desta mesa?</legend>
+            <legend className="text-ink text-sm mb-2">{t('O que fazer com as suas fichas desta mesa?')}</legend>
             <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors duration-rapida ${
               !deletarFichas ? 'selecionado' : 'border-border hover:border-accent-700'
             }`}>
               <input type="radio" name="destinoFichas" checked={!deletarFichas} onChange={() => setDeletarFichas(false)} className="mt-0.5 accent-purple-500" />
               <span>
-                <span className="text-ink text-sm font-medium block">Deixar na mesa</span>
-                <span className="text-ink-dim text-sm">As fichas ficam para o mestre decidir. Se você voltar, elas ainda são suas.</span>
+                <span className="text-ink text-sm font-medium block">{t('Deixar na mesa')}</span>
+                <span className="text-ink-dim text-sm">{t('As fichas ficam para o mestre decidir. Se você voltar, elas ainda são suas.')}</span>
               </span>
             </label>
             <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors duration-rapida ${
@@ -878,8 +888,8 @@ export default function MesaPage() {
             }`}>
               <input type="radio" name="destinoFichas" checked={deletarFichas} onChange={() => setDeletarFichas(true)} className="mt-0.5 accent-red-500" />
               <span>
-                <span className="text-ink text-sm font-medium block">Apagar minhas fichas</span>
-                <span className="text-ink-dim text-sm">Apaga para sempre as suas fichas desta mesa.</span>
+                <span className="text-ink text-sm font-medium block">{t('Apagar minhas fichas')}</span>
+                <span className="text-ink-dim text-sm">{t('Apaga para sempre as suas fichas desta mesa.')}</span>
               </span>
             </label>
           </fieldset>
@@ -891,17 +901,17 @@ export default function MesaPage() {
       {membroToExpel && (
         <Modal
           onFechar={() => { setMembroToExpel(null); setExpelError('') }} bloqueado={expelling}
-          tamanho="sm" tom="perigo" titulo="Expulsar da mesa?"
+          tamanho="sm" tom="perigo" titulo={t('Expulsar da mesa?')}
           rodape={
             <>
               <FecharModal disabled={expelling} />
-              <Botao variante="perigo" onClick={handleExpulsar} disabled={expelling}>{expelling ? 'Expulsando…' : 'Expulsar'}</Botao>
+              <Botao variante="perigo" onClick={handleExpulsar} disabled={expelling}>{expelling ? t('Expulsando…') : t('Expulsar')}</Botao>
             </>
           }
         >
-          <p className="text-ink text-sm">Remover <strong>{membroToExpel.apelido || membroToExpel.usuario.username}</strong> da mesa?</p>
+          <p className="text-ink text-sm">{t('Remover')} <strong>{membroToExpel.apelido || membroToExpel.usuario.username}</strong> {t('da mesa?')}</p>
           <p className="text-ink-dim text-sm mt-2">
-            As fichas dessa pessoa ficam como <span className="text-amber-300">órfãs</span>: você pode apagá-las ou mantê-las depois. Ela recebe uma notificação.
+            {t('As fichas dessa pessoa ficam como')} <span className="text-amber-300">{t('órfãs')}</span>{t(': você pode apagá-las ou mantê-las depois. Ela recebe uma notificação.')}
           </p>
           {expelError && <p className="aviso-erro mt-3" role="alert">{expelError}</p>}
         </Modal>
@@ -911,22 +921,21 @@ export default function MesaPage() {
       {showTransferir && (
         <Modal
           onFechar={() => { setShowTransferir(false); setTransferError('') }} bloqueado={transferring}
-          tamanho="sm" tom="aviso" titulo="Transferir posse da mesa"
+          tamanho="sm" tom="aviso" titulo={t('Transferir posse da mesa')}
           rodape={
             <>
               <FecharModal disabled={transferring} />
-              <Botao variante="dado" onClick={handleTransferirPosse} disabled={transferring || !novoDonoId}>{transferring ? 'Transferindo…' : 'Transferir'}</Botao>
+              <Botao variante="dado" onClick={handleTransferirPosse} disabled={transferring || !novoDonoId}>{transferring ? t('Transferindo…') : t('Transferir')}</Botao>
             </>
           }
         >
           <p className="text-ink text-sm">
-            O novo dono ganha todos os controles de mestre. <strong className="text-amber-300">Você vira co-mestre</strong> e
-            só o novo dono pode te devolver a posse.
+            {t('O novo dono ganha todos os controles de mestre.')} <strong className="text-amber-300">{t('Você vira co-mestre')}</strong> {t('e só o novo dono pode te devolver a posse.')}
           </p>
           <label className="block mt-4">
-            <span className="rotulo">Novo dono</span>
+            <span className="rotulo">{t('Novo dono')}</span>
             <select value={novoDonoId} onChange={e => setNovoDonoId(e.target.value)} className="campo w-full">
-              <option value="">Escolher membro…</option>
+              <option value="">{t('Escolher membro…')}</option>
               {membros
                 .filter(m => m.usuario.id !== session?.user?.id)
                 .map(m => (

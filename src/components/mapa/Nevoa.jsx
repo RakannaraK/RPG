@@ -1,6 +1,7 @@
 import { memo, useRef } from 'react'
 import { normalizarNevoa, normalizarRet } from '../../lib/mapaEngine'
 import CapturaMapa from './CapturaMapa'
+import { t } from '../../i18n'
 
 const caminho = pontos => {
   if (!pontos?.length) return ''
@@ -93,15 +94,15 @@ export function BarraNevoa({ nevoa, config, onConfig, onAlternar, onTudo, onFech
       onPointerDown={e => e.stopPropagation()}
     >
       <div className="flex flex-wrap items-center justify-center gap-1.5 rounded-xl border border-border bg-bg/95 backdrop-blur shadow-xl px-2 py-2">
-        <button onClick={onAlternar} className={`${BTN} ${n.ativa ? 'bg-emerald-900/50 text-ok' : 'bg-hover text-ink-dim'}`} title="Liga/desliga a névoa para os jogadores">
-          🌫 {n.ativa ? 'Névoa ligada' : 'Névoa desligada'}
+        <button onClick={onAlternar} className={`${BTN} ${n.ativa ? 'bg-emerald-900/50 text-ok' : 'bg-hover text-ink-dim'}`} title={t('Liga/desliga a névoa para os jogadores')}>
+          🌫 {n.ativa ? t('Névoa ligada') : t('Névoa desligada')}
         </button>
         <span className="w-px h-6 bg-border" />
-        <button onClick={() => set({ modo: 'revelar' })} className={`${BTN} ${ativoCls(config.modo === 'revelar')}`}>Revelar</button>
-        <button onClick={() => set({ modo: 'cobrir' })} className={`${BTN} ${ativoCls(config.modo === 'cobrir')}`}>Cobrir</button>
+        <button onClick={() => set({ modo: 'revelar' })} className={`${BTN} ${ativoCls(config.modo === 'revelar')}`}>{t('Revelar')}</button>
+        <button onClick={() => set({ modo: 'cobrir' })} className={`${BTN} ${ativoCls(config.modo === 'cobrir')}`}>{t('Cobrir')}</button>
         <span className="w-px h-6 bg-border" />
-        <button onClick={() => set({ forma: 'ret' })} className={`${BTN} ${ativoCls(config.forma === 'ret')}`} title="Arraste um retângulo">▭</button>
-        <button onClick={() => set({ forma: 'traco' })} className={`${BTN} ${ativoCls(config.forma === 'traco')}`} title="Pincel">🖌</button>
+        <button onClick={() => set({ forma: 'ret' })} className={`${BTN} ${ativoCls(config.forma === 'ret')}`} title={t('Arraste um retângulo')}>▭</button>
+        <button onClick={() => set({ forma: 'traco' })} className={`${BTN} ${ativoCls(config.forma === 'traco')}`} title={t('Pincel')}>🖌</button>
         {config.forma === 'traco' && (
           <input
             type="range"
@@ -110,13 +111,13 @@ export function BarraNevoa({ nevoa, config, onConfig, onAlternar, onTudo, onFech
             value={config.raio}
             onChange={e => set({ raio: Number(e.target.value) })}
             className="w-24"
-            title="Tamanho do pincel"
+            title={t('Tamanho do pincel')}
           />
         )}
         <span className="w-px h-6 bg-border" />
-        <button onClick={() => onTudo('revelar')} className={`${BTN} bg-hover text-ink hover:bg-border`}>Revelar tudo</button>
-        <button onClick={() => onTudo('cobrir')} className={`${BTN} bg-hover text-ink hover:bg-border`}>Cobrir tudo</button>
-        <button onClick={onFechar} className={`${BTN} text-ink-dim hover:text-ink`} title="Voltar a mover">✕</button>
+        <button onClick={() => onTudo('revelar')} className={`${BTN} bg-hover text-ink hover:bg-border`}>{t('Revelar tudo')}</button>
+        <button onClick={() => onTudo('cobrir')} className={`${BTN} bg-hover text-ink hover:bg-border`}>{t('Cobrir tudo')}</button>
+        <button onClick={onFechar} className={`${BTN} text-ink-dim hover:text-ink`} title={t('Voltar a mover')}>✕</button>
       </div>
     </div>
   )

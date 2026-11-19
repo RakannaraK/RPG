@@ -1,10 +1,11 @@
 import { supabase } from './supabase'
+import { t } from '../i18n'
 
 // Carrega o grafo COMPLETO de um sistema (todas as tabelas penduradas em
 // sistema_id + os modificadores aninhados sob raças/classes/habilidades), no
 // formato que systemSerializer.serializarSistema espera. Usado pelo export.
 export async function carregarSistemaCompleto(sistemaId) {
-  if (!sistemaId) throw new Error('Sistema não informado.')
+  if (!sistemaId) throw new Error(t('Sistema não informado.'))
 
   const { data: sistema, error: eSis } = await supabase
     .from('sistemas').select('*').eq('id', sistemaId).single()
@@ -16,12 +17,12 @@ export async function carregarSistemaCompleto(sistemaId) {
     'propriedades_item', 'recompensas_nivel',
   ]
   const respostas = await Promise.all(
-    tabelas.map(t => supabase.from(t).select('*').eq('sistema_id', sistemaId))
+    tabelas.map(tab => supabase.from(tab).select('*').eq('sistema_id', sistemaId))
   )
   const dados = {}
-  tabelas.forEach((t, i) => {
+  tabelas.forEach((tab, i) => {
     if (respostas[i].error) throw respostas[i].error
-    dados[t] = respostas[i].data || []
+    dados[tab] = respostas[i].data || []
   })
 
   // modificadores: buscados por id do pai e aninhados (mesmo padrão do useSistema)

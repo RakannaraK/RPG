@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /**
  * Fase 25.3 — catálogo de linhas de poder do sistema (CRUD do mestre/co-mestre).
@@ -24,7 +25,7 @@ export function useLinhasPoder(sistemaId) {
       if (err) throw err
       setLinhas(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar linhas de poder.')
+      setError(err.message || t('Erro ao carregar linhas de poder.'))
     } finally {
       setLoading(false)
     }
@@ -86,7 +87,7 @@ export function useLinhasFicha(fichaId) {
       if (err) throw err
       setLinhasFicha(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar linhas da ficha.')
+      setError(err.message || t('Erro ao carregar linhas da ficha.'))
     } finally {
       setLoading(false)
     }
@@ -125,7 +126,7 @@ export function useLinhasFicha(fichaId) {
           ? prev.map(l => (l.linha_id === linhaId ? anterior : l))
           : prev.filter(l => l.linha_id !== linhaId)
       )
-      throw new Error(err.message || 'Não foi possível atualizar a linha de poder.')
+      throw new Error(err.message || t('Não foi possível atualizar a linha de poder.'))
     }
   }
 

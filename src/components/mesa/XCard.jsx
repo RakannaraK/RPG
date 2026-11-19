@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useSeguranca } from '../../hooks/useSeguranca'
 import { xcardAtivo } from '../../lib/seguranca'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 /**
  * Fase 44 — X-Card: qualquer participante toca, a mesa inteira vê que foi tocado,
@@ -17,8 +18,8 @@ export default function XCard({ mesaId, isGestor, className = '' }) {
   const [agora, setAgora] = useState(() => Date.now())
 
   useEffect(() => {
-    const t = setInterval(() => setAgora(Date.now()), 30 * 1000)
-    return () => clearInterval(t)
+    const timer = setInterval(() => setAgora(Date.now()), 30 * 1000)
+    return () => clearInterval(timer)
   }, [])
 
   if (indisponivel) return null
@@ -38,17 +39,17 @@ export default function XCard({ mesaId, isGestor, className = '' }) {
   return (
     <div className={`shrink-0 ${className}`}>
       <Botao
-        variante="perigo" tamanho="sm" aria-expanded={confirmando} aria-label="X-Card: cortar a cena, sem dizer quem"
+        variante="perigo" tamanho="sm" aria-expanded={confirmando} aria-label={t('X-Card: cortar a cena, sem dizer quem')}
         onClick={() => setConfirmando(c => !c)}
       ><span className="sm:hidden">X</span><span className="hidden sm:inline">X-Card</span></Botao>
 
       {confirmando && createPortal(
-        <div role="dialog" aria-label="Tocar o X-Card?" className="fixed top-16 inset-x-4 mx-auto max-w-xs z-[60] rounded-xl border border-border bg-raised shadow-2xl p-4 space-y-2 text-left">
-          <p className="text-ink text-sm font-semibold">Tocar o X-Card?</p>
-          <p className="text-ink-dim text-xs">A cena atual sai do jogo. Ninguém — nem o mestre — fica sabendo que foi você, e ninguém vai perguntar por quê.</p>
+        <div role="dialog" aria-label={t('Tocar o X-Card?')} className="fixed top-16 inset-x-4 mx-auto max-w-xs z-[60] rounded-xl border border-border bg-raised shadow-2xl p-4 space-y-2 text-left">
+          <p className="text-ink text-sm font-semibold">{t('Tocar o X-Card?')}</p>
+          <p className="text-ink-dim text-xs">{t('A cena atual sai do jogo. Ninguém — nem o mestre — fica sabendo que foi você, e ninguém vai perguntar por quê.')}</p>
           <div className="flex gap-2">
-            <Botao variante="perigo" tamanho="sm" onClick={tocar}>Tocar o X</Botao>
-            <Botao variante="fantasma" tamanho="sm" onClick={() => setConfirmando(false)}>Cancelar</Botao>
+            <Botao variante="perigo" tamanho="sm" onClick={tocar}>{t('Tocar o X')}</Botao>
+            <Botao variante="fantasma" tamanho="sm" onClick={() => setConfirmando(false)}>{t('Cancelar')}</Botao>
           </div>
           {erro && <p className="text-harm text-xs" role="alert">{erro}</p>}
         </div>,
@@ -59,13 +60,13 @@ export default function XCard({ mesaId, isGestor, className = '' }) {
       {ativo && createPortal(
         <div role="alert" className="fixed top-4 inset-x-4 mx-auto max-w-md z-[60] rounded-2xl border-2 border-red-700 bg-raised shadow-2xl p-5 text-center space-y-3">
           <div aria-hidden className="mx-auto w-12 h-12 rounded-full bg-red-800 text-white text-2xl font-bold flex items-center justify-center">✕</div>
-          <p className="text-ink text-lg font-semibold">Alguém tocou o X-Card</p>
+          <p className="text-ink text-lg font-semibold">{t('Alguém tocou o X-Card')}</p>
           <p className="text-ink-dim text-sm">
             {isGestor
-              ? 'Corte ou mude a cena agora. Não pergunte quem foi nem por quê.'
-              : 'A cena atual sai do jogo. O mestre vai cortar ou mudar — sem perguntas.'}
+              ? t('Corte ou mude a cena agora. Não pergunte quem foi nem por quê.')
+              : t('A cena atual sai do jogo. O mestre vai cortar ou mudar — sem perguntas.')}
           </p>
-          <Botao variante="primario" onClick={dispensar}>Entendi</Botao>
+          <Botao variante="primario" onClick={dispensar}>{t('Entendi')}</Botao>
         </div>,
         document.body,
       )}

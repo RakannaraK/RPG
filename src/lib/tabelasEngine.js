@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 /**
  * Tabelas do mestre (rumores, loot, encontros, oráculos) — funções PURAS.
  * Não acessam banco nem React.
@@ -44,18 +45,18 @@ export function resultadosSemEntrada(tabela) {
 /** Valida a tabela para o editor. @returns {{ valida: boolean, erros: string[] }} */
 export function validarTabela(tabela) {
   const erros = []
-  if (!String(tabela?.nome ?? '').trim()) erros.push('A tabela precisa de um nome.')
-  if (!String(tabela?.notacao ?? '').trim()) erros.push('Informe a notação (ex: 1d6).')
+  if (!String(tabela?.nome ?? '').trim()) erros.push(t('A tabela precisa de um nome.'))
+  if (!String(tabela?.notacao ?? '').trim()) erros.push(t('Informe a notação (ex: 1d6).'))
   const entradas = Array.isArray(tabela?.entradas) ? tabela.entradas : []
-  if (entradas.length === 0) erros.push('Adicione ao menos uma entrada.')
+  if (entradas.length === 0) erros.push(t('Adicione ao menos uma entrada.'))
   entradas.forEach((e, i) => {
     const de = Number(e.de)
     const ate = e.ate == null || e.ate === '' ? null : Number(e.ate)
-    if (!Number.isFinite(de)) erros.push(`Entrada ${i + 1}: o "de" precisa ser um número.`)
+    if (!Number.isFinite(de)) erros.push(t('Entrada {n}: o "de" precisa ser um número.', { n: i + 1 }))
     if (ate != null && Number.isFinite(ate) && Number.isFinite(de) && ate < de) {
-      erros.push(`Entrada ${i + 1}: o "até" é menor que o "de".`)
+      erros.push(t('Entrada {n}: o "até" é menor que o "de".', { n: i + 1 }))
     }
-    if (!String(e.texto ?? '').trim()) erros.push(`Entrada ${i + 1}: escreva o resultado.`)
+    if (!String(e.texto ?? '').trim()) erros.push(t('Entrada {n}: escreva o resultado.', { n: i + 1 }))
   })
   const ordenadas = entradas
     .filter(e => Number.isFinite(Number(e.de)))
@@ -65,7 +66,7 @@ export function validarTabela(tabela) {
     const ant = ordenadas[i - 1]
     const antAte = ant.ate == null || ant.ate === '' ? Infinity : Number(ant.ate)
     if (Number(ordenadas[i].de) <= antAte) {
-      erros.push(`As faixas se sobrepõem em ${ordenadas[i].de}.`)
+      erros.push(t('As faixas se sobrepõem em {de}.', { de: ordenadas[i].de }))
     }
   }
   return { valida: erros.length === 0, erros }

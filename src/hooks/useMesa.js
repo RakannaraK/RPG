@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { codigoDoConvite } from '../lib/convite'
 import { useAuth } from '../context/AuthContext'
+import { t } from '../i18n'
 
 export function useMesas() {
   const { session } = useAuth()
@@ -46,7 +47,7 @@ export function useMesas() {
 
       setMesas(mesasComInfo)
     } catch (err) {
-      setError(err.message || 'Erro ao carregar mesas.')
+      setError(err.message || t('Erro ao carregar mesas.'))
     } finally {
       setLoading(false)
     }
@@ -65,7 +66,7 @@ export function useCreateMesa() {
   const [error, setError] = useState(null)
 
   async function createMesa(nome, descricao) {
-    if (!session) throw new Error('Usuário não autenticado')
+    if (!session) throw new Error(t('Usuário não autenticado'))
     setLoading(true)
     setError(null)
     try {
@@ -85,7 +86,7 @@ export function useCreateMesa() {
 
       return mesa
     } catch (err) {
-      const msg = err.message || 'Erro ao criar mesa.'
+      const msg = err.message || t('Erro ao criar mesa.')
       setError(msg)
       throw new Error(msg)
     } finally {
@@ -102,7 +103,7 @@ export function useJoinMesa() {
   const [error, setError] = useState(null)
 
   async function joinMesa(codigo) {
-    if (!session) throw new Error('Usuário não autenticado')
+    if (!session) throw new Error(t('Usuário não autenticado'))
     setLoading(true)
     setError(null)
     try {
@@ -111,14 +112,14 @@ export function useJoinMesa() {
       const { data, error: rpcError } = await supabase.rpc('entrar_na_mesa', {
         codigo: codigoDoConvite(codigo), // F47: aceita o link inteiro colado
       })
-      if (rpcError) throw new Error(rpcError.message || 'Erro ao entrar na mesa.')
+      if (rpcError) throw new Error(rpcError.message || t('Erro ao entrar na mesa.'))
 
       const row = Array.isArray(data) ? data[0] : data
-      if (!row) throw new Error('Código de convite inválido ou mesa não encontrada.')
+      if (!row) throw new Error(t('Código de convite inválido ou mesa não encontrada.'))
 
       return { id: row.mesa_id, nome: row.nome }
     } catch (err) {
-      const msg = err.message || 'Erro ao entrar na mesa.'
+      const msg = err.message || t('Erro ao entrar na mesa.')
       setError(msg)
       throw new Error(msg)
     } finally {

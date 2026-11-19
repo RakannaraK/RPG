@@ -5,6 +5,7 @@
 import { ID_VALIDO, LIMITES, SONS_AMBIENTE, TIPOS_ATMOSFERA, corValida, limitar } from './efeitosVocabulario'
 import { raioParaPx } from './luzMapa'
 import { brilho, mover as moverFundo, nascer as nascerFundo } from './ambiente'
+import { t } from '../i18n'
 
 export const COR_ESCURIDAO = '#05070C'
 export const COR_LUZ = '#FFC27A'
@@ -128,7 +129,7 @@ export function alcasDaAtmosfera(atm, grade) {
   }))
   const fontes = atm.luz.fontes.map(f => ({
     chave: `fonte:${f.id}`, tipo: 'fonte', id: f.id, x: f.x, y: f.y,
-    raioPx: raioParaPx(f.raio, grade), nome: 'Fonte de luz', cor: f.cor,
+    raioPx: raioParaPx(f.raio, grade), nome: t('Fonte de luz'), cor: f.cor,
   }))
   return [...efeitos, ...fontes]
 }

@@ -1,6 +1,7 @@
 /**
  * Fase 49 — baú do grupo (puro): para onde um item pode ir.
  */
+import { t } from '../i18n'
 
 /** Fichas em que eu posso guardar coisas: as minhas e as que eu edito. */
 export const fichasQueUso = (fichas = [], meuId) =>
@@ -12,7 +13,7 @@ export const destinosParaDar = (fichas = [], fichaAtualId) =>
 
 export function validarItemBau({ nome, descricao } = {}) {
   const n = String(nome || '').trim()
-  if (!n) return { ok: false, erro: 'Dê um nome ao item.' }
-  if (n.length > 120) return { ok: false, erro: 'Nome com até 120 letras.' }
+  if (!n) return { ok: false, erro: t('Dê um nome ao item.') }
+  if (n.length > 120) return { ok: false, erro: t('Nome com até 120 letras.') }
   return { ok: true, linha: { nome: n, descricao: String(descricao || '').trim() || null } }
 }

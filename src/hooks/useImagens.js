@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { redimensionarImagem, extensaoDe } from '../lib/imageUtils'
+import { t } from '../i18n'
 
 export function useImagens(fichaId) {
   const [imagens, setImagens] = useState([])
@@ -20,7 +21,7 @@ export function useImagens(fichaId) {
       if (err) throw err
       setImagens(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar imagens.')
+      setError(err.message || t('Erro ao carregar imagens.'))
     } finally {
       setLoading(false)
     }

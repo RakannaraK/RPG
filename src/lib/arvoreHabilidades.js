@@ -8,6 +8,7 @@
 
 import { avaliarFormula } from './formulaEngine'
 import { nivelDeReferencia } from './requisitos'
+import { t } from '../i18n'
 
 const ESTADOS = { conhecida: 'conhecida', disponivel: 'disponivel', bloqueada: 'bloqueada' }
 export const ESTADOS_ARVORE = ESTADOS
@@ -53,7 +54,7 @@ export function montarArvore(habilidades = [], { conhecidasIds = [], contexto = 
     const todos = brutos(hab)
     const paisIds = todos.filter(id => porId.has(id) && !sobeAte(id, hab.id, porId))
     if (paisIds.length < todos.length) {
-      avisos.push(`“${hab.nome}” tem pré-requisito inválido (apagado ou em círculo) — ${paisIds.length ? 'ignorado' : 'virou raiz'}.`)
+      avisos.push(t('“{nome}” tem pré-requisito inválido (apagado ou em círculo) — {acao}.', { nome: hab.nome, acao: paisIds.length ? t('ignorado') : t('virou raiz') }))
     }
     nos.set(hab.id, { id: hab.id, hab, paiId: paisIds[0] || null, paisIds, custo: Math.max(0, Number(hab.custo_pontos) || 0), profundidade: 0, filhos: [], estado: ESTADOS.bloqueada, motivo: null })
   }
@@ -81,7 +82,7 @@ export function montarArvore(habilidades = [], { conhecidasIds = [], contexto = 
     const nome = id => nos.get(id).hab.nome
     if (conhecidas.has(no.id)) no.estado = ESTADOS.conhecida
     else if (faltaPai) { no.estado = ESTADOS.bloqueada; no.motivo = `Precisa de ${lista(faltam.map(nome), qualquer ? 'ou' : 'e')}` }
-    else if (faltaNivel) { no.estado = ESTADOS.bloqueada; no.motivo = `Precisa de nível ${nivelMin}` }
+    else if (faltaNivel) { no.estado = ESTADOS.bloqueada; no.motivo = t('Precisa de nível {nivelMin}', { nivelMin }) }
     else if (saldoPontos !== null && no.custo > saldoPontos) { no.estado = ESTADOS.bloqueada; no.motivo = `Custa ${no.custo} ponto${no.custo === 1 ? '' : 's'} (restam ${saldoPontos})` }
     else no.estado = ESTADOS.disponivel
   }
@@ -110,7 +111,7 @@ export function pontosDaArvore({ formula, contexto = {}, habilidades = [], habil
     const total = Math.floor(avaliarFormula(formula, contexto))
     return { total, gastos, saldo: total - gastos, erro: null }
   } catch (e) {
-    return { total: null, gastos, saldo: null, erro: e.message || 'Fórmula inválida' }
+    return { total: null, gastos, saldo: null, erro: e.message || t('Fórmula inválida') }
   }
 }
 

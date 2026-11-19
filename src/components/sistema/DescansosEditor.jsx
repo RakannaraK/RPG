@@ -6,6 +6,7 @@
  */
 import FormulaInput from './FormulaInput'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 const inputCls = 'px-2 py-1 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
 const selectCls = inputCls
@@ -33,16 +34,16 @@ function RegraEditor({ label, regra, modos, onChange }) {
         {modos.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
       </select>
       {precisaValor === 'num' && !ehFormula && (
-        <input type="number" value={regra?.valor ?? ''} onChange={e => setRegra({ valor: e.target.value })} placeholder="ex: 10" className={`${inputCls} w-20`} />
+        <input type="number" value={regra?.valor ?? ''} onChange={e => setRegra({ valor: e.target.value })} placeholder={t('ex: 10')} className={`${inputCls} w-20`} />
       )}
       {precisaValor === 'frac' && (
-        <input type="number" step="0.05" min="0" max="1" value={regra?.valor ?? ''} onChange={e => setRegra({ valor: e.target.value })} placeholder="0.5" className={`${inputCls} w-20`} title="Fração do máximo (0 a 1)" />
+        <input type="number" step="0.05" min="0" max="1" value={regra?.valor ?? ''} onChange={e => setRegra({ valor: e.target.value })} placeholder="0.5" className={`${inputCls} w-20`} title={t('Fração do máximo (0 a 1)')} />
       )}
       {precisaValor === 'texto' && (
-        <input type="text" value={regra?.valor ?? ''} onChange={e => setRegra({ valor: e.target.value })} placeholder="ex: 1d8+nivel" className={`${inputCls} w-32`} title="Notação; aceita variáveis (ex: 1d8+nivel)" />
+        <input type="text" value={regra?.valor ?? ''} onChange={e => setRegra({ valor: e.target.value })} placeholder="ex: 1d8+nivel" className={`${inputCls} w-32`} title={t('Notação; aceita variáveis (ex: 1d8+nivel)')} />
       )}
       {modo === 'fixo' && (
-        <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer pt-1.5" title="Usar fórmula (ex: 5*nivel)">
+        <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer pt-1.5" title={t('Usar fórmula (ex: 5*nivel)')}>
           <input type="checkbox" checked={ehFormula} onChange={e => setRegra({ valor_e_formula: e.target.checked })} className="accent-purple-500" />
           ƒ
         </label>
@@ -57,20 +58,20 @@ function RegraEditor({ label, regra, modos, onChange }) {
 }
 
 const MODOS_VIDA = [
-  { value: 'nada', label: 'Não recupera' },
-  { value: 'total', label: 'Total (cheia)' },
-  { value: 'fixo', label: 'Quantidade fixa' },
-  { value: 'fracao', label: 'Fração do máximo' },
-  { value: 'dado', label: 'Dado/notação' },
+  { value: 'nada', label: t('Não recupera') },
+  { value: 'total', label: t('Total (cheia)') },
+  { value: 'fixo', label: t('Quantidade fixa') },
+  { value: 'fracao', label: t('Fração do máximo') },
+  { value: 'dado', label: t('Dado/notação') },
 ]
 const MODOS_VIDA_TEMP = [
-  { value: 'manter', label: 'Mantém' },
-  { value: 'zerar', label: 'Zera' },
+  { value: 'manter', label: t('Mantém') },
+  { value: 'zerar', label: t('Zera') },
 ]
 const MODOS_RECURSOS = [
-  { value: 'nada', label: 'Não recupera' },
-  { value: 'total', label: 'Total (máximo)' },
-  { value: 'parcial', label: 'Parcial (fração)' },
+  { value: 'nada', label: t('Não recupera') },
+  { value: 'total', label: t('Total (máximo)') },
+  { value: 'parcial', label: t('Parcial (fração)') },
 ]
 
 export default function DescansosEditor({ descansos = [], onChange }) {
@@ -88,17 +89,17 @@ export default function DescansosEditor({ descansos = [], onChange }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-purple-200">Tipos de descanso {descansos.length > 0 && `(${descansos.length})`}</p>
-          <p className="text-accent-300 text-xs mt-0.5">Defina como cada descanso recupera vida e recursos. Sem descansos, a funcionalidade fica oculta.</p>
+          <p className="text-sm font-medium text-purple-200">{t('Tipos de descanso')} {descansos.length > 0 && `(${descansos.length})`}</p>
+          <p className="text-accent-300 text-xs mt-0.5">{t('Defina como cada descanso recupera vida e recursos. Sem descansos, a funcionalidade fica oculta.')}</p>
         </div>
         <Botao variante="primario" tamanho="sm" type="button" onClick={add} className="shrink-0">
-          + Adicionar descanso
+          {t('+ Adicionar descanso')}
         </Botao>
       </div>
 
       {descansos.length === 0 ? (
         <div className="text-center py-10 border border-dashed border-purple-800 rounded-xl text-accent-300 text-sm">
-          Nenhum descanso configurado. Ex: "Descanso Curto" (vida 1d8, recursos metade) e "Descanso Longo" (vida total, recursos total).
+          {t('Nenhum descanso configurado. Ex: "Descanso Curto" (vida 1d8, recursos metade) e "Descanso Longo" (vida total, recursos total).')}
         </div>
       ) : (
         <div className="space-y-3">
@@ -109,15 +110,15 @@ export default function DescansosEditor({ descansos = [], onChange }) {
                   type="text"
                   value={d.nome}
                   onChange={e => update(i, { nome: e.target.value })}
-                  placeholder="Nome do descanso (ex: Descanso Longo)"
+                  placeholder={t('Nome do descanso (ex: Descanso Longo)')}
                   className={`${inputCls} flex-1`}
                 />
-                <button type="button" onClick={() => remove(i)} className="text-red-800 hover:text-red-500 transition-colors shrink-0" title="Remover descanso">✕</button>
+                <button type="button" onClick={() => remove(i)} className="text-red-800 hover:text-red-500 transition-colors shrink-0" title={t('Remover descanso')}>✕</button>
               </div>
               <div className="space-y-2 pl-1">
-                <RegraEditor label="Vida" regra={d.vida} modos={MODOS_VIDA} onChange={r => update(i, { vida: r })} />
-                <RegraEditor label="Vida temporária" regra={d.vida_temp} modos={MODOS_VIDA_TEMP} onChange={r => update(i, { vida_temp: r })} />
-                <RegraEditor label="Recursos (habilidade)" regra={d.recursos_habilidade} modos={MODOS_RECURSOS} onChange={r => update(i, { recursos_habilidade: r })} />
+                <RegraEditor label={t('Vida')} regra={d.vida} modos={MODOS_VIDA} onChange={r => update(i, { vida: r })} />
+                <RegraEditor label={t('Vida temporária')} regra={d.vida_temp} modos={MODOS_VIDA_TEMP} onChange={r => update(i, { vida_temp: r })} />
+                <RegraEditor label={t('Recursos (habilidade)')} regra={d.recursos_habilidade} modos={MODOS_RECURSOS} onChange={r => update(i, { recursos_habilidade: r })} />
               </div>
             </div>
           ))}

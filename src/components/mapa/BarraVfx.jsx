@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 const BTN = 'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors whitespace-nowrap'
 const ativoCls = on => (on ? 'bg-accent-600 text-sobre-acento' : 'bg-hover text-ink hover:bg-border')
 
@@ -27,7 +28,7 @@ export default function BarraVfx({ efeitos = [], escolhido, onEscolher }) {
             </button>
           ))}
         </div>
-        <p className="text-xs text-ink-dim text-center">Clique no mapa para soltar · arraste para lançar de um ponto a outro</p>
+        <p className="text-xs text-ink-dim text-center">{t('Clique no mapa para soltar · arraste para lançar de um ponto a outro')}</p>
       </div>
     </div>
   )

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useId } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 const tabelaAusente = e => e?.code === '42P01' || e?.code === 'PGRST205'
 
@@ -41,8 +42,8 @@ export function useNotasMesa(mesaId) {
   }, [mesaId, idCanal])
 
   async function criar() {
-    const { data, error } = await supabase.from('notas_mesa').insert({ mesa_id: mesaId, titulo: 'Nova nota' }).select().single()
-    if (error) throw new Error(tabelaAusente(error) ? 'Notas ainda não ativadas neste banco (sql/fase29_chat_notas_calendario.sql).' : error.message)
+    const { data, error } = await supabase.from('notas_mesa').insert({ mesa_id: mesaId, titulo: t('Nova nota') }).select().single()
+    if (error) throw new Error(tabelaAusente(error) ? t('Notas ainda não ativadas neste banco (sql/fase29_chat_notas_calendario.sql).') : error.message)
     setNotas(prev => [...prev.filter(n => n.id !== data.id), data])
     return data
   }

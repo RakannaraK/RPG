@@ -14,15 +14,16 @@ import Botao from '../ui/Botao'
 import Modal from '../ui/Modal'
 import Abas from '../ui/Abas'
 import Icone from '../ui/Icone'
+import { IDIOMAS, idiomaAtual, t, trocarIdioma } from '../../i18n'
 
 const SKINS = listarSkins()
 
 const CATEGORIAS = [
-  { id: 'geral', rotulo: 'Geral', icone: 'usuario' },
-  { id: 'aparencia', rotulo: 'Aparência', icone: 'magia' },
-  { id: 'dados', rotulo: 'Dados', icone: 'dado' },
-  { id: 'audio', rotulo: 'Áudio', icone: 'volume' },
-  { id: 'acessibilidade', rotulo: 'Acessibilidade', icone: 'olho' },
+  { id: 'geral', rotulo: t('Geral'), icone: 'usuario' },
+  { id: 'aparencia', rotulo: t('Aparência'), icone: 'magia' },
+  { id: 'dados', rotulo: t('Dados'), icone: 'dado' },
+  { id: 'audio', rotulo: t('Áudio'), icone: 'volume' },
+  { id: 'acessibilidade', rotulo: t('Acessibilidade'), icone: 'olho' },
 ]
 
 /** Título + explicação de um bloco de preferência. */
@@ -94,14 +95,14 @@ export default function PreferenciasModal({ onFechar }) {
     const v = apelido.trim()
     setApelidoErro('')
     if (!uid) return
-    if (!v) { setApelidoErro('O nome não pode ficar vazio.'); return }
+    if (!v) { setApelidoErro(t('O nome não pode ficar vazio.')); return }
     setSalvandoApelido(true)
     const { error } = await supabase.from('profiles').update({ username: v }).eq('id', uid)
     setSalvandoApelido(false)
-    if (error) { setApelidoErro(error.message || 'Erro ao salvar.'); return }
+    if (error) { setApelidoErro(error.message || t('Erro ao salvar.')); return }
     setApelido(v)
     perfilMudou(uid, { username: v }) // o cabeçalho atualiza na hora
-    toast.ok('Nome atualizado')
+    toast.ok(t('Nome atualizado'))
   }
 
   function escolherSkin(id) {
@@ -116,38 +117,45 @@ export default function PreferenciasModal({ onFechar }) {
 
   const conteudo = {
     geral: (
-      <Bloco titulo="Nome de exibição" dica="É o que as outras pessoas veem no lugar do seu e-mail. Dá para trocar quando quiser.">
+      <div className="space-y-8">
+      <Bloco titulo={t('Nome de exibição')} dica={t('É o que as outras pessoas veem no lugar do seu e-mail. Dá para trocar quando quiser.')}>
         <form onSubmit={salvarApelido} className="flex flex-wrap gap-2">
           <input
             type="text" value={apelido} onChange={e => setApelido(e.target.value)} maxLength={40}
-            placeholder="Seu apelido" aria-label="Nome de exibição" className="campo flex-1 min-w-[12rem]"
+            placeholder={t('Seu apelido')} aria-label={t('Nome de exibição')} className="campo flex-1 min-w-[12rem]"
           />
-          <Botao type="submit" variante="primario" disabled={salvandoApelido}>{salvandoApelido ? 'Salvando…' : 'Salvar'}</Botao>
+          <Botao type="submit" variante="primario" disabled={salvandoApelido}>{salvandoApelido ? t('Salvando…') : t('Salvar')}</Botao>
         </form>
         {apelidoErro && <p className="aviso-erro" role="alert">{apelidoErro}</p>}
       </Bloco>
+      <Bloco titulo={t('Idioma')} dica={t('Vale só para este navegador. A página recarrega ao trocar.')}>
+        <select value={idiomaAtual()} onChange={e => trocarIdioma(e.target.value)} className="campo w-full sm:w-72" aria-label={t('Idioma')}>
+          {IDIOMAS.map(i => <option key={i.id} value={i.id}>{i.nome}</option>)}
+        </select>
+      </Bloco>
+      </div>
     ),
 
     aparencia: (
       <div className="space-y-8">
-        <Bloco titulo="Tema" dica="Muda a energia do site inteiro: cor, luz e as partículas do fundo.">
-          <div className="grid gap-2.5 sm:grid-cols-2" role="radiogroup" aria-label="Tema">
-            {TEMAS.map(t => {
-              const ativo = tema === t.id
+        <Bloco titulo={t('Tema')} dica={t('Muda a energia do site inteiro: cor, luz e as partículas do fundo.')}>
+          <div className="grid gap-2.5 sm:grid-cols-2" role="radiogroup" aria-label={t('Tema')}>
+            {TEMAS.map(tm => {
+              const ativo = tema === tm.id
               return (
                 <button
-                  key={t.id} type="button" role="radio" aria-checked={ativo}
-                  onClick={() => salvarPreferencias({ tema: t.id })}
+                  key={tm.id} type="button" role="radio" aria-checked={ativo}
+                  onClick={() => salvarPreferencias({ tema: tm.id })}
                   className={`cartao relative flex items-center gap-3 rounded-xl border p-3 text-left ${ativo ? 'selecionado' : 'border-border bg-void/40'}`}
                 >
                   <span
                     className="w-12 h-12 rounded-lg shrink-0 ring-1 ring-white/10"
-                    style={{ background: t.gradiente || `radial-gradient(circle at 30% 30%, ${t.cores[0]}, ${t.amostra} 55%, #0B0812)`, boxShadow: `0 0 18px -4px ${t.amostra}` }}
+                    style={{ background: tm.gradiente || `radial-gradient(circle at 30% 30%, ${tm.cores[0]}, ${tm.amostra} 55%, #0B0812)`, boxShadow: `0 0 18px -4px ${tm.amostra}` }}
                     aria-hidden="true"
                   />
                   <span className="min-w-0">
-                    <span className="block text-ink font-semibold text-sm">{t.nome}{t.id === 'tinta' ? ' (padrão)' : ''}</span>
-                    <span className="block text-ink-dim text-xs mt-0.5">{t.energia}</span>
+                    <span className="block text-ink font-semibold text-sm">{tm.nome}{tm.id === 'tinta' ? t(' (padrão)') : ''}</span>
+                    <span className="block text-ink-dim text-xs mt-0.5">{tm.energia}</span>
                   </span>
                   {ativo && <Icone nome="check" tamanho={18} className="ml-auto text-accent-300" />}
                 </button>
@@ -156,12 +164,12 @@ export default function PreferenciasModal({ onFechar }) {
           </div>
         </Bloco>
 
-        <Bloco titulo="Efeitos visuais" dica="Partículas e luz ambiente. Nada disso atrapalha a leitura nem os cliques.">
-          <Escolha campo="efeitos" opcoes={EFEITOS} rotuloOculto="Efeitos visuais" />
+        <Bloco titulo={t('Efeitos visuais')} dica={t('Partículas e luz ambiente. Nada disso atrapalha a leitura nem os cliques.')}>
+          <Escolha campo="efeitos" opcoes={EFEITOS} rotuloOculto={t('Efeitos visuais')} />
         </Bloco>
 
-        <Bloco titulo="Fonte">
-          <select value={preferencias.fonte || 'padrao'} onChange={e => salvarPreferencias({ fonte: e.target.value })} className="campo w-full sm:w-72" aria-label="Fonte">
+        <Bloco titulo={t('Fonte')}>
+          <select value={preferencias.fonte || 'padrao'} onChange={e => salvarPreferencias({ fonte: e.target.value })} className="campo w-full sm:w-72" aria-label={t('Fonte')}>
             {FONTES.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
           </select>
         </Bloco>
@@ -170,8 +178,8 @@ export default function PreferenciasModal({ onFechar }) {
 
     dados: (
       <div className="space-y-8">
-        <Bloco titulo="Skin do dado" dica="Clique para escolher; o dado rola e você ouve o som dele.">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5" role="radiogroup" aria-label="Skin do dado">
+        <Bloco titulo={t('Skin do dado')} dica={t('Clique para escolher; o dado rola e você ouve o som dele.')}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5" role="radiogroup" aria-label={t('Skin do dado')}>
             {SKINS.map(s => {
               const ativa = dado_skin === s.id
               return (
@@ -186,7 +194,7 @@ export default function PreferenciasModal({ onFechar }) {
                   </button>
                   <button
                     type="button" onClick={() => tocarSomDado(s.id, { ativo: som_ativo, volume: som_volume, numDados: 3 })}
-                    aria-label={`Ouvir ${s.nome}`} data-dica="Ouvir"
+                    aria-label={t('Ouvir {nome}', { nome: s.nome })} data-dica={t('Ouvir')}
                     className="botao-icone !min-w-[32px] !min-h-[32px] absolute top-1 right-1"
                   ><Icone nome="volume" tamanho={16} /></button>
                 </div>
@@ -196,26 +204,26 @@ export default function PreferenciasModal({ onFechar }) {
         </Bloco>
 
         {/* F27 — bandeja: dados 3D com física caindo por cima da tela */}
-        <Bloco titulo="Dados na mesa" dica="Os dados 3D que caem por cima da tela quando alguém rola.">
+        <Bloco titulo={t('Dados na mesa')} dica={t('Os dados 3D que caem por cima da tela quando alguém rola.')}>
           <Escolha
-            campo="dados_mesa" rotuloOculto="Dados na mesa"
+            campo="dados_mesa" rotuloOculto={t('Dados na mesa')}
             opcoes={[
-              { id: 'todos', nome: 'De todos', dica: 'As rolagens de qualquer pessoa da mesa caem na sua tela.' },
-              { id: 'meus', nome: 'Só os meus', dica: 'Só as suas rolagens caem na tela.' },
-              { id: 'nenhum', nome: 'Desligado', dica: 'Nenhum dado cai na tela (os resultados continuam no feed).' },
+              { id: 'todos', nome: t('De todos'), dica: t('As rolagens de qualquer pessoa da mesa caem na sua tela.') },
+              { id: 'meus', nome: t('Só os meus'), dica: t('Só as suas rolagens caem na tela.') },
+              { id: 'nenhum', nome: t('Desligado'), dica: t('Nenhum dado cai na tela (os resultados continuam no feed).') },
             ]}
           />
           {!bandejaSuportada && (
-            <p className="text-sm text-warn">Neste aparelho a bandeja fica desligada (sem WebGL ou com "reduzir movimento" ativo).</p>
+            <p className="text-sm text-warn">{t('Neste aparelho a bandeja fica desligada (sem WebGL ou com "reduzir movimento" ativo).')}</p>
           )}
         </Bloco>
 
-        <Bloco titulo="Som de dado próprio">
+        <Bloco titulo={t('Som de dado próprio')}>
           <EnvioDeSom
             campo="som_dado_url" campoVolume="som_volume" pasta="dado"
-            titulo="Arquivo de som"
-            dica="Toca no lugar do som sintetizado, em todas as skins. Curto (menos de 1 s) fica melhor."
-            rodape="Você ouve o seu som em toda rolagem; os outros ouvem o deles."
+            titulo={t('Arquivo de som')}
+            dica={t('Toca no lugar do som sintetizado, em todas as skins. Curto (menos de 1 s) fica melhor.')}
+            rodape={t('Você ouve o seu som em toda rolagem; os outros ouvem o deles.')}
           />
         </Bloco>
       </div>
@@ -223,20 +231,20 @@ export default function PreferenciasModal({ onFechar }) {
 
     audio: (
       <div className="space-y-8">
-        <Bloco titulo="Rolagens">
-          <Chave rotulo="Som das rolagens" dica="O barulho do dado quando alguém rola." ligado={som_ativo} onMudar={v => salvarPreferencias({ som_ativo: v })} />
-          <Volume rotulo="Volume das rolagens" valor={som_volume} desligado={!som_ativo} onMudar={v => salvarPreferencias({ som_volume: v })} />
+        <Bloco titulo={t('Rolagens')}>
+          <Chave rotulo={t('Som das rolagens')} dica={t('O barulho do dado quando alguém rola.')} ligado={som_ativo} onMudar={v => salvarPreferencias({ som_ativo: v })} />
+          <Volume rotulo={t('Volume das rolagens')} valor={som_volume} desligado={!som_ativo} onMudar={v => salvarPreferencias({ som_volume: v })} />
         </Bloco>
         {/* FV.4c — sons de ação (combate), independentes do som de dado */}
-        <Bloco titulo="Ações e efeitos">
-          <Chave rotulo="Sons de ação" dica="Golpes, magias e os efeitos que o mestre dispara." ligado={som_acao_ativo} onMudar={v => salvarPreferencias({ som_acao_ativo: v })} />
-          <Volume rotulo="Volume das ações" valor={som_acao_volume} desligado={!som_acao_ativo} onMudar={v => salvarPreferencias({ som_acao_volume: v })} />
+        <Bloco titulo={t('Ações e efeitos')}>
+          <Chave rotulo={t('Sons de ação')} dica={t('Golpes, magias e os efeitos que o mestre dispara.')} ligado={som_acao_ativo} onMudar={v => salvarPreferencias({ som_acao_ativo: v })} />
+          <Volume rotulo={t('Volume das ações')} valor={som_acao_volume} desligado={!som_acao_ativo} onMudar={v => salvarPreferencias({ som_acao_volume: v })} />
         </Bloco>
-        <Bloco titulo="Som de crítico próprio">
+        <Bloco titulo={t('Som de crítico próprio')}>
           <EnvioDeSom
             campo="som_critico_url" campoVolume="som_acao_volume" pasta="critico"
-            titulo="Arquivo de som"
-            rodape="Toca no lugar do som padrão quando sai um crítico."
+            titulo={t('Arquivo de som')}
+            rodape={t('Toca no lugar do som padrão quando sai um crítico.')}
           />
         </Bloco>
       </div>
@@ -244,17 +252,17 @@ export default function PreferenciasModal({ onFechar }) {
 
     acessibilidade: (
       <div className="space-y-8">
-        <Bloco titulo="Animações" dica="Transições de tela, de abas e de janelas.">
-          <Escolha campo="animacoes" opcoes={ANIMACOES} rotuloOculto="Animações" />
+        <Bloco titulo={t('Animações')} dica={t('Transições de tela, de abas e de janelas.')}>
+          <Escolha campo="animacoes" opcoes={ANIMACOES} rotuloOculto={t('Animações')} />
           {typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches && (
-            <p className="text-sm text-ink-dim flex items-center gap-1.5"><Icone nome="info" tamanho={14} /> O seu sistema pede menos movimento, então as animações já ficam reduzidas.</p>
+            <p className="text-sm text-ink-dim flex items-center gap-1.5"><Icone nome="info" tamanho={14} /> {t('O seu sistema pede menos movimento, então as animações já ficam reduzidas.')}</p>
           )}
         </Bloco>
-        <Bloco titulo="Tamanho do texto" dica="Aumenta o site inteiro: texto, botões e espaços.">
-          <Escolha campo="tamanho_texto" opcoes={TAMANHOS_TEXTO} rotuloOculto="Tamanho do texto" />
+        <Bloco titulo={t('Tamanho do texto')} dica={t('Aumenta o site inteiro: texto, botões e espaços.')}>
+          <Escolha campo="tamanho_texto" opcoes={TAMANHOS_TEXTO} rotuloOculto={t('Tamanho do texto')} />
         </Bloco>
-        <Bloco titulo="Contraste">
-          <Chave rotulo="Alto contraste" dica="Texto secundário e bordas mais fortes, sem textura." ligado={preferencias.alto_contraste === true} onMudar={v => salvarPreferencias({ alto_contraste: v })} />
+        <Bloco titulo={t('Contraste')}>
+          <Chave rotulo={t('Alto contraste')} dica={t('Texto secundário e bordas mais fortes, sem textura.')} ligado={preferencias.alto_contraste === true} onMudar={v => salvarPreferencias({ alto_contraste: v })} />
         </Bloco>
       </div>
     ),
@@ -262,17 +270,17 @@ export default function PreferenciasModal({ onFechar }) {
 
   return (
     <Modal
-      onFechar={onFechar} tamanho="xl" titulo="Preferências" subtitulo="Vale só para você e é salvo na hora."
+      onFechar={onFechar} tamanho="xl" titulo={t('Preferências')} subtitulo={t('Vale só para você e é salvo na hora.')}
       corpoClassName="!p-0"
-      rodape={<Botao variante="primario" onClick={onFechar}>Concluído</Botao>}
+      rodape={<Botao variante="primario" onClick={onFechar}>{t('Concluído')}</Botao>}
     >
       <div className="md:grid md:grid-cols-[13rem_minmax(0,1fr)] md:min-h-[26rem]">
         {/* celular: abas no topo */}
         <div className="md:hidden px-3 pt-2 sticky top-0 z-10 bg-raised">
-          <Abas rotulo="Categorias" tamanho="sm" abas={CATEGORIAS.map(c => ({ id: c.id, rotulo: c.rotulo }))} atual={cat} onTrocar={setCat} />
+          <Abas rotulo={t('Categorias')} tamanho="sm" abas={CATEGORIAS.map(c => ({ id: c.id, rotulo: c.rotulo }))} atual={cat} onTrocar={setCat} />
         </div>
         {/* computador: lista lateral */}
-        <nav className="hidden md:block border-r border-border/70 p-3 space-y-1" aria-label="Categorias">
+        <nav className="hidden md:block border-r border-border/70 p-3 space-y-1" aria-label={t('Categorias')}>
           {CATEGORIAS.map(c => (
             <button
               key={c.id} type="button" onClick={() => setCat(c.id)} aria-current={cat === c.id || undefined}

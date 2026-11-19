@@ -6,9 +6,10 @@ import { tocarPresetAcao } from '../../audio/actionSynth'
 import { usePreferencias } from '../../context/PreferenciasContext'
 import Ilustra from '../arte/Ilustra'
 import Modal from '../ui/Modal'
+import { t, tn } from '../../i18n'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-1 focus:ring-accent-500'
-const TIPOS = [['inimigo', 'Inimigo'], ['aliado', 'Aliado'], ['npc', 'NPC']]
+const TIPOS = [['inimigo', t('Inimigo')], ['aliado', t('Aliado')], ['npc', t('NPC')]]
 
 /** Diálogo de uma invocação: quantos, de que lado, vida, defesa, ficha própria. */
 function Dialogo({ criatura, camposCombate, comMapa, onConfirmar, onFechar }) {
@@ -28,7 +29,7 @@ function Dialogo({ criatura, camposCombate, comMapa, onConfirmar, onFechar }) {
       const d = defesaSugerida(valores, camposCombate)
       if (!ativo || !d) return
       setDefesa(String(d.valor))
-      setDicaDefesa(`da ficha: ${d.nome}`)
+      setDicaDefesa(t('da ficha: {nome}', { nome: d.nome }))
     })
     return () => { ativo = false }
   }, [criatura.id, camposCombate])
@@ -39,45 +40,45 @@ function Dialogo({ criatura, camposCombate, comMapa, onConfirmar, onFechar }) {
       await onConfirmar({ quantidade, tipo, vida, defesa, fichaPropria, noMapa })
       onFechar()
     } catch (e) {
-      setErro(e.message || 'Não foi possível invocar.')
+      setErro(e.message || t('Não foi possível invocar.'))
       setOcupado(false)
     }
   }
 
   return (
     <div className="rounded-xl border border-accent-600 bg-void p-3 space-y-3">
-      <p className="text-ink font-semibold text-sm">Invocar {criatura.nome_personagem}</p>
+      <p className="text-ink font-semibold text-sm">{t('Invocar {nome}', { nome: criatura.nome_personagem })}</p>
       <div className="flex flex-wrap gap-2 items-end">
-        <label className="text-ink-dim text-xs space-y-1">Quantos
+        <label className="text-ink-dim text-xs space-y-1">{t('Quantos')}
           <input type="number" min={1} value={quantidade} onChange={e => setQuantidade(e.target.value)} className={`${INP} w-20 block`} />
         </label>
-        <label className="text-ink-dim text-xs space-y-1">Lado
+        <label className="text-ink-dim text-xs space-y-1">{t('Lado')}
           <select value={tipo} onChange={e => setTipo(e.target.value)} className={`${INP} block`}>
             {TIPOS.map(([v, r]) => <option key={v} value={v}>{r}</option>)}
           </select>
         </label>
-        <label className="text-ink-dim text-xs space-y-1">Vida de cada um
+        <label className="text-ink-dim text-xs space-y-1">{t('Vida de cada um')}
           <input type="number" value={vida} onChange={e => setVida(e.target.value)} placeholder="—" className={`${INP} w-24 block`} />
         </label>
-        <label className="text-ink-dim text-xs space-y-1">Defesa {dicaDefesa && <span className="text-ink-dim">({dicaDefesa})</span>}
+        <label className="text-ink-dim text-xs space-y-1">{t('Defesa')} {dicaDefesa && <span className="text-ink-dim">({dicaDefesa})</span>}
           <input type="number" value={defesa} onChange={e => setDefesa(e.target.value)} placeholder="—" className={`${INP} w-24 block`} />
         </label>
       </div>
       <label className="flex items-start gap-2 text-xs text-ink">
         <input type="checkbox" checked={fichaPropria} onChange={e => setFichaPropria(e.target.checked)} className="mt-0.5" />
-        <span>Cada um com <b>ficha própria</b> (boss/NPC importante): ganha uma cópia da ficha, com recursos e habilidades só dele.</span>
+        <span>{t('Cada um com')} <b>{t('ficha própria')}</b> {t('(boss/NPC importante): ganha uma cópia da ficha, com recursos e habilidades só dele.')}</span>
       </label>
       {comMapa && (
         <label className="flex items-center gap-2 text-xs text-ink">
           <input type="checkbox" checked={noMapa} onChange={e => setNoMapa(e.target.checked)} />
-          <span>Pôr token na cena do mapa</span>
+          <span>{t('Pôr token na cena do mapa')}</span>
         </label>
       )}
       {erro && <p className="text-red-400 text-xs">{erro}</p>}
       <div className="flex justify-end gap-2">
-        <button type="button" onClick={onFechar} className="px-3 py-1.5 rounded-lg bg-hover text-ink text-sm hover:bg-border">Cancelar</button>
+        <button type="button" onClick={onFechar} className="px-3 py-1.5 rounded-lg bg-hover text-ink text-sm hover:bg-border">{t('Cancelar')}</button>
         <button type="button" onClick={confirmar} disabled={ocupado} className="px-3 py-1.5 rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-50 text-sobre-acento text-sm font-semibold">
-          {ocupado ? 'Invocando…' : <><Ilustra nome="espadas" tamanho={16} /> Invocar</>}
+          {ocupado ? t('Invocando…') : <><Ilustra nome="espadas" tamanho={16} /> {t('Invocar')}</>}
         </button>
       </div>
     </div>
@@ -90,7 +91,7 @@ function Dialogo({ criatura, camposCombate, comMapa, onConfirmar, onFechar }) {
  * prontas e decide o que fazer com elas (sessão insere no encontro; o mapa
  * insere e ainda cria os tokens).
  */
-export default function InvocarBestiario({ mesaId, meuId, isGestor, camposCombate = [], nomesExistentes = [], comMapa = false, onInvocar, rotulo = <><Ilustra nome="garra" tamanho={18} /> Bestiário</>, className = '' }) {
+export default function InvocarBestiario({ mesaId, meuId, isGestor, camposCombate = [], nomesExistentes = [], comMapa = false, onInvocar, rotulo = <><Ilustra nome="garra" tamanho={18} /> {t('Bestiário')}</>, className = '' }) {
   const { preferencias } = usePreferencias()
   const [aberto, setAberto] = useState(false)
   const [criatura, setCriatura] = useState(null)
@@ -100,7 +101,8 @@ export default function InvocarBestiario({ mesaId, meuId, isGestor, camposCombat
     const linhas = await invocarCriatura({ criatura, mesaId, meuId, nomesExistentes, ...opcoes })
     await onInvocar(linhas, { criatura, noMapa: opcoes.noMapa })
     if (criatura.som_preset) tocarPresetAcao(criatura.som_preset, { ativo: preferencias.som_acao_ativo, volume: preferencias.som_acao_volume })
-    setAviso(`${linhas.length > 1 ? `${linhas.length} × ` : ''}${criatura.nome_personagem} ${linhas.length > 1 ? 'entraram' : 'entrou'} no combate.`)
+    const nomeCriatura = String(criatura.nome_personagem ?? '')
+    setAviso(tn(linhas.length, '{nome} entrou no combate.', '{n} × {nome} entraram no combate.', { nome: nomeCriatura }))
     setCriatura(null)
     setTimeout(() => setAviso(''), 4000)
   }
@@ -110,11 +112,11 @@ export default function InvocarBestiario({ mesaId, meuId, isGestor, camposCombat
       <button
         type="button" onClick={() => setAberto(true)}
         className={className || 'px-3 py-1.5 rounded-lg bg-hover text-ink text-sm hover:bg-border transition-colors'}
-        title="Invocar criatura do bestiário"
+        title={t('Invocar criatura do bestiário')}
       >{rotulo}</button>
 
       {aberto && (
-        <Modal onFechar={() => { setAberto(false); setCriatura(null) }} tamanho="xl" titulo="Bestiário" subtitulo="Escolha uma criatura para entrar no combate.">
+        <Modal onFechar={() => { setAberto(false); setCriatura(null) }} tamanho="xl" titulo={t('Bestiário')} subtitulo={t('Escolha uma criatura para entrar no combate.')}>
           <div className="space-y-4">
             {aviso && <p className="text-ok text-sm" role="status">{aviso}</p>}
             {criatura && (
@@ -127,7 +129,7 @@ export default function InvocarBestiario({ mesaId, meuId, isGestor, camposCombat
                 <button
                   type="button" onClick={() => setCriatura(c)}
                   className="botao-icone !text-dice-400 hover:!bg-dice-700/20"
-                  data-dica="Invocar no combate" aria-label={`Invocar ${c.nome_personagem} no combate`}
+                  data-dica={t('Invocar no combate')} aria-label={t('Invocar {nome} no combate', { nome: String(c.nome_personagem ?? '') })}
                 ><Ilustra nome="espadas" tamanho={20} /></button>
               )}
             />

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { mergeConfigLayout } from '../lib/sistemaDefaults'
+import { t } from '../i18n'
 
 export function useSistema(mesaId) {
   const { session } = useAuth()
@@ -74,7 +75,7 @@ export function useSistema(mesaId) {
         setHabilidades([])
       }
     } catch (err) {
-      setError(err.message || 'Erro ao carregar sistema.')
+      setError(err.message || t('Erro ao carregar sistema.'))
     } finally {
       setLoading(false)
     }
@@ -101,7 +102,7 @@ export function useSaveSistema() {
     pericias = [],
     removedPericiaIds = [],
   }) {
-    if (!session) throw new Error('Usuário não autenticado')
+    if (!session) throw new Error(t('Usuário não autenticado'))
     setLoading(true)
     setError(null)
 
@@ -207,7 +208,7 @@ export function useSaveSistema() {
 
       return sistemaId
     } catch (err) {
-      const msg = err.message || 'Erro ao salvar sistema.'
+      const msg = err.message || t('Erro ao salvar sistema.')
       setError(msg)
       throw new Error(msg)
     } finally {

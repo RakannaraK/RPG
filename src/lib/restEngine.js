@@ -2,6 +2,7 @@ import { rolarNotacao, validarNotacao, resolverNotacaoFormula } from './diceNota
 import { avaliarFormula } from './formulaEngine.js'
 import { atualDePool, recuperarPool } from './poolEngine.js'
 import { diffRecuperacaoSlots } from './slotsEngine.js'
+import { t } from '../i18n'
 
 // 17.5 — avalia uma fórmula com segurança (falha → 0)
 function safeFormula(f, contexto) {
@@ -120,12 +121,12 @@ export function calcularDescanso({
 
   // Resumo legível
   const partes = []
-  if (vida.recuperado > 0) partes.push(`+${vida.recuperado} de vida`)
-  if (vida_temp.para === 0 && vida_temp.de > 0) partes.push('vida temporária zerada')
-  for (const r of recursos) partes.push(`${r.nome} ${r.de}→${r.para}`)
-  for (const p of poolsRecuperados) partes.push(`${p.nome} ${p.de}→${p.para}`)
-  if (slots.length) partes.push(`slots devolvidos (${slots.map(s => `${s.circulo}º`).join(', ')})`)
-  const resumo = partes.length ? `Recuperou ${partes.join(', ')}.` : 'Nada a recuperar.'
+  if (vida.recuperado > 0) partes.push(t('+{n} de vida', { n: vida.recuperado }))
+  if (vida_temp.para === 0 && vida_temp.de > 0) partes.push(t('vida temporária zerada'))
+  for (const r of recursos) partes.push(t('{nome} {de}→{para}', { nome: r.nome, de: r.de, para: r.para }))
+  for (const p of poolsRecuperados) partes.push(t('{nome} {de}→{para}', { nome: p.nome, de: p.de, para: p.para }))
+  if (slots.length) partes.push(t('slots devolvidos ({lista})', { lista: slots.map(s => `${s.circulo}º`).join(', ') }))
+  const resumo = partes.length ? t('Recuperou {partes}.', { partes: partes.join(', ') }) : t('Nada a recuperar.')
 
   return { vida, vida_temp, recursos, pools: poolsRecuperados, slots, resumo }
 }

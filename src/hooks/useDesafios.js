@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useRolagem } from './useRolagem'
 import { novaSemente } from '../lib/minigames/semente'
 import { textoEncerramento, textoLancamento } from '../lib/minigames/desafios'
+import { t } from '../i18n'
 
 const LIMITE_DESAFIOS = 30
 const tabelaAusente = e => e?.code === '42P01' || e?.code === 'PGRST205'
@@ -50,13 +51,13 @@ export function useDesafios(mesaId, meuId) {
   }, [mesaId, meuId, idCanal])
 
   async function criar({ tipo, dificuldade, config, participantes, meta = null, motivo = null, nomeDe, sessaoId = null }) {
-    if (!participantes?.length) throw new Error('Escolha pelo menos um participante.')
+    if (!participantes?.length) throw new Error(t('Escolha pelo menos um participante.'))
     const { data, error } = await supabase
       .from('desafios')
       .insert({ mesa_id: mesaId, tipo, dificuldade, config, semente: novaSemente(), participantes, meta, motivo: motivo?.trim() || null })
       .select()
       .single()
-    if (error) throw new Error(error.code === '42501' ? 'Só o mestre ou co-mestre lança desafios.' : error.message)
+    if (error) throw new Error(error.code === '42501' ? t('Só o mestre ou co-mestre lança desafios.') : error.message)
     setDesafios(prev => [data, ...prev.filter(d => d.id !== data.id)])
     await registrarEvento({ mesaId, sessaoId, rotulo: textoLancamento(data, nomeDe), notacao: '', total: 0, dados: [] })
     return data

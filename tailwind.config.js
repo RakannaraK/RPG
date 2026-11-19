@@ -92,6 +92,7 @@ export default {
         cabecalho: '20',
         menu: '40',
         modal: '50',
+        cinema: '65',
         aviso: '60',
         toast: '70',
         dica: '80',

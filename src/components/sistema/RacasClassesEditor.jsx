@@ -17,34 +17,35 @@ import { PACOTE_ESSENCIAL } from '../../lib/extensoes'
 import { tocarPresetAcao } from '../../audio/actionSynth'
 import Botao from '../ui/Botao'
 import { useConfirmar } from '../ui/Confirmar'
+import { t } from '../../i18n'
 
 // F61.A — efeitos visuais das extensões instaladas (vazio = pacote Essencial)
 const EfeitosVfxContext = createContext([])
 
 // Fase 12.5 — vocabulário ampliado de efeitos. `grupo` só organiza o dropdown.
 const TIPOS_MOD = [
-  { value: 'atributo',        label: 'Atributo' },
-  { value: 'vida_max',        label: 'Vida máxima' },
-  { value: 'vida_temp',       label: 'Vida temporária (contínua)' },
-  { value: 'resistencia',     label: 'Resistência' },
-  { value: 'imunidade',       label: 'Imunidade' },
-  { value: 'vulnerabilidade', label: 'Vulnerabilidade' },
-  { value: 'combate',         label: 'Campo de combate' },
-  { value: 'pericia',         label: 'Perícia' },
-  { value: 'acerto',          label: 'Acerto (ataque)' },
-  { value: 'dano',            label: 'Dano' },
-  { value: 'vantagem',        label: 'Vantagem (teste)' },
-  { value: 'desvantagem',     label: 'Desvantagem (teste)' },
-  { value: 'cura',            label: 'Cura (ação)' },
-  { value: 'vida_temp_acao',  label: 'Vida temp. (ação)' },
-  { value: 'converter',       label: 'Converter tipo de dano' }, // 21.5
+  { value: 'atributo',        label: t('Atributo') },
+  { value: 'vida_max',        label: t('Vida máxima') },
+  { value: 'vida_temp',       label: t('Vida temporária (contínua)') },
+  { value: 'resistencia',     label: t('Resistência') },
+  { value: 'imunidade',       label: t('Imunidade') },
+  { value: 'vulnerabilidade', label: t('Vulnerabilidade') },
+  { value: 'combate',         label: t('Campo de combate') },
+  { value: 'pericia',         label: t('Perícia') },
+  { value: 'acerto',          label: t('Acerto (ataque)') },
+  { value: 'dano',            label: t('Dano') },
+  { value: 'vantagem',        label: t('Vantagem (teste)') },
+  { value: 'desvantagem',     label: t('Desvantagem (teste)') },
+  { value: 'cura',            label: t('Cura (ação)') },
+  { value: 'vida_temp_acao',  label: t('Vida temp. (ação)') },
+  { value: 'converter',       label: t('Converter tipo de dano') }, // 21.5
 ]
 
 const OPERACOES = [
-  { value: 'somar',       label: '+ Somar'       },
-  { value: 'percentual',  label: '% Percentual'  },
-  { value: 'definir',     label: '= Definir'     },
-  { value: 'multiplicar', label: '× Multiplicar' },
+  { value: 'somar',       label: t('+ Somar')       },
+  { value: 'percentual',  label: t('% Percentual')  },
+  { value: 'definir',     label: t('= Definir')     },
+  { value: 'multiplicar', label: t('× Multiplicar') },
 ]
 
 // Fase 18 — formata operação + valor (percentual leva sufixo %)
@@ -58,12 +59,12 @@ function fmtOpValor(mod) {
 }
 
 function descCondicao(mod, _atributos) {
-  if (mod.condicao_tipo === 'manual') return mod.condicao_config?.rotulo || 'manual'
+  if (mod.condicao_tipo === 'manual') return mod.condicao_config?.rotulo || t('manual')
   if (mod.condicao_tipo === 'auto') {
     const c = mod.condicao_config || {}
-    if (c.metrica === 'vida_percent') return `vida ${c.operador} ${c.valor}%`
-    if (c.metrica === 'nivel') return `nível ${c.operador} ${c.valor}`
-    if (c.metrica === 'habilidade_ativa') return 'habilidade ativa'
+    if (c.metrica === 'vida_percent') return t('vida {op} {v}%', { op: c.operador, v: c.valor })
+    if (c.metrica === 'nivel') return t('nível {op} {v}', { op: c.operador, v: c.valor })
+    if (c.metrica === 'habilidade_ativa') return t('habilidade ativa')
     if (c.metrica === 'formula') return `${c.formula} ${c.operador} ${c.valor}`
   }
   return null
@@ -75,13 +76,13 @@ export function labelModificador(mod, atributos, camposCombate, pericias = []) {
   switch (mod.tipo) {
     case 'atributo': {
       const attr = atributos.find(a => a.id === mod.alvo)
-      base = `${opv} em ${attr?.nome || '?'}`; break
+      base = t('{opv} em {nome}', { opv, nome: attr?.nome || '?' }); break
     }
-    case 'vida_max':        base = `${opv} Vida máx.`; break
-    case 'vida_temp':       base = `+${mod.valor} Vida temp.`; break
-    case 'resistencia':     base = `Resistência: ${mod.alvo || '?'}`; break
-    case 'imunidade':       base = `Imunidade: ${mod.alvo || '?'}`; break
-    case 'vulnerabilidade': base = `Vulnerabilidade: ${mod.alvo || '?'}`; break
+    case 'vida_max':        base = t('{opv} Vida máx.', { opv }); break
+    case 'vida_temp':       base = t('+{v} Vida temp.', { v: mod.valor }); break
+    case 'resistencia':     base = t('Resistência: {alvo}', { alvo: mod.alvo || '?' }); break
+    case 'imunidade':       base = t('Imunidade: {alvo}', { alvo: mod.alvo || '?' }); break
+    case 'vulnerabilidade': base = t('Vulnerabilidade: {alvo}', { alvo: mod.alvo || '?' }); break
     case 'combate': {
       const campo = camposCombate.find(c => c.id === mod.alvo)
       base = `${opv} ${campo?.nome || '?'}`; break
@@ -92,22 +93,22 @@ export function labelModificador(mod, atributos, camposCombate, pericias = []) {
       if (mod.valor) partes.push(`+${mod.valor}`)
       if (mod.dados_extras) partes.push(`+${mod.dados_extras}`)
       if (mod.percentual_rolagem) partes.push(`+${mod.percentual_rolagem}%`)
-      const escopo = mod.escopo_categoria ? ` (${mod.escopo_categoria})` : ' global'
-      base = `${mod.tipo === 'acerto' ? 'Acerto' : 'Dano'} ${partes.join(' ') || '+0'}${escopo}`; break
+      const escopo = mod.escopo_categoria ? ` (${mod.escopo_categoria})` : ' ' + t('global')
+      base = `${mod.tipo === 'acerto' ? t('Acerto') : t('Dano')} ${partes.join(' ') || '+0'}${escopo}`; break
     }
     case 'vantagem':
     case 'desvantagem': {
       const lista = mod.valor === 'pericia' ? pericias : atributos
       const alvoNome = lista.find(x => x.id === mod.alvo)?.nome || '?'
-      base = `${mod.tipo === 'vantagem' ? 'Vantagem' : 'Desvantagem'} em ${alvoNome}`; break
+      base = t('{tipo} em {alvo}', { tipo: mod.tipo === 'vantagem' ? t('Vantagem') : t('Desvantagem'), alvo: alvoNome }); break
     }
     case 'cura':
-      base = `Cura ${mod.valor || '?'}${mod.operacao === 'continua' ? ' (contínua)' : ''}`; break
+      base = t('Cura {v}', { v: mod.valor || '?' }) + (mod.operacao === 'continua' ? ' ' + t('(contínua)') : ''); break
     case 'vida_temp_acao':
-      base = `Vida temp. ${mod.valor || '?'} (ação)`; break
+      base = t('Vida temp. {v} (ação)', { v: mod.valor || '?' }); break
     case 'converter': {
       let r = {}; try { r = typeof mod.valor === 'string' ? JSON.parse(mod.valor) : (mod.valor || {}) } catch {}
-      base = `Converte dano ${r.de || '*'} → ${r.para || '?'}`; break
+      base = t('Converte dano {de} → {para}', { de: r.de || '*', para: r.para || '?' }); break
     }
     default: base = mod.tipo
   }
@@ -115,10 +116,10 @@ export function labelModificador(mod, atributos, camposCombate, pericias = []) {
   if (mod.faixas?.faixas?.length) {
     const fs = mod.faixas.faixas
     const extremos = fs.length > 1 ? `${fs[0].valor} → ${fs[fs.length - 1].valor}` : `${fs[0].valor}`
-    base = `${base} ↗ ${extremos} por faixa`
+    base = t('{base} ↗ {extremos} por faixa', { base, extremos })
   }
   // 19.5 — requisito de nível
-  if (mod.nivel_minimo != null) base = `${base} · nv ${mod.nivel_minimo}+`
+  if (mod.nivel_minimo != null) base = `${base} · ` + t('nv {n}+', { n: mod.nivel_minimo })
   const cond = descCondicao(mod, atributos)
   return cond ? `${base} [${cond}]` : base
 }
@@ -132,7 +133,7 @@ function CustoPoolEditor({ custo = [], pools = [], onChange }) {
   const set = (i, patch) => onChange(custo.map((c, j) => (j === i ? { ...c, ...patch } : c)))
 
   if (pools.length === 0) {
-    return <p className="text-accent-300 text-xs">Crie recursos na aba "Recursos" para cobrar custo.</p>
+    return <p className="text-accent-300 text-xs">{t('Crie recursos na aba "Recursos" para cobrar custo.')}</p>
   }
 
   return (
@@ -141,19 +142,19 @@ function CustoPoolEditor({ custo = [], pools = [], onChange }) {
         const invalida = String(c.quantidade ?? '').trim() && !validarFormula(c.quantidade).valida
         return (
           <div key={i} className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-accent-300 text-xs">gasta</span>
+            <span className="text-accent-300 text-xs">{t('gasta')}</span>
             <input type="text" value={c.quantidade ?? ''} onChange={e => set(i, { quantidade: e.target.value })}
-              placeholder="2 ou piso(nivel/4)" spellCheck={false}
+              placeholder={t('2 ou piso(nivel/4)')} spellCheck={false}
               className={`${cls} w-28 font-mono ${invalida ? 'border-red-600' : ''}`} />
             <select value={c.pool_id || ''} onChange={e => set(i, { pool_id: e.target.value })} className={cls}>
-              <option value="">Recurso...</option>
+              <option value="">{t('Recurso...')}</option>
               {pools.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
             </select>
             <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer"
-              title="Custo recorrente a cada turno enquanto ativa">
+              title={t('Custo recorrente a cada turno enquanto ativa')}>
               <input type="checkbox" checked={!!c.por_turno}
                 onChange={e => set(i, { por_turno: e.target.checked })} className="accent-purple-500" />
-              por turno
+              {t('por turno')}
             </label>
             <button type="button" onClick={() => onChange(custo.filter((_, j) => j !== i))}
               className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
@@ -163,9 +164,9 @@ function CustoPoolEditor({ custo = [], pools = [], onChange }) {
       <button type="button"
         onClick={() => onChange([...custo, { pool_id: pools[0].id, quantidade: '1', por_turno: false }])}
         className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
-        + custo
+        {t('+ custo')}
       </button>
-      {custo.length === 0 && <p className="text-accent-300 text-xs">Sem custo de recurso.</p>}
+      {custo.length === 0 && <p className="text-accent-300 text-xs">{t('Sem custo de recurso.')}</p>}
     </div>
   )
 }
@@ -209,14 +210,14 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
   // 19.4 — os mesmos tipos podem escalar por faixa (valor por faixa de nível)
   const podeEscalar = valorPodeFormula
   const camposFaixa = ehAcertoDano(tipo)
-    ? [{ id: 'valor', label: 'bônus fixo' }, { id: 'dados_extras', label: 'dados extras' }]
+    ? [{ id: 'valor', label: t('bônus fixo') }, { id: 'dados_extras', label: t('dados extras') }]
     : []
 
   async function handleAdd() {
     setErro('')
     // 21.5 — conversão de tipo de dano (operacao 'converter', alvo tipo_dano)
     if (tipo === 'converter') {
-      if (!convPara.trim()) { setErro('Informe o tipo de destino (para).'); return }
+      if (!convPara.trim()) { setErro(t('Informe o tipo de destino (para).')); return }
       setSalvando(true)
       try {
         await onAdd({
@@ -226,41 +227,41 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
           valor: JSON.stringify({ de: convDe.trim() || '*', para: convPara.trim() }),
         })
         setConvDe(''); setConvPara('')
-      } catch (err) { setErro(err.message || 'Erro ao adicionar conversão.') }
+      } catch (err) { setErro(err.message || t('Erro ao adicionar conversão.')) }
       finally { setSalvando(false) }
       return
     }
     // Validação por tipo
-    if (usaAtributoAlvo(tipo) && !alvo)  { setErro('Selecione um atributo.'); return }
-    if (usaCombateAlvo(tipo) && !alvo)   { setErro('Selecione um campo de combate.'); return }
-    if (usaTextoAlvo(tipo) && !alvo.trim()) { setErro('Informe o tipo de dano (ex: fogo).'); return }
+    if (usaAtributoAlvo(tipo) && !alvo)  { setErro(t('Selecione um atributo.')); return }
+    if (usaCombateAlvo(tipo) && !alvo)   { setErro(t('Selecione um campo de combate.')); return }
+    if (usaTextoAlvo(tipo) && !alvo.trim()) { setErro(t('Informe o tipo de dano (ex: fogo).')); return }
     if (escalaFaixa && podeEscalar) {
       // 19.4 — o valor vem da faixa ativa; exige faixas contíguas e sem sobreposição
       const vfx = validarFaixas(faixaSpec)
-      if (!vfx.valida) { setErro(`Faixas: ${vfx.erro}`); return }
+      if (!vfx.valida) { setErro(t('Faixas: {erro}', { erro: vfx.erro })); return }
     } else if (valorEhFormula && valorPodeFormula) {
-      if (!String(valor).trim()) { setErro('Informe a fórmula.'); return }
+      if (!String(valor).trim()) { setErro(t('Informe a fórmula.')); return }
       const vf = validarFormula(valor)
-      if (!vf.valida) { setErro(`Fórmula inválida: ${vf.erro}`); return }
+      if (!vf.valida) { setErro(t('Fórmula inválida: {erro}', { erro: vf.erro })); return }
       if (usaAtributoOuMod(valor)) {
-        setErro('Fórmula de modificador não pode usar atributo() nem mod() (evita auto-referência). Use nivel, recurso(), pericia() ou vida_*.'); return
+        setErro(t('Fórmula de modificador não pode usar atributo() nem mod() (evita auto-referência). Use nivel, recurso(), pericia() ou vida_*.')); return
       }
     } else {
-      if (usaValorNum(tipo) && (valor === '' || isNaN(Number(valor)))) { setErro('Informe um valor numérico válido.'); return }
-      if (ehAcertoDano(tipo) && !String(valor).trim() && !dadosExtras.trim()) { setErro('Informe um valor fixo e/ou dados extras.'); return }
+      if (usaValorNum(tipo) && (valor === '' || isNaN(Number(valor)))) { setErro(t('Informe um valor numérico válido.')); return }
+      if (ehAcertoDano(tipo) && !String(valor).trim() && !dadosExtras.trim()) { setErro(t('Informe um valor fixo e/ou dados extras.')); return }
     }
-    if (ehVantagem(tipo) && !alvo) { setErro('Selecione o alvo (atributo ou perícia).'); return }
-    if (ehAcao(tipo) && !String(valor).trim()) { setErro('Informe a quantidade ou notação (ex: 2d4+2).'); return }
+    if (ehVantagem(tipo) && !alvo) { setErro(t('Selecione o alvo (atributo ou perícia).')); return }
+    if (ehAcao(tipo) && !String(valor).trim()) { setErro(t('Informe a quantidade ou notação (ex: 2d4+2).')); return }
     // Validação da condição
     if (condTipo === 'auto' && condMetrica !== 'habilidade_ativa' && (condValor === '' || isNaN(Number(condValor)))) {
-      setErro('Informe o valor da condição automática.'); return
+      setErro(t('Informe o valor da condição automática.')); return
     }
     if (condTipo === 'auto' && condMetrica === 'formula') {
-      if (!condFormula.trim()) { setErro('Escreva a fórmula da condição.'); return }
+      if (!condFormula.trim()) { setErro(t('Escreva a fórmula da condição.')); return }
       const chk = validarFormula(condFormula)
-      if (!chk.valida) { setErro(`Fórmula da condição inválida: ${chk.erro}`); return }
+      if (!chk.valida) { setErro(t('Fórmula da condição inválida: {erro}', { erro: chk.erro })); return }
     }
-    if (condTipo === 'manual' && !condRotulo.trim()) { setErro('Informe o rótulo da condição manual.'); return }
+    if (condTipo === 'manual' && !condRotulo.trim()) { setErro(t('Informe o rótulo da condição manual.')); return }
 
     // Monta o payload (lógica pura — ver lib/efeitoForm.js)
     const escalando = escalaFaixa && podeEscalar
@@ -281,7 +282,7 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
       setEscalaFaixa(false); setFaixaSpec({ variavel: 'nivel', campo: 'valor', faixas: [] })
       setNivelMinimo('')
     } catch (err) {
-      setErro(err.message || 'Erro ao adicionar efeito.')
+      setErro(err.message || t('Erro ao adicionar efeito.'))
     } finally {
       setSalvando(false)
     }
@@ -291,45 +292,45 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
 
   return (
     <div className="space-y-2 bg-slate-700/40 border border-purple-800/50 rounded-lg p-3">
-      <p className="text-purple-400 text-xs font-medium">Adicionar efeito</p>
+      <p className="text-purple-400 text-xs font-medium">{t('Adicionar efeito')}</p>
       <div className="flex flex-wrap gap-2 items-center">
         <select value={tipo} onChange={e => handleTipoChange(e.target.value)} className={ic}>
-          {TIPOS_MOD.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+          {TIPOS_MOD.map(tm => <option key={tm.value} value={tm.value}>{tm.label}</option>)}
         </select>
 
         {/* 21.5 — conversão de tipo de dano */}
         {tipo === 'converter' && (
           <>
-            <span className="text-accent-300 text-xs">de</span>
+            <span className="text-accent-300 text-xs">{t('de')}</span>
             <input type="text" value={convDe} onChange={e => setConvDe(e.target.value)}
-              placeholder="físico (ou * = qualquer)" className={`${ic} w-32`} />
-            <span className="text-accent-300 text-xs">para</span>
+              placeholder={t('físico (ou * = qualquer)')} className={`${ic} w-32`} />
+            <span className="text-accent-300 text-xs">{t('para')}</span>
             <input type="text" value={convPara} onChange={e => setConvPara(e.target.value)}
-              placeholder="elétrico" className={`${ic} w-28`} />
+              placeholder={t('elétrico')} className={`${ic} w-28`} />
           </>
         )}
 
         {usaAtributoAlvo(tipo) && (
           <select value={alvo} onChange={e => setAlvo(e.target.value)} className={ic}>
-            <option value="">Atributo...</option>
+            <option value="">{t('Atributo...')}</option>
             {atributos.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
           </select>
         )}
         {usaCombateAlvo(tipo) && (
           <select value={alvo} onChange={e => setAlvo(e.target.value)} className={ic}>
-            <option value="">Campo...</option>
-            {camposCombate.map(c => <option key={c.id} value={c.id}>{c.nome || '(sem nome)'}</option>)}
+            <option value="">{t('Campo...')}</option>
+            {camposCombate.map(c => <option key={c.id} value={c.id}>{c.nome || t('(sem nome)')}</option>)}
           </select>
         )}
         {usaPericiaAlvo(tipo) && (
           <select value={alvo} onChange={e => setAlvo(e.target.value)} className={ic}>
-            <option value="">Perícia...</option>
+            <option value="">{t('Perícia...')}</option>
             {pericias.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
           </select>
         )}
         {usaTextoAlvo(tipo) && (
           <input type="text" value={alvo} onChange={e => setAlvo(e.target.value)}
-            placeholder="Tipo de dano (ex: fogo)" className={`${ic} w-40`} />
+            placeholder={t('Tipo de dano (ex: fogo)')} className={`${ic} w-40`} />
         )}
         {usaOperacao(tipo) && (
           <select value={operacao} onChange={e => setOperacao(e.target.value)} className={ic}>
@@ -339,22 +340,22 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
         {usaValorNum(tipo) && !valorEhFormula && !escalaFaixa && (
           <span className="flex items-center gap-1">
             <input type="number" value={valor} onChange={e => setValor(e.target.value)}
-              placeholder={operacao === 'percentual' ? 'ex: 13' : 'Valor'} className={`${ic} w-16 text-center`} />
+              placeholder={operacao === 'percentual' ? t('ex: 13') : t('Valor')} className={`${ic} w-16 text-center`} />
             {operacao === 'percentual' && <span className="text-purple-400 text-xs">%</span>}
           </span>
         )}
         {valorPodeFormula && !escalaFaixa && (
-          <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer" title="Usar fórmula (ex: piso(nivel/2))">
+          <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer" title={t('Usar fórmula (ex: piso(nivel/2))')}>
             <input type="checkbox" checked={valorEhFormula} onChange={e => setValorEhFormula(e.target.checked)} className="accent-purple-500" />
-            ƒ fórmula
+            {t('ƒ fórmula')}
           </label>
         )}
         {podeEscalar && (
-          <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer" title="Valor diferente por faixa de nível (ex: nv 1-4: 1d10; 5-10: 2d10)">
+          <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer" title={t('Valor diferente por faixa de nível (ex: nv 1-4: 1d10; 5-10: 2d10)')}>
             <input type="checkbox" checked={escalaFaixa}
               onChange={e => { setEscalaFaixa(e.target.checked); if (e.target.checked) setValorEhFormula(false) }}
               className="accent-purple-500" />
-            ↗ por faixa
+            {t('↗ por faixa')}
           </label>
         )}
 
@@ -364,20 +365,20 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
             {/* o campo escalado por faixa some — quem o preenche é a faixa ativa */}
             {!valorEhFormula && !(escalaFaixa && faixaSpec.campo === 'valor') && (
               <input type="number" value={valor} onChange={e => setValor(e.target.value)}
-                placeholder="Fixo" className={`${ic} w-16 text-center`} title="Bônus fixo (opcional)" />
+                placeholder={t('Fixo')} className={`${ic} w-16 text-center`} title={t('Bônus fixo (opcional)')} />
             )}
             {!(escalaFaixa && faixaSpec.campo === 'dados_extras') && (
               <input type="text" value={dadosExtras} onChange={e => setDadosExtras(e.target.value)}
-                placeholder="Dados extras (ex: 1d6)" className={`${ic} w-32`} />
+                placeholder={t('Dados extras (ex: 1d6)')} className={`${ic} w-32`} />
             )}
             <span className="flex items-center gap-1">
               <input type="number" value={percRolagem} onChange={e => setPercRolagem(e.target.value)}
-                placeholder="%" className={`${ic} w-14 text-center`} title="Percentual sobre o total da rolagem (ex: 20)" />
+                placeholder="%" className={`${ic} w-14 text-center`} title={t('Percentual sobre o total da rolagem (ex: 20)')} />
               <span className="text-purple-400 text-xs">%</span>
             </span>
             <input type="text" value={escopoCategoria} onChange={e => setEscopoCategoria(e.target.value)}
-              placeholder="Categoria (vazio = global)" className={`${ic} w-44`}
-              title="Categoria de ação — vazio aplica a tudo" />
+              placeholder={t('Categoria (vazio = global)')} className={`${ic} w-44`}
+              title={t('Categoria de ação — vazio aplica a tudo')} />
           </>
         )}
 
@@ -385,11 +386,11 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
         {ehVantagem(tipo) && (
           <>
             <select value={vantTipoAlvo} onChange={e => { setVantTipoAlvo(e.target.value); setAlvo('') }} className={ic}>
-              <option value="atributo">Atributo</option>
-              <option value="pericia">Perícia</option>
+              <option value="atributo">{t('Atributo')}</option>
+              <option value="pericia">{t('Perícia')}</option>
             </select>
             <select value={alvo} onChange={e => setAlvo(e.target.value)} className={ic}>
-              <option value="">{vantTipoAlvo === 'pericia' ? 'Perícia...' : 'Atributo...'}</option>
+              <option value="">{vantTipoAlvo === 'pericia' ? t('Perícia...') : t('Atributo...')}</option>
               {(vantTipoAlvo === 'pericia' ? pericias : atributos).map(x => (
                 <option key={x.id} value={x.id}>{x.nome}</option>
               ))}
@@ -401,16 +402,16 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
         {ehAcao(tipo) && (
           <>
             <input type="text" value={valor} onChange={e => setValor(e.target.value)}
-              placeholder="Qtd ou notação (ex: 2d4+2)" className={`${ic} w-40`} />
+              placeholder={t('Qtd ou notação (ex: 2d4+2)')} className={`${ic} w-40`} />
             <select value={curaModo} onChange={e => setCuraModo(e.target.value)} className={ic}>
-              <option value="pontual">Pontual (botão)</option>
-              <option value="continua">Contínua</option>
+              <option value="pontual">{t('Pontual (botão)')}</option>
+              <option value="continua">{t('Contínua')}</option>
             </select>
           </>
         )}
 
         <Botao variante="primario" tamanho="sm" onClick={handleAdd} disabled={salvando}>
-          {salvando ? '...' : '+ Adicionar'}
+          {salvando ? '...' : t('+ Adicionar')}
         </Botao>
       </div>
 
@@ -420,13 +421,13 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
           <FormulaInput
             value={valor}
             onChange={setValor}
-            placeholder="ex: piso(nivel/2)"
+            placeholder={t('ex: piso(nivel/2)')}
             variaveis={['nivel', 'piso(', 'recurso(', 'pericia(', ' + ', ' - ', ' / ']}
           />
           <p className="text-accent-300 text-xs mt-1">
-            Pode usar <span className="font-mono">nivel</span>, <span className="font-mono">recurso()</span>,{' '}
-            <span className="font-mono">pericia()</span>, <span className="font-mono">vida_*</span> — não{' '}
-            <span className="font-mono">atributo()</span>/<span className="font-mono">mod()</span> (evita auto-referência).
+            {t('Pode usar')} <span className="font-mono">nivel</span>, <span className="font-mono">recurso()</span>,{' '}
+            <span className="font-mono">pericia()</span>, <span className="font-mono">vida_*</span> {t('— não')}{' '}
+            <span className="font-mono">atributo()</span>/<span className="font-mono">mod()</span> {t('(evita auto-referência).')}
           </p>
         </div>
       )}
@@ -440,7 +441,7 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
             classes={classes} pools={pools}
             campos={camposFaixa}
             valorPlaceholder={
-              ehAcertoDano(tipo) && faixaSpec.campo === 'dados_extras' ? 'ex: 2d10' : 'ex: 3'
+              ehAcertoDano(tipo) && faixaSpec.campo === 'dados_extras' ? t('ex: 2d10') : t('ex: 3')
             }
           />
         </div>
@@ -448,27 +449,27 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
 
       {/* Nível mínimo (19.5) */}
       <div className="flex flex-wrap gap-2 items-center border-t border-purple-900/50 pt-2">
-        <span className="text-accent-300 text-xs">Nível mínimo:</span>
+        <span className="text-accent-300 text-xs">{t('Nível mínimo:')}</span>
         <input type="number" min={1} value={nivelMinimo} onChange={e => setNivelMinimo(e.target.value)}
           placeholder="—" className={`${ic} w-16 text-center`}
-          title="Só entra em jogo a partir deste nível (da classe de origem; raça/avulso usam o nível total). Vazio = sem requisito." />
-        <span className="text-accent-300 text-xs">vazio = sem requisito</span>
+          title={t('Só entra em jogo a partir deste nível (da classe de origem; raça/avulso usam o nível total). Vazio = sem requisito.')} />
+        <span className="text-accent-300 text-xs">{t('vazio = sem requisito')}</span>
       </div>
 
       {/* Condição */}
       <div className="flex flex-wrap gap-2 items-center border-t border-purple-900/50 pt-2">
-        <span className="text-accent-300 text-xs">Condição:</span>
+        <span className="text-accent-300 text-xs">{t('Condição:')}</span>
         <select value={condTipo} onChange={e => setCondTipo(e.target.value)} className={ic}>
-          <option value="nenhuma">Nenhuma</option>
-          <option value="auto">Automática</option>
-          <option value="manual">Manual (situacional)</option>
+          <option value="nenhuma">{t('Nenhuma')}</option>
+          <option value="auto">{t('Automática')}</option>
+          <option value="manual">{t('Manual (situacional)')}</option>
         </select>
         {condTipo === 'auto' && (
           <>
             <select value={condMetrica} onChange={e => setCondMetrica(e.target.value)} className={ic}>
-              <option value="vida_percent">Vida %</option>
-              <option value="nivel">Nível</option>
-              <option value="formula">Fórmula</option>
+              <option value="vida_percent">{t('Vida %')}</option>
+              <option value="nivel">{t('Nível')}</option>
+              <option value="formula">{t('Fórmula')}</option>
             </select>
             <select value={condOperador} onChange={e => setCondOperador(e.target.value)} className={ic}>
               <option value="<">&lt;</option>
@@ -485,13 +486,12 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
                 <FormulaInput
                   value={condFormula}
                   onChange={setCondFormula}
-                  placeholder="ex: estado(fome)"
+                  placeholder={t('ex: estado(fome)')}
                   variaveis={['estado(', 'pool(', 'atributo(', 'pericia(', 'nivel', 'vida_atual']}
                 />
                 <p className="text-accent-300 text-xs mt-1">
-                  O efeito entra em jogo quando o resultado da fórmula satisfaz a comparação escolhida
-                  acima. Ex.: <span className="font-mono">estado(fome)</span> ≥ <span className="font-mono">4</span>.
-                  Usa os valores base da ficha (atributos, pools, estados) — não os já modificados.
+                  {t('O efeito entra em jogo quando o resultado da fórmula satisfaz a comparação escolhida acima. Ex.:')} <span className="font-mono">estado(fome)</span> ≥ <span className="font-mono">4</span>.{' '}
+                  {t('Usa os valores base da ficha (atributos, pools, estados) — não os já modificados.')}
                 </p>
               </div>
             )}
@@ -499,7 +499,7 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
         )}
         {condTipo === 'manual' && (
           <input type="text" value={condRotulo} onChange={e => setCondRotulo(e.target.value)}
-            placeholder="Rótulo (ex: Contra mortos-vivos)" className={`${ic} w-56`} />
+            placeholder={t('Rótulo (ex: Contra mortos-vivos)')} className={`${ic} w-56`} />
         )}
       </div>
 
@@ -511,9 +511,9 @@ export function ModificadorForm({ onAdd, atributos, camposCombate, pericias = []
 function ModificadoresExpandido({ modificadores, onAddMod, onRemoveMod, atributos, camposCombate, pericias = [], classes = [], pools = [] }) {
   return (
     <div className="border-t border-purple-900 p-4 space-y-3">
-      <p className="text-accent-300 text-xs font-medium uppercase tracking-wider">Efeitos</p>
+      <p className="text-accent-300 text-xs font-medium uppercase tracking-wider">{t('Efeitos')}</p>
       {modificadores.length === 0 ? (
-        <p className="text-accent-300 text-xs">Nenhum efeito ainda.</p>
+        <p className="text-accent-300 text-xs">{t('Nenhum efeito ainda.')}</p>
       ) : (
         <div className="flex flex-wrap gap-1.5">
           {modificadores.map(mod => (
@@ -524,7 +524,7 @@ function ModificadoresExpandido({ modificadores, onAddMod, onRemoveMod, atributo
               </span>
               <button onClick={() => onRemoveMod(mod.id)}
                 className="text-red-600 hover:text-red-400 text-xs transition-colors leading-none"
-                title="Remover efeito">✕</button>
+                title={t('Remover efeito')}>✕</button>
             </div>
           ))}
         </div>
@@ -570,10 +570,10 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
   const [erro, setErro] = useState('')
 
   async function handleUpdate() {
-    if (!editNome.trim()) { setErro('Nome obrigatório.'); return }
+    if (!editNome.trim()) { setErro(t('Nome obrigatório.')); return }
     if (editTipo === 'ativavel' && editRecNome.trim() &&
         (editRecMax === '' || isNaN(Number(editRecMax)) || Number(editRecMax) < 1)) {
-      setErro('Informe um máximo de usos válido (número positivo).'); return
+      setErro(t('Informe um máximo de usos válido (número positivo).')); return
     }
     setSalvando(true); setErro('')
     try {
@@ -598,14 +598,14 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
       })
       setEditando(false)
     } catch (err) {
-      setErro(err.message || 'Erro ao salvar.')
+      setErro(err.message || t('Erro ao salvar.'))
     } finally {
       setSalvando(false)
     }
   }
 
   async function handleDelete() {
-    if (!(await confirmar({ titulo: 'Remover habilidade?', mensagem: `${habilidade.nome} sai, com todos os modificadores dela.`, confirmar: 'Remover', perigo: true }))) return
+    if (!(await confirmar({ titulo: t('Remover habilidade?'), mensagem: t('{nome} sai, com todos os modificadores dela.', { nome: String(habilidade.nome ?? '') }), confirmar: t('Remover'), perigo: true }))) return
     setDeleting(true)
     try { await onDelete(habilidade.id) } catch { setDeleting(false) }
   }
@@ -648,27 +648,27 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
         {editando ? (
           <div className="flex-1 space-y-2">
             <input type="text" value={editNome} onChange={e => setEditNome(e.target.value)}
-              placeholder="Nome" autoFocus className={INP} />
+              placeholder={t('Nome')} autoFocus className={INP} />
             <input type="text" value={editDesc} onChange={e => setEditDesc(e.target.value)}
-              placeholder="Descrição (opcional)" className={INP} />
+              placeholder={t('Descrição (opcional)')} className={INP} />
             <div className="flex gap-3 flex-wrap items-end">
               <div>
-                <p className="text-purple-400 text-xs mb-1">Tipo</p>
+                <p className="text-purple-400 text-xs mb-1">{t('Tipo')}</p>
                 <select value={editTipo} onChange={e => setEditTipo(e.target.value)} className={SEL}>
-                  <option value="passiva">Passiva (sempre ativa)</option>
-                  <option value="ativavel">Ativável (toggle on/off)</option>
+                  <option value="passiva">{t('Passiva (sempre ativa)')}</option>
+                  <option value="ativavel">{t('Ativável (toggle on/off)')}</option>
                 </select>
               </div>
               {editTipo === 'ativavel' && (
                 <>
                   <div>
-                    <p className="text-purple-400 text-xs mb-1">Recurso (opcional)</p>
+                    <p className="text-purple-400 text-xs mb-1">{t('Recurso (opcional)')}</p>
                     <input type="text" value={editRecNome} onChange={e => setEditRecNome(e.target.value)}
-                      placeholder="Ex: Pontos de Fúria" className={`${SEL} w-44`} />
+                      placeholder={t('Ex: Pontos de Fúria')} className={`${SEL} w-44`} />
                   </div>
                   {editRecNome.trim() && (
                     <div>
-                      <p className="text-purple-400 text-xs mb-1">Máximo</p>
+                      <p className="text-purple-400 text-xs mb-1">{t('Máximo')}</p>
                       <input type="number" value={editRecMax} onChange={e => setEditRecMax(e.target.value)}
                         min="1" className={`${SEL} w-20 text-center`} />
                     </div>
@@ -679,56 +679,56 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
               {editTipo === 'ativavel' && (
                 <>
                   <div>
-                    <p className="text-purple-400 text-xs mb-1">Recarga (turnos)</p>
+                    <p className="text-purple-400 text-xs mb-1">{t('Recarga (turnos)')}</p>
                     <input type="number" value={editRecarga} onChange={e => setEditRecarga(e.target.value)}
                       min="0" placeholder="—" className={`${SEL} w-20 text-center`}
-                      title="Depois de usada, só volta depois deste número de turnos do dono. Vazio = sem recarga." />
+                      title={t('Depois de usada, só volta depois deste número de turnos do dono. Vazio = sem recarga.')} />
                   </div>
                   <div>
-                    <p className="text-purple-400 text-xs mb-1">Ultimate: carga</p>
+                    <p className="text-purple-400 text-xs mb-1">{t('Ultimate: carga')}</p>
                     <input type="number" value={editCargaMax} onChange={e => setEditCargaMax(e.target.value)}
                       min="1" placeholder="—" className={`${SEL} w-20 text-center`}
-                      title="Carga necessária para usar. Vazio = não é ultimate." />
+                      title={t('Carga necessária para usar. Vazio = não é ultimate.')} />
                   </div>
                   {editCargaMax !== '' && (
                     <div>
-                      <p className="text-purple-400 text-xs mb-1">Carga por rodada</p>
+                      <p className="text-purple-400 text-xs mb-1">{t('Carga por rodada')}</p>
                       <input type="number" value={editCargaRodada} onChange={e => setEditCargaRodada(e.target.value)}
                         min="0" placeholder="—" className={`${SEL} w-20 text-center`}
-                        title="Quanto enche sozinho a cada rodada de combate." />
+                        title={t('Quanto enche sozinho a cada rodada de combate.')} />
                     </div>
                   )}
                 </>
               )}
               {/* F35.4 — imagem ou som da habilidade (link) */}
               <div>
-                <p className="text-purple-400 text-xs mb-1">Imagem ou som (link)</p>
+                <p className="text-purple-400 text-xs mb-1">{t('Imagem ou som (link)')}</p>
                 <input type="text" value={editMidia} onChange={e => setEditMidia(e.target.value)}
                   placeholder="https://… .png ou .mp3" className={`${SEL} w-52`}
-                  title="Aparece na ficha; se for áudio, toca ao usar a habilidade." />
+                  title={t('Aparece na ficha; se for áudio, toca ao usar a habilidade.')} />
               </div>
               {/* F33.3/F54 — pré-requisitos: outras habilidades (monta a árvore) */}
               <div>
-                <p className="text-purple-400 text-xs mb-1">Exige as habilidades</p>
+                <p className="text-purple-400 text-xs mb-1">{t('Exige as habilidades')}</p>
                 <div className="flex flex-wrap gap-1 mb-1">
                   {editRequer.map(id => (
                     <span key={id} className="inline-flex items-center gap-1 pl-2 rounded-full bg-purple-900/60 border border-purple-700 text-xs text-ink">
                       {habilidadesTodas.find(h => h.id === id)?.nome}
-                      <button type="button" aria-label="Remover pré-requisito" onClick={() => setEditRequer(l => l.filter(x => x !== id))}
+                      <button type="button" aria-label={t('Remover pré-requisito')} onClick={() => setEditRequer(l => l.filter(x => x !== id))}
                         className="min-w-6 min-h-6 rounded-full hover:text-harm">×</button>
                     </span>
                   ))}
                 </div>
                 <select value="" onChange={e => e.target.value && setEditRequer(l => [...l, e.target.value])} className={`${SEL} w-44`}
-                  title="Só pode ser aprendida depois destas. Vazio = raiz da árvore.">
-                  <option value="">+ adicionar pré-requisito</option>
+                  title={t('Só pode ser aprendida depois destas. Vazio = raiz da árvore.')}>
+                  <option value="">{t('+ adicionar pré-requisito')}</option>
                   {habilidadesTodas.filter(h => h.id !== habilidade.id && !editRequer.includes(h.id) && !dependentes.has(h.id)).map(h => (
                     <option key={h.id} value={h.id}>{h.nome}</option>
                   ))}
                 </select>
                 {editRequer.length > 1 && (
                   <div className="flex gap-3 mt-1 text-xs text-ink-dim">
-                    {[['todos', 'Exige todas'], ['qualquer', 'Basta uma']].map(([v, r]) => (
+                    {[['todos', t('Exige todas')], ['qualquer', t('Basta uma')]].map(([v, r]) => (
                       <label key={v} className="inline-flex items-center gap-1 min-h-6 cursor-pointer">
                         <input type="radio" name={`modo-${habilidade.id}`} checked={editModo === v} onChange={() => setEditModo(v)} />{r}
                       </label>
@@ -737,23 +737,23 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
                 )}
               </div>
               <div>
-                <p className="text-purple-400 text-xs mb-1">Custo na árvore (pontos)</p>
+                <p className="text-purple-400 text-xs mb-1">{t('Custo na árvore (pontos)')}</p>
                 <input type="number" value={editCusto} onChange={e => setEditCusto(e.target.value)}
                   min="0" placeholder="—" className={`${SEL} w-20 text-center`}
-                  title="Pontos gastos ao aprender pela árvore. Vazio = de graça." />
+                  title={t('Pontos gastos ao aprender pela árvore. Vazio = de graça.')} />
               </div>
               {/* 19.5 — requisito de nível */}
               <div>
-                <p className="text-purple-400 text-xs mb-1">Nível mínimo</p>
+                <p className="text-purple-400 text-xs mb-1">{t('Nível mínimo')}</p>
                 <input type="number" value={editNivelMin} onChange={e => setEditNivelMin(e.target.value)}
                   min="1" placeholder="—" className={`${SEL} w-20 text-center`}
-                  title="Só é concedida a partir deste nível (da classe de origem; raça/avulsa usam o nível total)." />
+                  title={t('Só é concedida a partir deste nível (da classe de origem; raça/avulsa usam o nível total).')} />
               </div>
               {/* F57 — efeito visual solto no mapa ao usar/ativar */}
               <div>
-                <p className="text-purple-400 text-xs mb-1">Efeito visual no mapa</p>
+                <p className="text-purple-400 text-xs mb-1">{t('Efeito visual no mapa')}</p>
                 <select value={editEfeitoVisual} onChange={e => setEditEfeitoVisual(e.target.value)} className={`${SEL} w-36`}>
-                  <option value="">Nenhum</option>
+                  <option value="">{t('Nenhum')}</option>
                   {efeitosVfx.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
                   {editEfeitoVisual && !efeitosVfx.some(e => e.id === editEfeitoVisual) && (
                     <option value={editEfeitoVisual}>{editEfeitoVisual}</option>
@@ -762,15 +762,15 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
               </div>
               {/* FV.5a — som da ação (opcional; vazio = usa o padrão do sistema) */}
               <div>
-                <p className="text-purple-400 text-xs mb-1">Som da ação</p>
+                <p className="text-purple-400 text-xs mb-1">{t('Som da ação')}</p>
                 <div className="flex items-center gap-1.5">
                   <select value={editSomPreset} onChange={e => setEditSomPreset(e.target.value)} className={`${SEL} w-32`}>
-                    <option value="">Padrão do sistema</option>
+                    <option value="">{t('Padrão do sistema')}</option>
                     {PRESET_IDS.map(id => <option key={id} value={id}>{id}</option>)}
                   </select>
                   {editSomPreset && (
                     <button type="button" onClick={() => tocarPresetAcao(editSomPreset, { ativo: true, volume: 0.6 })}
-                      title="Ouvir" className="text-purple-300 hover:text-white text-sm">▶</button>
+                      title={t('Ouvir')} className="text-purple-300 hover:text-white text-sm">▶</button>
                   )}
                 </div>
               </div>
@@ -780,8 +780,7 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
             {editTipo === 'ativavel' && (
               <div className="border-t border-purple-900/50 pt-2">
                 <p className="text-purple-400 text-xs mb-1.5">
-                  Custo de recurso — <span className="text-purple-300">por turno</span> cobra de novo a cada
-                  turno enquanto ativa; sem recurso, a habilidade desativa sozinha.
+                  {t('Custo de recurso —')} <span className="text-purple-300">{t('por turno')}</span> {t('cobra de novo a cada turno enquanto ativa; sem recurso, a habilidade desativa sozinha.')}
                 </p>
                 <CustoPoolEditor custo={editCustoPool} pools={pools} onChange={setEditCustoPool} />
               </div>
@@ -790,11 +789,11 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
             <div className="flex gap-2">
               <button onClick={handleUpdate} disabled={salvando}
                 className="px-3 py-1 bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors">
-                {salvando ? '...' : '✓ Salvar'}
+                {salvando ? '...' : t('✓ Salvar')}
               </button>
               <button onClick={() => setEditando(false)}
                 className="px-3 py-1 bg-slate-600 hover:bg-slate-500 text-white text-xs rounded-lg transition-colors">
-                Cancelar
+                {t('Cancelar')}
               </button>
             </div>
           </div>
@@ -804,11 +803,11 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="text-white text-xs font-medium">{habilidade.nome}</p>
                 <span className={`text-xs px-1.5 py-0.5 rounded-full ${tipoBadge}`}>
-                  {habilidade.tipo === 'ativavel' ? 'Ativável' : 'Passiva'}
+                  {habilidade.tipo === 'ativavel' ? t('Ativável') : t('Passiva')}
                 </span>
                 {habilidade.tipo === 'ativavel' && habilidade.recurso_nome && (
                   <span className="text-amber-400 text-xs">
-                    {habilidade.recurso_nome} · {habilidade.recurso_max ?? '?'} usos
+                    {habilidade.recurso_nome} · {t('{n} usos', { n: String(habilidade.recurso_max ?? '?') })}
                   </span>
                 )}
               </div>
@@ -817,14 +816,14 @@ function HabilidadeVinculadaCard({ habilidade, habilidadesTodas = [], atributos,
               )}
             </button>
             {habilidade.modificadores.length > 0 && (
-              <span className="text-accent-300 text-xs shrink-0">{habilidade.modificadores.length} mod.</span>
+              <span className="text-accent-300 text-xs shrink-0">{t('{n} mod.', { n: habilidade.modificadores.length })}</span>
             )}
             <button onClick={startEdit}
               className="p-1.5 text-accent-300 hover:text-purple-300 hover:bg-purple-900/40 rounded-lg transition-colors shrink-0"
-              title="Editar">✎</button>
+              title={t('Editar')}>✎</button>
             <button onClick={handleDelete} disabled={deleting}
               className="p-1.5 text-red-600 hover:text-red-400 hover:bg-red-950/50 rounded-lg transition-colors shrink-0 disabled:opacity-50"
-              title="Remover">🗑</button>
+              title={t('Remover')}>🗑</button>
             <button onClick={() => setExpandido(!expandido)}
               className="p-1.5 text-accent-300 hover:text-purple-300 rounded-lg transition-colors shrink-0 text-xs">
               {expandido ? '▲' : '▼'}
@@ -872,10 +871,10 @@ function HabilidadesVinculadas({
   }
 
   async function handleCreate() {
-    if (!novoNome.trim()) { setErroNovo('Nome obrigatório.'); return }
+    if (!novoNome.trim()) { setErroNovo(t('Nome obrigatório.')); return }
     if (novoTipo === 'ativavel' && novoRecNome.trim() &&
         (novoRecMax === '' || isNaN(Number(novoRecMax)) || Number(novoRecMax) < 1)) {
-      setErroNovo('Informe um máximo de usos válido (número positivo).'); return
+      setErroNovo(t('Informe um máximo de usos válido (número positivo).')); return
     }
     setCriando(true); setErroNovo('')
     try {
@@ -891,7 +890,7 @@ function HabilidadesVinculadas({
       })
       setAddingNew(false); resetNovo()
     } catch (err) {
-      setErroNovo(err.message || 'Erro ao criar.')
+      setErroNovo(err.message || t('Erro ao criar.'))
     } finally {
       setCriando(false)
     }
@@ -900,11 +899,11 @@ function HabilidadesVinculadas({
   return (
     <div className="border-t border-purple-900/60 px-4 py-3 space-y-2 bg-slate-900/20">
       <div className="flex items-center justify-between">
-        <p className="text-purple-400 text-xs font-semibold uppercase tracking-wider">Habilidades</p>
+        <p className="text-purple-400 text-xs font-semibold uppercase tracking-wider">{t('Habilidades')}</p>
         {!addingNew && (
           <button onClick={() => setAddingNew(true)}
             className="text-xs px-2.5 py-1 bg-purple-900/60 hover:bg-purple-800 text-purple-300 hover:text-white rounded-lg transition-colors border border-purple-700/50">
-            + Nova habilidade
+            {t('+ Nova habilidade')}
           </button>
         )}
       </div>
@@ -912,28 +911,28 @@ function HabilidadesVinculadas({
       {addingNew && (
         <div className="bg-void border border-border rounded-lg p-3 space-y-2">
           <input type="text" value={novoNome} onChange={e => setNovoNome(e.target.value)}
-            placeholder="Nome da habilidade *" autoFocus onKeyDown={e => e.key === 'Enter' && handleCreate()}
+            placeholder={t('Nome da habilidade *')} autoFocus onKeyDown={e => e.key === 'Enter' && handleCreate()}
             className={INP} />
           <input type="text" value={novaDesc} onChange={e => setNovaDesc(e.target.value)}
-            placeholder="Descrição (opcional)" className={INP} />
+            placeholder={t('Descrição (opcional)')} className={INP} />
           <div className="flex gap-3 flex-wrap items-end">
             <div>
-              <p className="text-purple-400 text-xs mb-1">Tipo</p>
+              <p className="text-purple-400 text-xs mb-1">{t('Tipo')}</p>
               <select value={novoTipo} onChange={e => setNovoTipo(e.target.value)} className={SEL}>
-                <option value="passiva">Passiva (sempre ativa)</option>
-                <option value="ativavel">Ativável (toggle on/off)</option>
+                <option value="passiva">{t('Passiva (sempre ativa)')}</option>
+                <option value="ativavel">{t('Ativável (toggle on/off)')}</option>
               </select>
             </div>
             {novoTipo === 'ativavel' && (
               <>
                 <div>
-                  <p className="text-purple-400 text-xs mb-1">Recurso (opcional)</p>
+                  <p className="text-purple-400 text-xs mb-1">{t('Recurso (opcional)')}</p>
                   <input type="text" value={novoRecNome} onChange={e => setNovoRecNome(e.target.value)}
-                    placeholder="Ex: Pontos de Fúria" className={`${SEL} w-40`} />
+                    placeholder={t('Ex: Pontos de Fúria')} className={`${SEL} w-40`} />
                 </div>
                 {novoRecNome.trim() && (
                   <div>
-                    <p className="text-purple-400 text-xs mb-1">Máximo</p>
+                    <p className="text-purple-400 text-xs mb-1">{t('Máximo')}</p>
                     <input type="number" value={novoRecMax} onChange={e => setNovoRecMax(e.target.value)}
                       min="1" placeholder="4" className={`${SEL} w-20 text-center`} />
                   </div>
@@ -942,27 +941,27 @@ function HabilidadesVinculadas({
             )}
             {/* 19.5 — requisito de nível */}
             <div>
-              <p className="text-purple-400 text-xs mb-1">Nível mínimo</p>
+              <p className="text-purple-400 text-xs mb-1">{t('Nível mínimo')}</p>
               <input type="number" value={novoNivelMin} onChange={e => setNovoNivelMin(e.target.value)}
                 min="1" placeholder="—" className={`${SEL} w-20 text-center`}
-                title="Só é concedida a partir deste nível (da classe de origem; raça/avulsa usam o nível total)." />
+                title={t('Só é concedida a partir deste nível (da classe de origem; raça/avulsa usam o nível total).')} />
             </div>
           </div>
           {erroNovo && <p className="text-red-400 text-xs">{erroNovo}</p>}
           <div className="flex gap-2">
             <Botao variante="primario" tamanho="sm" onClick={handleCreate} disabled={criando}>
-              {criando ? 'Criando...' : 'Criar'}
+              {criando ? t('Criando...') : t('Criar')}
             </Botao>
             <button onClick={() => { setAddingNew(false); resetNovo() }}
               className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded-lg transition-colors">
-              Cancelar
+              {t('Cancelar')}
             </button>
           </div>
         </div>
       )}
 
       {vinculadas.length === 0 && !addingNew && (
-        <p className="text-ink-dim text-xs italic">Nenhuma habilidade vinculada ainda.</p>
+        <p className="text-ink-dim text-xs italic">{t('Nenhuma habilidade vinculada ainda.')}</p>
       )}
       {vinculadas.map(h => (
         <HabilidadeVinculadaCard
@@ -1010,20 +1009,20 @@ function ItemCard({
   const [erro, setErro] = useState('')
 
   async function handleUpdate() {
-    if (!editNome.trim()) { setErro('Nome obrigatório.'); return }
+    if (!editNome.trim()) { setErro(t('Nome obrigatório.')); return }
     setSalvando(true); setErro('')
     try {
       await onUpdate(item.id, editNome, editDesc)
       setEditando(false)
     } catch (err) {
-      setErro(err.message || 'Erro ao salvar.')
+      setErro(err.message || t('Erro ao salvar.'))
     } finally {
       setSalvando(false)
     }
   }
 
   async function handleDelete() {
-    if (!(await confirmar({ titulo: 'Remover?', mensagem: `${item.nome} sai, com todos os modificadores e habilidades vinculadas.`, confirmar: 'Remover', perigo: true }))) return
+    if (!(await confirmar({ titulo: t('Remover?'), mensagem: t('{nome} sai, com todos os modificadores e habilidades vinculadas.', { nome: String(item.nome ?? '') }), confirmar: t('Remover'), perigo: true }))) return
     setDeleting(true)
     try { await onDelete(item.id) } catch { setDeleting(false) }
   }
@@ -1038,20 +1037,20 @@ function ItemCard({
         {editando ? (
           <div className="flex-1 space-y-2">
             <input type="text" value={editNome} onChange={e => setEditNome(e.target.value)}
-              placeholder="Nome" autoFocus
+              placeholder={t('Nome')} autoFocus
               className="w-full px-3 py-1.5 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
             <input type="text" value={editDesc} onChange={e => setEditDesc(e.target.value)}
-              placeholder="Descrição (opcional)"
+              placeholder={t('Descrição (opcional)')}
               className="w-full px-3 py-1.5 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
             {erro && <p className="text-red-400 text-xs">{erro}</p>}
             <div className="flex gap-2">
               <button onClick={handleUpdate} disabled={salvando}
                 className="px-3 py-1 bg-green-700 hover:bg-green-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors">
-                {salvando ? '...' : '✓ Salvar'}
+                {salvando ? '...' : t('✓ Salvar')}
               </button>
               <button onClick={() => setEditando(false)}
                 className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white text-xs rounded-lg transition-colors">
-                Cancelar
+                {t('Cancelar')}
               </button>
             </div>
           </div>
@@ -1064,14 +1063,14 @@ function ItemCard({
               )}
             </button>
             {item.modificadores.length > 0 && (
-              <span className="text-accent-300 text-xs shrink-0">{item.modificadores.length} mod.</span>
+              <span className="text-accent-300 text-xs shrink-0">{t('{n} mod.', { n: item.modificadores.length })}</span>
             )}
             <button onClick={startEdit}
               className="p-1.5 text-accent-300 hover:text-purple-300 hover:bg-purple-900/40 rounded-lg transition-colors shrink-0"
-              title="Editar">✎</button>
+              title={t('Editar')}>✎</button>
             <button onClick={handleDelete} disabled={deleting}
               className="p-1.5 text-red-600 hover:text-red-400 hover:bg-red-950/50 rounded-lg transition-colors shrink-0 disabled:opacity-50"
-              title="Remover">🗑</button>
+              title={t('Remover')}>🗑</button>
             <button onClick={() => setExpandido(!expandido)}
               className="p-1.5 text-accent-300 hover:text-purple-300 rounded-lg transition-colors shrink-0 text-xs">
               {expandido ? '▲' : '▼'}
@@ -1085,27 +1084,27 @@ function ItemCard({
           {/* 22.2 — override de pontos de status por raça */}
           {mostraPontos && (
             <div className="mt-2 flex flex-wrap gap-2 items-center bg-slate-700/40 border border-purple-800/50 rounded-lg p-2">
-              <span className="text-purple-400 text-xs">Pontos:</span>
+              <span className="text-purple-400 text-xs">{t('Pontos:')}</span>
               <span className="flex items-center gap-1">
-                <span className="text-accent-300 text-xs">inicial</span>
+                <span className="text-accent-300 text-xs">{t('inicial')}</span>
                 <input type="text" defaultValue={pc.inicial || ''}
                   onBlur={e => { const v = e.target.value.trim(); if (v !== (pc.inicial || '')) onUpdatePontos(item.id, { ...pc, inicial: v || null }).catch(() => {}) }}
                   placeholder="16" className="w-20 px-2 py-1 rounded-lg bg-void border border-border text-white text-xs font-mono placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500" />
               </span>
               <span className="flex items-center gap-1">
-                <span className="text-accent-300 text-xs">ganho/nível</span>
+                <span className="text-accent-300 text-xs">{t('ganho/nível')}</span>
                 <input type="text" defaultValue={pc.ganho_por_nivel || ''}
                   onBlur={e => { const v = e.target.value.trim(); if (v !== (pc.ganho_por_nivel || '')) onUpdatePontos(item.id, { ...pc, ganho_por_nivel: v || null }).catch(() => {}) }}
                   placeholder="1d6 + 10" className="w-24 px-2 py-1 rounded-lg bg-void border border-border text-white text-xs font-mono placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500" />
               </span>
-              <span className="text-accent-300 text-xs">vazio = usa o padrão do sistema</span>
+              <span className="text-accent-300 text-xs">{t('vazio = usa o padrão do sistema')}</span>
             </div>
           )}
 
           {/* 25.3 — linhas nativas (a raça/classe concede a linha automaticamente) */}
           {linhasPoder.length > 0 && (
             <div className="mt-2 bg-slate-700/40 border border-purple-800/50 rounded-lg p-2 space-y-1.5">
-              <span className="text-purple-400 text-xs">Linhas nativas</span>
+              <span className="text-purple-400 text-xs">{t('Linhas nativas')}</span>
               <div className="flex flex-wrap gap-2">
                 {linhasPoder.map(l => {
                   const marcada = (item.linhas_nativas || []).includes(l.id)
@@ -1159,7 +1158,7 @@ function ItemCard({
 }
 
 function SecaoRacaClasse({
-  titulo, descTipo, itens, parentTipo,
+  titulo, itens, parentTipo,
   onCreate, onUpdate, onDelete, onAddMod, onRemoveMod,
   atributos, camposCombate, pericias = [], classes = [], pools = [],
   pontosStatus = null, onUpdatePontos, // 22.2
@@ -1174,13 +1173,13 @@ function SecaoRacaClasse({
   const [erroNovo, setErroNovo] = useState('')
 
   async function handleCreate() {
-    if (!novoNome.trim()) { setErroNovo('Nome obrigatório.'); return }
+    if (!novoNome.trim()) { setErroNovo(t('Nome obrigatório.')); return }
     setCriando(true); setErroNovo('')
     try {
       await onCreate(novoNome, novaDesc)
       setAddingNew(false); setNovoNome(''); setNovaDesc('')
     } catch (err) {
-      setErroNovo(err.message || 'Erro ao criar.')
+      setErroNovo(err.message || t('Erro ao criar.'))
     } finally {
       setCriando(false)
     }
@@ -1199,26 +1198,26 @@ function SecaoRacaClasse({
         {!addingNew && (
           <button onClick={() => setAddingNew(true)}
             className="text-sm px-3 py-1.5 bg-purple-800 hover:bg-purple-700 text-sobre-acento rounded-lg transition-colors">
-            + Adicionar
+            {t('+ Adicionar')}
           </button>
         )}
       </div>
 
       {addingNew && (
         <div className="bg-void border border-border rounded-xl p-4 space-y-3">
-          <p className="text-purple-300 text-xs font-medium">Nova {descTipo}</p>
+          <p className="text-purple-300 text-xs font-medium">{parentTipo === 'raca' ? t('Nova raça') : t('Nova classe')}</p>
           <input type="text" value={novoNome} onChange={e => setNovoNome(e.target.value)}
-            placeholder={`Nome da ${descTipo} *`} autoFocus
+            placeholder={parentTipo === 'raca' ? t('Nome da raça *') : t('Nome da classe *')} autoFocus
             onKeyDown={e => e.key === 'Enter' && handleCreate()} className={inputClass} />
           <input type="text" value={novaDesc} onChange={e => setNovaDesc(e.target.value)}
-            placeholder="Descrição (opcional)" className={inputClass} />
+            placeholder={t('Descrição (opcional)')} className={inputClass} />
           {erroNovo && <p className="text-red-400 text-xs">{erroNovo}</p>}
           <div className="flex gap-2">
             <Botao variante="primario" tamanho="md" onClick={handleCreate} disabled={criando}>
-              {criando ? 'Criando...' : 'Criar'}
+              {criando ? t('Criando...') : t('Criar')}
             </Botao>
             <Botao variante="secundario" tamanho="md" onClick={cancelarNovo}>
-              Cancelar
+              {t('Cancelar')}
             </Botao>
           </div>
         </div>
@@ -1227,7 +1226,7 @@ function SecaoRacaClasse({
       {itens.length === 0 && !addingNew ? (
         <div className="border border-dashed border-purple-800 rounded-xl py-4 px-4">
           <p className="text-accent-300 text-xs">
-            Nenhuma {descTipo} definida. Crie uma para configurar seus modificadores e habilidades.
+            {parentTipo === 'raca' ? t('Nenhuma raça definida. Crie uma para configurar seus modificadores e habilidades.') : t('Nenhuma classe definida. Crie uma para configurar seus modificadores e habilidades.')}
           </p>
         </div>
       ) : (
@@ -1287,10 +1286,10 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
   }
 
   async function handleCreate() {
-    if (!novoNome.trim()) { setErroNovo('Nome obrigatório.'); return }
+    if (!novoNome.trim()) { setErroNovo(t('Nome obrigatório.')); return }
     if (novoTipo === 'ativavel' && novoRecNome.trim() &&
         (novoRecMax === '' || isNaN(Number(novoRecMax)) || Number(novoRecMax) < 1)) {
-      setErroNovo('Informe um máximo de usos válido (número positivo).'); return
+      setErroNovo(t('Informe um máximo de usos válido (número positivo).')); return
     }
     setCriando(true); setErroNovo('')
     try {
@@ -1304,7 +1303,7 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
       })
       setAddingNew(false); resetNovo()
     } catch (err) {
-      setErroNovo(err.message || 'Erro ao criar.')
+      setErroNovo(err.message || t('Erro ao criar.'))
     } finally {
       setCriando(false)
     }
@@ -1314,45 +1313,45 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
     <div className="space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-purple-200 text-sm font-semibold">Habilidades avulsas</p>
+          <p className="text-purple-200 text-sm font-semibold">{t('Habilidades avulsas')}</p>
           <p className="text-accent-300 text-xs mt-0.5">
-            Não vinculadas a raça ou classe — adicionadas manualmente às fichas.
+            {t('Não vinculadas a raça ou classe — adicionadas manualmente às fichas.')}
           </p>
         </div>
         {!addingNew && (
           <button onClick={() => setAddingNew(true)}
             className="text-sm px-3 py-1.5 bg-purple-800 hover:bg-purple-700 text-sobre-acento rounded-lg transition-colors shrink-0">
-            + Adicionar
+            {t('+ Adicionar')}
           </button>
         )}
       </div>
 
       {addingNew && (
         <div className="bg-void border border-border rounded-xl p-4 space-y-3">
-          <p className="text-purple-300 text-xs font-medium">Nova habilidade avulsa</p>
+          <p className="text-purple-300 text-xs font-medium">{t('Nova habilidade avulsa')}</p>
           <input type="text" value={novoNome} onChange={e => setNovoNome(e.target.value)}
-            placeholder="Nome da habilidade *" autoFocus onKeyDown={e => e.key === 'Enter' && handleCreate()}
+            placeholder={t('Nome da habilidade *')} autoFocus onKeyDown={e => e.key === 'Enter' && handleCreate()}
             className={INP} />
           <input type="text" value={novaDesc} onChange={e => setNovaDesc(e.target.value)}
-            placeholder="Descrição (opcional)" className={INP} />
+            placeholder={t('Descrição (opcional)')} className={INP} />
           <div className="flex gap-3 flex-wrap items-end">
             <div>
-              <p className="text-purple-400 text-xs mb-1">Tipo</p>
+              <p className="text-purple-400 text-xs mb-1">{t('Tipo')}</p>
               <select value={novoTipo} onChange={e => setNovoTipo(e.target.value)} className={SEL}>
-                <option value="passiva">Passiva (sempre ativa)</option>
-                <option value="ativavel">Ativável (toggle on/off)</option>
+                <option value="passiva">{t('Passiva (sempre ativa)')}</option>
+                <option value="ativavel">{t('Ativável (toggle on/off)')}</option>
               </select>
             </div>
             {novoTipo === 'ativavel' && (
               <>
                 <div>
-                  <p className="text-purple-400 text-xs mb-1">Recurso (opcional)</p>
+                  <p className="text-purple-400 text-xs mb-1">{t('Recurso (opcional)')}</p>
                   <input type="text" value={novoRecNome} onChange={e => setNovoRecNome(e.target.value)}
-                    placeholder="Ex: Pontos de Fúria" className={`${SEL} w-44`} />
+                    placeholder={t('Ex: Pontos de Fúria')} className={`${SEL} w-44`} />
                 </div>
                 {novoRecNome.trim() && (
                   <div>
-                    <p className="text-purple-400 text-xs mb-1">Máximo</p>
+                    <p className="text-purple-400 text-xs mb-1">{t('Máximo')}</p>
                     <input type="number" value={novoRecMax} onChange={e => setNovoRecMax(e.target.value)}
                       min="1" placeholder="4" className={`${SEL} w-20 text-center`} />
                   </div>
@@ -1361,20 +1360,20 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
             )}
             {/* 19.5 — requisito de nível */}
             <div>
-              <p className="text-purple-400 text-xs mb-1">Nível mínimo</p>
+              <p className="text-purple-400 text-xs mb-1">{t('Nível mínimo')}</p>
               <input type="number" value={novoNivelMin} onChange={e => setNovoNivelMin(e.target.value)}
                 min="1" placeholder="—" className={`${SEL} w-20 text-center`}
-                title="Só é concedida a partir deste nível (da classe de origem; raça/avulsa usam o nível total)." />
+                title={t('Só é concedida a partir deste nível (da classe de origem; raça/avulsa usam o nível total).')} />
             </div>
           </div>
           {erroNovo && <p className="text-red-400 text-xs">{erroNovo}</p>}
           <div className="flex gap-2">
             <Botao variante="primario" tamanho="md" onClick={handleCreate} disabled={criando}>
-              {criando ? 'Criando...' : 'Criar'}
+              {criando ? t('Criando...') : t('Criar')}
             </Botao>
             <button onClick={() => { setAddingNew(false); resetNovo() }}
               className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg transition-colors">
-              Cancelar
+              {t('Cancelar')}
             </button>
           </div>
         </div>
@@ -1383,7 +1382,7 @@ function SecaoHabilidades({ habilidades, atributos, camposCombate, pericias = []
       {avulsas.length === 0 && !addingNew ? (
         <div className="border border-dashed border-purple-800 rounded-xl py-4 px-4">
           <p className="text-accent-300 text-xs">
-            Nenhuma habilidade avulsa. Crie uma passiva ou ativável que jogadores poderão adicionar manualmente às fichas.
+            {t('Nenhuma habilidade avulsa. Crie uma passiva ou ativável que jogadores poderão adicionar manualmente às fichas.')}
           </p>
         </div>
       ) : (
@@ -1430,16 +1429,16 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
   if (!sistemaId) {
     return (
       <div className="border border-dashed border-purple-800 rounded-xl py-6 px-4 text-center">
-        <p className="text-accent-300 text-sm">Salve o sistema antes de criar raças e classes.</p>
+        <p className="text-accent-300 text-sm">{t('Salve o sistema antes de criar raças e classes.')}</p>
         <p className="text-accent-300 text-xs mt-1">
-          Clique em "Salvar sistema" acima e volte a esta aba.
+          {t('Clique em "Salvar sistema" acima e volte a esta aba.')}
         </p>
       </div>
     )
   }
 
   if (loading || loadingHabs) {
-    return <div className="py-8 text-center text-purple-400 text-sm">Carregando...</div>
+    return <div className="py-8 text-center text-purple-400 text-sm">{t('Carregando...')}</div>
   }
 
   if (error || errorHabs) {
@@ -1465,8 +1464,7 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
     <EfeitosVfxContext.Provider value={efeitosVfx}>
     <div className="space-y-8">
       <SecaoRacaClasse
-        titulo="Raças"
-        descTipo="raça"
+        titulo={t('Raças')}
         itens={racas}
         parentTipo="raca"
         onCreate={createRaca}
@@ -1494,8 +1492,7 @@ export default function RacasClassesEditor({ sistemaId, atributos, camposCombate
       <div className="border-t border-purple-900" />
 
       <SecaoRacaClasse
-        titulo="Classes"
-        descTipo="classe"
+        titulo={t('Classes')}
         itens={classes}
         parentTipo="classe"
         onCreate={createClasse}

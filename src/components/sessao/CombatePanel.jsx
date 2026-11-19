@@ -9,6 +9,7 @@ import { podeAgirNoCombate, caInfo, defesaDoAlvo } from '../../lib/alvosCombate'
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
 import { ChamaArcana } from '../ui/EfeitosAmbiente'
+import { t, tx } from '../../i18n'
 
 /**
  * Fase 14 — painel de combate dentro da SessaoPage.
@@ -17,10 +18,10 @@ import { ChamaArcana } from '../ui/EfeitosAmbiente'
  */
 
 const TIPO_ESTILO = {
-  jogador: { badge: 'bg-blue-900/60 border-blue-600/60 text-blue-200', label: 'Jogador' },
-  aliado:  { badge: 'bg-emerald-900/60 border-emerald-600/60 text-emerald-200', label: 'Aliado' },
-  npc:     { badge: 'bg-slate-700 border-slate-500 text-slate-200', label: 'NPC' },
-  inimigo: { badge: 'bg-red-900/60 border-red-600/60 text-red-200', label: 'Inimigo' },
+  jogador: { badge: 'bg-blue-900/60 border-blue-600/60 text-blue-200', label: t('Jogador') },
+  aliado:  { badge: 'bg-emerald-900/60 border-emerald-600/60 text-emerald-200', label: t('Aliado') },
+  npc:     { badge: 'bg-slate-700 border-slate-500 text-slate-200', label: t('NPC') },
+  inimigo: { badge: 'bg-red-900/60 border-red-600/60 text-red-200', label: t('Inimigo') },
 }
 
 // HP exibido: jogador vem da ficha (card); inimigo/NPC vem do combatente
@@ -67,25 +68,25 @@ function CondicaoForm({ onAplicar, onFechar }) {
 
   return (
     <div className="flex flex-wrap items-center gap-2 mt-1.5 pl-6">
-      <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Condição (ex: Envenenado)" className={`${inputCls} flex-1 min-w-[8rem]`} />
+      <input value={nome} onChange={e => setNome(e.target.value)} placeholder={t('Condição (ex: Envenenado)')} className={`${inputCls} flex-1 min-w-[8rem]`} />
       <label className="text-purple-400 text-xs flex items-center gap-1">
-        Rodadas
-        <input value={dur} onChange={e => setDur(e.target.value)} type="number" min="1" placeholder="∞" className={`${inputCls} w-14`} title="Vazio = permanente" />
+        {t('Rodadas')}
+        <input value={dur} onChange={e => setDur(e.target.value)} type="number" min="1" placeholder="∞" className={`${inputCls} w-14`} title={t('Vazio = permanente')} />
       </label>
       <label className="text-purple-400 text-xs flex items-center gap-1">
-        CA
-        <input value={caMod} onChange={e => setCaMod(e.target.value)} type="number" placeholder="0" className={`${inputCls} w-14`} title="Efeito na CA (ex: -2)" />
+        {t('CA')}
+        <input value={caMod} onChange={e => setCaMod(e.target.value)} type="number" placeholder="0" className={`${inputCls} w-14`} title={t('Efeito na CA (ex: -2)')} />
       </label>
       <label className="text-purple-400 text-xs flex items-center gap-1">
-        Por rodada
-        <select value={tipoRodada} onChange={e => setTipoRodada(e.target.value)} className={`${inputCls} w-20`} title="Dano ou cura no começo do turno de quem carrega a condição">
-          <option value="dano">dano</option>
-          <option value="cura">cura</option>
+        {t('Por rodada')}
+        <select value={tipoRodada} onChange={e => setTipoRodada(e.target.value)} className={`${inputCls} w-20`} title={t('Dano ou cura no começo do turno de quem carrega a condição')}>
+          <option value="dano">{t('dano')}</option>
+          <option value="cura">{t('cura')}</option>
         </select>
-        <input value={porRodada} onChange={e => setPorRodada(e.target.value)} placeholder="1d4 ou 3" className={`${inputCls} w-20`} title="Vazio = sem efeito por rodada" />
+        <input value={porRodada} onChange={e => setPorRodada(e.target.value)} placeholder={t('1d4 ou 3')} className={`${inputCls} w-20`} title={t('Vazio = sem efeito por rodada')} />
       </label>
-      <Botao variante="primario" tamanho="sm" onClick={submit} disabled={busy || !nome.trim()}>Aplicar</Botao>
-      <button onClick={onFechar} className="px-2 py-1 text-purple-400 hover:text-white text-xs transition-colors">Cancelar</button>
+      <Botao variante="primario" tamanho="sm" onClick={submit} disabled={busy || !nome.trim()}>{t('Aplicar')}</Botao>
+      <button onClick={onFechar} className="px-2 py-1 text-purple-400 hover:text-white text-xs transition-colors">{t('Cancelar')}</button>
     </div>
   )
 }
@@ -107,7 +108,7 @@ function PainelReserva({ reserva, emJogo, isMestre, onTrocar, onDefinirReserva }
   if (reserva.length === 0) return null
   return (
     <div className="rounded-xl border border-purple-900/70 bg-slate-900/50 p-2.5 space-y-1.5">
-      <p className="text-purple-300 text-xs font-semibold uppercase tracking-wider">Reserva ({reserva.length})</p>
+      <p className="text-purple-300 text-xs font-semibold uppercase tracking-wider">{t('Reserva ({n})', { n: reserva.length })}</p>
       {reserva.map(c => (
         <div key={c.id} className="flex flex-wrap items-center gap-2">
           <span className="text-purple-200 text-sm flex-1 min-w-[6rem] truncate">
@@ -120,9 +121,9 @@ function PainelReserva({ reserva, emJogo, isMestre, onTrocar, onDefinirReserva }
                 value={escolha[c.id] || ''}
                 onChange={e => setEscolha(prev => ({ ...prev, [c.id]: e.target.value }))}
                 className="px-2 py-1 rounded-lg bg-void border border-border text-white text-xs"
-                aria-label={`Trocar ${c.nome} por`}
+                aria-label={t('Trocar {nome} por', { nome: String(c.nome ?? '') })}
               >
-                <option value="">entra no lugar de…</option>
+                <option value="">{t('entra no lugar de…')}</option>
                 {emJogo.map(x => <option key={x.id} value={x.id}>{x.nome}</option>)}
               </select>
               <button
@@ -133,12 +134,12 @@ function PainelReserva({ reserva, emJogo, isMestre, onTrocar, onDefinirReserva }
                 }}
                 disabled={!escolha[c.id]}
                 className="px-2 py-1 bg-purple-700 hover:bg-purple-600 disabled:opacity-40 text-sobre-acento text-xs rounded-lg transition-colors"
-              >⇄ Trocar</button>
+              >{t('⇄ Trocar')}</button>
               <button
                 type="button" onClick={() => onDefinirReserva(c.id, false)}
                 className="px-2 py-1 text-purple-300 hover:text-white text-xs"
-                title="Entrar sem trocar (vai para o fim da ordem até rolar iniciativa)"
-              >Entrar</button>
+                title={t('Entrar sem trocar (vai para o fim da ordem até rolar iniciativa)')}
+              >{tx('combate', 'Entrar')}</button>
             </>
           )}
         </div>
@@ -163,12 +164,12 @@ function PedirDefesaForm({ combatente, sugestaoDano, onPedir, onFechar }) {
   }
   return (
     <div className="mt-1.5 ml-6 flex items-center gap-1.5 flex-wrap">
-      <label className="text-sky-300 text-xs flex items-center gap-1">acerto
+      <label className="text-sky-300 text-xs flex items-center gap-1">{t('acerto')}
         <input type="number" value={ataque} onChange={e => setAtaque(e.target.value)} placeholder="71" className={inp} /></label>
-      <label className="text-sky-300 text-xs flex items-center gap-1">dano
+      <label className="text-sky-300 text-xs flex items-center gap-1">{t('dano')}
         <input type="number" value={dano} onChange={e => setDano(e.target.value)} placeholder="20" className={inp} /></label>
-      <button onClick={submit} disabled={busy || dano === ''} className="px-2 py-0.5 bg-sky-700 hover:bg-sky-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors">Pedir</button>
-      <button onClick={onFechar} className="px-1.5 py-0.5 text-purple-400 hover:text-white text-xs transition-colors">Cancelar</button>
+      <button onClick={submit} disabled={busy || dano === ''} className="px-2 py-0.5 bg-sky-700 hover:bg-sky-600 disabled:opacity-50 text-white text-xs rounded-lg transition-colors">{t('Pedir')}</button>
+      <button onClick={onFechar} className="px-1.5 py-0.5 text-purple-400 hover:text-white text-xs transition-colors">{t('Cancelar')}</button>
     </div>
   )
 }
@@ -180,17 +181,17 @@ function ResolverDefesaControl({ combatente, onResolver, onCancelar }) {
   const dp = combatente.defesa_pendente || {}
   const r = dp.resposta
   const label = r
-    ? (r.opcao_id === 'nao_reagir' ? 'não reagiu' : `${r.opcao_nome}${r.defesa_total != null ? ` (${r.defesa_total} vs ${dp.ataque})` : ''}`)
-    : `aguardando ${combatente.nome}…`
+    ? (r.opcao_id === 'nao_reagir' ? t('não reagiu') : `${r.opcao_nome}${r.defesa_total != null ? t(' ({total} vs {ataque})', { total: r.defesa_total, ataque: dp.ataque }) : ''}`)
+    : t('aguardando {nome}…', { nome: String(combatente.nome ?? '') })
   async function resolver() { setBusy(true); try { await onResolver(combatente) } finally { setBusy(false) } }
   return (
     <div className="mt-1.5 ml-6 flex items-center gap-2 flex-wrap rounded-lg border border-sky-700/50 bg-sky-950/30 px-2 py-1.5">
-      <span className="text-sky-300 text-xs">🛡 defesa: <span className="text-sky-100 font-medium">{label}</span></span>
+      <span className="text-sky-300 text-xs">{t('🛡 defesa:')} <span className="text-sky-100 font-medium">{label}</span></span>
       <button onClick={resolver} disabled={busy}
         className={`ml-auto px-2 py-0.5 text-xs rounded-lg transition-colors disabled:opacity-50 ${r ? 'bg-sky-700 hover:bg-sky-600 text-white' : 'bg-red-800 hover:bg-red-700 text-white'}`}>
-        {r ? '✓ Resolver' : 'Resolver (dano cheio)'}
+        {r ? t('✓ Resolver') : t('Resolver (dano cheio)')}
       </button>
-      <button onClick={() => onCancelar(combatente)} disabled={busy} className="text-purple-400 hover:text-white text-xs transition-colors" title="Cancelar pedido">✕</button>
+      <button onClick={() => onCancelar(combatente)} disabled={busy} className="text-purple-400 hover:text-white text-xs transition-colors" title={t('Cancelar pedido')}>✕</button>
     </div>
   )
 }
@@ -259,7 +260,7 @@ function CombatenteRow({
           estado e controles embaixo. Antes tudo ficava numa linha só, o nome do
           combatente era esmagado até desaparecer e o ✕ saía fora do card. */}
       <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:flex-nowrap">
-        <span className={`shrink-0 w-3 text-amber-400 ${ativo ? 'opacity-100' : 'opacity-0'}`} title="Agindo agora">▶</span>
+        <span className={`shrink-0 w-3 text-amber-400 ${ativo ? 'opacity-100' : 'opacity-0'}`} title={t('Agindo agora')}>▶</span>
         {/* Iniciativa */}
         <div className="flex items-center gap-1 shrink-0 w-[4.5rem]">
           {podeAgir ? (
@@ -270,12 +271,12 @@ function CombatenteRow({
                 onChange={e => onSetIniciativa(c.id, e.target.value)}
                 placeholder="—"
                 className="w-9 px-1 py-1 bg-void border border-border text-white text-center rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
-                title="Iniciativa"
+                title={t('Iniciativa')}
               />
-              <button onClick={rolar} disabled={rolando} className={`${ICONE} text-amber-500 hover:text-amber-300 hover:bg-amber-950/40 disabled:opacity-40 text-base leading-none`} title="Rolar iniciativa">🎲</button>
+              <button onClick={rolar} disabled={rolando} className={`${ICONE} text-amber-500 hover:text-amber-300 hover:bg-amber-950/40 disabled:opacity-40 text-base leading-none`} title={t('Rolar iniciativa')}>🎲</button>
             </>
           ) : (
-            <span className="w-9 text-center text-white text-sm font-bold" title="Iniciativa">{c.iniciativa ?? '—'}</span>
+            <span className="w-9 text-center text-white text-sm font-bold" title={t('Iniciativa')}>{c.iniciativa ?? '—'}</span>
           )}
         </div>
 
@@ -284,13 +285,13 @@ function CombatenteRow({
           {c.nome}
           {abatido && (
             <span className="ml-1.5 text-xs px-1 py-0.5 rounded-lg bg-red-950 border border-red-800 text-red-300 align-middle">
-              {trilhaVida?.rotuloCheia || 'Abatido'}
+              {trilhaVida?.rotuloCheia || t('Abatido')}
             </span>
           )}
         </span>
 
         {responsavel && !isMestre && (
-          <span className="text-xs text-ink-dim shrink-0">por {responsavel.nome}</span>
+          <span className="text-xs text-ink-dim shrink-0">{t('por {nome}', { nome: String(responsavel.nome ?? '') })}</span>
         )}
         {isMestre && onAtualizarCombatente && (
           <select
@@ -298,13 +299,13 @@ function CombatenteRow({
             onChange={async e => {
               setErroResp('')
               try { await onAtualizarCombatente(c.id, { controlador_id: e.target.value || null }) }
-              catch (err) { setErroResp(err.message || 'Não foi possível definir o responsável.') }
+              catch (err) { setErroResp(err.message || t('Não foi possível definir o responsável.')) }
             }}
             className="shrink-0 max-w-[9rem] px-1.5 py-1 min-h-[24px] rounded-lg bg-void border border-border text-ink text-xs"
-            aria-label={`Responsável por ${c.nome}`}
-            title="Quem age por este combatente"
+            aria-label={t('Responsável por {nome}', { nome: String(c.nome ?? '') })}
+            title={t('Quem age por este combatente')}
           >
-            <option value="">Mestre</option>
+            <option value="">{t('Mestre')}</option>
             {membros.map(m => <option key={m.usuario_id} value={m.usuario_id}>{m.nome}</option>)}
           </select>
         )}
@@ -313,40 +314,40 @@ function CombatenteRow({
         <div className="flex items-center gap-2 sm:gap-3 basis-full sm:basis-auto justify-end sm:justify-start">
         {trilhaVida ? (
           <span className={`text-xs font-mono shrink-0 ${abatido ? 'text-red-400' : 'text-purple-300'}`}
-            title={`${trilhaVida.nome}: ${trilhaVida.cont.marcadas}/${trilhaVida.cont.total} marcadas`}>
+            title={t('{nome}: {marcadas}/{total} marcadas', { nome: String(trilhaVida.nome ?? ''), marcadas: trilhaVida.cont.marcadas, total: trilhaVida.cont.total })}>
             {trilhaVida.cont.marcadas}/{trilhaVida.cont.total} ▢
           </span>
         ) : hp.atual != null && (
           <span className={`text-xs font-mono shrink-0 ${abatido ? 'text-red-400' : 'text-purple-300'}`}>
-            {hp.atual}{hp.max != null ? `/${hp.max}` : ''} HP
+            {hp.atual}{hp.max != null ? `/${hp.max}` : ''} {t('HP')}
           </span>
         )}
         {ca && (
-          <span className={`text-xs shrink-0 ${ca.delta < 0 ? 'text-red-300' : ca.delta > 0 ? 'text-green-300' : 'text-purple-400'}`} title="Classe de Armadura">
-            CA {ca.efetiva}
+          <span className={`text-xs shrink-0 ${ca.delta < 0 ? 'text-red-300' : ca.delta > 0 ? 'text-green-300' : 'text-purple-400'}`} title={t('Classe de Armadura')}>
+            {t('CA {n}', { n: ca.efetiva })}
           </span>
         )}
         {podeAgir && (
-          <button onClick={() => setAddCond(v => !v)} className={`${ICONE} text-fuchsia-400 hover:text-fuchsia-200 hover:bg-fuchsia-950/40 shrink-0 text-xs border border-fuchsia-800/60 px-1.5`} title="Aplicar condição">cond</button>
+          <button onClick={() => setAddCond(v => !v)} className={`${ICONE} text-fuchsia-400 hover:text-fuchsia-200 hover:bg-fuchsia-950/40 shrink-0 text-xs border border-fuchsia-800/60 px-1.5`} title={t('Aplicar condição')}>{t('cond')}</button>
         )}
         {/* divisória: separa o estado do combatente das ações do mestre */}
         {isMestre && <span className="w-px h-5 bg-border shrink-0" aria-hidden="true" />}
         {/* setas lado a lado, não empilhadas: empilhada, cada uma tinha 10 px de altura */}
         {isMestre && (
           <div className="flex items-center leading-none shrink-0">
-            <button onClick={() => onMover(c.id, -1)} disabled={!podeSubir} className={`${ICONE} text-purple-400 hover:text-white hover:bg-purple-900/50 disabled:opacity-20 text-xs`} title="Subir (desempate)">▲</button>
-            <button onClick={() => onMover(c.id, +1)} disabled={!podeDescer} className={`${ICONE} text-purple-400 hover:text-white hover:bg-purple-900/50 disabled:opacity-20 text-xs`} title="Descer (desempate)">▼</button>
+            <button onClick={() => onMover(c.id, -1)} disabled={!podeSubir} className={`${ICONE} text-purple-400 hover:text-white hover:bg-purple-900/50 disabled:opacity-20 text-xs`} title={t('Subir (desempate)')}>▲</button>
+            <button onClick={() => onMover(c.id, +1)} disabled={!podeDescer} className={`${ICONE} text-purple-400 hover:text-white hover:bg-purple-900/50 disabled:opacity-20 text-xs`} title={t('Descer (desempate)')}>▼</button>
           </div>
         )}
         {isMestre && onDefinirReserva && (
           <button
             onClick={() => onDefinirReserva(c.id, true)}
             className={`${ICONE} text-purple-400 hover:text-white hover:bg-purple-900/50 shrink-0 text-sm`}
-            title="Mandar para a reserva (sai da ordem de turnos, sem perder nada)"
+            title={t('Mandar para a reserva (sai da ordem de turnos, sem perder nada)')}
           >⇣</button>
         )}
         {isMestre && (
-          <button onClick={() => onRemover(c.id)} className={`${ICONE} text-red-700 hover:text-red-400 hover:bg-red-950/40 shrink-0 text-sm`} title="Remover do combate">✕</button>
+          <button onClick={() => onRemover(c.id)} className={`${ICONE} text-red-700 hover:text-red-400 hover:bg-red-950/40 shrink-0 text-sm`} title={t('Remover do combate')}>✕</button>
         )}
         </div>
       </div>
@@ -362,21 +363,21 @@ function CombatenteRow({
               <input
                 type="number" min="1" value={dc} onChange={e => setDc(e.target.value)} placeholder="1"
                 className="w-12 px-1.5 py-0.5 bg-void border border-border text-white text-center rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
-                title="Quantas caixinhas"
+                title={t('Quantas caixinhas')}
               />
               {(trilhaVida.config.tipos_marca || []).map(tm => (
                 <button key={tm.id}
                   onClick={() => { onMarcarTrilha?.(c, tm.id, Math.max(1, Math.abs(Number(dc) || 1))); setDc('') }}
                   className="px-2 py-0.5 bg-red-800 hover:bg-red-700 text-white text-xs rounded-lg transition-colors font-mono"
-                  title={`Marcar ${tm.nome}`}>
+                  title={t('Marcar {nome}', { nome: String(tm.nome ?? '') })}>
                   − {tm.simbolo || tm.nome}
                 </button>
               ))}
               <button
                 onClick={() => { onCurarTrilha?.(c, Math.max(1, Math.abs(Number(dc) || 1))); setDc('') }}
                 className="px-2 py-0.5 bg-green-800 hover:bg-green-700 text-white text-xs rounded-lg transition-colors"
-                title="Curar caixinhas (menos severas primeiro)">
-                ＋ Cura
+                title={t('Curar caixinhas (menos severas primeiro)')}>
+                {t('＋ Cura')}
               </button>
             </div>
           )}
@@ -394,14 +395,14 @@ function CombatenteRow({
             placeholder="0"
             className="w-14 px-1.5 py-1 bg-void border border-border text-white text-center rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
           />
-          <button onClick={() => aplicarHp(-1)} className="px-2.5 py-1 min-h-[24px] bg-red-800 hover:bg-red-700 text-white text-xs rounded-lg transition-colors" title="Aplicar dano">− Dano</button>
-          <button onClick={() => aplicarHp(+1)} className="px-2.5 py-1 min-h-[24px] bg-green-800 hover:bg-green-700 text-white text-xs rounded-lg transition-colors" title="Aplicar cura">＋ Cura</button>
+          <button onClick={() => aplicarHp(-1)} className="px-2.5 py-1 min-h-[24px] bg-red-800 hover:bg-red-700 text-white text-xs rounded-lg transition-colors" title={t('Aplicar dano')}>{t('− Dano')}</button>
+          <button onClick={() => aplicarHp(+1)} className="px-2.5 py-1 min-h-[24px] bg-green-800 hover:bg-green-700 text-white text-xs rounded-lg transition-colors" title={t('Aplicar cura')}>{t('＋ Cura')}</button>
           {/* F14.6 — aplicar o dano de poder pendente neste alvo */}
           {sugestaoDano && (
             <button
               onClick={() => onAplicarSugestao?.(c)}
               className="px-2 py-0.5 bg-amber-700 hover:bg-amber-600 text-white text-xs rounded-lg transition-colors font-medium animate-pulse"
-              title={`Aplicar ${sugestaoDano.valor} de dano${sugestaoDano.origem ? ` (${sugestaoDano.origem})` : ''} neste alvo`}
+              title={sugestaoDano.origem ? t('Aplicar {valor} de dano ({origem}) neste alvo', { valor: sugestaoDano.valor, origem: String(sugestaoDano.origem) }) : t('Aplicar {valor} de dano neste alvo', { valor: sugestaoDano.valor })}
             >
               <Ilustra nome="espadas" tamanho={15} /> −{sugestaoDano.valor}
             </button>
@@ -411,9 +412,9 @@ function CombatenteRow({
             <button
               onClick={() => setPedindoDef(v => !v)}
               className="px-2 py-0.5 bg-sky-800 hover:bg-sky-700 text-white text-xs rounded-lg transition-colors"
-              title="Pedir defesa ativa (rolagem oposta)"
+              title={t('Pedir defesa ativa (rolagem oposta)')}
             >
-              🛡 Pedir defesa
+              {t('🛡 Pedir defesa')}
             </button>
           )}
         </div>
@@ -447,7 +448,7 @@ function CombatenteRow({
       {/* F22.6 — o defensor já respondeu e espera o mestre resolver */}
       {dp && dp.resposta && souDefensor && !isMestre && (
         <p className="mt-1.5 ml-6 text-sky-400/80 text-xs">
-          🛡 {dp.resposta.opcao_id === 'nao_reagir' ? 'Você não reagiu' : `${dp.resposta.opcao_nome} (${dp.resposta.defesa_total})`} — aguardando o mestre resolver…
+          🛡 {dp.resposta.opcao_id === 'nao_reagir' ? t('Você não reagiu') : `${dp.resposta.opcao_nome} (${dp.resposta.defesa_total})`}{t(' — aguardando o mestre resolver…')}
         </p>
       )}
 
@@ -460,7 +461,7 @@ function CombatenteRow({
               <span key={cond.id} className="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-lg border bg-fuchsia-900/40 border-fuchsia-600/50 text-fuchsia-200" title={cond.descricao || cond.nome}>
                 {cond.nome}{rest != null ? ` (${rest})` : ''}
                 {podeAgir && (
-                  <button onClick={() => onRemoverCondicao(cond.id)} className="text-fuchsia-400 hover:text-white transition-colors" title="Remover condição">×</button>
+                  <button onClick={() => onRemoverCondicao(cond.id)} className="text-fuchsia-400 hover:text-white transition-colors" title={t('Remover condição')}>×</button>
                 )}
               </span>
             )
@@ -498,26 +499,26 @@ function FormInimigo({ onAdicionar }) {
 
   return (
     <div className="bg-void border border-border rounded-xl p-3 space-y-2">
-      <p className="text-purple-400 text-xs font-medium uppercase tracking-wider">Adicionar inimigo/NPC</p>
+      <p className="text-purple-400 text-xs font-medium uppercase tracking-wider">{t('Adicionar inimigo/NPC')}</p>
       <div className="flex flex-wrap gap-2">
-        <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Nome (ex: Goblin)" className={`${inputCls} flex-1 min-w-[8rem]`} />
-        <select value={tipo} onChange={e => setTipo(e.target.value)} className={inputCls} title="Tipo">
-          <option value="inimigo">Inimigo</option>
-          <option value="aliado">Aliado</option>
-          <option value="npc">NPC</option>
+        <input value={nome} onChange={e => setNome(e.target.value)} placeholder={t('Nome (ex: Goblin)')} className={`${inputCls} flex-1 min-w-[8rem]`} />
+        <select value={tipo} onChange={e => setTipo(e.target.value)} className={inputCls} title={t('Tipo')}>
+          <option value="inimigo">{t('Inimigo')}</option>
+          <option value="aliado">{t('Aliado')}</option>
+          <option value="npc">{t('NPC')}</option>
         </select>
       </div>
       <div className="flex flex-wrap gap-2 items-center">
-        <input value={hp} onChange={e => setHp(e.target.value)} type="number" placeholder="HP" className={`${inputCls} w-20`} />
-        <input value={ca} onChange={e => setCa(e.target.value)} type="number" placeholder="CA" className={`${inputCls} w-20`} />
+        <input value={hp} onChange={e => setHp(e.target.value)} type="number" placeholder={t('HP')} className={`${inputCls} w-20`} />
+        <input value={ca} onChange={e => setCa(e.target.value)} type="number" placeholder={t('CA')} className={`${inputCls} w-20`} />
         <label className="text-purple-400 text-xs flex items-center gap-1">
-          Qtd
+          {t('Qtd')}
           <input value={qtd} onChange={e => setQtd(e.target.value)} type="number" min="1" className={`${inputCls} w-16`} />
         </label>
         <Botao variante="primario" tamanho="sm"
           onClick={submit}
           disabled={busy || !nome.trim()} className="ml-auto">
-          + Adicionar
+          {t('+ Adicionar')}
         </Botao>
       </div>
     </div>
@@ -605,15 +606,15 @@ export default function CombatePanel({
     return (
       <div className="mb-6 rounded-2xl border border-purple-800/60 bg-slate-800/40 px-5 py-4 flex items-center gap-3 flex-wrap">
         <div className="flex-1 min-w-0">
-          <p className="text-white font-semibold leading-tight flex items-center gap-2"><Ilustra nome="espadas" tamanho={18} /> Combate</p>
-          <p className="text-purple-400 text-xs">Inicie um encontro para rastrear iniciativa, turnos e condições.</p>
+          <p className="text-white font-semibold leading-tight flex items-center gap-2"><Ilustra nome="espadas" tamanho={18} /> {t('Combate')}</p>
+          <p className="text-purple-400 text-xs">{t('Inicie um encontro para rastrear iniciativa, turnos e condições.')}</p>
         </div>
         <button
-          onClick={async () => { setBusy(true); setErro(''); try { await onIniciar() } catch (e) { setErro(e.message || 'Erro') } finally { setBusy(false) } }}
+          onClick={async () => { setBusy(true); setErro(''); try { await onIniciar() } catch (e) { setErro(e.message || t('Erro')) } finally { setBusy(false) } }}
           disabled={busy}
           className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-sobre-acento text-sm font-semibold rounded-lg transition-colors shrink-0 inline-flex items-center gap-2"
         >
-          {busy ? 'Iniciando...' : <><Ilustra nome="espadas" tamanho={18} /> Iniciar combate</>}
+          {busy ? t('Iniciando...') : <><Ilustra nome="espadas" tamanho={18} /> {t('Iniciar combate')}</>}
         </button>
         {erro && <p className="text-red-400 text-xs w-full">{erro}</p>}
       </div>
@@ -644,12 +645,12 @@ export default function CombatePanel({
       <ChamaArcana />
       <div className="flex items-center gap-3 flex-wrap">
         <span className="inline-flex items-center gap-1.5 text-red-300 text-xs font-bold uppercase tracking-wider">
-          <Ilustra nome="espadas" tamanho={15} /> {encontro.titulo || 'Combate'}
+          <Ilustra nome="espadas" tamanho={15} /> {encontro.titulo || t('Combate')}
         </span>
-        <span className="text-white text-sm font-semibold">Rodada {encontro.rodada}</span>
+        <span className="text-white text-sm font-semibold">{t('Rodada {n}', { n: encontro.rodada })}</span>
         {ativo && (
           <span className="text-amber-300 text-xs">
-            Vez de <span className="font-semibold">{ativo.nome}</span>
+            {t('Vez de {nome}', { nome: String(ativo.nome ?? '') })}
           </span>
         )}
       </div>
@@ -657,11 +658,11 @@ export default function CombatePanel({
       {/* Controles de turno (mestre) */}
       {isMestre && combatentes.length > 0 && (
         <div className="flex items-center gap-2">
-          <Botao variante="secundario" onClick={() => onTurnoAnterior()}>◀ Anterior</Botao>
+          <Botao variante="secundario" onClick={() => onTurnoAnterior()}>{t('◀ Anterior')}</Botao>
           {/* avançar turno é A ação da tela: fica no acento do tema, não em
               âmbar — âmbar é dos dados, e dois blocos âmbar grandes competiam */}
           <Botao variante="primario" onClick={() => onProximoTurno()} className="flex-1 font-semibold">
-            Próximo turno ▶
+            {t('Próximo turno ▶')}
           </Botao>
         </div>
       )}
@@ -681,7 +682,7 @@ export default function CombatePanel({
       {/* Ações do combatente ativo (14.6; F53: também NPC/criatura sem ficha) */}
       {ativo && podeAgir(ativo) && (
         <div className="rounded-xl border border-amber-800/50 bg-amber-950/20 p-3 space-y-2">
-          <p className="text-amber-300 text-xs font-semibold">⚔️ Ações de {ativo.nome}</p>
+          <p className="text-amber-300 text-xs font-semibold">{t('⚔️ Ações de {nome}', { nome: String(ativo.nome ?? '') })}</p>
           <AcoesCombate
             key={ativo.id}
             fichaId={cardsPorFicha[ativo.ficha_id] ? ativo.ficha_id : null}
@@ -709,18 +710,18 @@ export default function CombatePanel({
       {sugestaoDano && (
         <div className="mb-2 rounded-lg border border-amber-700/70 bg-amber-950/40 px-3 py-2 flex items-center gap-2 flex-wrap">
           <span className="text-amber-300 text-sm">
-            ⚔ Dano pendente: <span className="font-bold">{sugestaoDano.valor}</span>
+            {t('⚔ Dano pendente:')} <span className="font-bold">{sugestaoDano.valor}</span>
             {sugestaoDano.origem && <span className="text-amber-400/80"> — {sugestaoDano.origem}</span>}
             {sugestaoDano.autor && <span className="text-amber-500/70"> ({sugestaoDano.autor})</span>}
           </span>
-          <span className="text-amber-500/70 text-xs">Clique no <span className="font-mono">⚔ −{sugestaoDano.valor}</span> de um alvo.</span>
-          <button onClick={onLimparSugestao} className="ml-auto text-amber-500 hover:text-amber-200 text-sm" title="Descartar">✕</button>
+          <span className="text-amber-500/70 text-xs">{t('Clique no')} <span className="font-mono">⚔ −{sugestaoDano.valor}</span> {t('de um alvo.')}</span>
+          <button onClick={onLimparSugestao} className="ml-auto text-amber-500 hover:text-amber-200 text-sm" title={t('Descartar')}>✕</button>
         </div>
       )}
 
       {/* Lista de combatentes (ordenada por iniciativa) */}
       {combatentes.length === 0 ? (
-        <p className="text-accent-300 text-sm py-2">Nenhum combatente ainda. {isMestre && 'Adicione abaixo.'}</p>
+        <p className="text-accent-300 text-sm py-2">{t('Nenhum combatente ainda.')} {isMestre && t('Adicione abaixo.')}</p>
       ) : (
         <div className="space-y-1.5">
           {ordenados.map((c, idx) => (
@@ -779,11 +780,11 @@ export default function CombatePanel({
       {isMestre && combatentes.length > 0 && (
         <Botao
           variante="dado" tamanho="sm"
-          onClick={async () => { setBusy(true); setErro(''); try { await onRolarIniciativaTodos() } catch (e) { setErro(e.message || 'Erro') } finally { setBusy(false) } }}
+          onClick={async () => { setBusy(true); setErro(''); try { await onRolarIniciativaTodos() } catch (e) { setErro(e.message || t('Erro')) } finally { setBusy(false) } }}
           disabled={busy}
           className="w-full"
         >
-          🎲 Rolar iniciativa de todos
+          {t('🎲 Rolar iniciativa de todos')}
         </Botao>
       )}
 
@@ -792,11 +793,11 @@ export default function CombatePanel({
         <div className="space-y-2 pt-1">
           <Botao
             variante="secundario"
-            onClick={async () => { setErro(''); try { await onAdicionarJogadores(ausentes) } catch (e) { setErro(e.message || 'Erro') } }}
+            onClick={async () => { setErro(''); try { await onAdicionarJogadores(ausentes) } catch (e) { setErro(e.message || t('Erro')) } }}
             disabled={ausentes.length === 0}
             className="w-full"
           >
-            {ausentes.length === 0 ? 'Todos os personagens já estão no combate' : `+ Adicionar personagens da mesa (${ausentes.length})`}
+            {ausentes.length === 0 ? t('Todos os personagens já estão no combate') : t('+ Adicionar personagens da mesa ({n})', { n: ausentes.length })}
           </Botao>
           {acoesBestiario}
           <FormInimigo onAdicionar={onAdicionarInimigos} />
@@ -812,7 +813,7 @@ export default function CombatePanel({
               disabled={busy}
               className="ml-auto text-red-300 hover:text-white hover:bg-red-950/40"
             >
-              Encerrar combate
+              {t('Encerrar combate')}
             </Botao>
           </div>
         </div>

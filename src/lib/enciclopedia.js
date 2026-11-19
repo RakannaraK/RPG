@@ -7,37 +7,38 @@
  */
 import { normalizar } from './formulaEngine'
 import { normalizarEtiquetas } from './comunidade'
+import { t } from '../i18n'
 
 export const LIMITES = { titulo: 120, resumo: 500, corpo: 20000, segredo: 5000, campo: 1000 }
 
 // ids dos campos casam com o CHECK do banco: campos\.[a-z_]{1,40}
 export const TIPOS_VERBETE = [
-  { id: 'npc', nome: 'NPC', icone: 'elmo', campos: [
-    { id: 'aparencia', nome: 'Aparência' }, { id: 'personalidade', nome: 'Personalidade' },
-    { id: 'motivacao', nome: 'O que quer' }, { id: 'onde_encontrar', nome: 'Onde encontrar' },
+  { id: 'npc', nome: t('NPC'), icone: 'elmo', campos: [
+    { id: 'aparencia', nome: t('Aparência') }, { id: 'personalidade', nome: t('Personalidade') },
+    { id: 'motivacao', nome: t('O que quer') }, { id: 'onde_encontrar', nome: t('Onde encontrar') },
   ] },
-  { id: 'local', nome: 'Local', icone: 'mapa', campos: [
-    { id: 'regiao', nome: 'Região' }, { id: 'atmosfera', nome: 'Como é' }, { id: 'perigos', nome: 'Perigos' },
+  { id: 'local', nome: t('Local'), icone: 'mapa', campos: [
+    { id: 'regiao', nome: t('Região') }, { id: 'atmosfera', nome: t('Como é') }, { id: 'perigos', nome: t('Perigos') },
   ] },
-  { id: 'faccao', nome: 'Facção', icone: 'escudo', campos: [
-    { id: 'objetivo', nome: 'Objetivo' }, { id: 'lider', nome: 'Quem lidera' }, { id: 'simbolo', nome: 'Símbolo' },
+  { id: 'faccao', nome: t('Facção'), icone: 'escudo', campos: [
+    { id: 'objetivo', nome: t('Objetivo') }, { id: 'lider', nome: t('Quem lidera') }, { id: 'simbolo', nome: t('Símbolo') },
   ] },
-  { id: 'divindade', nome: 'Divindade', icone: 'lanterna', campos: [
-    { id: 'dominio', nome: 'Domínio' }, { id: 'simbolo', nome: 'Símbolo' }, { id: 'dogma', nome: 'Dogma' },
+  { id: 'divindade', nome: t('Divindade'), icone: 'lanterna', campos: [
+    { id: 'dominio', nome: t('Domínio') }, { id: 'simbolo', nome: t('Símbolo') }, { id: 'dogma', nome: t('Dogma') },
   ] },
-  { id: 'item', nome: 'Item', icone: 'bau', campos: [
-    { id: 'raridade', nome: 'Raridade' }, { id: 'efeito', nome: 'Efeito' }, { id: 'origem', nome: 'Origem' },
+  { id: 'item', nome: t('Item'), icone: 'bau', campos: [
+    { id: 'raridade', nome: t('Raridade') }, { id: 'efeito', nome: t('Efeito') }, { id: 'origem', nome: t('Origem') },
   ] },
-  { id: 'lore', nome: 'História', icone: 'tomo', campos: [{ id: 'epoca', nome: 'Época' }] },
-  { id: 'handout', nome: 'Documento', icone: 'pergaminho', campos: [] },
-  { id: 'outro', nome: 'Outro', icone: 'nota', campos: [] },
+  { id: 'lore', nome: t('História'), icone: 'tomo', campos: [{ id: 'epoca', nome: t('Época') }] },
+  { id: 'handout', nome: t('Documento'), icone: 'pergaminho', campos: [] },
+  { id: 'outro', nome: t('Outro'), icone: 'nota', campos: [] },
 ]
 
-export const tipoDe = id => TIPOS_VERBETE.find(t => t.id === id) || TIPOS_VERBETE[TIPOS_VERBETE.length - 1]
+export const tipoDe = id => TIPOS_VERBETE.find(tp => tp.id === id) || TIPOS_VERBETE[TIPOS_VERBETE.length - 1]
 
 /** Nome legível de um campo revelável ("campos.aparencia" -> "Aparência"). */
 export function nomeDoCampo(campo, tipo) {
-  const fixos = { titulo: 'Nome', resumo: 'Resumo', imagem: 'Imagem', corpo: 'Texto', tags: 'Etiquetas' }
+  const fixos = { titulo: t('Nome'), resumo: t('Resumo'), imagem: t('Imagem'), corpo: t('Texto'), tags: t('Etiquetas') }
   if (fixos[campo]) return fixos[campo]
   const id = String(campo).replace(/^campos\./, '')
   return tipoDe(tipo).campos.find(c => c.id === id)?.nome || id
@@ -66,8 +67,8 @@ export function mencoes(texto) {
   const vistos = new Set()
   const lista = []
   for (const m of String(texto || '').matchAll(MENCAO)) {
-    const t = m[1].trim()
-    if (t && !vistos.has(normalizar(t))) { vistos.add(normalizar(t)); lista.push(t) }
+    const tit = m[1].trim()
+    if (tit && !vistos.has(normalizar(tit))) { vistos.add(normalizar(tit)); lista.push(tit) }
   }
   return lista
 }
@@ -104,7 +105,7 @@ export function citadoPor(verbete, verbetes = []) {
   if (!verbete?.titulo) return []
   const alvo = normalizar(verbete.titulo)
   return verbetes.filter(v => v.id !== verbete.id && [v.corpo, v.resumo, ...Object.values(v.campos || {})]
-    .some(t => mencoes(t).some(m => normalizar(m) === alvo)))
+    .some(tx => mencoes(tx).some(m => normalizar(m) === alvo)))
 }
 
 // ---------------------------------------------------------------- busca
@@ -116,7 +117,7 @@ export function buscarVerbetes(verbetes = [], { busca = '', tipo = null } = {}) 
     if (tipo && v.tipo !== tipo) return false
     if (!termos.length) return true
     const alvo = normalizar([v.titulo, v.resumo, v.corpo, ...(v.tags || []), ...Object.values(v.campos || {})].filter(Boolean).join(' '))
-    return termos.every(t => alvo.includes(t))
+    return termos.every(tm => alvo.includes(tm))
   })
 }
 
@@ -151,11 +152,11 @@ export function estadoRevelacao(verbete, revelacoes = [], usuarios = []) {
 /** Normaliza o formulário do mestre para o banco (e diz o que está errado). */
 export function validarVerbete(v = {}) {
   const titulo = String(v.titulo || '').trim()
-  if (!titulo) return { ok: false, erro: 'Dê um nome ao verbete.' }
-  if (titulo.length > LIMITES.titulo) return { ok: false, erro: `Nome com até ${LIMITES.titulo} letras.` }
-  if (!TIPOS_VERBETE.some(t => t.id === v.tipo)) return { ok: false, erro: 'Escolha o tipo.' }
+  if (!titulo) return { ok: false, erro: t('Dê um nome ao verbete.') }
+  if (titulo.length > LIMITES.titulo) return { ok: false, erro: t('Nome com até {max} letras.', { max: LIMITES.titulo }) }
+  if (!TIPOS_VERBETE.some(tp => tp.id === v.tipo)) return { ok: false, erro: t('Escolha o tipo.') }
   for (const k of ['resumo', 'corpo', 'segredo']) {
-    if (String(v[k] || '').length > LIMITES[k]) return { ok: false, erro: `${nomeDoCampo(k, v.tipo)} passou do limite de ${LIMITES[k]} letras.` }
+    if (String(v[k] || '').length > LIMITES[k]) return { ok: false, erro: t('{campo} passou do limite de {max} letras.', { campo: nomeDoCampo(k, v.tipo), max: LIMITES[k] }) }
   }
   const campos = {}
   for (const c of tipoDe(v.tipo).campos) {
@@ -186,8 +187,8 @@ export function relacionados(verbete, verbetes = []) {
   const textos = [verbete.resumo, verbete.corpo, ...Object.values(verbete.campos || {})]
   const vistos = new Set()
   const cita = []
-  for (const t of textos) {
-    for (const p of partesComMencoes(t || '', verbetes)) {
+  for (const tx of textos) {
+    for (const p of partesComMencoes(tx || '', verbetes)) {
       if (p.alvo && p.alvo.id !== verbete.id && !vistos.has(p.alvo.id)) { vistos.add(p.alvo.id); cita.push(p.alvo) }
     }
   }
@@ -207,16 +208,16 @@ export function contarPorTipo(verbetes = []) {
  */
 export function indicePorTipo(verbetes = []) {
   return TIPOS_VERBETE
-    .map(t => ({ tipo: t, itens: ordenarVerbetes(verbetes.filter(v => v.tipo === t.id)) }))
+    .map(tp => ({ tipo: tp, itens: ordenarVerbetes(verbetes.filter(v => v.tipo === tp.id)) }))
     .filter(g => g.itens.length)
 }
 
 /** Insere `[[Título]]` no texto na posição do cursor (para o editor). */
 export function inserirMencao(texto, posicao, titulo) {
-  const t = String(texto || '')
-  const p = Math.max(0, Math.min(t.length, Number.isFinite(posicao) ? posicao : t.length))
-  const antes = t.slice(0, p)
+  const tx = String(texto || '')
+  const p = Math.max(0, Math.min(tx.length, Number.isFinite(posicao) ? posicao : tx.length))
+  const antes = tx.slice(0, p)
   const espaco = antes && !/\s$/.test(antes) ? ' ' : ''
   const marca = `${espaco}[[${titulo}]]`
-  return { texto: antes + marca + t.slice(p), cursor: p + marca.length }
+  return { texto: antes + marca + tx.slice(p), cursor: p + marca.length }
 }

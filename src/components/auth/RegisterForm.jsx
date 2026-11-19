@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { traduzirErroAuth } from '../../lib/erroAuth'
+import { t } from '../../i18n'
 import Captcha, { CHAVE_CAPTCHA } from './Captcha'
 import Selo from '../marca/Selo'
 
@@ -19,11 +20,11 @@ export default function RegisterForm({ onSwitchToLogin }) {
     e.preventDefault()
     setError('')
     if (password !== confirm) {
-      setError('As senhas não coincidem.')
+      setError(t('As senhas não coincidem.'))
       return
     }
     if (password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres.')
+      setError(t('A senha deve ter pelo menos 6 caracteres.'))
       return
     }
     setLoading(true)
@@ -32,7 +33,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
       const { precisaConfirmar } = await register(email, password, captcha)
       if (precisaConfirmar) setSuccess(true)
     } catch (err) {
-      setError(traduzirErroAuth(err) || 'Erro ao registrar. Tente novamente.')
+      setError(traduzirErroAuth(err) || t('Erro ao registrar. Tente novamente.'))
     } finally {
       setLoading(false)
       setCaptcha(null)
@@ -47,16 +48,16 @@ export default function RegisterForm({ onSwitchToLogin }) {
           <Selo tamanho={34} />
         </div>
         <div>
-          <h3 className="text-white font-semibold text-lg">Conta criada!</h3>
+          <h3 className="text-white font-semibold text-lg">{t('Conta criada!')}</h3>
           <p className="text-purple-400 text-sm mt-2">
-            Enviamos um link para <strong className="text-white">{email}</strong>. Clique nele para ativar a conta (veja também o spam) e depois entre.
+            {t('Enviamos um link para')} <strong className="text-white">{email}</strong>{t('. Clique nele para ativar a conta (veja também o spam) e depois entre.')}
           </p>
         </div>
         <button
           onClick={onSwitchToLogin}
           className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 text-sobre-acento font-semibold rounded-xl transition-colors shadow-lg shadow-purple-900/50 text-base"
         >
-          Ir para o login
+          {t('Ir para o login')}
         </button>
       </div>
     )
@@ -65,29 +66,29 @@ export default function RegisterForm({ onSwitchToLogin }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="block text-sm font-medium text-purple-200 mb-1.5">Email</label>
+        <label className="block text-sm font-medium text-purple-200 mb-1.5">{t('Email')}</label>
         <input
           type="email"
           required
           value={email}
           onChange={e => setEmail(e.target.value)}
           className="w-full px-4 py-3 rounded-xl bg-void border border-border text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-          placeholder="seu@email.com"
+          placeholder={t('seu@email.com')}
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-purple-200 mb-1.5">Senha</label>
+        <label className="block text-sm font-medium text-purple-200 mb-1.5">{t('Senha')}</label>
         <input
           type="password"
           required
           value={password}
           onChange={e => setPassword(e.target.value)}
           className="w-full px-4 py-3 rounded-xl bg-void border border-border text-white placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-          placeholder="Mínimo 6 caracteres"
+          placeholder={t('Mínimo 6 caracteres')}
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-purple-200 mb-1.5">Confirmar senha</label>
+        <label className="block text-sm font-medium text-purple-200 mb-1.5">{t('Confirmar senha')}</label>
         <input
           type="password"
           required
@@ -112,7 +113,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
         disabled={loading || (!!CHAVE_CAPTCHA && !captcha)}
         className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-sobre-acento font-semibold rounded-xl transition-colors shadow-lg shadow-purple-900/50 text-base"
       >
-        {loading ? 'Criando conta...' : 'Criar conta'}
+        {loading ? t('Criando conta...') : t('Criar conta')}
       </button>
     </form>
   )

@@ -13,7 +13,7 @@ import { useMembrosMesa } from '../hooks/useMembrosMesa'
 import { useExtensoesMesa } from '../hooks/useExtensoesMesa'
 import { enviarVfx } from '../hooks/useVfxMapa'
 import { calcularDescanso } from '../lib/restEngine'
-import { planejarDefesa } from '../lib/defesaEngine'
+import { planejarDefesa, ehCampoDefesa } from '../lib/defesaEngine'
 import { aoUsarHabilidade } from '../lib/combateAvancado'
 import { ordenarPorIniciativa } from '../lib/iniciativa'
 import { marcar, curar } from '../lib/trackEngine'
@@ -35,6 +35,7 @@ import XCard from '../components/mesa/XCard'
 import BarraTopo from '../components/ui/BarraTopo'
 import Icone from '../components/ui/Icone'
 import { useAuraDeSessao } from '../components/sessao/SessaoBanner'
+import { t, tn } from '../i18n'
 
 /**
  * Fase 13 — tela da sessão ao vivo.
@@ -82,10 +83,7 @@ export default function SessaoPage() {
   const dadoPadrao = sistema?.config_layout?.dado_padrao || 20
   const campoIniciativa = camposCombate.find(c => /inici/i.test(c.nome || '')) || null
   // Campo de CA (para condições que afetam a CA, 14.4)
-  const campoCa = camposCombate.find(cc => {
-    const n = (cc.nome || '').trim().toLowerCase()
-    return n === 'ca' || n.includes('armadura') || n.includes('defesa')
-  }) || null
+  const campoCa = camposCombate.find(cc => ehCampoDefesa(cc.nome)) || null
 
   async function handleRolarIniciativa(c) {
     let mod = 0
@@ -94,7 +92,7 @@ export default function SessaoPage() {
       mod = Number(card?.combate?.[campoIniciativa.id]) || 0
     }
     const notacao = mod > 0 ? `1d${dadoPadrao}+${mod}` : mod < 0 ? `1d${dadoPadrao}${mod}` : `1d${dadoPadrao}`
-    const res = await registrarRolagem({ mesaId, sessaoId, rotulo: `Iniciativa — ${c.nome}`, notacao })
+    const res = await registrarRolagem({ mesaId, sessaoId, rotulo: t('Iniciativa — {nome}', { nome: c.nome }), notacao })
     await encontroApi.atualizarCombatente(c.id, { iniciativa: res.total })
   }
 
@@ -193,10 +191,10 @@ export default function SessaoPage() {
         .upsert({ ficha_id: c.ficha_id, trilha_id: tv.id, marcas }, { onConflict: 'ficha_id,trilha_id' })
       if (err) throw err
     } catch { return /* RLS/rede — silencioso, igual ao HP (F14.5) */ }
-    const tipoNome = (tv.config.tipos_marca || []).find(tm => tm.id === tipoId)?.nome || 'dano'
+    const tipoNome = (tv.config.tipos_marca || []).find(tm => tm.id === tipoId)?.nome || t('dano')
     await registrarEvento({
       mesaId, sessaoId, fichaId: c.ficha_id,
-      rotulo: `${c.nome} sofreu ${n} de dano ${tipoNome.toLowerCase()}`,
+      rotulo: t('{nome} sofreu {n} de dano {tipo}', { nome: c.nome, n, tipo: tipoNome.toLowerCase() }),
       notacao: '', total: n, dados: [],
     })
     // Encheu do maior: anuncia e (se configurado) vira condição no combatente (F14)
@@ -204,7 +202,7 @@ export default function SessaoPage() {
       const enc = tv.config.ao_encher_do_maior
       await registrarEvento({
         mesaId, sessaoId, fichaId: c.ficha_id,
-        rotulo: `${c.nome} — ${enc.rotulo}! (${tv.nome} cheia)`,
+        rotulo: t('{nome} — {rotulo}! ({trilha} cheia)', { nome: c.nome, rotulo: enc.rotulo, trilha: tv.nome }),
         notacao: '', total: 0, dados: [],
       })
       if (enc.aplica_condicao) {
@@ -239,7 +237,7 @@ export default function SessaoPage() {
     } catch { return }
     await registrarEvento({
       mesaId, sessaoId, fichaId: c.ficha_id,
-      rotulo: `${c.nome} recuperou ${curadas} caixinha${curadas === 1 ? '' : 's'} de ${tv.nome}`,
+      rotulo: tn(curadas, '{nome} recuperou {n} caixinha de {trilha}', '{nome} recuperou {n} caixinhas de {trilha}', { nome: c.nome, trilha: tv.nome }),
       notacao: '', total: curadas, dados: [],
     })
   }
@@ -304,7 +302,7 @@ export default function SessaoPage() {
     }
     await registrarEvento({
       mesaId, sessaoId,
-      rotulo: `O grupo fez um ${tipo.nome} — todos recuperados`,
+      rotulo: t('O grupo fez um {tipo} — todos recuperados', { tipo: tipo.nome }),
       notacao: '', total: 0, dados: [],
     })
     return itens
@@ -348,7 +346,7 @@ export default function SessaoPage() {
           .maybeSingle()
         if (err) throw err
         // RLS: não-membros não recebem a sessão
-        if (!data) throw new Error('Sessão não encontrada ou você não tem acesso a ela.')
+        if (!data) throw new Error(t('Sessão não encontrada ou você não tem acesso a ela.'))
         setSessao(data)
         // Gestor = criador OU co-mestre (controles de combate/descanso) — Fase 16.5
         const { data: mesaData } = await supabase
@@ -368,7 +366,7 @@ export default function SessaoPage() {
         }
         setIsMestre(gestor)
       } catch (err) {
-        setError(err.message || 'Erro ao carregar sessão.')
+        setError(err.message || t('Erro ao carregar sessão.'))
       } finally {
         setLoading(false)
       }
@@ -379,7 +377,7 @@ export default function SessaoPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-purple-400 text-lg">Carregando sessão...</div>
+        <div className="text-purple-400 text-lg">{t('Carregando sessão...')}</div>
       </div>
     )
   }
@@ -388,12 +386,12 @@ export default function SessaoPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-400 mb-4">{error || 'Sessão não encontrada.'}</p>
+          <p className="text-red-400 mb-4">{error || t('Sessão não encontrada.')}</p>
           <button
             onClick={() => navigate(`/mesa/${mesaId}`)}
             className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-sobre-acento rounded-lg transition-colors"
           >
-            Voltar à mesa
+            {t('Voltar à mesa')}
           </button>
         </div>
       </div>
@@ -404,18 +402,18 @@ export default function SessaoPage() {
     <div className="min-h-screen">
       {/* Cabeçalho */}
       <BarraTopo
-        voltar={{ para: `/mesa/${mesaId}`, rotulo: 'Sair da sessão' }}
-        titulo={sessao.titulo || 'Sessão'}
+        voltar={{ para: `/mesa/${mesaId}`, rotulo: t('Sair da sessão') }}
+        titulo={sessao.titulo || t('Sessão')}
         largura="max-w-7xl" comunidade={false}
         acoes={
           <>
             {sessao.ativa
-              ? <span className="selo-ao-vivo mr-1 max-sm:!px-2"><span className="ponto-vivo" aria-hidden="true" /><span className="max-sm:sr-only">Ao vivo</span></span>
-              : <span className="text-ink-dim text-xs font-semibold uppercase tracking-wider mr-1">Encerrada</span>}
+              ? <span className="selo-ao-vivo mr-1 max-sm:!px-2"><span className="ponto-vivo" aria-hidden="true" /><span className="max-sm:sr-only">{t('Ao vivo')}</span></span>
+              : <span className="text-ink-dim text-xs font-semibold uppercase tracking-wider mr-1">{t('Encerrada')}</span>}
             <button
               onClick={() => navigate(`/mesa/${mesaId}/mapa`, { state: { voltar: `/mesa/${mesaId}/sessao/${sessaoId}` } })}
-              aria-label="Abrir o mapa da mesa" data-dica="Mapa da mesa" className="botao-icone lg:px-3 lg:gap-2"
-            ><Icone nome="mapa" tamanho={20} /><span className="hidden lg:inline text-sm">Mapa</span></button>
+              aria-label={t('Abrir o mapa da mesa')} data-dica={t('Mapa da mesa')} className="botao-icone lg:px-3 lg:gap-2"
+            ><Icone nome="mapa" tamanho={20} /><span className="hidden lg:inline text-sm">{t('Mapa')}</span></button>
             <XCard mesaId={mesaId} isGestor={isMestre} />
             <PresencaBar conectados={conectados} meuId={session?.user?.id} conectado={conectado} />
           </>
@@ -433,7 +431,7 @@ export default function SessaoPage() {
             <button
               onClick={() => setAvisoTurno('')}
               className="text-amber-500 hover:text-amber-200 transition-colors text-sm shrink-0"
-              title="Dispensar"
+              title={t('Dispensar')}
             >
               ✕
             </button>
@@ -442,7 +440,7 @@ export default function SessaoPage() {
 
         {!sessao.ativa && (
           <div className="mb-4 rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-3 text-purple-300 text-sm">
-            Esta sessão foi encerrada. Você está vendo o registro dela.
+            {t('Esta sessão foi encerrada. Você está vendo o registro dela.')}
           </div>
         )}
 
@@ -464,7 +462,7 @@ export default function SessaoPage() {
             onAdicionarInimigos={encontroApi.adicionarInimigos}
             onTrocarReserva={async (saiId, entraId) => {
               const narracao = await encontroApi.trocarReserva(saiId, entraId)
-              await registrarEvento({ mesaId, sessaoId, rotulo: `⇄ ${narracao}`, notacao: '', total: 0, dados: [] })
+              await registrarEvento({ mesaId, sessaoId, rotulo: t('⇄ {narracao}', { narracao }), notacao: '', total: 0, dados: [] })
             }}
             onDefinirReserva={encontroApi.definirReserva}
             onUsarHabilidadeReacao={async hf => {
@@ -480,7 +478,7 @@ export default function SessaoPage() {
                 nomesExistentes={encontroApi.combatentes.map(c => c.nome)}
                 onInvocar={linhas => encontroApi.adicionarCombatentes(linhas)}
                 className="w-full py-2 bg-slate-700 hover:bg-slate-600 text-purple-200 hover:text-white text-sm rounded-lg transition-colors"
-                rotulo={<span className="inline-flex items-center justify-center gap-2 w-full"><Ilustra nome="garra" tamanho={18} /> Invocar do bestiário</span>}
+                rotulo={<span className="inline-flex items-center justify-center gap-2 w-full"><Ilustra nome="garra" tamanho={18} /> {t('Invocar do bestiário')}</span>}
               />
             }
             onRemoverCombatente={encontroApi.removerCombatente}
@@ -527,7 +525,7 @@ export default function SessaoPage() {
 
         {/* F29.3 — notas (o plano do mestre à mão durante a sessão) */}
         <details className="mb-6 rounded-xl border border-purple-900 bg-slate-900/60">
-          <summary className="cursor-pointer px-4 py-3 text-purple-200 text-sm font-medium"><span className="inline-flex items-center gap-2 align-middle"><Ilustra nome="nota" tamanho={18} /> Notas</span></summary>
+          <summary className="cursor-pointer px-4 py-3 text-purple-200 text-sm font-medium"><span className="inline-flex items-center gap-2 align-middle"><Ilustra nome="nota" tamanho={18} /> {t('Notas')}</span></summary>
           <div className="px-4 pb-4">
             <PainelNotas mesaId={mesaId} meuId={session?.user?.id} />
           </div>
@@ -536,7 +534,7 @@ export default function SessaoPage() {
         {/* F28.5 — desafios de minigame durante a sessão */}
         {sessao.ativa && (
           <details className="mb-6 rounded-xl border border-purple-900 bg-slate-900/60">
-            <summary className="cursor-pointer px-4 py-3 text-purple-200 text-sm font-medium"><span className="inline-flex items-center gap-2 align-middle"><Ilustra nome="jogo" tamanho={18} /> Desafios de minigame</span></summary>
+            <summary className="cursor-pointer px-4 py-3 text-purple-200 text-sm font-medium"><span className="inline-flex items-center gap-2 align-middle"><Ilustra nome="jogo" tamanho={18} /> {t('Desafios de minigame')}</span></summary>
             <div className="px-4 pb-4">
               <PainelDesafios mesaId={mesaId} meuId={session?.user?.id} isGestor={isMestre} sessaoId={sessaoId} />
             </div>
@@ -551,9 +549,9 @@ export default function SessaoPage() {
               abaMobile === 'fichas' ? 'bg-purple-700 text-sobre-acento' : 'bg-slate-800 text-purple-300'
             }`}
           >
-            Personagens
+            {t('Personagens')}
           </button>
-          {[['feed', 'Rolagens'], ['chat', 'Chat']].map(([valor, rotulo]) => (
+          {[['feed', t('Rolagens')], ['chat', t('Chat')]].map(([valor, rotulo]) => (
             <button
               key={valor}
               onClick={() => { setAbaMobile('feed'); setLateral(valor) }}
@@ -569,7 +567,7 @@ export default function SessaoPage() {
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Painel de fichas (13.3) */}
           <div className={`flex-1 min-w-0 w-full ${abaMobile === 'fichas' ? 'block' : 'hidden'} lg:block`}>
-            <p className="hidden lg:block text-purple-300 text-sm font-medium mb-3">Personagens na sessão</p>
+            <p className="hidden lg:block text-purple-300 text-sm font-medium mb-3">{t('Personagens na sessão')}</p>
             <PainelFichas
               cards={cards}
               camposCombate={camposCombate}
@@ -583,7 +581,7 @@ export default function SessaoPage() {
           {/* Feed compartilhado (13.4) */}
           <aside className={`w-full lg:w-80 xl:w-96 shrink-0 ${abaMobile === 'feed' ? 'block' : 'hidden'} lg:block`}>
             <div className="hidden lg:flex gap-4 mb-3">
-              {[['feed', sessao.ativa ? 'Rolagens' : 'Rolagens da sessão'], ['chat', 'Chat']].map(([valor, rotulo]) => (
+              {[['feed', sessao.ativa ? t('Rolagens') : t('Rolagens da sessão')], ['chat', t('Chat')]].map(([valor, rotulo]) => (
                 <button
                   key={valor} onClick={() => setLateral(valor)}
                   className={`text-sm font-medium transition-colors px-1 py-1 min-h-[24px] ${lateral === valor ? 'text-white' : 'text-purple-400 hover:text-purple-200'}`}

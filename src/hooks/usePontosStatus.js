@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /**
  * Fase 22.2 — pool e histórico de pontos de status de uma ficha.
@@ -26,7 +27,7 @@ export function usePontosStatus(fichaId) {
       setTemLinha(!!poolResp.data)
       setLog(logResp.data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar pontos de status.')
+      setError(err.message || t('Erro ao carregar pontos de status.'))
     } finally {
       setLoading(false)
     }

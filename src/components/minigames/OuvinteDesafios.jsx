@@ -6,6 +6,7 @@ import { registrarResultado } from '../../hooks/useMinigames'
 import { useRolagem } from '../../hooks/useRolagem'
 import { pendentesDoJogador, tituloDesafio } from '../../lib/minigames/desafios'
 import JogoMinigame from './JogoMinigame'
+import { t } from '../../i18n'
 
 /**
  * Fase 28.5 — em qualquer página de uma mesa, avisa o participante de um
@@ -34,16 +35,16 @@ function AvisosDaMesa({ mesaId, meuId }) {
         <div className="fixed bottom-4 right-4 z-[65] w-[min(22rem,calc(100vw-2rem))] space-y-2" role="status" aria-live="polite">
           {pendentes.slice(0, 3).map(d => (
             <div key={d.id} className="rounded-xl border border-accent-500 bg-bg/95 backdrop-blur shadow-2xl p-3">
-              <p className="text-dice-400 text-xs font-semibold uppercase tracking-wider">📣 Desafio para você</p>
+              <p className="text-dice-400 text-xs font-semibold uppercase tracking-wider">{t('📣 Desafio para você')}</p>
               <p className="text-ink font-semibold">{tituloDesafio(d)}</p>
               {d.motivo && <p className="text-ink-dim text-sm">{d.motivo}</p>}
-              {d.meta != null && <p className="text-ink-dim text-xs">Meta: {d.meta} pontos · uma tentativa</p>}
+              {d.meta != null && <p className="text-ink-dim text-xs">{t('Meta: {meta} pontos · uma tentativa', { meta: Number(d.meta) })}</p>}
               <div className="flex gap-2 mt-2">
                 <button onClick={() => setJogando(d)} className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-accent-600 hover:bg-accent-500 text-sobre-acento">
-                  Jogar agora
+                  {t('Jogar agora')}
                 </button>
                 <button onClick={() => setAdiados(a => [...a, d.id])} className="px-3 py-1.5 rounded-lg text-sm bg-hover text-ink hover:bg-border">
-                  Depois
+                  {t('Depois')}
                 </button>
               </div>
             </div>
@@ -57,7 +58,7 @@ function AvisosDaMesa({ mesaId, meuId }) {
           dificuldade={jogando.dificuldade}
           config={jogando.config}
           semente={jogando.semente}
-          titulo={jogando.motivo || 'Desafio'}
+          titulo={jogando.motivo || t('Desafio')}
           onResultado={async resultado => {
             await registrarResultado({ mesaId, registrarEvento, tipo: jogando.tipo, dificuldade: jogando.dificuldade, resultado, desafioId: jogando.id })
             marcarRespondido(jogando.id)

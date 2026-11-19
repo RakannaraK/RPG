@@ -8,6 +8,7 @@ import {
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
 import Icone from '../ui/Icone'
+import { t } from '../../i18n'
 
 const CAMPO = 'px-2.5 py-1.5 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none'
 
@@ -26,17 +27,17 @@ function FormMacro({ inicial, contexto, rotuloBotao, onSalvar, onCancelar }) {
 
   return (
     <form onSubmit={salvar} className="flex flex-wrap items-start gap-2">
-      <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Nome (ex.: Ataque)" aria-label="Nome da macro" className={`${CAMPO} w-40`} />
+      <input value={nome} onChange={e => setNome(e.target.value)} placeholder={t('Nome (ex.: Ataque)')} aria-label={t('Nome da macro')} className={`${CAMPO} w-40`} />
       <div className="flex-1 min-w-[12rem]">
-        <input value={notacao} onChange={e => setNotacao(e.target.value)} placeholder="Rolagem (ex.: 1d20+mod(forca))" aria-label="Rolagem da macro" className={`${CAMPO} w-full font-mono`} />
+        <input value={notacao} onChange={e => setNotacao(e.target.value)} placeholder={t('Rolagem (ex.: 1d20+mod(forca))')} aria-label={t('Rolagem da macro')} className={`${CAMPO} w-full font-mono`} />
         {checagem && (
           <p className={`mt-1 text-xs ${checagem.ok ? 'text-ink-dim' : 'text-harm'}`}>
-            {checagem.ok ? <>vai rolar <span className="font-mono text-ink">{checagem.notacao}</span></> : checagem.erro}
+            {checagem.ok ? <>{t('vai rolar')} <span className="font-mono text-ink">{checagem.notacao}</span></> : checagem.erro}
           </p>
         )}
       </div>
       <Botao type="submit" variante="primario" tamanho="sm" disabled={!checagem?.ok}>{rotuloBotao}</Botao>
-      {onCancelar && <Botao variante="fantasma" tamanho="sm" onClick={onCancelar}>Cancelar</Botao>}
+      {onCancelar && <Botao variante="fantasma" tamanho="sm" onClick={onCancelar}>{t('Cancelar')}</Botao>}
     </form>
   )
 }
@@ -63,7 +64,7 @@ export default function BarraMacros({ ficha, fichaId, mesaId, podeEditar, contex
 
   async function rolar(macro) {
     const checagem = validarMacro(macro, contexto)
-    if (!checagem.ok) { setErro(`${macro.nome}: ${checagem.erro}`); return }
+    if (!checagem.ok) { setErro(t('{nome}: {erro}', { nome: macro.nome, erro: checagem.erro })); return }
     setErro('')
     tocarSomDado(preferencias.dado_skin, {
       ativo: preferencias.som_ativo, volume: preferencias.som_volume,
@@ -75,7 +76,7 @@ export default function BarraMacros({ ficha, fichaId, mesaId, podeEditar, contex
       setUltimo(u => ({ ...u, [macro.id]: r?.total }))
       setTimeout(() => setUltimo(u => { const n = { ...u }; delete n[macro.id]; return n }), 5000)
     } catch (e) {
-      setErro(e?.message || 'Não foi possível rolar.')
+      setErro(e?.message || t('Não foi possível rolar.'))
     } finally {
       setRolando(null)
     }
@@ -89,19 +90,19 @@ export default function BarraMacros({ ficha, fichaId, mesaId, podeEditar, contex
       await onSalvar(lista)
     } catch (e) {
       setLocal(antes) // volta ao que estava se o banco recusar
-      setErro(e?.message || 'Não foi possível salvar.')
+      setErro(e?.message || t('Não foi possível salvar.'))
     }
   }
 
   return (
-    <section className="space-y-3 print:hidden" aria-label="Macros de rolagem">
+    <section className="space-y-3 print:hidden" aria-label={t('Macros de rolagem')}>
       <div className="flex items-center gap-2">
         <Ilustra nome="d20" tamanho={20} />
-        <h2 className="font-sora text-ink font-semibold">Macros</h2>
-        {!editando && macros.length > 0 && <span className="text-ink-dim text-xs">clique para rolar · o resultado vai para o feed</span>}
+        <h2 className="font-sora text-ink font-semibold">{t('Macros')}</h2>
+        {!editando && macros.length > 0 && <span className="text-ink-dim text-xs">{t('clique para rolar · o resultado vai para o feed')}</span>}
         {podeEditar && (
           <Botao variante="fantasma" tamanho="sm" className="ml-auto" onClick={() => { setEditando(v => !v); setEmEdicao(null) }}>
-            {editando ? 'Pronto' : macros.length ? 'Editar' : '+ Nova macro'}
+            {editando ? t('Pronto') : macros.length ? t('Editar') : t('+ Nova macro')}
           </Botao>
         )}
       </div>
@@ -124,7 +125,7 @@ export default function BarraMacros({ ficha, fichaId, mesaId, podeEditar, contex
                     <Icone nome="dado" tamanho={16} className="text-dice-400 shrink-0 macro-dado" />
                     <span className="text-ink text-sm font-semibold truncate">{m.nome}</span>
                   </span>
-                  <span className="block font-mono text-xs text-ink-dim mt-1 truncate">{checagem.ok ? checagem.notacao : 'não dá para rolar'}</span>
+                  <span className="block font-mono text-xs text-ink-dim mt-1 truncate">{checagem.ok ? checagem.notacao : t('não dá para rolar')}</span>
                   {resultado !== undefined && (
                     <span key={resultado} className="macro-resultado absolute -top-2 -right-2 min-w-[2rem] h-8 px-2 rounded-full bg-dice-500 text-bg font-mono font-bold text-sm inline-flex items-center justify-center shadow-nivel-2" aria-live="polite">
                       {resultado}
@@ -136,7 +137,7 @@ export default function BarraMacros({ ficha, fichaId, mesaId, podeEditar, contex
           </div>
         ) : (
           <p className="text-ink-dim text-xs">
-            Salve as rolagens que você usa sempre e role com um clique. A rolagem pode usar a ficha:
+            {t('Salve as rolagens que você usa sempre e role com um clique. A rolagem pode usar a ficha:')}
             {' '}<span className="font-mono text-ink">1d20+mod(forca)</span>, <span className="font-mono text-ink">2d6+nivel</span>.
           </p>
         )
@@ -148,7 +149,7 @@ export default function BarraMacros({ ficha, fichaId, mesaId, podeEditar, contex
             <div key={m.id} className="border-t border-border/60 pt-3 first:border-t-0 first:pt-0">
               {emEdicao === m.id ? (
                 <FormMacro
-                  inicial={m} contexto={contexto} rotuloBotao="Salvar"
+                  inicial={m} contexto={contexto} rotuloBotao={t('Salvar')}
                   onSalvar={v => { salvar(editarMacro(macros, m.id, v)); setEmEdicao(null) }}
                   onCancelar={() => setEmEdicao(null)}
                 />
@@ -157,17 +158,17 @@ export default function BarraMacros({ ficha, fichaId, mesaId, podeEditar, contex
                   <span className="text-ink text-sm font-medium">{m.nome}</span>
                   <span className="text-ink-dim text-xs font-mono">{m.notacao}</span>
                   <div className="ml-auto flex items-center gap-1">
-                    <Botao variante="fantasma" tamanho="icone" aria-label={`Subir ${m.nome}`} disabled={i === 0} onClick={() => salvar(moverMacro(macros, m.id, -1))}>▲</Botao>
-                    <Botao variante="fantasma" tamanho="icone" aria-label={`Descer ${m.nome}`} disabled={i === macros.length - 1} onClick={() => salvar(moverMacro(macros, m.id, 1))}>▼</Botao>
-                    <Botao variante="fantasma" tamanho="sm" onClick={() => setEmEdicao(m.id)}>Editar</Botao>
-                    <Botao variante="fantasma" tamanho="sm" className="text-red-300 hover:text-white hover:bg-red-950/40" onClick={() => salvar(removerMacro(macros, m.id))}>Remover</Botao>
+                    <Botao variante="fantasma" tamanho="icone" aria-label={t('Subir {nome}', { nome: m.nome })} disabled={i === 0} onClick={() => salvar(moverMacro(macros, m.id, -1))}>▲</Botao>
+                    <Botao variante="fantasma" tamanho="icone" aria-label={t('Descer {nome}', { nome: m.nome })} disabled={i === macros.length - 1} onClick={() => salvar(moverMacro(macros, m.id, 1))}>▼</Botao>
+                    <Botao variante="fantasma" tamanho="sm" onClick={() => setEmEdicao(m.id)}>{t('Editar')}</Botao>
+                    <Botao variante="fantasma" tamanho="sm" className="text-red-300 hover:text-white hover:bg-red-950/40" onClick={() => salvar(removerMacro(macros, m.id))}>{t('Remover')}</Botao>
                   </div>
                 </div>
               )}
             </div>
           ))}
           <div className="border-t border-border/60 pt-3">
-            <FormMacro contexto={contexto} rotuloBotao="+ Adicionar" onSalvar={v => salvar(adicionarMacro(macros, v))} />
+            <FormMacro contexto={contexto} rotuloBotao={t('+ Adicionar')} onSalvar={v => salvar(adicionarMacro(macros, v))} />
           </div>
         </div>
       )}

@@ -1,6 +1,7 @@
+import { t } from '../i18n'
 // Fase 31.2 — invocar criatura do bestiário no combate (puro).
 
-const RE_DEFESA = /(defesa|armadura|\bca\b|\bcd\b)/i
+import { ehCampoDefesa } from './defesaEngine'
 
 /**
  * Nomes numerados que não colidem com quem já está no combate:
@@ -8,7 +9,7 @@ const RE_DEFESA = /(defesa|armadura|\bca\b|\bcd\b)/i
  * Quantidade 1 e nome livre → sem número.
  */
 export function nomesDaInvocacao(nome, quantidade, nomesExistentes = []) {
-  const base = String(nome || '').trim() || 'Criatura'
+  const base = String(nome || '').trim() || t('Criatura')
   const qtd = Math.max(1, Math.trunc(Number(quantidade) || 1))
   const usados = new Set(nomesExistentes.map(n => String(n).trim()))
   if (qtd === 1 && !usados.has(base)) return [base]
@@ -34,10 +35,10 @@ export function defesaSugerida(valoresCombate = [], camposCombate = []) {
     const n = Number(bruto)
     return Number.isFinite(n) ? n : null
   }
-  const candidatos = camposCombate.filter(c => RE_DEFESA.test(c.nome || c.rotulo || ''))
+  const candidatos = camposCombate.filter(c => ehCampoDefesa(c.nome || c.rotulo))
   for (const c of [...candidatos, ...camposCombate]) {
     const valor = valorDe(c.id)
-    if (valor != null) return { campoId: c.id, nome: c.nome || c.rotulo || 'Defesa', valor }
+    if (valor != null) return { campoId: c.id, nome: c.nome || c.rotulo || t('Defesa'), valor }
   }
   return null
 }

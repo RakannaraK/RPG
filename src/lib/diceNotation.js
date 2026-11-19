@@ -1,5 +1,6 @@
 import { rolarDados } from './dice.js'
 import { avaliarFormula } from './formulaEngine.js'
+import { t } from '../i18n'
 
 // Valida a notação completa: um token inicial + zero ou mais tokens com sinal
 // Token: grupo de dados (ex: 2d6kh3) ou número plano (ex: 3)
@@ -72,23 +73,23 @@ export function resolverNotacaoFormula(notacao, contexto = {}) {
   const substituicoes = []
   const partes = [] // { sinal, texto }
 
-  for (const t of dividirTermos(notacao.trim())) {
+  for (const tm of dividirTermos(notacao.trim())) {
     let m
-    if ((m = t.texto.match(RE_DADO_PAREN))) {
+    if ((m = tm.texto.match(RE_DADO_PAREN))) {
       const formula = m[1].trim()
       const lados = m[2]
       const keep = m[3] || ''
       const qtd = Math.max(0, Math.floor(avaliarFormula(formula, ctx)))
       substituicoes.push({ expr: formula, valor: qtd, tipo: 'quantidade' })
-      if (qtd > 0) partes.push({ sinal: t.sinal, texto: `${qtd}d${lados}${keep}` })
+      if (qtd > 0) partes.push({ sinal: tm.sinal, texto: `${qtd}d${lados}${keep}` })
       // qtd 0 → grupo ignorado
-    } else if (RE_DADO_NUM.test(t.texto) || RE_NUM.test(t.texto)) {
-      partes.push({ sinal: t.sinal, texto: t.texto })
+    } else if (RE_DADO_NUM.test(tm.texto) || RE_NUM.test(tm.texto)) {
+      partes.push({ sinal: tm.sinal, texto: tm.texto })
     } else {
       // termo é uma fórmula (modificador plano)
-      const n = Math.floor(avaliarFormula(t.texto, ctx))
-      substituicoes.push({ expr: t.texto, valor: n, tipo: 'modificador' })
-      const net = (t.sinal === '-' ? -1 : 1) * n
+      const n = Math.floor(avaliarFormula(tm.texto, ctx))
+      substituicoes.push({ expr: tm.texto, valor: n, tipo: 'modificador' })
+      const net = (tm.sinal === '-' ? -1 : 1) * n
       partes.push({ sinal: net < 0 ? '-' : '+', texto: String(Math.abs(net)) })
     }
   }
@@ -117,7 +118,7 @@ export function validarNotacao(notacao) {
  */
 export function parseNotacao(notacao) {
   if (!validarNotacao(notacao)) {
-    throw new Error(`Notação inválida: "${notacao}"`)
+    throw new Error(t('Notação inválida: "{notacao}"', { notacao }))
   }
 
   const n = notacao.trim().toLowerCase()
@@ -139,11 +140,11 @@ export function parseNotacao(notacao) {
       const keepTipo = m[3] || null
       const keepN = m[4] ? parseInt(m[4]) : null
 
-      if (qtd < 1) throw new Error(`Quantidade de dados inválida: ${qtd}`)
-      if (lados < 2) throw new Error(`Número de lados inválido: ${lados}`)
+      if (qtd < 1) throw new Error(t('Quantidade de dados inválida: {qtd}', { qtd }))
+      if (lados < 2) throw new Error(t('Número de lados inválido: {lados}', { lados }))
       if (keepN !== null) {
         if (keepN <= 0 || keepN > qtd)
-          throw new Error(`kh/kl inválido: não é possível manter ${keepN} de ${qtd} dados`)
+          throw new Error(t('kh/kl inválido: não é possível manter {keepN} de {qtd} dados', { keepN, qtd }))
       }
 
       grupos.push({
@@ -158,7 +159,7 @@ export function parseNotacao(notacao) {
   }
 
   if (grupos.length === 0) {
-    throw new Error('A notação deve conter pelo menos um grupo de dados')
+    throw new Error(t('A notação deve conter pelo menos um grupo de dados'))
   }
 
   return { grupos, modificador, notacaoNormalizada: n }

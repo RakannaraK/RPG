@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { normalizarEtiquetas, validarPublicacao } from '../lib/comunidade'
+import { t } from '../i18n'
 
 const tabelaAusente = e => e?.code === '42P01' || e?.code === 'PGRST205'
 const LIMITE = 100 // ponytail: a vitrine mostra as 100 mais recentes; paginar quando encher
@@ -25,7 +26,7 @@ export function useComunidade() {
       meuId ? supabase.from('curtidas_publicacao').select('publicacao_id').eq('usuario_id', meuId) : Promise.resolve({ data: [] }),
     ])
     setIndisponivel(tabelaAusente(pubs.error))
-    setPublicacoes((pubs.data || []).map(p => ({ ...p, autor: p.autor?.username || 'alguém' })))
+    setPublicacoes((pubs.data || []).map(p => ({ ...p, autor: p.autor?.username || t('alguém') })))
     setMinhasCurtidas((curtidas.data || []).map(c => c.publicacao_id))
     setCarregando(false)
   }, [meuId])
@@ -46,8 +47,8 @@ export function useComunidade() {
     if (!checagem.ok) throw new Error(checagem.erro)
     if (checagem.conteudo) dados.conteudo = checagem.conteudo
     const { data, error } = await supabase.from('publicacoes').insert(dados).select('*').single()
-    if (error) throw new Error(tabelaAusente(error) ? 'Comunidade ainda não ativada neste banco (sql/fase36_comunidade.sql).' : error.message)
-    setPublicacoes(prev => [{ ...data, autor: 'você' }, ...prev])
+    if (error) throw new Error(tabelaAusente(error) ? t('Comunidade ainda não ativada neste banco (sql/fase36_comunidade.sql).') : error.message)
+    setPublicacoes(prev => [{ ...data, autor: t('você') }, ...prev])
     return data
   }
 
@@ -63,7 +64,7 @@ export function useComunidade() {
 
   async function denunciar(publicacaoId, motivo) {
     const { error } = await supabase.from('denuncias_publicacao').insert({ publicacao_id: publicacaoId, motivo: motivo?.trim() || null })
-    if (error) throw new Error(error.code === '23505' ? 'Você já denunciou esta publicação.' : error.message)
+    if (error) throw new Error(error.code === '23505' ? t('Você já denunciou esta publicação.') : error.message)
     await carregar() // pode ter sido escondida na hora (3 denúncias)
   }
 

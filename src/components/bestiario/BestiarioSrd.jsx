@@ -6,6 +6,7 @@ import { ATRIBUICAO_SRD, blocoDeTexto, buscarCriaturas, criaturaParaArquivo } fr
 import Botao from '../ui/Botao'
 import Icone from '../ui/Icone'
 import Esqueleto from '../ui/Esqueleto'
+import { t, tn } from '../../i18n'
 
 
 /**
@@ -48,11 +49,11 @@ export default function BestiarioSrd({ mesaId, meuId, sistemaId, onImportada }) 
   }
 
   return (
-    <section className="space-y-4" aria-label="Biblioteca SRD 5e">
+    <section className="space-y-4" aria-label={t('Biblioteca SRD 5e')}>
       <label className="relative block">
-        <span className="sr-only">Buscar criatura do SRD</span>
+        <span className="sr-only">{t('Buscar criatura do SRD')}</span>
         <Icone nome="busca" tamanho={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-dim pointer-events-none" />
-        <input value={busca} onChange={e => setBusca(e.target.value)} placeholder={`Buscar entre ${lista ? lista.length : '…'} criaturas por nome, tipo ou ND (ex.: nd 1/2)`} className="campo w-full !pl-9" />
+        <input value={busca} onChange={e => setBusca(e.target.value)} placeholder={t('Buscar entre {n} criaturas por nome, tipo ou ND (ex.: nd 1/2)', { n: lista ? lista.length : '…' })} className="campo w-full !pl-9" />
       </label>
 
       <div className="grid gap-4 md:grid-cols-[17rem_minmax(0,1fr)] items-start">
@@ -65,33 +66,33 @@ export default function BestiarioSrd({ mesaId, meuId, sistemaId, onImportada }) 
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-left text-sm transition-colors duration-rapida ${c.id === escolhidaId ? 'selecionado text-ink' : 'border-transparent text-ink hover:bg-hover/70'}`}
               >
                 <span className="flex-1 min-w-0 truncate">{c.nome}</span>
-                <span className="text-xs text-ink-dim shrink-0 tabular-nums">ND {c.nd}</span>
+                <span className="text-xs text-ink-dim shrink-0 tabular-nums">{t('ND {nd}', { nd: c.nd })}</span>
               </button>
             </li>
           ))}
-          {lista && !visiveis.length && <li className="text-ink-dim text-sm px-2">Nada encontrado.</li>}
+          {lista && !visiveis.length && <li className="text-ink-dim text-sm px-2">{t('Nada encontrado.')}</li>}
         </ul>
 
         {escolhida ? (
           <div key={escolhida.id} className="entra-aba space-y-3 min-w-0 rounded-xl bg-void/60 border border-border p-4">
-            <Botao variante="fantasma" tamanho="sm" className="md:hidden" onClick={() => setEscolhidaId(null)}><Icone nome="seta-esq" tamanho={14} /> Lista</Botao>
+            <Botao variante="fantasma" tamanho="sm" className="md:hidden" onClick={() => setEscolhidaId(null)}><Icone nome="seta-esq" tamanho={14} /> {t('Lista')}</Botao>
             <div className="flex items-start gap-3">
               <h3 className="flex-1 font-sora text-ink text-xl font-semibold">{escolhida.nome}</h3>
-              <span className="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full border border-border text-ink">ND {escolhida.nd}</span>
+              <span className="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full border border-border text-ink">{t('ND {nd}', { nd: escolhida.nd })}</span>
             </div>
             <p className="text-ink text-sm whitespace-pre-wrap leading-relaxed">{blocoDeTexto(escolhida)}</p>
             {avisos.length > 0 && (
               <details className="text-xs text-ink-dim">
-                <summary className="cursor-pointer">O sistema desta mesa não tem {avisos.length} {avisos.length === 1 ? 'coisa' : 'coisas'} daqui (ficam só no texto)</summary>
+                <summary className="cursor-pointer">{tn(avisos.length, 'O sistema desta mesa não tem {n} coisa daqui (ficam só no texto)', 'O sistema desta mesa não tem {n} coisas daqui (ficam só no texto)')}</summary>
                 <ul className="list-disc pl-5 mt-1">{avisos.map(a => <li key={a}>{a}</li>)}</ul>
               </details>
             )}
-            <Botao variante="primario" onClick={adicionar} disabled={ocupado}><Icone nome="mais" tamanho={16} /> {ocupado ? 'Adicionando…' : 'Adicionar ao bestiário da mesa'}</Botao>
+            <Botao variante="primario" onClick={adicionar} disabled={ocupado}><Icone nome="mais" tamanho={16} /> {ocupado ? t('Adicionando…') : t('Adicionar ao bestiário da mesa')}</Botao>
             {erro && <p className="aviso-erro" role="alert">{erro}</p>}
           </div>
         ) : (
           <div className="rounded-xl border border-dashed border-border p-6 text-center text-ink-dim text-sm">
-            Escolha uma criatura para ver a ficha. Ela entra no bestiário como privada: os jogadores não veem.
+            {t('Escolha uma criatura para ver a ficha. Ela entra no bestiário como privada: os jogadores não veem.')}
             {erro && <p className="aviso-erro mt-3" role="alert">{erro}</p>}
           </div>
         )}

@@ -10,6 +10,7 @@ import {
 import { CustoEditor, EscalaEditor } from './CustoEditor'
 import FormulaInput from './FormulaInput'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
@@ -50,7 +51,7 @@ function PoderForm({ inicial, pools, classes, linhas = [], onSalvar, onCancelar 
     try {
       await onSalvar(f)
     } catch (e) {
-      setErro(e.message || 'Erro ao salvar poder.')
+      setErro(e.message || t('Erro ao salvar poder.'))
     } finally {
       setSalvando(false)
     }
@@ -60,39 +61,39 @@ function PoderForm({ inicial, pools, classes, linhas = [], onSalvar, onCancelar 
     <div className="bg-void border border-border rounded-lg p-3 space-y-2.5">
       <div className="flex flex-wrap gap-2">
         <input type="text" value={f.nome} onChange={e => set({ nome: e.target.value })}
-          placeholder="Nome do poder" className={`${INP} flex-1 min-w-[10rem]`} />
+          placeholder={t('Nome do poder')} className={`${INP} flex-1 min-w-[10rem]`} />
         <input type="text" value={f.categoria} onChange={e => set({ categoria: e.target.value })}
-          placeholder="Categoria (Magia, Técnica...)" className={`${INP} w-44`} />
+          placeholder={t('Categoria (Magia, Técnica...)')} className={`${INP} w-44`} />
         <input type="number" min={0} value={f.circulo} onChange={e => set({ circulo: e.target.value })}
-          placeholder="Círc." className={`${INP} w-16 text-center`} title="Círculo (vazio = sem círculo)" />
+          placeholder={t('Círc.')} className={`${INP} w-16 text-center`} title={t('Círculo (vazio = sem círculo)')} />
       </div>
 
       <textarea rows={2} value={f.descricao} onChange={e => set({ descricao: e.target.value })}
-        placeholder="Descrição" className={`${INP} w-full`} />
+        placeholder={t('Descrição')} className={`${INP} w-full`} />
 
       <div className="flex flex-wrap gap-2">
         <input type="text" value={f.acao} onChange={e => set({ acao: e.target.value })}
-          placeholder="Ação (1 ação, ação bônus...)" className={`${INP} flex-1 min-w-[8rem]`} />
+          placeholder={t('Ação (1 ação, ação bônus...)')} className={`${INP} flex-1 min-w-[8rem]`} />
         <input type="text" value={f.alcance} onChange={e => set({ alcance: e.target.value })}
-          placeholder="Alcance" className={`${INP} w-28`} />
+          placeholder={t('Alcance')} className={`${INP} w-28`} />
         <input type="text" value={f.duracao} onChange={e => set({ duracao: e.target.value })}
-          placeholder="Duração" className={`${INP} w-28`} />
+          placeholder={t('Duração')} className={`${INP} w-28`} />
       </div>
 
       {/* Custo */}
       <div className="border-t border-purple-900/50 pt-2">
-        <p className="text-purple-400 text-xs mb-1.5">Custo ao usar</p>
+        <p className="text-purple-400 text-xs mb-1.5">{t('Custo ao usar')}</p>
         <CustoEditor custo={f.custo} pools={pools} onChange={custo => set({ custo })} />
       </div>
 
       {/* Efeito */}
       <div className="border-t border-purple-900/50 pt-2 space-y-1.5">
-        <p className="text-purple-400 text-xs">Efeito (opcional)</p>
+        <p className="text-purple-400 text-xs">{t('Efeito (opcional)')}</p>
         <div className="flex flex-wrap gap-2 items-center">
           <select value={f.efeito_tipo} onChange={e => set({ efeito_tipo: e.target.value })} className={INP}>
-            <option value="">Só texto</option>
-            <option value="dano">Dano</option>
-            <option value="cura">Cura</option>
+            <option value="">{t('Só texto')}</option>
+            <option value="dano">{t('Dano')}</option>
+            <option value="cura">{t('Cura')}</option>
           </select>
           <input type="text" value={f.efeito_notacao} onChange={e => set({ efeito_notacao: e.target.value })}
             placeholder="2d6  ou  1d8 + mod(carisma)" spellCheck={false}
@@ -103,15 +104,14 @@ function PoderForm({ inicial, pools, classes, linhas = [], onSalvar, onCancelar 
       {/* Escala por círculo */}
       <div className="border-t border-purple-900/50 pt-2">
         <p className="text-purple-400 text-xs mb-1.5">
-          Escala por círculo — a taxa <span className="text-purple-300">acumula</span>: um poder de 1º
-          lançado no 3º recebe 2× o extra.
+          {t('Escala por círculo — a taxa')} <span className="text-purple-300">{t('acumula')}</span>{t(': um poder de 1º lançado no 3º recebe 2× o extra.')}
         </p>
         <EscalaEditor escala={f.escala_circulo} onChange={escala_circulo => set({ escala_circulo })} />
       </div>
 
       {/* CD */}
       <div className="border-t border-purple-900/50 pt-2">
-        <p className="text-purple-400 text-xs mb-1">CD deste poder (vazio = herda a do sistema)</p>
+        <p className="text-purple-400 text-xs mb-1">{t('CD deste poder (vazio = herda a do sistema)')}</p>
         <FormulaInput
           value={f.cd_formula}
           onChange={cd_formula => set({ cd_formula })}
@@ -123,35 +123,35 @@ function PoderForm({ inicial, pools, classes, linhas = [], onSalvar, onCancelar 
       {/* Vínculo e requisito */}
       <div className="flex flex-wrap gap-2 items-center border-t border-purple-900/50 pt-2">
         <select value={f.classe_id} onChange={e => set({ classe_id: e.target.value })} className={INP}>
-          <option value="">Sem classe</option>
+          <option value="">{t('Sem classe')}</option>
           {classes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
         </select>
-        <span className="text-accent-300 text-xs">nv mín.</span>
+        <span className="text-accent-300 text-xs">{t('nv mín.')}</span>
         <input type="number" min={1} value={f.nivel_minimo} onChange={e => set({ nivel_minimo: e.target.value })}
           placeholder="—" className={`${INP} w-14 text-center`} />
         <select value={f.linha_id} onChange={e => set({ linha_id: e.target.value })} className={INP}>
-          <option value="">— sem linha —</option>
+          <option value="">{t('— sem linha —')}</option>
           {linhas.map(l => <option key={l.id} value={l.id}>{l.nome}</option>)}
         </select>
         {f.linha_id && (
           <>
-            <span className="text-accent-300 text-xs">nv na linha</span>
+            <span className="text-accent-300 text-xs">{t('nv na linha')}</span>
             <input type="number" min={1} value={f.nivel_linha} onChange={e => set({ nivel_linha: e.target.value })}
               placeholder="—" className={`${INP} w-14 text-center`} />
           </>
         )}
         <input type="text" value={f.tags} onChange={e => set({ tags: e.target.value })}
-          placeholder="tags: cura, área" className={`${INP} flex-1 min-w-[8rem]`} />
+          placeholder={t('tags: cura, área')} className={`${INP} flex-1 min-w-[8rem]`} />
       </div>
 
       {erro && <p className="text-red-400 text-xs">{erro}</p>}
 
       <div className="flex gap-2">
         <Botao variante="primario" tamanho="sm" onClick={salvar} disabled={salvando}>
-          {salvando ? '...' : 'Salvar'}
+          {salvando ? '...' : t('Salvar')}
         </Botao>
         <Botao variante="secundario" tamanho="sm" onClick={onCancelar}>
-          Cancelar
+          {t('Cancelar')}
         </Botao>
       </div>
     </div>
@@ -186,38 +186,38 @@ export default function PoderesEditor({ sistemaId }) {
   return (
     <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <p className="text-purple-200 text-sm font-semibold">Poderes</p>
+        <p className="text-purple-200 text-sm font-semibold">{t('Poderes')}</p>
         <span className="text-accent-300 text-xs">
-          {visiveis.length} de {poderes.length}
+          {t('{a} de {b}', { a: visiveis.length, b: poderes.length })}
         </span>
       </div>
       <p className="text-accent-300 text-xs">
-        Cartas de poder do sistema — "Magia", "Técnica", "Oração": a categoria é sua.
-        O custo pode ser em <span className="text-purple-300">recurso</span> (pool) e/ou em{' '}
-        <span className="text-purple-300">slot de círculo</span>.
+        {t('Cartas de poder do sistema — "Magia", "Técnica", "Oração": a categoria é sua.')}
+        {t('O custo pode ser em')} <span className="text-purple-300">{t('recurso')}</span> {t('(pool) e/ou em')}{' '}
+        <span className="text-purple-300">{t('slot de círculo')}</span>.
       </p>
 
       {/* Busca e filtros */}
       <div className="flex flex-wrap gap-2 items-center">
         <input type="text" value={filtros.busca} onChange={e => setF({ busca: e.target.value })}
-          placeholder="Buscar por nome ou descrição" className={`${INP} flex-1 min-w-[12rem]`} />
+          placeholder={t('Buscar por nome ou descrição')} className={`${INP} flex-1 min-w-[12rem]`} />
         <select value={filtros.circulo} onChange={e => setF({ circulo: e.target.value === '' ? '' : Number(e.target.value) })} className={INP}>
-          <option value="">Todo círculo</option>
-          <option value={-1}>Sem círculo</option>
-          {opcoes.circulos.map(c => <option key={c} value={c}>{c}º círculo</option>)}
+          <option value="">{t('Todo círculo')}</option>
+          <option value={-1}>{t('Sem círculo')}</option>
+          {opcoes.circulos.map(c => <option key={c} value={c}>{t('{c}º círculo', { c })}</option>)}
         </select>
         <select value={filtros.categoria} onChange={e => setF({ categoria: e.target.value })} className={INP}>
-          <option value="">Toda categoria</option>
+          <option value="">{t('Toda categoria')}</option>
           {opcoes.categorias.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <select value={filtros.classeId} onChange={e => setF({ classeId: e.target.value })} className={INP}>
-          <option value="">Toda classe</option>
+          <option value="">{t('Toda classe')}</option>
           {classes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
         </select>
         {opcoes.tags.length > 0 && (
           <select value={filtros.tag} onChange={e => setF({ tag: e.target.value })} className={INP}>
-            <option value="">Toda tag</option>
-            {opcoes.tags.map(t => <option key={t} value={t}>{t}</option>)}
+            <option value="">{t('Toda tag')}</option>
+            {opcoes.tags.map(tag => <option key={tag} value={tag}>{tag}</option>)}
           </select>
         )}
       </div>
@@ -244,7 +244,7 @@ export default function PoderesEditor({ sistemaId }) {
                 <span className="min-w-0 flex-1">
                   <span className="text-white text-xs font-medium">{p.nome}</span>
                   {p.categoria && <span className="text-accent-300 text-xs ml-1.5">{p.categoria}</span>}
-                  {p.nivel_minimo != null && <span className="text-accent-300 text-xs ml-1.5">nv {p.nivel_minimo}+</span>}
+                  {p.nivel_minimo != null && <span className="text-accent-300 text-xs ml-1.5">{t('nv {n}+', { n: String(p.nivel_minimo) })}</span>}
                   <span className="block text-accent-300 text-xs">
                     {descreverCusto(p.custo, poolsPorId)}
                     {p.efeito_notacao && <span className="font-mono text-purple-400"> · {p.efeito_notacao}{p.efeito_tipo ? ` (${p.efeito_tipo})` : ''}</span>}
@@ -254,17 +254,17 @@ export default function PoderesEditor({ sistemaId }) {
                   )}
                 </span>
                 <button onClick={() => { setEditando(p.id); setCriando(false) }}
-                  className="text-accent-300 hover:text-white text-xs shrink-0">editar</button>
+                  className="text-accent-300 hover:text-white text-xs shrink-0">{t('editar')}</button>
                 <button onClick={() => removerPoder(p.id).catch(e => setErro(e.message))}
                   className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors shrink-0"
-                  title="Remover poder">×</button>
+                  title={t('Remover poder')}>×</button>
               </div>
             </div>
           )
         ))}
         {visiveis.length === 0 && (
           <p className="text-accent-300 text-xs">
-            {poderes.length === 0 ? 'Nenhum poder cadastrado ainda.' : 'Nenhum poder bate com o filtro.'}
+            {poderes.length === 0 ? t('Nenhum poder cadastrado ainda.') : t('Nenhum poder bate com o filtro.')}
           </p>
         )}
       </div>
@@ -281,7 +281,7 @@ export default function PoderesEditor({ sistemaId }) {
       ) : (
         <button onClick={() => { setCriando(true); setEditando(null) }}
           className="text-xs px-3 py-1.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
-          + Novo poder
+          {t('+ Novo poder')}
         </button>
       )}
 

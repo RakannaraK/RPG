@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRolagem } from '../../hooks/useRolagem'
 import { descreverResultado } from '../../lib/resolutionEngine'
+import { t } from '../../i18n'
 
 /**
  * Fase 23.4 — rerolagem gastando recurso (Força de Vontade do WoD). O jogador
@@ -22,7 +23,7 @@ export default function RerolagemBox({ resultado, rerolagem, mesaId, fichaId, se
   const custo = Math.max(0, Number(rerolagem.config.custo) || 1)
   const maxDados = Math.max(1, Number(rerolagem.config.max_dados) || 3)
   const semSaldo = (rerolagem.atual ?? 0) < custo
-  const nomePool = rerolagem.pool?.nome || 'recurso'
+  const nomePool = rerolagem.pool?.nome || t('recurso')
   const parada = params.dados
 
   function toggle(i) {
@@ -42,7 +43,7 @@ export default function RerolagemBox({ resultado, rerolagem, mesaId, fichaId, se
       // DEBITA ANTES de rerolar (contrato 23.4)
       await rerolagem.gastar(custo)
     } catch (e) {
-      setErro(e.message || 'Não foi possível gastar o recurso.')
+      setErro(e.message || t('Não foi possível gastar o recurso.'))
       return
     }
     try {
@@ -50,7 +51,7 @@ export default function RerolagemBox({ resultado, rerolagem, mesaId, fichaId, se
       setUsado(true)
       onRerolado?.(novo)
     } catch (e) {
-      setErro(e.message || 'Erro ao rerolar.')
+      setErro(e.message || t('Erro ao rerolar.'))
     }
   }
 
@@ -59,8 +60,8 @@ export default function RerolagemBox({ resultado, rerolagem, mesaId, fichaId, se
   return (
     <div className="mt-2 rounded-lg border border-temp/50 bg-temp/30 p-2 space-y-2">
       <p className="text-temp text-xs">
-        Rerolar até {maxDados} dado(s) gastando <span className="font-semibold">{custo} {nomePool}</span>
-        {rerolagem.atual != null && <span className="text-temp"> (tem {rerolagem.atual})</span>} — clique nos dados:
+        {t('Rerolar até {n} dado(s) gastando', { n: maxDados })} <span className="font-semibold">{custo} {nomePool}</span>
+        {rerolagem.atual != null && <span className="text-temp"> {t('(tem {n})', { n: Number(rerolagem.atual) })}</span>} {t('— clique nos dados:')}
       </p>
       <div className="flex flex-wrap gap-1.5">
         {parada.map((v, i) => {
@@ -73,7 +74,7 @@ export default function RerolagemBox({ resultado, rerolagem, mesaId, fichaId, se
                   : pontuou ? 'bg-ok/60 border-ok/50 text-green-200'
                   : 'bg-raised border-border text-ink-dim hover:border-temp'
               }`}
-              title={pontuou ? 'sucesso' : 'falha'}>
+              title={pontuou ? t('sucesso') : t('falha')}>
               {v}
             </button>
           )
@@ -82,9 +83,9 @@ export default function RerolagemBox({ resultado, rerolagem, mesaId, fichaId, se
       <div className="flex items-center gap-2">
         <button onClick={confirmar} disabled={sel.size === 0 || semSaldo || rolando}
           className="px-2.5 py-1 text-xs bg-temp/80 hover:bg-temp disabled:opacity-40 text-ink rounded-lg transition-colors">
-          {rolando ? '🎲…' : `Rerolar ${sel.size || ''}`}
+          {rolando ? '🎲…' : `${t('Rerolar')} ${sel.size || ''}`}
         </button>
-        {semSaldo && <span className="text-dice-400 text-xs">Sem {nomePool} suficiente.</span>}
+        {semSaldo && <span className="text-dice-400 text-xs">{t('Sem {nome} suficiente.', { nome: String(nomePool) })}</span>}
         {erro && <span className="text-harm text-xs">{erro}</span>}
       </div>
     </div>

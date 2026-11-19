@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { encaixar, mapaParaTela } from '../../lib/mapaEngine'
 import { LUZES_TOKEN, normalizarAura, normalizarLuzToken, raioParaPx } from '../../lib/luzMapa'
+import { t } from '../../i18n'
 
 const CORES_AURA = ['#FF5468', '#FFB25E', '#FFE066', '#5EE08A', '#7FA6FF', '#C084FC']
 
@@ -150,7 +151,7 @@ export function MenuToken({ ctx, token, isGestor, onAtualizar, onRemover, onAbri
   const idx = TAMANHOS_TOKEN.indexOf(Number(token.tamanho))
   const tentar = fn => async () => {
     setErro('')
-    try { await fn() } catch (err) { setErro(err.message || 'Falhou.') }
+    try { await fn() } catch (err) { setErro(err.message || t('Falhou.')) }
   }
   const mudarTamanho = passo => {
     const atual = idx >= 0 ? idx : 1
@@ -181,38 +182,38 @@ export function MenuToken({ ctx, token, isGestor, onAtualizar, onRemover, onAbri
         <div className="flex items-center justify-center gap-0.5 mt-1">
           {isGestor && (
             <>
-              <button onClick={mudarTamanho(-1)} className={BTN} title="Diminuir">−</button>
+              <button onClick={mudarTamanho(-1)} className={BTN} title={t('Diminuir')}>−</button>
               <span className="text-ink-dim text-xs w-9 text-center">{token.tamanho}×</span>
-              <button onClick={mudarTamanho(+1)} className={BTN} title="Aumentar">+</button>
-              <button onClick={tentar(() => onAtualizar(token.id, { oculto: !token.oculto }))} className={BTN} title={token.oculto ? 'Mostrar aos jogadores' : 'Esconder dos jogadores'}>
+              <button onClick={mudarTamanho(+1)} className={BTN} title={t('Aumentar')}>+</button>
+              <button onClick={tentar(() => onAtualizar(token.id, { oculto: !token.oculto }))} className={BTN} title={token.oculto ? t('Mostrar aos jogadores') : t('Esconder dos jogadores')}>
                 {token.oculto ? '🙈' : '👁'}
               </button>
-              <button onClick={tentar(() => onRemover(token.id))} className={`${BTN} hover:text-harm`} title="Tirar do mapa">🗑</button>
+              <button onClick={tentar(() => onRemover(token.id))} className={`${BTN} hover:text-harm`} title={t('Tirar do mapa')}>🗑</button>
             </>
           )}
           {token.ficha_id && (
-            <button onClick={() => onAbrirFicha(token.ficha_id)} className={BTN} title="Abrir ficha">📜</button>
+            <button onClick={() => onAbrirFicha(token.ficha_id)} className={BTN} title={t('Abrir ficha')}>📜</button>
           )}
         </div>
         {(isGestor || token.podeMover) && (
           <>
             <div className="flex flex-wrap items-center justify-center gap-0.5 mt-1">
-              <span className="text-ink-dim text-xs w-9">Luz</span>
-              <button onClick={tentar(() => onAtualizar(token.id, { luz: null }))} className={`${BTN} text-xs ${!luz ? 'bg-hover' : ''}`}>Sem</button>
+              <span className="text-ink-dim text-xs w-9">{t('Luz')}</span>
+              <button onClick={tentar(() => onAtualizar(token.id, { luz: null }))} className={`${BTN} text-xs ${!luz ? 'bg-hover' : ''}`}>{t('Sem')}</button>
               {LUZES_TOKEN.map(l => (
                 <button key={l.id} onClick={tentar(() => onAtualizar(token.id, { luz: { raio: l.raio, cor: l.cor, tremula: l.tremula } }))} className={`${BTN} text-xs ${luz?.cor === l.cor && luz?.raio === l.raio ? 'bg-hover' : ''}`}>{l.nome}</button>
               ))}
             </div>
             <div className="flex flex-wrap items-center justify-center gap-0.5 mt-1">
-              <span className="text-ink-dim text-xs w-9">Aura</span>
-              <button onClick={mudarAura(null)} className={`${BTN} text-xs ${!aura ? 'bg-hover' : ''}`}>Sem</button>
+              <span className="text-ink-dim text-xs w-9">{t('Aura')}</span>
+              <button onClick={mudarAura(null)} className={`${BTN} text-xs ${!aura ? 'bg-hover' : ''}`}>{t('Sem')}</button>
               {CORES_AURA.map(c => (
-                <button key={c} onClick={mudarAura({ cor: c })} title={c} aria-label={`Aura ${c}`} className="h-6 w-6 rounded-full border border-border" style={{ background: c, outline: aura?.cor === c ? '2px solid var(--accent-300)' : 'none' }} />
+                <button key={c} onClick={mudarAura({ cor: c })} title={c} aria-label={t('Aura {c}', { c })} className="h-6 w-6 rounded-full border border-border" style={{ background: c, outline: aura?.cor === c ? '2px solid var(--accent-300)' : 'none' }} />
               ))}
               {aura && (
                 <>
-                  <button onClick={mudarAura({ raio: Math.max(0.5, aura.raio - quadrado) })} className={BTN} title="Diminuir aura">−</button>
-                  <button onClick={mudarAura({ raio: aura.raio + quadrado })} className={BTN} title="Aumentar aura">+</button>
+                  <button onClick={mudarAura({ raio: Math.max(0.5, aura.raio - quadrado) })} className={BTN} title={t('Diminuir aura')}>−</button>
+                  <button onClick={mudarAura({ raio: aura.raio + quadrado })} className={BTN} title={t('Aumentar aura')}>+</button>
                 </>
               )}
             </div>

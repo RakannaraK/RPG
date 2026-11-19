@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 /**
  * Fase 17 — Motor de Fórmulas (função PURA e SEGURA).
  *
@@ -53,12 +54,12 @@ function parseNumber(p) {
   const start = p.i
   let dots = 0
   while (p.i < p.src.length && (isDigit(p.src[p.i]) || p.src[p.i] === '.')) {
-    if (p.src[p.i] === '.' && ++dots > 1) throw new FormulaError('Número com mais de um ponto decimal', p.i)
+    if (p.src[p.i] === '.' && ++dots > 1) throw new FormulaError(t('Número com mais de um ponto decimal'), p.i)
     p.i++
   }
   const s = p.src.slice(start, p.i)
   const v = parseFloat(s)
-  if (Number.isNaN(v)) throw new FormulaError(`Número inválido '${s}'`, start)
+  if (Number.isNaN(v)) throw new FormulaError(t("Número inválido '{s}'", { s }), start)
   return { type: 'num', value: v }
 }
 
@@ -80,10 +81,10 @@ function parseIdent(p) {
         skipWs(p)
         while (p.src[p.i] === ',') { p.i++; args.push(parseExpr(p)); skipWs(p) }
       }
-      if (p.src[p.i] !== ')') throw new FormulaError(`Parêntese ')' esperado em ${name}(`, p.i)
+      if (p.src[p.i] !== ')') throw new FormulaError(t("Parêntese ')' esperado em {name}(", { name }), p.i)
       p.i++
       const arity = MATH_FUNCS[name]
-      if (args.length !== arity) throw new FormulaError(`${name}() espera ${arity} argumento(s), recebeu ${args.length}`, start)
+      if (args.length !== arity) throw new FormulaError(t('{name}() espera {arity} argumento(s), recebeu {recebeu}', { name, arity, recebeu: args.length }), start)
       return { type: 'mathcall', fn: name, args }
     }
 
@@ -91,14 +92,14 @@ function parseIdent(p) {
       // Argumento capturado como NOME BRUTO (aceita id UUID com hífens ou nome)
       const s2 = p.i
       while (p.i < p.src.length && p.src[p.i] !== ')') p.i++
-      if (p.src[p.i] !== ')') throw new FormulaError(`Parêntese ')' esperado em ${name}(`, p.i)
+      if (p.src[p.i] !== ')') throw new FormulaError(t("Parêntese ')' esperado em {name}(", { name }), p.i)
       const arg = p.src.slice(s2, p.i).trim()
       p.i++
-      if (!arg) throw new FormulaError(`${name}() precisa de um nome`, start)
+      if (!arg) throw new FormulaError(t('{name}() precisa de um nome', { name }), start)
       return { type: 'call', fn: name, arg }
     }
 
-    throw new FormulaError(`Função '${name}' desconhecida`, start)
+    throw new FormulaError(t("Função '{name}' desconhecida", { name }), start)
   }
 
   // Não é chamada de função → variável simples. Aceita qualquer nome na SINTAXE;
@@ -110,18 +111,18 @@ function parseIdent(p) {
 function parsePrimary(p) {
   skipWs(p)
   const c = p.src[p.i]
-  if (c === undefined) throw new FormulaError('Fim inesperado da fórmula', p.i)
+  if (c === undefined) throw new FormulaError(t('Fim inesperado da fórmula'), p.i)
   if (c === '(') {
     p.i++
     const e = parseExpr(p)
     skipWs(p)
-    if (p.src[p.i] !== ')') throw new FormulaError("Parêntese ')' esperado", p.i)
+    if (p.src[p.i] !== ')') throw new FormulaError(t("Parêntese ')' esperado"), p.i)
     p.i++
     return e
   }
   if (isDigit(c) || c === '.') return parseNumber(p)
   if (isAlpha(c)) return parseIdent(p)
-  throw new FormulaError(`Caractere inesperado '${c}'`, p.i)
+  throw new FormulaError(t("Caractere inesperado '{c}'", { c }), p.i)
 }
 
 function parseUnary(p) {
@@ -160,16 +161,16 @@ const _astCache = new Map()
  * Tokeniza e parseia a fórmula numa AST (memoizado). @throws {FormulaError}
  */
 export function parseFormula(texto) {
-  if (typeof texto !== 'string') throw new FormulaError('A fórmula precisa ser um texto')
-  if (texto.length > MAX_LEN) throw new FormulaError('Fórmula longa demais')
+  if (typeof texto !== 'string') throw new FormulaError(t('A fórmula precisa ser um texto'))
+  if (texto.length > MAX_LEN) throw new FormulaError(t('Fórmula longa demais'))
   const cached = _astCache.get(texto)
   if (cached) return cached
   const src = normalizar(texto)
-  if (src === '') throw new FormulaError('Fórmula vazia')
+  if (src === '') throw new FormulaError(t('Fórmula vazia'))
   const p = { src, i: 0 }
   const ast = parseExpr(p)
   skipWs(p)
-  if (p.i < src.length) throw new FormulaError(`Token inesperado '${src[p.i]}'`, p.i)
+  if (p.i < src.length) throw new FormulaError(t("Token inesperado '{token}'", { token: src[p.i] }), p.i)
   if (_astCache.size > 1000) _astCache.clear()
   _astCache.set(texto, ast)
   return ast
@@ -178,7 +179,7 @@ export function parseFormula(texto) {
 // ------------------------------------------------------------- Avaliação
 function comoNumero(v, categoria, nome) {
   const n = typeof v === 'number' ? v : Number(v)
-  if (!Number.isFinite(n)) throw new FormulaError(`${categoria} '${nome}' não tem valor numérico`)
+  if (!Number.isFinite(n)) throw new FormulaError(t("{categoria} '{nome}' não tem valor numérico", { categoria, nome }))
   return n
 }
 
@@ -189,7 +190,7 @@ function resolverNome(map, nome, categoria) {
     if (alvo in map) return comoNumero(map[alvo], categoria, nome)
     for (const k of Object.keys(map)) if (normalizar(k) === alvo) return comoNumero(map[k], categoria, nome)
   }
-  throw new FormulaError(`${categoria} '${nome}' não existe neste sistema`)
+  throw new FormulaError(t("{categoria} '{nome}' não existe neste sistema", { categoria, nome }))
 }
 
 // Fase 19 — nível da ficha numa classe (por id ou nome normalizado).
@@ -206,59 +207,59 @@ function resolverNivelClasse(map, nome) {
 
 function evalVar(name, ctx) {
   switch (name) {
-    case 'nivel':      return comoNumero(ctx.nivel ?? 0, 'nível', 'nivel')
-    case 'vida_atual': return comoNumero(ctx.vida_atual ?? 0, 'vida', 'vida_atual')
-    case 'vida_max':   return comoNumero(ctx.vida_max ?? 0, 'vida', 'vida_max')
+    case 'nivel':      return comoNumero(ctx.nivel ?? 0, t('nível'), 'nivel')
+    case 'vida_atual': return comoNumero(ctx.vida_atual ?? 0, t('vida'), 'vida_atual')
+    case 'vida_max':   return comoNumero(ctx.vida_max ?? 0, t('vida'), 'vida_max')
     case 'x':
-      if (ctx._x === undefined) throw new FormulaError("'x' só existe na fórmula do modificador de atributo")
+      if (ctx._x === undefined) throw new FormulaError(t("'x' só existe na fórmula do modificador de atributo"))
       return ctx._x
     case 'proficiencia': {
       // Fase 19 — avalia a fórmula de proficiência do sistema (config_layout).
-      if (ctx._emProficiencia) throw new FormulaError("'proficiencia' não pode referenciar a si mesma")
+      if (ctx._emProficiencia) throw new FormulaError(t("'proficiencia' não pode referenciar a si mesma"))
       const f = ctx.formula_proficiencia
       if (f == null || String(f).trim() === '') {
-        throw new FormulaError('Este sistema não define proficiência')
+        throw new FormulaError(t('Este sistema não define proficiência'))
       }
       return avaliarFormula(f, { ...ctx, _emProficiencia: true })
     }
     // Fase 21 — variável da CURVA de maestria (nível sendo adquirido: 1, 2, 3…).
-    case 'proximo_nivel': return comoNumero(ctx.proximo_nivel ?? 0, 'nível', 'proximo_nivel')
+    case 'proximo_nivel': return comoNumero(ctx.proximo_nivel ?? 0, t('nível'), 'proximo_nivel')
     // Fase 22 — nível de maestria do item usado na rolagem (0 se não houver).
     // Usada no limiar de crítico dinâmico do IC. Ex: "85 - 15 * piso(maestria/2)".
-    case 'maestria': return comoNumero(ctx.maestria ?? 0, 'maestria', 'maestria')
+    case 'maestria': return comoNumero(ctx.maestria ?? 0, t('maestria'), 'maestria')
     // Fase 25 — variável canônica das fórmulas de CUSTO de compra por XP:
     // o valor APÓS a compra. Ex: "novo_valor * 5".
-    case 'novo_valor': return comoNumero(ctx.novo_valor ?? 0, 'valor', 'novo_valor')
+    case 'novo_valor': return comoNumero(ctx.novo_valor ?? 0, t('valor'), 'novo_valor')
   }
   // Atalho opt-in (só na camada de notação de dado, Fase 17.2): nome solto que
   // não é variável embutida é resolvido como o atributo com aquele nome.
-  if (ctx._nomeSoltoEhAtributo) return resolverNome(ctx.atributos, name, 'atributo')
-  throw new FormulaError(`Variável '${name}' desconhecida`)
+  if (ctx._nomeSoltoEhAtributo) return resolverNome(ctx.atributos, name, t('atributo'))
+  throw new FormulaError(t("Variável '{name}' desconhecida", { name }))
 }
 
 function evalCall(fn, arg, ctx) {
   switch (fn) {
-    case 'atributo': return resolverNome(ctx.atributos, arg, 'atributo')
-    case 'pericia':  return resolverNome(ctx.pericias, arg, 'perícia')
-    case 'recurso':  return resolverNome(ctx.recursos, arg, 'recurso')
+    case 'atributo': return resolverNome(ctx.atributos, arg, t('atributo'))
+    case 'pericia':  return resolverNome(ctx.pericias, arg, t('perícia'))
+    case 'recurso':  return resolverNome(ctx.recursos, arg, t('recurso'))
     case 'mod': {
-      const attr = resolverNome(ctx.atributos, arg, 'atributo')
+      const attr = resolverNome(ctx.atributos, arg, t('atributo'))
       const f = ctx.formulaModificador
       if (f == null || f === '') return attr // sem fórmula: mod(a) === atributo(a)
       return avaliarFormula(f, { ...ctx, _x: attr })
     }
     case 'nivel':    return resolverNivelClasse(ctx.niveisClasse, arg) // Fase 19
     // Fase 20 — valor ATUAL do pool (mesma semântica de recurso())
-    case 'pool':     return resolverNome(ctx.pools, arg, 'pool')
+    case 'pool':     return resolverNome(ctx.pools, arg, t('pool'))
     // Fase 24 — valor atual de um ESTADO (Fome, Sanidade...); por id ou nome
-    case 'estado':   return resolverNome(ctx.estados, arg, 'estado')
-    case 'maestria': throw new FormulaError("'maestria()' estará disponível na Fase 21")
-    default: throw new FormulaError(`Função '${fn}' desconhecida`)
+    case 'estado':   return resolverNome(ctx.estados, arg, t('estado'))
+    case 'maestria': throw new FormulaError(t("'maestria()' estará disponível na Fase 21"))
+    default: throw new FormulaError(t("Função '{fn}' desconhecida", { fn }))
   }
 }
 
 function evalNode(node, ctx, depth) {
-  if (depth > MAX_DEPTH) throw new FormulaError('Fórmula profunda demais')
+  if (depth > MAX_DEPTH) throw new FormulaError(t('Fórmula profunda demais'))
   switch (node.type) {
     case 'num': return node.value
     case 'neg': return -evalNode(node.operand, ctx, depth + 1)
@@ -270,9 +271,9 @@ function evalNode(node, ctx, depth) {
         case '-': return a - b
         case '*': return a * b
         case '/':
-          if (b === 0) throw new FormulaError('Divisão por zero')
+          if (b === 0) throw new FormulaError(t('Divisão por zero'))
           return a / b
-        default: throw new FormulaError(`Operador '${node.op}' desconhecido`)
+        default: throw new FormulaError(t("Operador '{op}' desconhecido", { op: node.op }))
       }
     }
     case 'var':  return evalVar(node.name, ctx)
@@ -286,10 +287,10 @@ function evalNode(node, ctx, depth) {
         case 'abs':        return Math.abs(a[0])
         case 'min':        return Math.min(a[0], a[1])
         case 'max':        return Math.max(a[0], a[1])
-        default: throw new FormulaError(`Função '${node.fn}' desconhecida`)
+        default: throw new FormulaError(t("Função '{fn}' desconhecida", { fn: node.fn }))
       }
     }
-    default: throw new FormulaError('Nó de fórmula desconhecido')
+    default: throw new FormulaError(t('Nó de fórmula desconhecido'))
   }
 }
 
@@ -301,7 +302,7 @@ function evalNode(node, ctx, depth) {
 export function avaliarFormula(formula, contexto = {}) {
   const ast = formula && typeof formula === 'object' && formula.type ? formula : parseFormula(formula)
   const r = evalNode(ast, contexto, 0)
-  if (typeof r !== 'number' || !Number.isFinite(r)) throw new FormulaError('Resultado não numérico')
+  if (typeof r !== 'number' || !Number.isFinite(r)) throw new FormulaError(t('Resultado não numérico'))
   return r
 }
 

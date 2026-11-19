@@ -10,6 +10,7 @@ import JogoMinigame from '../components/minigames/JogoMinigame'
 import { JOGOS, NOMES_DIFICULDADE, configDoJogo, resumoResultado, rotuloFeed } from '../lib/minigames/resultado'
 import { novaSemente } from '../lib/minigames/semente'
 import Botao from '../components/ui/Botao'
+import { t } from '../i18n'
 
 const TIPOS = [4, 6, 8, 10, 12, 20, 100]
 const SKINS = listarSkins()
@@ -23,7 +24,7 @@ export default function DadosTestePage() {
 
   function rolarTodos() {
     const novos = {}
-    TIPOS.forEach(t => { novos[t] = Math.ceil(Math.random() * t) })
+    TIPOS.forEach(tipo => { novos[tipo] = Math.ceil(Math.random() * tipo) })
     setResultados(novos)
     setRolando(true)
     tocarSomDado(skin, { ativo: somAtivo, volume, numDados: TIPOS.length })
@@ -48,11 +49,11 @@ export default function DadosTestePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-10 p-8">
-      <h1 className="text-white text-2xl font-bold">Teste — Dados 3D</h1>
+      <h1 className="text-white text-2xl font-bold">{t('Teste — Dados 3D')}</h1>
 
       {/* Seletor de skin */}
       <div className="flex flex-col items-center gap-3">
-        <p className="text-purple-300 text-sm">Skin do material</p>
+        <p className="text-purple-300 text-sm">{t('Skin do material')}</p>
         <div className="flex flex-wrap gap-2 justify-center">
           {SKINS.map(s => (
             <div
@@ -77,7 +78,7 @@ export default function DadosTestePage() {
               </button>
               <button
                 onClick={() => ouvir(s.id)}
-                title={`Ouvir ${s.nome}`}
+                title={t('Ouvir {nome}', { nome: s.nome })}
                 className="px-2 py-1.5 text-sm border-l border-white/10 text-purple-200 hover:text-white"
               >
                 🔊
@@ -95,10 +96,10 @@ export default function DadosTestePage() {
               onChange={e => setSomAtivo(e.target.checked)}
               className="accent-purple-500"
             />
-            Som
+            {t('Som')}
           </label>
           <label className="flex items-center gap-2 text-purple-300 text-sm">
-            Volume
+            {t('Volume')}
             <input
               type="range"
               min={0}
@@ -116,17 +117,17 @@ export default function DadosTestePage() {
 
       {/* Todos os tipos */}
       <div className="flex flex-wrap gap-6 justify-center items-end">
-        {TIPOS.map(t => (
-          <div key={t} className="flex flex-col items-center gap-2">
-            <Dice3D lados={t} resultado={resultados[t]} rolando={rolando} skin={skin} />
-            <span className="text-purple-400 text-xs">d{t}</span>
+        {TIPOS.map(tipo => (
+          <div key={tipo} className="flex flex-col items-center gap-2">
+            <Dice3D lados={tipo} resultado={resultados[tipo]} rolando={rolando} skin={skin} />
+            <span className="text-purple-400 text-xs">d{tipo}</span>
           </div>
         ))}
       </div>
 
       {/* d6 mostrando todos os valores */}
       <div>
-        <p className="text-purple-300 text-sm mb-3 text-center">d6 — todas as faces</p>
+        <p className="text-purple-300 text-sm mb-3 text-center">{t('d6 — todas as faces')}</p>
         <div className="flex gap-4 justify-center">
           {[1, 2, 3, 4, 5, 6].map(n => (
             <div key={n} className="flex flex-col items-center gap-2">
@@ -139,13 +140,13 @@ export default function DadosTestePage() {
 
       {/* kh/kl: descartado */}
       <div>
-        <p className="text-purple-300 text-sm mb-3 text-center">kh3 de 4d6 — 3 mantidos + 1 descartado</p>
+        <p className="text-purple-300 text-sm mb-3 text-center">{t('kh3 de 4d6 — 3 mantidos + 1 descartado')}</p>
         <div className="flex gap-4 justify-center">
           {[6, 5, 4, 2].map((n, i) => (
             <div key={i} className="flex flex-col items-center gap-2">
               <Dice3D lados={6} resultado={n} rolando={false} descartado={i === 3} skin={skin} />
               <span className={`text-xs ${i === 3 ? 'text-red-500' : 'text-green-400'}`}>
-                {i === 3 ? 'descartado' : 'mantido'}
+                {i === 3 ? t('descartado') : t('mantido')}
               </span>
             </div>
           ))}
@@ -155,19 +156,19 @@ export default function DadosTestePage() {
       <Botao variante="primario" tamanho="lg"
         onClick={rolarTodos}
         disabled={rolando} className="font-bold text-lg shadow-lg shadow-purple-900/50">
-        {rolando ? '🎲 Rolando...' : '🎲 Rolar tudo'}
+        {rolando ? t('🎲 Rolando...') : t('🎲 Rolar tudo')}
       </Botao>
 
       {/* F27 — bandeja: dados com física por cima da tela */}
       <div className="border-t border-purple-900 pt-8 flex flex-col items-center gap-3">
-        <h2 className="text-white text-lg font-bold">Bandeja de dados (F27)</h2>
+        <h2 className="text-white text-lg font-bold">{t('Bandeja de dados (F27)')}</h2>
         <div className="flex flex-wrap gap-2 justify-center max-w-lg">
           {[
             ['3d6', () => [lancarNaBandeja(Array(3).fill(6))]],
-            ['1 de cada', () => [lancarNaBandeja(TIPOS)]],
+            [t('1 de cada'), () => [lancarNaBandeja(TIPOS)]],
             ['4d6 kh3', () => [lancarNaBandeja(Array(4).fill(6), 1)]],
-            ['60d6 (excedente)', () => [lancarNaBandeja(Array(60).fill(6))]],
-            ['Rajada ×10', () => Array.from({ length: 10 }, () => lancarNaBandeja([20]))],
+            [t('60d6 (excedente)'), () => [lancarNaBandeja(Array(60).fill(6))]],
+            [t('Rajada ×10'), () => Array.from({ length: 10 }, () => lancarNaBandeja([20]))],
           ].map(([rotulo, gerar]) => (
             <button
               key={rotulo}
@@ -178,13 +179,13 @@ export default function DadosTestePage() {
             </button>
           ))}
         </div>
-        {!bandejaSuportada && <p className="text-amber-300 text-sm">Bandeja indisponível (sem WebGL ou "reduzir movimento" ligado).</p>}
+        {!bandejaSuportada && <p className="text-amber-300 text-sm">{t('Bandeja indisponível (sem WebGL ou "reduzir movimento" ligado).')}</p>}
       </div>
       <BandejaDados lancamentos={bandeja} onTerminou={id => setBandeja(f => f.filter(l => l.id !== id))} />
 
       {/* F28 — minigames (sem login: resultado só aparece aqui) */}
       <div className="border-t border-purple-900 pt-8 flex flex-col items-center gap-3">
-        <h2 className="text-white text-lg font-bold">Minigames (F28)</h2>
+        <h2 className="text-white text-lg font-bold">{t('Minigames (F28)')}</h2>
         {Object.entries(JOGOS).map(([tipo, jogo]) => (
           <div key={tipo} className="flex flex-wrap items-center gap-2 justify-center">
             <span className="text-purple-200 text-sm w-28 text-right">{jogo.icone} {jogo.nome}</span>
@@ -216,7 +217,7 @@ export default function DadosTestePage() {
 
       {/* FV.4 — preview dos presets de som de ação (dev only; nenhum som dispara no jogo ainda) */}
       <div className="border-t border-purple-900 pt-8 flex flex-col items-center gap-3">
-        <h2 className="text-white text-lg font-bold">Preview — Sons de ação (FV.4)</h2>
+        <h2 className="text-white text-lg font-bold">{t('Preview — Sons de ação (FV.4)')}</h2>
         <div className="flex flex-wrap gap-2 justify-center max-w-lg">
           {PRESET_IDS.map(id => (
             <button

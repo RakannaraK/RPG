@@ -21,6 +21,7 @@
  * conforme o campo; este módulo não interpreta, só escolhe.
  */
 import { normalizar } from './formulaEngine.js'
+import { t } from '../i18n'
 
 /** Valor atual da variável que a faixa observa. Classe ausente = 0. */
 export function valorVariavelFaixa(variavel, contexto = {}) {
@@ -61,34 +62,34 @@ export function faixaAtiva(spec, contexto = {}) {
 export function validarFaixas(spec) {
   const fs = spec?.faixas
   if (!Array.isArray(fs) || fs.length === 0) {
-    return { valida: false, erro: 'Defina ao menos uma faixa.' }
+    return { valida: false, erro: t('Defina ao menos uma faixa.') }
   }
 
   for (let i = 0; i < fs.length; i++) {
     const f = fs[i]
-    const rotulo = `Faixa ${i + 1}`
+    const rotulo = t('Faixa {n}', { n: i + 1 })
     const de = Number(f.de)
-    if (!Number.isFinite(de)) return { valida: false, erro: `${rotulo}: "de" inválido.` }
+    if (!Number.isFinite(de)) return { valida: false, erro: t('{rotulo}: "de" inválido.', { rotulo }) }
 
     const aberta = f.ate == null || f.ate === ''
     const ate = aberta ? Infinity : Number(f.ate)
-    if (!aberta && !Number.isFinite(ate)) return { valida: false, erro: `${rotulo}: "até" inválido.` }
-    if (ate < de) return { valida: false, erro: `${rotulo}: "até" é menor que "de".` }
+    if (!aberta && !Number.isFinite(ate)) return { valida: false, erro: t('{rotulo}: "até" inválido.', { rotulo }) }
+    if (ate < de) return { valida: false, erro: t('{rotulo}: "até" é menor que "de".', { rotulo }) }
     if (aberta && i !== fs.length - 1) {
-      return { valida: false, erro: 'Só a última faixa pode ficar aberta (sem "até").' }
+      return { valida: false, erro: t('Só a última faixa pode ficar aberta (sem "até").') }
     }
     if (f.valor === undefined || f.valor === null || String(f.valor).trim() === '') {
-      return { valida: false, erro: `${rotulo}: defina um valor.` }
+      return { valida: false, erro: t('{rotulo}: defina um valor.', { rotulo }) }
     }
 
     if (i > 0) {
       const ant = fs[i - 1]
       const antAte = (ant.ate == null || ant.ate === '') ? Infinity : Number(ant.ate)
       if (de <= antAte) {
-        return { valida: false, erro: `As faixas ${i} e ${i + 1} se sobrepõem.` }
+        return { valida: false, erro: t('As faixas {a} e {b} se sobrepõem.', { a: i, b: i + 1 }) }
       }
       if (de !== antAte + 1) {
-        return { valida: false, erro: `Buraco entre as faixas ${i} e ${i + 1}: "de" deveria ser ${antAte + 1}.` }
+        return { valida: false, erro: t('Buraco entre as faixas {a} e {b}: "de" deveria ser {valor}.', { a: i, b: i + 1, valor: antAte + 1 }) }
       }
     }
   }

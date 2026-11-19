@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import Ilustra from '../arte/Ilustra'
 import { CAPAS } from '../../lib/capas'
+import { t } from '../../i18n'
 
 /**
  * Fase 37.4 — o dono escolhe a capa da mesa. Grava só o id em `mesas.capa`
@@ -17,15 +18,15 @@ export default function SeletorCapa({ mesaId, capaAtual, onTrocou }) {
     setErro('')
     const { error } = await supabase.from('mesas').update({ capa: valor }).eq('id', mesaId)
     setSalvando(false)
-    if (error) { setErro('Não foi possível salvar a capa.'); return }
+    if (error) { setErro(t('Não foi possível salvar a capa.')); return }
     onTrocou?.(valor)
   }
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium text-purple-200">Capa da mesa</p>
+      <p className="text-sm font-medium text-purple-200">{t('Capa da mesa')}</p>
       <p className="text-xs text-purple-400">
-        Aparece no topo da mesa e no cartão do painel. Clicar na escolhida de novo tira a capa.
+        {t('Aparece no topo da mesa e no cartão do painel. Clicar na escolhida de novo tira a capa.')}
       </p>
       <div className="flex flex-wrap gap-2 pt-1">
         {CAPAS.map(c => {

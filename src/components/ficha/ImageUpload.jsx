@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
+import { t } from '../../i18n'
 
-export default function ImageUpload({ onSelect, currentUrl, disabled, label = 'Adicionar imagem' }) {
+export default function ImageUpload({ onSelect, currentUrl, disabled, label = t('Adicionar imagem') }) {
   const inputRef = useRef(null)
   const [preview, setPreview] = useState(null)
 
@@ -38,12 +39,12 @@ export default function ImageUpload({ onSelect, currentUrl, disabled, label = 'A
           <div className="relative group">
             <img
               src={displayUrl}
-              alt="Preview"
+              alt={t('Preview')}
               className="w-full h-48 object-cover"
             />
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 flex items-center justify-center transition-all">
               <span className="text-ink text-sm font-medium bg-black/60 px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
-                Alterar imagem
+                {t('Alterar imagem')}
               </span>
             </div>
           </div>
@@ -51,7 +52,7 @@ export default function ImageUpload({ onSelect, currentUrl, disabled, label = 'A
           <div className="py-8 px-4 text-center">
             <div className="text-3xl mb-2">🖼️</div>
             <p className="text-ink-dim text-sm">{label}</p>
-            <p className="text-ink-dim text-xs mt-1">JPG, PNG, WebP — redimensionado para máx 1200px</p>
+            <p className="text-ink-dim text-xs mt-1">{t('JPG, PNG, WebP — redimensionado para máx 1200px')}</p>
           </div>
         )}
       </button>

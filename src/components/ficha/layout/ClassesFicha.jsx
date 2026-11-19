@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { t } from '../../../i18n'
 
 /**
  * Nível editável de uma classe — buffer local que só grava no blur/Enter,
@@ -21,7 +22,7 @@ function NivelInput({ nivel, onCommit }) {
       onBlur={commit}
       onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }}
       className="w-12 bg-transparent text-dice-400 text-center text-sm font-semibold focus:outline-none border-b border-border focus:border-dice-500"
-      title="Nível nesta classe"
+      title={t('Nível nesta classe')}
     />
   )
 }
@@ -66,7 +67,7 @@ export default function ClassesFicha({
       {classesFicha.map(cf => (
         <div key={cf.id} className={chipCls}>
           <span className="text-ink text-sm font-medium">
-            {cf.classe?.nome || <span className="text-harm italic">classe removida</span>}
+            {cf.classe?.nome || <span className="text-harm italic">{t('classe removida')}</span>}
           </span>
           <NivelInput nivel={cf.nivel} onCommit={n => onSetNivel(cf.id, n)} />
           {confirmando === cf.id ? (
@@ -74,9 +75,9 @@ export default function ClassesFicha({
               <button
                 onClick={() => { onRemove(cf.id, cf.classe_id, cf.classe?.nome); setConfirmando(null) }}
                 className="text-xs px-1.5 py-0.5 bg-harm hover:bg-harm text-ink rounded-lg"
-                title="Remover classe e as habilidades concedidas por ela"
+                title={t('Remover classe e as habilidades concedidas por ela')}
               >
-                remover
+                {t('remover')}
               </button>
               <button
                 onClick={() => setConfirmando(null)}
@@ -89,7 +90,7 @@ export default function ClassesFicha({
             <button
               onClick={() => setConfirmando(cf.id)}
               className="w-5 h-5 flex items-center justify-center text-ink-dim hover:text-harm transition-colors"
-              title="Remover classe"
+              title={t('Remover classe')}
             >
               ×
             </button>
@@ -106,7 +107,7 @@ export default function ClassesFicha({
             onBlur={() => setAdicionando(false)}
             className="px-2 py-1 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-1 focus:ring-accent-500"
           >
-            <option value="" disabled>Escolha uma classe…</option>
+            <option value="" disabled>{t('Escolha uma classe…')}</option>
             {disponiveis.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select>
         ) : (
@@ -114,7 +115,7 @@ export default function ClassesFicha({
             onClick={() => setAdicionando(true)}
             className="text-sm px-2.5 py-1 rounded-lg border border-dashed border-border text-accent-300 hover:text-ink hover:border-accent-500 transition-colors"
           >
-            + Classe
+            {t('+ Classe')}
           </button>
         )
       )}

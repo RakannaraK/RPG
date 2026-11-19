@@ -4,6 +4,7 @@ import SeloPapel from '../ui/SeloPapel'
 import Icone from '../ui/Icone'
 import { textoQuando } from '../../lib/agenda'
 import { capaDaMesa } from '../../lib/capas'
+import { t, tn } from '../../i18n'
 
 /**
  * Cartão de mesa no painel "Suas mesas" (F52). A mesa é a peça mais
@@ -24,7 +25,7 @@ export default function MesaCard({ mesa, proxima = null }) {
         <div className="absolute left-4 bottom-3"><SeloPapel papel={mesa.role} /></div>
         {mesa.arquivada && (
           <span className="absolute right-3 top-3 inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-bg/80 border border-border text-ink-dim">
-            <Icone nome="cadeado" tamanho={12} /> Arquivada
+            <Icone nome="cadeado" tamanho={12} /> {t('Arquivada')}
           </span>
         )}
       </div>
@@ -38,7 +39,7 @@ export default function MesaCard({ mesa, proxima = null }) {
         <div className="mt-auto pt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-ink-dim">
           <span className="inline-flex items-center gap-1.5">
             <Icone nome="pessoas" tamanho={16} />
-            {mesa.totalMembros} {mesa.totalMembros === 1 ? 'pessoa' : 'pessoas'}
+            {tn(mesa.totalMembros, '{n} pessoa', '{n} pessoas')}
           </span>
           {proxima ? (
             <span className="inline-flex items-center gap-1.5 text-ink">
@@ -47,7 +48,7 @@ export default function MesaCard({ mesa, proxima = null }) {
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5">
-              <Icone nome="calendario" tamanho={16} /> Sem sessão marcada
+              <Icone nome="calendario" tamanho={16} /> {t('Sem sessão marcada')}
             </span>
           )}
         </div>

@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 /**
  * Fase 26 — motor PURO da mesa virtual (mapa).
  *
@@ -71,9 +72,9 @@ export function enquadrar(largura, altura, vw, vh, margem = 0.95) {
  */
 export function encaixar(p, grade, tamanho = 1) {
   const g = normalizarGrade(grade)
-  const t = Number(g.tamanho)
-  if (!(t > 0)) return { x: p.x, y: p.y }
-  const eixo = (v, off) => off + (Math.round((v - off - (tamanho * t) / 2) / t) + tamanho / 2) * t
+  const lado = Number(g.tamanho)
+  if (!(lado > 0)) return { x: p.x, y: p.y }
+  const eixo = (v, off) => off + (Math.round((v - off - (tamanho * lado) / 2) / lado) + tamanho / 2) * lado
   return { x: eixo(p.x, Number(g.offset_x) || 0), y: eixo(p.y, Number(g.offset_y) || 0) }
 }
 
@@ -84,8 +85,8 @@ export function encaixar(p, grade, tamanho = 1) {
  */
 export function espalhar(centro, n, grade, largura, altura, tamanho = 1, ocupados = []) {
   const g = normalizarGrade(grade)
-  const t = Number(g.tamanho) > 0 ? Number(g.tamanho) : 70
-  const passo = t * tamanho
+  const lado = Number(g.tamanho) > 0 ? Number(g.tamanho) : 70
+  const passo = lado * tamanho
   const limitar = (v, max) => Math.min(Math.max(v, 0), max || v)
   const base = g.ativa ? encaixar(centro, g, tamanho) : centro
   const perto = (a, b) => Math.abs(a.x - b.x) < passo / 2 && Math.abs(a.y - b.y) < passo / 2
@@ -105,10 +106,10 @@ export function espalhar(centro, n, grade, largura, altura, tamanho = 1, ocupado
 
 export function celula(p, grade) {
   const g = normalizarGrade(grade)
-  const t = Number(g.tamanho)
+  const lado = Number(g.tamanho)
   return {
-    i: Math.floor((p.x - (Number(g.offset_x) || 0)) / t),
-    j: Math.floor((p.y - (Number(g.offset_y) || 0)) / t),
+    i: Math.floor((p.x - (Number(g.offset_x) || 0)) / lado),
+    j: Math.floor((p.y - (Number(g.offset_y) || 0)) / lado),
   }
 }
 
@@ -132,7 +133,7 @@ export function medir(a, b, grade) {
   const g = normalizarGrade(grade)
   const celulas = distanciaCelulas(a, b, g)
   const valor = celulas * (Number(g.unidade) || 0)
-  const nome = celulas === 1 ? 'quadrado' : 'quadrados'
+  const nome = celulas === 1 ? t('quadrado') : t('quadrados')
   return {
     celulas,
     valor,
@@ -173,8 +174,8 @@ function distanciaAoSegmento(p, a, b) {
   const dx = b[0] - a[0]
   const dy = b[1] - a[1]
   const comprimento2 = dx * dx + dy * dy
-  const t = comprimento2 > 0 ? Math.max(0, Math.min(1, ((p.x - a[0]) * dx + (p.y - a[1]) * dy) / comprimento2)) : 0
-  return Math.hypot(p.x - (a[0] + t * dx), p.y - (a[1] + t * dy))
+  const pos = comprimento2 > 0 ? Math.max(0, Math.min(1, ((p.x - a[0]) * dx + (p.y - a[1]) * dy) / comprimento2)) : 0
+  return Math.hypot(p.x - (a[0] + pos * dx), p.y - (a[1] + pos * dy))
 }
 
 function dentroDaOp(op, p) {

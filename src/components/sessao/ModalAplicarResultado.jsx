@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Modal, { FecharModal } from '../ui/Modal'
 import Botao from '../ui/Botao'
 import { planejarAplicacao } from '../../lib/alvosCombate'
+import { t } from '../../i18n'
 
 /**
  * Fase 53 — confirma o resultado de uma ação sobre vários alvos: valor, dano ou
@@ -31,7 +32,7 @@ export default function ModalAplicarResultado({
 
   async function aplicar() {
     const n = Math.abs(Number(valor) || 0)
-    if (!n) { setErro('Informe um valor.'); return }
+    if (!n) { setErro(t('Informe um valor.')); return }
     const plano = planejarAplicacao({
       alvos: alvos.map(({ c, acertou }) => ({ c, acertou: modo === 'cura' || acertou })),
       valor: n, modo,
@@ -39,15 +40,15 @@ export default function ModalAplicarResultado({
       metadeAoErrar: area && metade,
       cardsPorFicha,
     })
-    if (plano.escritas.length === 0) { setErro('Nada marcado para aplicar.'); return }
+    if (plano.escritas.length === 0) { setErro(t('Nada marcado para aplicar.')); return }
     setBusy(true)
     setErro('')
     try {
-      const res = await onAplicar(plano, `${rotulo} (${modo === 'cura' ? 'cura' : 'dano'} ${n})`)
+      const res = await onAplicar(plano, modo === 'cura' ? t('{rotulo} (cura {n})', { rotulo, n }) : t('{rotulo} (dano {n})', { rotulo, n }))
       if (res?.erro) setErro(res.erro)
       else onFechar()
     } catch (e) {
-      setErro(e.message || 'Não foi possível aplicar.')
+      setErro(e.message || t('Não foi possível aplicar.'))
     } finally {
       setBusy(false)
     }
@@ -57,34 +58,34 @@ export default function ModalAplicarResultado({
 
   return (
     <Modal
-      onFechar={onFechar} titulo={rotulo} subtitulo="Confira os alvos antes de aplicar." bloqueado={busy}
+      onFechar={onFechar} titulo={rotulo} subtitulo={t('Confira os alvos antes de aplicar.')} bloqueado={busy}
       rodape={(
         <>
           {erro && <p className="text-harm text-sm mr-auto" role="alert">{erro}</p>}
           <FecharModal disabled={busy} />
-          <Botao variante="primario" onClick={aplicar} disabled={busy}>{busy ? 'Aplicando…' : 'Aplicar'}</Botao>
+          <Botao variante="primario" onClick={aplicar} disabled={busy}>{busy ? t('Aplicando…') : t('Aplicar')}</Botao>
         </>
       )}
     >
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
           <label className="flex items-center gap-2 text-ink-dim text-sm">
-            Valor
+            {t('Valor')}
             <input
               type="number" min="0" value={valor} onChange={e => setValor(e.target.value)}
               className="w-20 px-2 py-1 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-1 focus:ring-accent-500"
             />
           </label>
-          <div className="flex gap-1" role="group" aria-label="Tipo">
-            <button type="button" onClick={() => setModo('dano')} className={alterna('dano')}>Dano</button>
-            <button type="button" onClick={() => setModo('cura')} className={alterna('cura')}>Cura</button>
+          <div className="flex gap-1" role="group" aria-label={t('Tipo')}>
+            <button type="button" onClick={() => setModo('dano')} className={alterna('dano')}>{t('Dano')}</button>
+            <button type="button" onClick={() => setModo('cura')} className={alterna('cura')}>{t('Cura')}</button>
           </div>
         </div>
 
         {area && modo === 'dano' && (
           <label className="flex items-center gap-2 min-h-[24px] text-ink text-sm">
             <input type="checkbox" checked={metade} onChange={e => setMetade(e.target.checked)} />
-            Metade em quem defendeu
+            {t('Metade em quem defendeu')}
           </label>
         )}
 
@@ -97,16 +98,16 @@ export default function ModalAplicarResultado({
                   <span className="text-ink text-sm font-medium flex-1 min-w-0 truncate">{a.c.nome}</span>
                   {modo === 'dano' && (
                     <span className={`text-xs px-2 py-0.5 rounded-full border ${a.acertou ? 'border-ok text-ok' : 'border-harm text-harm'}`}>
-                      {a.acertou ? 'Acertou' : 'Errou'}
+                      {a.acertou ? t('Acertou') : t('Errou')}
                     </span>
                   )}
                   {modo === 'dano' && ataque != null && a.defesa != null && (
-                    <span className="text-ink-dim text-xs">def {a.defesa} × atq {ataque}</span>
+                    <span className="text-ink-dim text-xs">{t('def {defesa} × atq {ataque}', { defesa: a.defesa, ataque })}</span>
                   )}
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
                   <label className="flex items-center gap-1.5 min-h-[24px] text-ink-dim text-sm">
-                    <input type="checkbox" checked={marc.includes('vida')} onChange={() => alternar(a, 'vida')} /> Vida
+                    <input type="checkbox" checked={marc.includes('vida')} onChange={() => alternar(a, 'vida')} /> {t('Vida')}
                   </label>
                   {poolsDe(a.c).map(p => (
                     <label key={p.id} className="flex items-center gap-1.5 min-h-[24px] text-ink-dim text-sm">

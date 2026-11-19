@@ -1,5 +1,6 @@
 import { TIPOS_ATMOSFERA, corValida, limitar } from './efeitosVocabulario'
 import { normalizarGrade } from './mapaEngine'
+import { t } from '../i18n'
 
 const objeto = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : null)
 const num = v => typeof v === 'number' && Number.isFinite(v)
@@ -19,10 +20,10 @@ export function normalizarAura(raw) {
 }
 
 export const LUZES_TOKEN = [
-  { id: 'tocha', nome: 'Tocha', raio: 6, cor: '#FFB25E', tremula: true },
-  { id: 'lanterna', nome: 'Lanterna', raio: 9, cor: '#FFE9B8', tremula: false },
-  { id: 'magia', nome: 'Magia', raio: 6, cor: '#7FA6FF', tremula: false },
-  { id: 'brasa', nome: 'Brasa', raio: 3, cor: '#FF5468', tremula: true },
+  { id: 'tocha', nome: t('Tocha'), raio: 6, cor: '#FFB25E', tremula: true },
+  { id: 'lanterna', nome: t('Lanterna'), raio: 9, cor: '#FFE9B8', tremula: false },
+  { id: 'magia', nome: t('Magia'), raio: 6, cor: '#7FA6FF', tremula: false },
+  { id: 'brasa', nome: t('Brasa'), raio: 3, cor: '#FF5468', tremula: true },
 ]
 
 /** Unidades da grade → px do mapa. */
@@ -38,9 +39,9 @@ export function fontesDeLuz({ atmosfera, tokens, grade }) {
   const fixas = (atmosfera?.luz?.fontes || []).filter(f => num(f?.x) && num(f?.y) && num(f?.raio)).map(f => ({
     id: `fonte-${f.id}`, x: f.x, y: f.y, raioPx: px(f.raio), cor: corValida(f.cor) ? f.cor : '#FFC27A', tremula: f.tremula === true,
   }))
-  const deTokens = (tokens || []).flatMap(t => {
-    const l = normalizarLuzToken(t?.luz)
-    return l && num(t.x) && num(t.y) ? [{ id: `token-${t.id}`, x: t.x, y: t.y, raioPx: px(l.raio), cor: l.cor, tremula: l.tremula }] : []
+  const deTokens = (tokens || []).flatMap(tk => {
+    const l = normalizarLuzToken(tk?.luz)
+    return l && num(tk.x) && num(tk.y) ? [{ id: `token-${tk.id}`, x: tk.x, y: tk.y, raioPx: px(l.raio), cor: l.cor, tremula: l.tremula }] : []
   })
   const deEfeitos = (atmosfera?.efeitos || []).flatMap(e => {
     const tipo = TIPOS_ATMOSFERA[e?.tipo]

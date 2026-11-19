@@ -1,28 +1,29 @@
 import { useRef } from 'react'
 import { validarResolucao } from '../../lib/resolutionEngine'
+import { t } from '../../i18n'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 const MODOS = [
-  { id: 'soma', nome: 'Soma', desc: 'Rola, soma e compara (o de sempre).' },
-  { id: 'sucessos', nome: 'Sucessos', desc: 'Parada de dados; conta dados ≥ dificuldade (WoD/V5).' },
-  { id: 'roll_under', nome: 'Roll-under', desc: 'Sucesso se rolar ≤ o alvo (Call of Cthulhu).' },
-  { id: 'faixas', nome: 'Faixas', desc: 'Soma e cai numa faixa com rótulo e texto (PbtA).' },
+  { id: 'soma', nome: t('Soma'), desc: t('Rola, soma e compara (o de sempre).') },
+  { id: 'sucessos', nome: t('Sucessos'), desc: t('Parada de dados; conta dados ≥ dificuldade (WoD/V5).') },
+  { id: 'roll_under', nome: t('Roll-under'), desc: t('Sucesso se rolar ≤ o alvo (Call of Cthulhu).') },
+  { id: 'faixas', nome: t('Faixas'), desc: t('Soma e cai numa faixa com rótulo e texto (PbtA).') },
 ]
 
 // Presets NEUTROS — estruturas, nunca emulação nomeada de jogos comerciais.
 const PRESETS = [
-  { rotulo: 'Parada de d10 (contar sucessos)', cfg: { modo: 'sucessos', dado: 10, dificuldade_padrao: 6, par_de_max_critico: true, um_anula_sucesso: false, max_conta_dobrado: false, botch: true } },
-  { rotulo: 'd100 roll-under com qualidades', cfg: { modo: 'roll_under', dado: 100, faixas_qualidade: true, critico_em: 1, desastre_em: 100 } },
-  { rotulo: '2d6 por faixas', cfg: { modo: 'faixas', notacao_base: '2d6', faixas: [
-    { de: null, ate: 6, rotulo: 'Falha', texto: 'Algo dá errado.', cor: 'vermelho' },
-    { de: 7, ate: 9, rotulo: 'Sucesso parcial', texto: 'Você consegue, mas a um custo.', cor: 'ambar' },
-    { de: 10, ate: null, rotulo: 'Sucesso pleno', texto: 'Você consegue plenamente.', cor: 'verde' },
+  { rotulo: t('Parada de d10 (contar sucessos)'), cfg: { modo: 'sucessos', dado: 10, dificuldade_padrao: 6, par_de_max_critico: true, um_anula_sucesso: false, max_conta_dobrado: false, botch: true } },
+  { rotulo: t('d100 roll-under com qualidades'), cfg: { modo: 'roll_under', dado: 100, faixas_qualidade: true, critico_em: 1, desastre_em: 100 } },
+  { rotulo: t('2d6 por faixas'), cfg: { modo: 'faixas', notacao_base: '2d6', faixas: [
+    { de: null, ate: 6, rotulo: t('Falha'), texto: t('Algo dá errado.'), cor: 'vermelho' },
+    { de: 7, ate: 9, rotulo: t('Sucesso parcial'), texto: t('Você consegue, mas a um custo.'), cor: 'ambar' },
+    { de: 10, ate: null, rotulo: t('Sucesso pleno'), texto: t('Você consegue plenamente.'), cor: 'verde' },
   ] } },
 ]
 
 const CORES = [
-  { id: 'verde', nome: '🟢 Verde' }, { id: 'ambar', nome: '🟡 Âmbar' }, { id: 'vermelho', nome: '🔴 Vermelho' }, { id: 'roxo', nome: '🟣 Roxo' },
+  { id: 'verde', nome: t('🟢 Verde') }, { id: 'ambar', nome: t('🟡 Âmbar') }, { id: 'vermelho', nome: t('🔴 Vermelho') }, { id: 'roxo', nome: t('🟣 Roxo') },
 ]
 
 function Check({ label, checked, onChange, hint }) {
@@ -62,15 +63,15 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
   return (
     <div className="bg-slate-800 border border-purple-700 rounded-xl p-4 space-y-3">
       <div>
-        <p className="text-purple-200 text-sm font-semibold">Resolução de rolagens</p>
+        <p className="text-purple-200 text-sm font-semibold">{t('Resolução de rolagens')}</p>
         <p className="text-accent-300 text-xs mt-0.5">
-          Como uma rolagem se resolve neste sistema. <span className="text-purple-400">Soma</span> = comportamento de sempre.
+          {t('Como uma rolagem se resolve neste sistema.')} <span className="text-purple-400">{t('Soma')}</span> {t('= comportamento de sempre.')}
         </p>
       </div>
 
       {/* Presets neutros */}
       <div className="flex flex-wrap gap-1.5">
-        <span className="text-accent-300 text-xs self-center">Presets:</span>
+        <span className="text-accent-300 text-xs self-center">{t('Presets:')}</span>
         {PRESETS.map(p => (
           <button key={p.rotulo} onClick={() => set({ ...p.cfg })}
             className="text-xs px-2 py-0.5 min-h-[24px] inline-flex items-center rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
@@ -94,7 +95,7 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
 
       {trocou && (
         <div className="rounded-lg border border-amber-700/70 bg-amber-950/40 px-3 py-2 text-amber-200 text-xs">
-          ⚠ Você trocou o modo de resolução. TODAS as rolagens do sistema passam a se resolver assim — revise as regras de rolagem dos atributos/perícias com o novo modo em mente.
+          {t('⚠ Você trocou o modo de resolução. TODAS as rolagens do sistema passam a se resolver assim — revise as regras de rolagem dos atributos/perícias com o novo modo em mente.')}
         </div>
       )}
 
@@ -102,15 +103,15 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
       {modo === 'sucessos' && (
         <div className="space-y-2 border-t border-purple-900/50 pt-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <label className="text-purple-300 text-xs flex items-center gap-1">dado d
+            <label className="text-purple-300 text-xs flex items-center gap-1">{t('dado d')}
               <input type="number" min={2} value={cfg.dado ?? 10} onChange={e => set({ dado: Number(e.target.value) })} className={`${INP} w-16`} /></label>
-            <label className="text-purple-300 text-xs flex items-center gap-1">dificuldade (≥)
+            <label className="text-purple-300 text-xs flex items-center gap-1">{t('dificuldade (≥)')}
               <input type="number" min={1} value={cfg.dificuldade_padrao ?? 6} onChange={e => set({ dificuldade_padrao: Number(e.target.value) })} className={`${INP} w-16`} /></label>
           </div>
-          <Check label="Dado máximo conta dobrado" hint="cada máximo = 2 sucessos" checked={cfg.max_conta_dobrado} onChange={v => set({ max_conta_dobrado: v })} />
-          <Check label="Par de máximos = crítico" hint="cada par de máximos → +2 sucessos (estilo V5)" checked={cfg.par_de_max_critico} onChange={v => set({ par_de_max_critico: v })} />
-          <Check label="1 anula sucesso" hint="cada 1 remove um sucesso (WoD clássico)" checked={cfg.um_anula_sucesso} onChange={v => set({ um_anula_sucesso: v })} />
-          <Check label="Botch (falha crítica)" hint="0 sucessos e ao menos um 1" checked={cfg.botch} onChange={v => set({ botch: v })} />
+          <Check label={t('Dado máximo conta dobrado')} hint={t('cada máximo = 2 sucessos')} checked={cfg.max_conta_dobrado} onChange={v => set({ max_conta_dobrado: v })} />
+          <Check label={t('Par de máximos = crítico')} hint={t('cada par de máximos → +2 sucessos (estilo V5)')} checked={cfg.par_de_max_critico} onChange={v => set({ par_de_max_critico: v })} />
+          <Check label={t('1 anula sucesso')} hint={t('cada 1 remove um sucesso (WoD clássico)')} checked={cfg.um_anula_sucesso} onChange={v => set({ um_anula_sucesso: v })} />
+          <Check label={t('Botch (falha crítica)')} hint={t('0 sucessos e ao menos um 1')} checked={cfg.botch} onChange={v => set({ botch: v })} />
         </div>
       )}
 
@@ -118,14 +119,14 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
       {modo === 'roll_under' && (
         <div className="space-y-2 border-t border-purple-900/50 pt-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <label className="text-purple-300 text-xs flex items-center gap-1">dado d
+            <label className="text-purple-300 text-xs flex items-center gap-1">{t('dado d')}
               <input type="number" min={2} value={cfg.dado ?? 100} onChange={e => set({ dado: Number(e.target.value) })} className={`${INP} w-16`} /></label>
-            <label className="text-purple-300 text-xs flex items-center gap-1">crítico ≤
+            <label className="text-purple-300 text-xs flex items-center gap-1">{t('crítico ≤')}
               <input type="number" min={0} value={cfg.critico_em ?? 1} onChange={e => set({ critico_em: Number(e.target.value) })} className={`${INP} w-14`} /></label>
-            <label className="text-purple-300 text-xs flex items-center gap-1">desastre ≥
+            <label className="text-purple-300 text-xs flex items-center gap-1">{t('desastre ≥')}
               <input type="number" value={cfg.desastre_em ?? 100} onChange={e => set({ desastre_em: Number(e.target.value) })} className={`${INP} w-16`} /></label>
           </div>
-          <Check label="Faixas de qualidade" hint="extremo ≤ alvo/5, bom ≤ alvo/2, normal ≤ alvo" checked={cfg.faixas_qualidade} onChange={v => set({ faixas_qualidade: v })} />
+          <Check label={t('Faixas de qualidade')} hint={t('extremo ≤ alvo/5, bom ≤ alvo/2, normal ≤ alvo')} checked={cfg.faixas_qualidade} onChange={v => set({ faixas_qualidade: v })} />
         </div>
       )}
 
@@ -133,30 +134,30 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
       {modo === 'faixas' && (
         <div className="space-y-1.5 border-t border-purple-900/50 pt-2">
           <label className="text-purple-300 text-xs flex items-center gap-1.5">
-            notação base
+            {t('notação base')}
             <input type="text" value={cfg.notacao_base ?? '2d6'} onChange={e => set({ notacao_base: e.target.value })} className={`${INP} w-24 font-mono`} />
-            <span className="text-accent-300 text-xs">+ modificador da rolagem</span>
+            <span className="text-accent-300 text-xs">{t('+ modificador da rolagem')}</span>
           </label>
-          <p className="text-accent-300 text-xs">Faixas do resultado. Vazio = aberto (−∞ / +∞). Entre faixas que cobrem o total, vence a de maior "de".</p>
+          <p className="text-accent-300 text-xs">{t('Faixas do resultado. Vazio = aberto (−∞ / +∞). Entre faixas que cobrem o total, vence a de maior "de".')}</p>
           {faixas.map((f, i) => (
             <div key={i} className="rounded-lg border border-purple-900/50 bg-slate-900/40 p-2 space-y-1">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-accent-300 text-xs">de</span>
+                <span className="text-accent-300 text-xs">{t('de')}</span>
                 <input type="number" value={f.de ?? ''} onChange={e => setFaixa(i, { de: e.target.value === '' ? null : Number(e.target.value) })} placeholder="−∞" className={`${INP} w-14 text-center`} />
-                <span className="text-accent-300 text-xs">até</span>
+                <span className="text-accent-300 text-xs">{t('até')}</span>
                 <input type="number" value={f.ate ?? ''} onChange={e => setFaixa(i, { ate: e.target.value === '' ? null : Number(e.target.value) })} placeholder="+∞" className={`${INP} w-14 text-center`} />
-                <input type="text" value={f.rotulo || ''} onChange={e => setFaixa(i, { rotulo: e.target.value })} placeholder="rótulo" className={`${INP} flex-1 min-w-[6rem]`} />
+                <input type="text" value={f.rotulo || ''} onChange={e => setFaixa(i, { rotulo: e.target.value })} placeholder={t('rótulo')} className={`${INP} flex-1 min-w-[6rem]`} />
                 <select value={f.cor || 'verde'} onChange={e => setFaixa(i, { cor: e.target.value })} className={INP}>
                   {CORES.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
                 </select>
                 <button onClick={() => set({ faixas: faixas.filter((_, j) => j !== i) })} className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
               </div>
-              <input type="text" value={f.texto || ''} onChange={e => setFaixa(i, { texto: e.target.value })} placeholder="texto que aparece no feed (ex: Você consegue, mas a um custo.)" className={`${INP} w-full`} />
+              <input type="text" value={f.texto || ''} onChange={e => setFaixa(i, { texto: e.target.value })} placeholder={t('texto que aparece no feed (ex: Você consegue, mas a um custo.)')} className={`${INP} w-full`} />
             </div>
           ))}
           <button onClick={() => set({ faixas: [...faixas, { de: null, ate: null, rotulo: '', texto: '', cor: 'verde' }] })}
             className="text-xs px-2 py-0.5 min-h-[24px] inline-flex items-center rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
-            + faixa
+            {t('+ faixa')}
           </button>
         </div>
       )}
@@ -164,56 +165,56 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
       {/* Explosão (transversal) */}
       {modo !== 'roll_under' && (
         <div className="border-t border-purple-900/50 pt-2">
-          <Check label="Dados explosivos" hint="o máximo rola de novo e acumula (trava de 20 por dado)" checked={cfg.explosao?.ativo} onChange={v => set({ explosao: { ...(cfg.explosao || {}), ativo: v } })} />
+          <Check label={t('Dados explosivos')} hint={t('o máximo rola de novo e acumula (trava de 20 por dado)')} checked={cfg.explosao?.ativo} onChange={v => set({ explosao: { ...(cfg.explosao || {}), ativo: v } })} />
         </div>
       )}
 
       {/* Rerolagem com recurso (23.4) — modo sucessos */}
       {modo === 'sucessos' && (
         <div className="border-t border-purple-900/50 pt-2 space-y-2">
-          <Check label="Rerolagem gastando recurso" hint="ex: Força de Vontade rerola dados" checked={rerol.ativo} onChange={v => setRerol({ ativo: v })} />
+          <Check label={t('Rerolagem gastando recurso')} hint={t('ex: Força de Vontade rerola dados')} checked={rerol.ativo} onChange={v => setRerol({ ativo: v })} />
           {rerol.ativo && (
             <div className="flex items-center gap-2 flex-wrap pl-5">
-              <label className="text-purple-300 text-xs flex items-center gap-1">recurso
+              <label className="text-purple-300 text-xs flex items-center gap-1">{t('recurso')}
                 <select value={rerol.pool_id || ''} onChange={e => setRerol({ pool_id: e.target.value || null })} className={INP}>
-                  <option value="">— escolha um pool —</option>
+                  <option value="">{t('— escolha um pool —')}</option>
                   {pools.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
                 </select>
               </label>
-              <label className="text-purple-300 text-xs flex items-center gap-1">custo
+              <label className="text-purple-300 text-xs flex items-center gap-1">{t('custo')}
                 <input type="number" min={1} value={rerol.custo ?? 1} onChange={e => setRerol({ custo: Number(e.target.value) })} className={`${INP} w-14`} /></label>
-              <label className="text-purple-300 text-xs flex items-center gap-1">máx. dados
+              <label className="text-purple-300 text-xs flex items-center gap-1">{t('máx. dados')}
                 <input type="number" min={1} value={rerol.max_dados ?? 3} onChange={e => setRerol({ max_dados: Number(e.target.value) })} className={`${INP} w-14`} /></label>
             </div>
           )}
-          {rerol.ativo && !rerol.pool_id && <p className="text-amber-400/80 text-xs pl-5">Escolha o pool que a rerolagem gasta{pools.length === 0 ? ' (crie um recurso na aba Recursos primeiro).' : '.'}</p>}
+          {rerol.ativo && !rerol.pool_id && <p className="text-amber-400/80 text-xs pl-5">{pools.length === 0 ? t('Escolha o pool que a rerolagem gasta (crie um recurso na aba Recursos primeiro).') : t('Escolha o pool que a rerolagem gasta.')}</p>}
         </div>
       )}
 
       {/* Dados especiais na parada (23.5) — modo sucessos */}
       {modo === 'sucessos' && (
         <div className="border-t border-purple-900/50 pt-2 space-y-2">
-          <Check label="Dados especiais na parada" hint="parte da parada em outra cor (ex: Dados de Fome)" checked={esp.ativo} onChange={v => setEsp({ ativo: v })} />
+          <Check label={t('Dados especiais na parada')} hint={t('parte da parada em outra cor (ex: Dados de Fome)')} checked={esp.ativo} onChange={v => setEsp({ ativo: v })} />
           {esp.ativo && (
             <div className="space-y-2 pl-5">
               <div className="flex items-center gap-2 flex-wrap">
-                <label className="text-purple-300 text-xs flex items-center gap-1">nome
-                  <input type="text" value={esp.nome || ''} onChange={e => setEsp({ nome: e.target.value })} placeholder="Fome" className={`${INP} w-28`} /></label>
-                <label className="text-purple-300 text-xs flex items-center gap-1">quantidade (fórmula)
+                <label className="text-purple-300 text-xs flex items-center gap-1">{t('nome')}
+                  <input type="text" value={esp.nome || ''} onChange={e => setEsp({ nome: e.target.value })} placeholder={t('Fome')} className={`${INP} w-28`} /></label>
+                <label className="text-purple-300 text-xs flex items-center gap-1">{t('quantidade (fórmula)')}
                   <input type="text" value={esp.quantidade_formula || ''} onChange={e => setEsp({ quantidade_formula: e.target.value })} placeholder="recurso(fome)" className={`${INP} w-40 font-mono`} /></label>
               </div>
-              <p className="text-accent-300 text-xs">Os N primeiros dados da parada viram especiais. Eventos com eles disparam marcações (o efeito é arbitrado pela mesa):</p>
+              <p className="text-accent-300 text-xs">{t('Os N primeiros dados da parada viram especiais. Eventos com eles disparam marcações (o efeito é arbitrado pela mesa):')}</p>
               {[
-                { evento: 'critico_com_especial', rotulo: 'Crítico envolvendo dado especial', ph: 'Crítico Sujo' },
-                { evento: 'falha_com_especial', rotulo: 'Falha/botch com 1 em dado especial', ph: 'Falha Bestial' },
+                { evento: 'critico_com_especial', rotulo: t('Crítico envolvendo dado especial'), ph: t('Crítico Sujo') },
+                { evento: 'falha_com_especial', rotulo: t('Falha/botch com 1 em dado especial'), ph: t('Falha Bestial') },
               ].map(({ evento, rotulo, ph }) => {
                 const m = marc(evento)
                 return (
                   <div key={evento} className="rounded-lg border border-purple-900/50 bg-slate-900/40 p-2 space-y-1">
                     <p className="text-purple-400 text-xs">{rotulo}</p>
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <input type="text" value={m.rotulo} onChange={e => setMarc(evento, { rotulo: e.target.value })} placeholder={`rótulo (ex: ${ph})`} className={`${INP} w-40`} />
-                      <input type="text" value={m.texto} onChange={e => setMarc(evento, { texto: e.target.value })} placeholder="texto no feed (opcional)" className={`${INP} flex-1 min-w-[10rem]`} />
+                      <input type="text" value={m.rotulo} onChange={e => setMarc(evento, { rotulo: e.target.value })} placeholder={t('rótulo (ex: {ph})', { ph })} className={`${INP} w-40`} />
+                      <input type="text" value={m.texto} onChange={e => setMarc(evento, { texto: e.target.value })} placeholder={t('texto no feed (opcional)')} className={`${INP} flex-1 min-w-[10rem]`} />
                     </div>
                   </div>
                 )
@@ -227,15 +228,15 @@ export default function ResolucaoEditor({ cfg = {}, pools = [], onChange }) {
       {val.erros.map((e, i) => <p key={`e${i}`} className="text-red-400 text-xs">⚠ {e}</p>)}
       {val.avisos.map((a, i) => <p key={`a${i}`} className="text-amber-400/80 text-xs">• {a}</p>)}
       {modo !== 'soma' && val.valido && val.erros.length === 0 && (
-        <p className="text-green-600 text-xs">✓ configuração válida</p>
+        <p className="text-green-600 text-xs">{t('✓ configuração válida')}</p>
       )}
 
       {/* Ajuda: vantagem por modo (23.6) */}
       {(modo === 'sucessos' || modo === 'roll_under') && (
         <p className="text-accent-300 text-xs border-t border-purple-900/40 pt-2">
-          Vantagem/desvantagem neste modo: {modo === 'sucessos'
-            ? '+2 / −2 dados na parada.'
-            : 'rola duas vezes e pega a melhor / pior.'}
+          {t('Vantagem/desvantagem neste modo:')} {modo === 'sucessos'
+            ? t('+2 / −2 dados na parada.')
+            : t('rola duas vezes e pega a melhor / pior.')}
         </p>
       )}
     </div>

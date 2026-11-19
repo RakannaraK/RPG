@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
@@ -26,30 +27,30 @@ function EtapaGrupos({ etapa, onChange, atributos, pericias }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
-        <label className="text-purple-400 text-xs flex items-center gap-1">membros de
+        <label className="text-purple-400 text-xs flex items-center gap-1">{t('membros de')}
           <select value={etapa.alvo || 'atributo'} onChange={e => setEtapa({ alvo: e.target.value, grupos: [] })} className={INP}>
-            <option value="atributo">Atributos</option>
-            <option value="pericia">Perícias</option>
+            <option value="atributo">{t('Atributos')}</option>
+            <option value="pericia">{t('Perícias')}</option>
           </select>
         </label>
-        <label className="text-purple-400 text-xs flex items-center gap-1">valores de prioridade
+        <label className="text-purple-400 text-xs flex items-center gap-1">{t('valores de prioridade')}
           <input type="text" value={(etapa.valores_prioridade || []).join(', ')}
             onChange={e => setEtapa({ valores_prioridade: e.target.value.split(',').map(s => Number(s.trim())).filter(n => Number.isFinite(n)) })}
             placeholder="7, 5, 3" className={`${INP} w-28 font-mono`} /></label>
-        <label className="text-purple-400 text-xs flex items-center gap-1">base/membro
+        <label className="text-purple-400 text-xs flex items-center gap-1">{t('base/membro')}
           <input type="number" value={etapa.base_por_membro ?? 0} onChange={e => setEtapa({ base_por_membro: Number(e.target.value) })} className={`${INP} w-14 text-center`} /></label>
-        <label className="text-purple-400 text-xs flex items-center gap-1">máx/membro
+        <label className="text-purple-400 text-xs flex items-center gap-1">{t('máx/membro')}
           <input type="number" value={etapa.maximo_por_membro ?? ''} onChange={e => setEtapa({ maximo_por_membro: e.target.value === '' ? null : Number(e.target.value) })} className={`${INP} w-14 text-center`} /></label>
       </div>
       {(etapa.valores_prioridade || []).length !== grupos.length && (
-        <p className="text-amber-400/80 text-xs">⚠ {grupos.length} grupo(s) mas {(etapa.valores_prioridade || []).length} valor(es) de prioridade — devem ter a mesma quantidade.</p>
+        <p className="text-amber-400/80 text-xs">{t('⚠ {g} grupo(s) mas {v} valor(es) de prioridade — devem ter a mesma quantidade.', { g: grupos.length, v: (etapa.valores_prioridade || []).length })}</p>
       )}
-      <p className="text-accent-300 text-xs">Grupos (o jogador ordena estes grupos; a posição decide qual valor de prioridade cada um recebe)</p>
+      <p className="text-accent-300 text-xs">{t('Grupos (o jogador ordena estes grupos; a posição decide qual valor de prioridade cada um recebe)')}</p>
       {grupos.map((g, i) => (
         <div key={g.id} className="rounded-lg border border-purple-900/50 bg-slate-900/40 p-2 space-y-1">
           <div className="flex items-center gap-1.5 flex-wrap">
             <input type="text" value={g.nome || ''} onChange={e => setGrupo(i, { nome: e.target.value })}
-              placeholder="Nome do grupo (ex: Físico)" className={`${INP} w-32`} />
+              placeholder={t('Nome do grupo (ex: Físico)')} className={`${INP} w-32`} />
             <button onClick={() => setEtapa({ grupos: grupos.filter((_, j) => j !== i) })}
               className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
           </div>
@@ -64,13 +65,13 @@ function EtapaGrupos({ etapa, onChange, atributos, pericias }) {
                 </label>
               )
             })}
-            {catalogo.length === 0 && <span className="text-ink-dim text-xs">Cadastre {etapa.alvo === 'pericia' ? 'perícias' : 'atributos'} primeiro.</span>}
+            {catalogo.length === 0 && <span className="text-ink-dim text-xs">{etapa.alvo === 'pericia' ? t('Cadastre perícias primeiro.') : t('Cadastre atributos primeiro.')}</span>}
           </div>
         </div>
       ))}
       <button onClick={() => setEtapa({ grupos: [...grupos, { id: novoId('grupo'), nome: '', membros: [] }] })}
         className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
-        + grupo
+        {t('+ grupo')}
       </button>
     </div>
   )
@@ -80,17 +81,17 @@ function EtapaPontos({ etapa, onChange }) {
   const setEtapa = patch => onChange({ ...etapa, ...patch })
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <label className="text-purple-400 text-xs flex items-center gap-1">alvo
+      <label className="text-purple-400 text-xs flex items-center gap-1">{t('alvo')}
         <select value={etapa.alvo || 'linha_poder'} onChange={e => setEtapa({ alvo: e.target.value })} className={INP}>
-          <option value="linha_poder">Linha de poder</option>
+          <option value="linha_poder">{t('Linha de poder')}</option>
         </select></label>
-      <label className="text-purple-400 text-xs flex items-center gap-1">pontos
+      <label className="text-purple-400 text-xs flex items-center gap-1">{t('pontos')}
         <input type="number" min={0} value={etapa.pontos ?? 0} onChange={e => setEtapa({ pontos: Number(e.target.value) })} className={`${INP} w-14 text-center`} /></label>
-      <label className="text-purple-400 text-xs flex items-center gap-1">máx/item
+      <label className="text-purple-400 text-xs flex items-center gap-1">{t('máx/item')}
         <input type="number" value={etapa.maximo_por_item ?? ''} onChange={e => setEtapa({ maximo_por_item: e.target.value === '' ? null : Number(e.target.value) })} className={`${INP} w-14 text-center`} /></label>
       <label className="text-purple-400 text-xs flex items-center gap-1.5 cursor-pointer">
         <input type="checkbox" checked={etapa.apenas_nativas !== false} onChange={e => setEtapa({ apenas_nativas: e.target.checked })} className="accent-purple-500" />
-        apenas linhas nativas
+        {t('apenas linhas nativas')}
       </label>
     </div>
   )
@@ -99,7 +100,7 @@ function EtapaPontos({ etapa, onChange }) {
 function EtapaTexto({ etapa, onChange }) {
   return (
     <textarea rows={2} value={etapa.descricao || ''} onChange={e => onChange({ ...etapa, descricao: e.target.value })}
-      placeholder="Texto-guia (ex: Escolha Convicções e Pilares; anote-os nas seções da ficha.)"
+      placeholder={t('Texto-guia (ex: Escolha Convicções e Pilares; anote-os nas seções da ficha.)')}
       className="w-full px-3 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" />
   )
 }
@@ -118,21 +119,20 @@ export default function CriacaoEditor({ cfg = {}, onChange, atributos = [], peri
     <div className="bg-slate-800 border border-purple-700 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <p className="text-purple-200 text-sm font-semibold">Criação por prioridades</p>
+          <p className="text-purple-200 text-sm font-semibold">{t('Criação por prioridades')}</p>
           <p className="text-accent-300 text-xs mt-0.5">
-            Assistente clássico: o jogador distribui valores entre grupos (ex: 7/5/3 entre Físico/Social/Mental),
-            em etapas configuráveis. Substitui a rolagem/point-buy quando ativo.
+            {t('Assistente clássico: o jogador distribui valores entre grupos (ex: 7/5/3 entre Físico/Social/Mental), em etapas configuráveis. Substitui a rolagem/point-buy quando ativo.')}
           </p>
         </div>
         <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer shrink-0">
           <input type="checkbox" checked={!!cfg.ativo} onChange={e => set({ ativo: e.target.checked })} className="accent-purple-500" />
-          ativar
+          {t('ativar')}
         </label>
       </div>
 
       {cfg.ativo && pontosStatusAtivo && (
         <p className="text-amber-400 text-xs">
-          ⚠ Pontos de status (F22) também está ativo. Os métodos de criação são excludentes — desative um dos dois.
+          {t('⚠ Pontos de status (F22) também está ativo. Os métodos de criação são excludentes — desative um dos dois.')}
         </p>
       )}
 
@@ -142,9 +142,9 @@ export default function CriacaoEditor({ cfg = {}, onChange, atributos = [], peri
             <div key={etapa.id} className="rounded-xl border border-purple-900/60 bg-slate-900/40 p-3 space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
                 <input type="text" value={etapa.nome || ''} onChange={e => setEtapa(i, { nome: e.target.value })}
-                  placeholder="Nome da etapa (ex: Atributos)" className={`${INP} w-40 font-semibold`} />
+                  placeholder={t('Nome da etapa (ex: Atributos)')} className={`${INP} w-40 font-semibold`} />
                 <span className="text-accent-300 text-xs uppercase tracking-wide">
-                  {etapa.tipo === 'prioridade_grupos' ? 'grupos por prioridade' : etapa.tipo === 'pontos_livres' ? 'pontos livres' : 'texto-guia'}
+                  {etapa.tipo === 'prioridade_grupos' ? t('grupos por prioridade') : etapa.tipo === 'pontos_livres' ? t('pontos livres') : t('texto-guia')}
                 </span>
                 <button onClick={() => set({ etapas: etapas.filter((_, j) => j !== i) })}
                   className="ml-auto w-6 h-6 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">✕</button>
@@ -164,15 +164,15 @@ export default function CriacaoEditor({ cfg = {}, onChange, atributos = [], peri
           <div className="flex items-center gap-2 flex-wrap">
             <button onClick={() => set({ etapas: [...etapas, ETAPA_GRUPOS()] })}
               className="text-xs px-2 py-1 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
-              + etapa de grupos por prioridade
+              {t('+ etapa de grupos por prioridade')}
             </button>
             <button onClick={() => set({ etapas: [...etapas, ETAPA_PONTOS()] })}
               className="text-xs px-2 py-1 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
-              + etapa de pontos livres
+              {t('+ etapa de pontos livres')}
             </button>
             <button onClick={() => set({ etapas: [...etapas, ETAPA_TEXTO()] })}
               className="text-xs px-2 py-1 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
-              + etapa de texto-guia
+              {t('+ etapa de texto-guia')}
             </button>
           </div>
         </div>

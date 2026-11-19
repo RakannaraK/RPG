@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { cronometroVisivel, iniciarCronometro, pararCronometro } from '../../lib/minigames/cronometro'
+import { t } from '../../i18n'
 
 const fmt = s => s.toFixed(2).replace('.', ',')
 
@@ -9,7 +10,7 @@ const fmt = s => s.toFixed(2).replace('.', ',')
  */
 export default function JogoCronometro({ config, semente, onFim, onSom }) {
   const c = useMemo(() => iniciarCronometro(config, semente), [config, semente])
-  const [t, setT] = useState(0)
+  const [tempoAtual, setTempoAtual] = useState(0)
   const [parado, setParado] = useState(false)
   const inicioRef = useRef(0)
   const paradoRef = useRef(false)
@@ -21,7 +22,7 @@ export default function JogoCronometro({ config, semente, onFim, onSom }) {
     paradoRef.current = true
     setParado(true)
     const tempo = (performance.now() - inicioRef.current) / 1000
-    setT(tempo)
+    setTempoAtual(tempo)
     const resultado = pararCronometro(c, Math.min(tempo, c.limite))
     onSom?.({ Perfeito: 'critico', Excelente: 'arcano', Errou: 'falha' }[resultado.faixa] || 'neutro')
     onFimRef.current(resultado)
@@ -34,7 +35,7 @@ export default function JogoCronometro({ config, semente, onFim, onSom }) {
       if (paradoRef.current) return
       const agora = (performance.now() - inicioRef.current) / 1000
       if (agora >= c.limite) { parar(); return }
-      setT(agora)
+      setTempoAtual(agora)
       raf = requestAnimationFrame(quadro)
     }
     raf = requestAnimationFrame(quadro)
@@ -51,26 +52,26 @@ export default function JogoCronometro({ config, semente, onFim, onSom }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [c])
 
-  const visivel = cronometroVisivel(c, t) || parado
+  const visivel = cronometroVisivel(c, tempoAtual) || parado
   return (
     <div className="flex flex-col items-center gap-5 select-none">
-      <p className="text-ink-dim text-sm">Pare exatamente em</p>
+      <p className="text-ink-dim text-sm">{t('Pare exatamente em')}</p>
       <p className="text-dice-400 text-5xl font-bold tabular-nums">{fmt(c.alvo)} s</p>
       <p
         className={`text-6xl font-mono tabular-nums transition-all ${visivel ? 'text-ink' : 'text-ink-dim blur-md'}`}
         aria-live="off"
       >
-        {visivel ? fmt(t) : '??,??'}
+        {visivel ? fmt(tempoAtual) : '??,??'}
       </p>
-      {!cronometroVisivel(c, t) && !parado && <p className="text-ink-dim text-xs">Sumiu! Conte de cabeça…</p>}
+      {!cronometroVisivel(c, tempoAtual) && !parado && <p className="text-ink-dim text-xs">{t('Sumiu! Conte de cabeça…')}</p>}
       <button
         type="button"
         onPointerDown={e => { e.preventDefault(); parar() }}
         className="w-48 h-20 rounded-2xl bg-red-600 hover:bg-red-500 text-white text-2xl font-bold shadow-xl active:scale-95 transition-transform touch-none"
       >
-        PARAR
+        {t('PARAR')}
       </button>
-      <p className="text-ink-dim text-xs">ou aperte espaço</p>
+      <p className="text-ink-dim text-xs">{t('ou aperte espaço')}</p>
     </div>
   )
 }

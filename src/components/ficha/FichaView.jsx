@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useUpdateFicha } from '../../hooks/useFicha'
 import { useRolagem } from '../../hooks/useRolagem'
 import AtributoCard from './AtributoCard'
+import { t } from '../../i18n'
 
 export default function FichaView({ ficha, valoresAtributos, refetch, isDono, mesaId, fichaId }) {
   const { updateFicha, updateValorAtributo, loading: salvando } = useUpdateFicha()
@@ -26,7 +27,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
       setTimeout(() => setHpSalvo(false), 2000)
       refetch()
     } catch (err) {
-      setHpErro(err.message || 'Erro ao salvar HP.')
+      setHpErro(err.message || t('Erro ao salvar HP.'))
     }
   }
 
@@ -37,7 +38,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
       setNotasSalvas(true)
       setTimeout(() => setNotasSalvas(false), 2000)
     } catch (err) {
-      setNotasErro(err.message || 'Erro ao salvar notas.')
+      setNotasErro(err.message || t('Erro ao salvar notas.'))
     }
   }
 
@@ -60,36 +61,36 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-5">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
           <div>
-            <p className="text-purple-400 text-xs mb-1">Nome</p>
+            <p className="text-purple-400 text-xs mb-1">{t('Nome')}</p>
             <p className="text-white font-semibold">{ficha.nome_personagem}</p>
           </div>
           {ficha.raca && (
             <div>
-              <p className="text-purple-400 text-xs mb-1">Raça</p>
+              <p className="text-purple-400 text-xs mb-1">{t('Raça')}</p>
               <p className="text-white">{ficha.raca}</p>
             </div>
           )}
           {ficha.classe && (
             <div>
-              <p className="text-purple-400 text-xs mb-1">Classe</p>
+              <p className="text-purple-400 text-xs mb-1">{t('Classe')}</p>
               <p className="text-white">{ficha.classe}</p>
             </div>
           )}
           <div>
-            <p className="text-purple-400 text-xs mb-1">Nível</p>
-            <p className="text-white font-semibold">Nível {ficha.nivel || 1}</p>
+            <p className="text-purple-400 text-xs mb-1">{t('Nível')}</p>
+            <p className="text-white font-semibold">{t('Nível {n}', { n: ficha.nivel || 1 })}</p>
           </div>
         </div>
       </div>
 
       {/* HP */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-5">
-        <p className="text-purple-200 font-medium text-sm mb-3">Pontos de vida</p>
+        <p className="text-purple-200 font-medium text-sm mb-3">{t('Pontos de vida')}</p>
         {isDono ? (
           <>
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-2">
-                <span className="text-purple-400 text-sm">Atual</span>
+                <span className="text-purple-400 text-sm">{t('Atual')}</span>
                 <input
                   type="number"
                   value={hpAtual}
@@ -99,7 +100,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
               </div>
               <span className="text-accent-300 text-lg">/</span>
               <div className="flex items-center gap-2">
-                <span className="text-purple-400 text-sm">Máximo</span>
+                <span className="text-purple-400 text-sm">{t('Máximo')}</span>
                 <input
                   type="number"
                   value={hpMaximo}
@@ -116,7 +117,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
                     : 'bg-purple-700 hover:bg-purple-600 text-sobre-acento'
                 }`}
               >
-                {hpSalvo ? '✓ Salvo' : 'Salvar'}
+                {hpSalvo ? t('✓ Salvo') : t('Salvar')}
               </button>
             </div>
             {hpErro && <p className="mt-2 text-red-400 text-xs">{hpErro}</p>}
@@ -141,7 +142,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
       {valoresAtributos.length > 0 && (
         <div>
           <p className="text-purple-200 font-medium text-sm mb-3">
-            Atributos ({valoresAtributos.length})
+            {t('Atributos ({n})', { n: valoresAtributos.length })}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {valoresAtributos.map(va => (
@@ -163,7 +164,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
       {/* Notas */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <p className="text-purple-200 font-medium text-sm">Notas</p>
+          <p className="text-purple-200 font-medium text-sm">{t('Notas')}</p>
           {isDono && (
             <button
               onClick={salvarNotas}
@@ -174,7 +175,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
                   : 'bg-purple-800 hover:bg-purple-700 text-sobre-acento'
               }`}
             >
-              {notasSalvas ? '✓ Salvo' : 'Salvar'}
+              {notasSalvas ? t('✓ Salvo') : t('Salvar')}
             </button>
           )}
         </div>
@@ -182,7 +183,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
           <textarea
             value={notas}
             onChange={e => setNotas(e.target.value)}
-            placeholder="Histórico, personalidade, segredos, equipamentos, anotações..."
+            placeholder={t('Histórico, personalidade, segredos, equipamentos, anotações...')}
             rows={6}
             className="w-full px-4 py-3 rounded-xl bg-void border border-border text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
           />
@@ -191,7 +192,7 @@ export default function FichaView({ ficha, valoresAtributos, refetch, isDono, me
             {notas ? (
               <p className="text-white text-sm whitespace-pre-wrap">{notas}</p>
             ) : (
-              <p className="text-accent-300 text-sm italic">Sem notas.</p>
+              <p className="text-accent-300 text-sm italic">{t('Sem notas.')}</p>
             )}
           </div>
         )}

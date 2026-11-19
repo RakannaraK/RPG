@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 export function useRacasClasses(sistemaId) {
   const [racas, setRacas] = useState([])
@@ -45,7 +46,7 @@ export function useRacasClasses(sistemaId) {
         modificadores: modsClasses.filter(m => m.classe_id === c.id),
       })))
     } catch (err) {
-      setError(err.message || 'Erro ao carregar raças e classes.')
+      setError(err.message || t('Erro ao carregar raças e classes.'))
     } finally {
       setLoading(false)
     }

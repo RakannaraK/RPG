@@ -19,6 +19,7 @@ import { destinosParaDar } from '../../lib/bau'
 import Modal, { FecharModal } from '../ui/Modal'
 import Botao from '../ui/Botao'
 import { useConfirmar } from '../ui/Confirmar'
+import { t, tn } from '../../i18n'
 
 /** F49 — tirar o item desta ficha: para o baú do grupo ou para outro personagem. */
 function MoverItem({ item, fichaId, mesaId, onMovido, onFechar }) {
@@ -44,20 +45,20 @@ function MoverItem({ item, fichaId, mesaId, onMovido, onFechar }) {
       <button
         type="button" disabled={ocupado} onClick={() => mover('guardar_no_bau', { p_item_id: item.id })}
         className="px-2.5 py-1 min-h-[24px] rounded-lg text-xs bg-slate-700 hover:bg-slate-600 text-purple-100 disabled:opacity-50"
-      >Guardar no baú do grupo</button>
+      >{t('Guardar no baú do grupo')}</button>
       {fichas?.length > 0 && (
         <>
-          <select value={destino} onChange={e => setDestino(e.target.value)} aria-label="Dar para" className="px-2 py-1 rounded-lg bg-void border border-border text-ink text-xs">
-            <option value="">Dar para…</option>
+          <select value={destino} onChange={e => setDestino(e.target.value)} aria-label={t('Dar para')} className="px-2 py-1 rounded-lg bg-void border border-border text-ink text-xs">
+            <option value="">{t('Dar para…')}</option>
             {fichas.map(f => <option key={f.id} value={f.id}>{f.nome_personagem}</option>)}
           </select>
           <button
             type="button" disabled={ocupado || !destino} onClick={() => mover('dar_item', { p_item_id: item.id, p_ficha_destino: destino })}
             className="px-2.5 py-1 min-h-[24px] rounded-lg text-xs bg-slate-700 hover:bg-slate-600 text-purple-100 disabled:opacity-50"
-          >Dar</button>
+          >{t('Dar')}</button>
         </>
       )}
-      <button type="button" onClick={onFechar} className="px-2 py-1 min-h-[24px] text-xs text-ink-dim hover:text-ink">Cancelar</button>
+      <button type="button" onClick={onFechar} className="px-2 py-1 min-h-[24px] text-xs text-ink-dim hover:text-ink">{t('Cancelar')}</button>
       {erro && <p className="w-full text-harm text-xs" role="alert">{erro}</p>}
     </div>
   )
@@ -66,11 +67,11 @@ function MoverItem({ item, fichaId, mesaId, onMovido, onFechar }) {
 const TIPOS_ITEM = ['item', 'arma', 'armadura', 'magico', 'outro']
 
 const TIPO_LABELS = {
-  item: 'Item',
-  arma: 'Arma',
-  armadura: 'Armadura',
-  magico: 'Mágico',
-  outro: 'Outro',
+  item: t('Item'),
+  arma: t('Arma'),
+  armadura: t('Armadura'),
+  magico: t('Mágico'),
+  outro: t('Outro'),
 }
 
 const TIPO_COLORS = {
@@ -121,11 +122,11 @@ function RollResultCompact({ resultado, rotulo, rolando, onClose, skin, detalham
               descartado={d.descartado}
               skin={skin}
             />
-            {d.descartado && <span className="text-harm text-xs">desc.</span>}
+            {d.descartado && <span className="text-harm text-xs">{t('desc.')}</span>}
           </div>
         ))}
         <div className="flex items-baseline gap-1.5 ml-1">
-          <span className="text-ink-dim text-xs">Total:</span>
+          <span className="text-ink-dim text-xs">{t('Total:')}</span>
           <span className="text-2xl font-bold text-ink leading-none">{total}</span>
         </div>
       </div>
@@ -137,7 +138,7 @@ function RollResultCompact({ resultado, rotulo, rolando, onClose, skin, detalham
         </p>
       )}
       {descartados.length > 0 && (
-        <p className="text-harm text-xs">descartados: {descartados.join(', ')}</p>
+        <p className="text-harm text-xs">{t('descartados: {lista}', { lista: descartados.join(', ') })}</p>
       )}
       {extras.length > 0 && (
         <p className="text-ink-dim text-xs leading-tight">
@@ -187,7 +188,7 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
 
   async function handleSalvar() {
     setErro('')
-    if (!nome.trim()) { setErro('O nome do item é obrigatório.'); return }
+    if (!nome.trim()) { setErro(t('O nome do item é obrigatório.')); return }
     setSalvando(true)
     try {
       let imagem_url = item?.imagem_url || null
@@ -236,7 +237,7 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
         som_preset: somPreset || null, // FV.5a
       })
     } catch (err) {
-      setErro(err.message || 'Erro ao salvar item.')
+      setErro(err.message || t('Erro ao salvar item.'))
     } finally {
       setSalvando(false)
     }
@@ -245,21 +246,21 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
   return (
     <Modal
       onFechar={onFechar} bloqueado={salvando}
-      titulo={item ? 'Editar item' : 'Novo item'}
+      titulo={item ? t('Editar item') : t('Novo item')}
       rodape={
         <>
           <FecharModal disabled={salvando} />
-          <Botao variante="primario" onClick={handleSalvar} disabled={salvando}>{salvando ? 'Salvando…' : 'Salvar'}</Botao>
+          <Botao variante="primario" onClick={handleSalvar} disabled={salvando}>{salvando ? t('Salvando…') : t('Salvar')}</Botao>
         </>
       }
     >
       <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-ink mb-1">Nome *</label>
+              <label className="block text-sm font-medium text-ink mb-1">{t('Nome *')}</label>
               <input
                 type="text"
-                placeholder="Ex: Espada Longa +1"
+                placeholder={t('Ex: Espada Longa +1')}
                 value={nome}
                 onChange={e => setNome(e.target.value)}
                 autoFocus
@@ -267,14 +268,14 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-ink mb-1">Tipo</label>
+              <label className="block text-sm font-medium text-ink mb-1">{t('Tipo')}</label>
               <select
                 value={tipo}
                 onChange={e => setTipo(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
               >
-                {TIPOS_ITEM.map(t => (
-                  <option key={t} value={t}>{TIPO_LABELS[t]}</option>
+                {TIPOS_ITEM.map(tp => (
+                  <option key={tp} value={tp}>{TIPO_LABELS[tp]}</option>
                 ))}
               </select>
             </div>
@@ -283,24 +284,24 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
           {/* 21.1 — categoria do item (para maestria por categoria) */}
           {categorias.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-ink mb-1">Categoria</label>
+              <label className="block text-sm font-medium text-ink mb-1">{t('Categoria')}</label>
               <select
                 value={categoriaId}
                 onChange={e => setCategoriaId(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
               >
-                <option value="">Sem categoria</option>
+                <option value="">{t('Sem categoria')}</option>
                 {categorias.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
               </select>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-ink mb-1">Descrição</label>
+            <label className="block text-sm font-medium text-ink mb-1">{t('Descrição')}</label>
             <textarea
               value={descricao}
               onChange={e => setDescricao(e.target.value)}
-              placeholder="Descrição, história ou efeito do item..."
+              placeholder={t('Descrição, história ou efeito do item...')}
               rows={3}
               className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 resize-none"
             />
@@ -308,34 +309,34 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
 
           {/* 21.5 — tipo de dano (base para conversões) */}
           <div>
-            <label className="block text-sm font-medium text-ink mb-1">Tipo de dano</label>
+            <label className="block text-sm font-medium text-ink mb-1">{t('Tipo de dano')}</label>
             <input
               type="text"
               value={tipoDano}
               onChange={e => setTipoDano(e.target.value)}
-              placeholder="ex: físico, fogo, elétrico (opcional)"
+              placeholder={t('ex: físico, fogo, elétrico (opcional)')}
               className="w-full px-3 py-2 rounded-lg bg-void border border-border text-ink placeholder-accent-500 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
             />
-            <p className="text-ink-dim text-xs mt-1">Usado pelas conversões (manoplas físico → elétrico) e resistências do alvo.</p>
+            <p className="text-ink-dim text-xs mt-1">{t('Usado pelas conversões (manoplas físico → elétrico) e resistências do alvo.')}</p>
           </div>
 
           {/* FV.5a — som da ação (opcional; vazio = usa o som padrão do sistema, se houver) */}
           <div>
-            <label className="block text-sm font-medium text-ink mb-1">Som da ação</label>
+            <label className="block text-sm font-medium text-ink mb-1">{t('Som da ação')}</label>
             <div className="flex items-center gap-2">
               <select
                 value={somPreset}
                 onChange={e => setSomPreset(e.target.value)}
                 className="flex-1 px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
               >
-                <option value="">Nenhum (usa o padrão do sistema)</option>
+                <option value="">{t('Nenhum (usa o padrão do sistema)')}</option>
                 {PRESET_IDS.map(id => <option key={id} value={id}>{id}</option>)}
               </select>
               {somPreset && (
                 <button
                   type="button"
                   onClick={() => tocarPresetAcao(somPreset, { ativo: preferencias.som_acao_ativo, volume: preferencias.som_acao_volume })}
-                  title="Ouvir"
+                  title={t('Ouvir')}
                   className="text-accent-300 hover:text-ink text-sm shrink-0"
                 >▶</button>
               )}
@@ -348,25 +349,25 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
               <input type="checkbox" checked={!!rec}
                 onChange={e => setRec(e.target.checked ? { nome: '', atual: 0, maximo: 10, ao_completar: '', reinicia_ao_completar: false } : null)}
                 className="accent-accent-500" />
-              Recurso / contador (ex: Almas 29/50)
+              {t('Recurso / contador (ex: Almas 29/50)')}
             </label>
             {rec && (
               <div className="mt-2 space-y-2">
                 <div className="flex flex-wrap gap-2">
                   <input type="text" value={rec.nome} onChange={e => setRec({ ...rec, nome: e.target.value })}
-                    placeholder="Nome (Almas)" className="flex-1 min-w-[8rem] px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm placeholder-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                    placeholder={t('Nome (Almas)')} className="flex-1 min-w-[8rem] px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm placeholder-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500" />
                   <input type="number" value={rec.atual} onChange={e => setRec({ ...rec, atual: e.target.value })}
-                    placeholder="atual" className="w-20 px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                    placeholder={t('atual')} className="w-20 px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500" />
                   <span className="text-ink-dim self-center">/</span>
                   <input type="number" value={rec.maximo} onChange={e => setRec({ ...rec, maximo: e.target.value })}
-                    placeholder="máx" className="w-20 px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                    placeholder={t('máx')} className="w-20 px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500" />
                 </div>
                 <input type="text" value={rec.ao_completar || ''} onChange={e => setRec({ ...rec, ao_completar: e.target.value })}
-                  placeholder="Ao completar (texto do efeito)" className="w-full px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm placeholder-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                  placeholder={t('Ao completar (texto do efeito)')} className="w-full px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm placeholder-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500" />
                 <label className="text-ink-dim text-xs flex items-center gap-1.5 cursor-pointer">
                   <input type="checkbox" checked={!!rec.reinicia_ao_completar}
                     onChange={e => setRec({ ...rec, reinicia_ao_completar: e.target.checked })} className="accent-accent-500" />
-                  reinicia ao completar (volta a 0)
+                  {t('reinicia ao completar (volta a 0)')}
                 </label>
               </div>
             )}
@@ -378,16 +379,16 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
               <input type="checkbox" checked={!!durab}
                 onChange={e => setDurab(e.target.checked ? { atual: 100, maximo: 100 } : null)}
                 className="accent-accent-500" />
-              Durabilidade
+              {t('Durabilidade')}
             </label>
             {durab && (
               <div className="mt-2 flex items-center gap-2">
                 <input type="number" value={durab.atual} onChange={e => setDurab({ ...durab, atual: e.target.value })}
-                  placeholder="atual" className="w-20 px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                  placeholder={t('atual')} className="w-20 px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500" />
                 <span className="text-ink-dim">/</span>
                 <input type="number" value={durab.maximo} onChange={e => setDurab({ ...durab, maximo: e.target.value })}
-                  placeholder="máx" className="w-20 px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500" />
-                <span className="text-ink-dim text-xs">em 0 = danificado (efeitos desativados)</span>
+                  placeholder={t('máx')} className="w-20 px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent-500" />
+                <span className="text-ink-dim text-xs">{t('em 0 = danificado (efeitos desativados)')}</span>
               </div>
             )}
           </div>
@@ -395,15 +396,14 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
           {/* 21 — item como fonte de modificador (efeitos ao equipar) */}
           <div className="border border-border/60 rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <label className="text-sm font-medium text-ink">Efeitos do item</label>
-              <label className="text-accent-300 text-xs flex items-center gap-1.5 cursor-pointer" title="Só o item equipado aplica seus efeitos">
+              <label className="text-sm font-medium text-ink">{t('Efeitos do item')}</label>
+              <label className="text-accent-300 text-xs flex items-center gap-1.5 cursor-pointer" title={t('Só o item equipado aplica seus efeitos')}>
                 <input type="checkbox" checked={equipado} onChange={e => setEquipado(e.target.checked)} className="accent-accent-500" />
-                equipado
+                {t('equipado')}
               </label>
             </div>
             <p className="text-ink-dim text-xs">
-              Modificadores que entram no motor quando o item está equipado (ex: manoplas convertendo
-              físico → elétrico). Item danificado (durabilidade 0) desliga os efeitos.
+              {t('Modificadores que entram no motor quando o item está equipado (ex: manoplas convertendo físico → elétrico). Item danificado (durabilidade 0) desliga os efeitos.')}
             </p>
             {mods.length > 0 && (
               <div className="space-y-1">
@@ -428,18 +428,18 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-ink">Propriedades extras</label>
+              <label className="text-sm font-medium text-ink">{t('Propriedades extras')}</label>
               <button
                 type="button"
                 onClick={addPair}
                 className="text-xs text-ink-dim hover:text-ink transition-colors"
               >
-                + Adicionar
+                {t('+ Adicionar')}
               </button>
             </div>
             {pairs.length === 0 ? (
               <p className="text-ink-dim text-xs">
-                Nenhuma propriedade. Ex: dano, ataque, CA, Alcance, Peso...
+                {t('Nenhuma propriedade. Ex: {chaves}, CA, Alcance, Peso...', { chaves: 'dano, ataque' })}
               </p>
             ) : (
               <div className="space-y-2">
@@ -447,14 +447,14 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
                   <div key={i} className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="Propriedade"
+                      placeholder={t('Propriedade')}
                       value={p.chave}
                       onChange={e => updatePair(i, 'chave', e.target.value)}
                       className="flex-1 px-2 py-1.5 rounded-lg bg-void border border-border text-ink placeholder-accent-600 text-xs focus:outline-none focus:ring-1 focus:ring-accent-500"
                     />
                     <input
                       type="text"
-                      placeholder="Valor"
+                      placeholder={t('Valor')}
                       value={p.valor}
                       onChange={e => updatePair(i, 'valor', e.target.value)}
                       className="flex-1 px-2 py-1.5 rounded-lg bg-void border border-border text-ink placeholder-accent-600 text-xs focus:outline-none focus:ring-1 focus:ring-accent-500"
@@ -473,11 +473,11 @@ function ItemForm({ item, fichaId, donoId, categorias = [], atributos = [], camp
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-ink mb-2">Imagem</label>
+            <label className="block text-sm font-medium text-ink mb-2">{t('Imagem')}</label>
             <ImageUpload
               currentUrl={item?.imagem_url}
               onSelect={setSelectedFile}
-              label="Adicionar imagem do item"
+              label={t('Adicionar imagem do item')}
             />
           </div>
 
@@ -496,17 +496,17 @@ function MaestriaGanhoInline({ item, maestria, categorias, onGanhar }) {
     : (item.categoria_id ? { categoria_id: item.categoria_id } : null)
   const ganhos = maestria.ganhos_padrao || []
   if (!alvo || ganhos.length === 0) return null
-  const nome = escopo === 'item' ? item.nome : (categorias.find(c => c.id === item.categoria_id)?.nome || 'categoria')
+  const nome = escopo === 'item' ? item.nome : (categorias.find(c => c.id === item.categoria_id)?.nome || t('categoria'))
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap mt-1.5 pt-1.5 border-t border-border/40">
-      <span className="text-dice-400/80 text-xs">Maestria ({nome}):</span>
+      <span className="text-dice-400/80 text-xs">{t('Maestria ({nome}):', { nome })}</span>
       {ganhos.map((g, i) => (
         <button
           key={i}
           onClick={() => onGanhar(alvo, Number(g.xp) || 0, nome)}
           className="text-xs px-2 py-0.5 rounded-lg bg-dice-700/40 hover:bg-dice-700/60 text-dice-200 transition-colors"
-          title={`+${g.xp} XP de maestria`}
+          title={t('+{xp} XP de maestria', { xp: g.xp })}
         >
           {g.rotulo || `+${g.xp}`} <span className="text-dice-400/70">+{g.xp}</span>
         </button>
@@ -529,9 +529,9 @@ function MaestriaChips({ info }) {
         </span>
       ))}
       {bloqueadas.map(p => (
-        <span key={p.id} title={`${p.descricao} (requer maestria ${p.maestria_minima})`}
+        <span key={p.id} title={t('{descricao} (requer maestria {n})', { descricao: p.descricao, n: p.maestria_minima })}
           className="text-xs px-1.5 py-0.5 rounded-lg bg-raised border border-border/60 text-ink-dim cursor-help">
-          🔒 {p.sigla || p.nome} <span className="text-ink-dim">nv {p.maestria_minima}</span>
+          🔒 {p.sigla || p.nome} <span className="text-ink-dim">{t('nv {n}', { n: p.maestria_minima })}</span>
         </span>
       ))}
     </div>
@@ -550,7 +550,7 @@ function RecursoDurabilidade({ item, isDono, onRecurso, onDurab }) {
     <div className="mt-2 space-y-1.5">
       {danificado && (
         <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-harm/60 border border-harm/50 text-harm">
-          ⚠ Danificado — efeitos desativados até reparo
+          {t('⚠ Danificado — efeitos desativados até reparo')}
         </span>
       )}
 
@@ -568,8 +568,8 @@ function RecursoDurabilidade({ item, isDono, onRecurso, onDurab }) {
             <span className={`text-xs font-mono ${cheio ? 'text-dice-400' : 'text-ink-dim'}`}>{atual}/{max}</span>
             {isDono && (
               <span className="flex items-center gap-1">
-                <button onClick={() => onRecurso(-1)} disabled={atual <= 0} className={btn} title="−1">−</button>
-                <button onClick={() => onRecurso(1)} className={btn} title="+1">+</button>
+                <button onClick={() => onRecurso(-1)} disabled={atual <= 0} className={btn} title={t('−1')}>−</button>
+                <button onClick={() => onRecurso(1)} className={btn} title={t('+1')}>+</button>
               </span>
             )}
           </div>
@@ -583,15 +583,15 @@ function RecursoDurabilidade({ item, isDono, onRecurso, onDurab }) {
         const cor = pct > 50 ? 'bg-ok' : pct > 20 ? 'bg-dice-500' : 'bg-harm'
         return (
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-accent-300 text-xs">Durabilidade</span>
+            <span className="text-accent-300 text-xs">{t('Durabilidade')}</span>
             <div className="flex-1 min-w-[6rem] h-2 bg-hover rounded-full overflow-hidden">
               <div className={`h-full rounded-full transition-all ${cor}`} style={{ width: `${pct}%` }} />
             </div>
             <span className="text-xs font-mono text-ink-dim">{atual}/{max}</span>
             {isDono && (
               <span className="flex items-center gap-1">
-                <button onClick={() => onDurab(-1)} disabled={atual <= 0} className={btn} title="Consumir 1">−</button>
-                <button onClick={() => onDurab(1)} disabled={atual >= max} className={btn} title="Reparar 1">+</button>
+                <button onClick={() => onDurab(-1)} disabled={atual <= 0} className={btn} title={t('Consumir 1')}>−</button>
+                <button onClick={() => onDurab(1)} disabled={atual >= max} className={btn} title={t('Reparar 1')}>+</button>
               </span>
             )}
           </div>
@@ -645,7 +645,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
       if (completou && mesaId) {
         await registrarEvento({
           mesaId, fichaId,
-          rotulo: `${item.nome} — ${r.nome} completo!${r.ao_completar ? ` ${r.ao_completar}` : ''}`,
+          rotulo: t('{item} — {recurso} completo!', { item: item.nome, recurso: r.nome }) + (r.ao_completar ? ` ${r.ao_completar}` : ''),
           notacao: '', total: max, dados: [],
         })
       }
@@ -667,13 +667,13 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
   }
 
   async function handleDelete(item) {
-    if (!(await confirmar({ titulo: 'Remover item?', mensagem: `${item.nome} sai do inventário.`, detalhe: 'Esta ação não pode ser desfeita.', confirmar: 'Remover', perigo: true }))) return
+    if (!(await confirmar({ titulo: t('Remover item?'), mensagem: t('{nome} sai do inventário.', { nome: item.nome }), detalhe: t('Esta ação não pode ser desfeita.'), confirmar: t('Remover'), perigo: true }))) return
     setDeletingId(item.id)
     setDeleteErro('')
     try {
       await deleteItem(item.id)
     } catch (err) {
-      setDeleteErro(err.message || 'Erro ao remover item.')
+      setDeleteErro(err.message || t('Erro ao remover item.'))
     } finally {
       setDeletingId(null)
     }
@@ -684,7 +684,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
     const notacaoBase = resolverNotacao(String(item.atributos_extras?.[campo] || ''), valoresFinais)
     if (!validarNotacao(notacaoBase)) {
       setRollItemId(item.id)
-      setRollErro(`Notação inválida: "${notacaoBase}". Ex: 1d8+4, 1d20+5`)
+      setRollErro(t('Notação inválida: "{notacao}". Ex: 1d8+4, 1d20+5', { notacao: notacaoBase }))
       return
     }
     const tipo = campo === 'dano' ? 'dano' : 'acerto'
@@ -699,7 +699,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
       .map(cfg => ({
         tipo, operacao: 'somar',
         valor: cfg.valor, dados_extras: cfg.dados_extras, percentual_rolagem: cfg.percentual_rolagem,
-        _fonte: 'Propriedade',
+        _fonte: t('Propriedade'),
       }))
 
     // Aplica modificadores de acerto/dano ativos (globais + categoria da arma) — Fase 12.2
@@ -712,8 +712,8 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
     // percentual da maestria (acerto → acerto_percentual; dano → efeito_percentual)
     const pctMaestria = mst ? (tipo === 'dano' ? mst.efeito_percentual : mst.acerto_percentual) : 0
     const percentualTotal = (percentual || 0) + (Number(pctMaestria) || 0)
-    let rotulo = `${campo === 'dano' ? 'Dano' : 'Ataque'} — ${item.nome}`
-      + (mst?.nivel > 0 ? ` (Maestria ${mst.nivel})` : '')
+    let rotulo = (campo === 'dano' ? t('Dano — {nome}', { nome: item.nome }) : t('Ataque — {nome}', { nome: item.nome }))
+      + (mst?.nivel > 0 ? t(' (Maestria {n})', { n: mst.nivel }) : '')
     // 21.5 — tipo de dano final (após conversões ativas) no rótulo do dano
     if (tipo === 'dano' && item.atributos_extras?.tipo_dano) {
       rotulo += ` [${descreverTipoDano(item.atributos_extras.tipo_dano, modificadoresAtivos)}]`
@@ -722,7 +722,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
     const critDano = (tipo === 'dano' && rollCritico?.itemId === item.id)
       ? { multiplicador: rollCritico.multiplicador, modo: rollCritico.modo }
       : null
-    if (critDano) rotulo += ` — 🎯 crítico ×${critDano.multiplicador}`
+    if (critDano) rotulo += t(' — 🎯 crítico ×{n}', { n: critDano.multiplicador })
 
     setRollProcessing(true)
     setRollItemId(item.id)
@@ -772,7 +772,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
           try {
             await registrarEvento({
               mesaId, fichaId,
-              rotulo: `🎯 CRÍTICO! ${item.nome} (rolou ${natural}, limiar ${limiar})`,
+              rotulo: t('🎯 CRÍTICO! {nome} (rolou {natural}, limiar {limiar})', { nome: item.nome, natural, limiar }),
               notacao: '', total: natural, dados: [],
             })
           } catch { /* feed best-effort */ }
@@ -784,7 +784,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
   }
 
   if (loading) {
-    return <div className="py-8 text-center text-ink-dim">Carregando itens...</div>
+    return <div className="py-8 text-center text-ink-dim">{t('Carregando itens...')}</div>
   }
 
   if (error) {
@@ -802,15 +802,15 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
       <div className="flex items-center justify-between">
         <p className="text-accent-300 text-sm">
           {itens.length > 0
-            ? `${itens.length} ${itens.length === 1 ? 'item' : 'itens'}`
-            : 'Nenhum item'}
+            ? tn(itens.length, '{n} item', '{n} itens')
+            : t('Nenhum item')}
         </p>
         {isDono && (
           <button
             onClick={() => { setEditingItem(null); setShowForm(true) }}
             className="text-sm px-4 py-2 bg-accent-700 hover:bg-accent-600 text-sobre-acento rounded-lg transition-colors"
           >
-            + Adicionar item
+            {t('+ Adicionar item')}
           </button>
         )}
       </div>
@@ -818,17 +818,17 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
       {itens.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-border rounded-2xl">
           <Ilustra nome="espadas" tamanho={72} className="mx-auto mb-4" />
-          <p className="text-ink text-base font-medium mb-1">Nenhum item ainda</p>
+          <p className="text-ink text-base font-medium mb-1">{t('Nenhum item ainda')}</p>
           {isDono ? (
             <button
               onClick={() => setShowForm(true)}
               className="mt-2 px-5 py-2 bg-accent-600 hover:bg-accent-700 text-sobre-acento rounded-lg text-sm transition-colors"
             >
-              + Adicionar item
+              {t('+ Adicionar item')}
             </button>
           ) : (
             <p className="text-ink-dim text-sm">
-              O dono do personagem ainda não adicionou itens.
+              {t('O dono do personagem ainda não adicionou itens.')}
             </p>
           )}
         </div>
@@ -874,12 +874,12 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                                   ? 'bg-ok/50 border border-ok text-ok hover:bg-ok/60'
                                   : 'bg-raised border border-border text-ink-dim hover:text-ink'
                               }`}
-                              title="Equipar / desequipar"
+                              title={t('Equipar / desequipar')}
                             >
-                              {(item.equipado ?? true) ? '✓ equipado' : 'desequipado'}
+                              {(item.equipado ?? true) ? t('✓ equipado') : t('desequipado')}
                             </button>
                           ) : (
-                            (item.equipado ?? true) && <span className="ml-1.5 inline-block text-xs px-2 py-0.5 rounded-full bg-ok/50 border border-ok text-ok">✓ equipado</span>
+                            (item.equipado ?? true) && <span className="ml-1.5 inline-block text-xs px-2 py-0.5 rounded-full bg-ok/50 border border-ok text-ok">{t('✓ equipado')}</span>
                           )
                         )}
                         <MaestriaChips info={maestriaDoItem?.(item)} />
@@ -890,7 +890,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                             <button
                               onClick={() => setMovendoId(id => id === item.id ? null : item.id)}
                               className="p-1.5 text-ink-dim hover:text-ink hover:bg-hover rounded-lg transition-colors"
-                              title="Guardar no baú ou dar a alguém" aria-label={`Guardar "${item.nome}" no baú ou dar a alguém`} aria-expanded={movendoId === item.id}
+                              title={t('Guardar no baú ou dar a alguém')} aria-label={t('Guardar "{nome}" no baú ou dar a alguém', { nome: item.nome })} aria-expanded={movendoId === item.id}
                             >
                               <Ilustra nome="bau" tamanho={16} />
                             </button>
@@ -898,7 +898,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                           <button
                             onClick={() => { setEditingItem(item); setShowForm(true) }}
                             className="p-1.5 text-ink-dim hover:text-ink hover:bg-hover rounded-lg transition-colors text-sm"
-                            title="Editar"
+                            title={t('Editar')}
                           >
                             ✎
                           </button>
@@ -906,7 +906,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                             onClick={() => handleDelete(item)}
                             disabled={deletingId === item.id}
                             className="p-1.5 text-harm hover:text-harm hover:bg-harm/10 rounded-lg transition-colors text-sm disabled:opacity-40"
-                            title="Remover"
+                            title={t('Remover')}
                           >
                             {deletingId === item.id ? '…' : '🗑'}
                           </button>
@@ -953,7 +953,7 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                               disabled={rollProcessing}
                               className="px-3 py-1.5 text-xs bg-dice-700 hover:bg-dice-500 disabled:opacity-40 text-ink rounded-lg transition-colors"
                             >
-                              🎲 Rolar ataque
+                              {t('🎲 Rolar ataque')}
                             </button>
                           )}
                           {(temDano || extras.dano) && (() => {
@@ -966,9 +966,9 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                                 className={`px-3 py-1.5 text-xs disabled:opacity-40 text-ink rounded-lg transition-colors ${
                                   critPronto ? 'bg-dice-700 hover:bg-dice-500 font-semibold animate-pulse' : 'bg-harm/15 hover:bg-harm'
                                 }`}
-                                title={critPronto ? `Dano crítico ×${rollCritico.multiplicador} (${rollCritico.modo})` : undefined}
+                                title={critPronto ? t('Dano crítico ×{n} ({modo})', { n: rollCritico.multiplicador, modo: rollCritico.modo }) : undefined}
                               >
-                                {critPronto ? `🎯 Dano crítico ×${rollCritico.multiplicador}` : '🎲 Rolar dano'}
+                                {critPronto ? t('🎯 Dano crítico ×{n}', { n: rollCritico.multiplicador }) : t('🎲 Rolar dano')}
                               </button>
                             )
                           })()}
@@ -991,9 +991,9 @@ export default function EquipamentosTab({ fichaId, donoId, isDono, mesaId, valor
                             {/* 22.3 — crítico detectado no acerto */}
                             {rollCritico?.itemId === item.id && !rollRolando && (
                               <div className="mt-1.5 flex items-center gap-2 flex-wrap bg-dice-700/50 border border-dice-500/60 rounded-lg px-2.5 py-1.5">
-                                <span className="text-dice-400 text-sm font-bold animate-pulse">🎯 CRÍTICO!</span>
+                                <span className="text-dice-400 text-sm font-bold animate-pulse">{t('🎯 CRÍTICO!')}</span>
                                 <span className="text-dice-500/80 text-xs">
-                                  rolou {rollCritico.natural}, limiar {rollCritico.limiar} · dano ×{rollCritico.multiplicador} ({rollCritico.modo})
+                                  {t('rolou {natural}, limiar {limiar} · dano ×{n} ({modo})', { natural: rollCritico.natural, limiar: rollCritico.limiar, n: rollCritico.multiplicador, modo: rollCritico.modo })}
                                 </span>
                               </div>
                             )}

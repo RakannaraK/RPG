@@ -5,6 +5,7 @@ import { rolarNotacao, validarNotacao } from '../lib/diceNotation'
 import { rolarDados } from '../lib/dice'
 import { resolverRolagem, paradaComVantagem, escolherRollUnder } from '../lib/resolutionEngine'
 import { usePreferencias } from '../context/PreferenciasContext'
+import { t, tn } from '../i18n'
 
 // Troca os valores nos índices dados (imutável) — usado na rerolagem (23.4)
 function replaceAt(arr, indices, novos) {
@@ -59,7 +60,7 @@ export function useRolagem() {
     setErro('')
     // notação ruim avisa na hora, sem ir ao servidor
     if (!validarNotacao(String(notacao || '').trim())) {
-      const e = new Error(`Notação inválida: "${notacao}"`)
+      const e = new Error(t('Notação inválida: "{notacao}"', { notacao }))
       setErro(e.message)
       throw e
     }
@@ -86,7 +87,7 @@ export function useRolagem() {
       if (error) throw new Error(error.message)
       return data
     } catch (err) {
-      setErro(err.message || 'Não foi possível rolar.')
+      setErro(err.message || t('Não foi possível rolar.'))
       throw err
     } finally {
       setRolando(false)
@@ -110,7 +111,7 @@ export function useRolagem() {
     let notacaoStr = ''
     let dados3D = null
     let descartadoRU = null // 23.6 — o dado não usado no roll_under com vant/desv
-    const sufVant = vantagem === 'vantagem' ? ' [vantagem]' : vantagem === 'desvantagem' ? ' [desvantagem]' : ''
+    const sufVant = vantagem === 'vantagem' ? t(' [vantagem]') : vantagem === 'desvantagem' ? t(' [desvantagem]') : ''
 
     try {
       if (modo === 'sucessos') {
@@ -120,7 +121,7 @@ export function useRolagem() {
         const esp = Math.max(0, Math.min(Math.floor(Number(especiaisQtd) || 0), qtd))
         especiais_idx = Array.from({ length: esp }, (_, i) => i)
         difParam = dificuldade != null && dificuldade !== '' ? Number(dificuldade) : (resolucao.dificuldade_padrao ?? 6)
-        notacaoStr = `${qtd}d${faces} (dif ${difParam})${sufVant}`
+        notacaoStr = `${qtd}d${faces} (${t('dif')} ${difParam})${sufVant}`
       } else if (modo === 'roll_under') {
         // Vantagem por modo (23.6): rola 2, pega o menor (vant.) / maior (desv.)
         if (vantagem === 'normal') {
@@ -143,7 +144,7 @@ export function useRolagem() {
         difParam = Number(valor) || 0
       }
     } catch (err) {
-      setErro(err.message || 'Notação inválida.')
+      setErro(err.message || t('Notação inválida.'))
       setRolando(false)
       throw err
     }
@@ -176,7 +177,7 @@ export function useRolagem() {
       const payload = {
         mesa_id: mesaId,
         autor_id: session.user.id,
-        autor_nome: autorNome || 'Jogador',
+        autor_nome: autorNome || t('Jogador'),
         ficha_id: fichaId || null,
         rotulo: rotulo || null,
         notacao: notacaoStr,
@@ -189,7 +190,7 @@ export function useRolagem() {
       const { error } = await supabase.from('rolagens').insert(payload)
       if (error) throw error
     } catch (err) {
-      setErro(err.message || 'Erro ao salvar rolagem no servidor.')
+      setErro(err.message || t('Erro ao salvar rolagem no servidor.'))
     } finally {
       setRolando(false)
     }
@@ -219,15 +220,15 @@ export function useRolagem() {
       dadosFeed = (estruturado.dados || []).map(d => ({ lados: faces, valor: d.valor, descartado: false }))
       total = estruturado.total ?? estruturado.valor ?? 0
     }
-    const notacaoStr = `↻ rerolagem (${indices.length} dado${indices.length === 1 ? '' : 's'})`
+    const notacaoStr = `↻ ${t('rerolagem')} (${tn(indices.length, '{n} dado', '{n} dados')})`
 
     const resultadoLocal = { notacao: notacaoStr, dados: dadosFeed, mantidos: replaceAt(paramsOriginais.dados, indices, novos), descartados: [], modificador: 0, total, modo, estruturado, paramsOriginais: null }
 
     try {
       const payload = {
-        mesa_id: mesaId, autor_id: session.user.id, autor_nome: autorNome || 'Jogador',
+        mesa_id: mesaId, autor_id: session.user.id, autor_nome: autorNome || t('Jogador'),
         ficha_id: fichaId || null,
-        rotulo: rotulo ? `↻ ${rotulo}` : '↻ Rerolagem',
+        rotulo: rotulo ? `↻ ${rotulo}` : t('↻ Rerolagem'),
         notacao: notacaoStr,
         resultados: { dados: dadosFeed, mantidos: resultadoLocal.mantidos, descartados: [], modificador: 0, skin },
         total, modo, resultado_estruturado: { ...estruturado, rerolada: true },
@@ -236,7 +237,7 @@ export function useRolagem() {
       const { error } = await supabase.from('rolagens').insert(payload)
       if (error) throw error
     } catch (err) {
-      setErro(err.message || 'Erro ao salvar rerolagem.')
+      setErro(err.message || t('Erro ao salvar rerolagem.'))
     } finally {
       setRolando(false)
     }
@@ -261,7 +262,7 @@ export function useRolagem() {
       const payload = {
         mesa_id: mesaId,
         autor_id: session.user.id,
-        autor_nome: autorNome || 'Jogador',
+        autor_nome: autorNome || t('Jogador'),
         ficha_id: fichaId || null,
         rotulo: rotulo || null,
         notacao: notacao || '',

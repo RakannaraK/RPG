@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { t } from '../../i18n'
 
 /**
  * Fase 52 — faixa de abas. O traço da aba ativa DESLIZA de uma aba para a
@@ -74,7 +75,7 @@ export default function Abas({ abas, atual, onTrocar, rotulo, className = '', ta
               {a.icone}
               {a.rotulo}
               {a.contador > 0 && !ativa && (
-                <span className="contador" aria-label={`${a.contador} novas`}>{a.contador > 9 ? '9+' : a.contador}</span>
+                <span className="contador" aria-label={t('{n} novas', { n: a.contador })}>{a.contador > 9 ? '9+' : a.contador}</span>
               )}
               {a.selo}
             </button>

@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { souConvidado } from '../../lib/convite'
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
+import { t } from '../../i18n'
 
 const CAMPO = 'flex-1 min-w-[10rem] px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 
@@ -24,30 +25,30 @@ export default function BannerConvidado({ className = '' }) {
   async function salvar(e) {
     e.preventDefault()
     setErro('')
-    if (senha.length < 6) { setErro('A senha precisa de pelo menos 6 caracteres.'); return }
+    if (senha.length < 6) { setErro(t('A senha precisa de pelo menos 6 caracteres.')); return }
     setOcupado(true)
     const { error } = await supabase.auth.updateUser({ email: email.trim(), password: senha })
     setOcupado(false)
     if (error) { setErro(error.message); return }
-    setMsg('Pronto! Se chegar um e-mail de confirmação, confirme para terminar. Sua ficha e suas mesas continuam as mesmas.')
+    setMsg(t('Pronto! Se chegar um e-mail de confirmação, confirme para terminar. Sua ficha e suas mesas continuam as mesmas.'))
   }
 
   return (
-    <section className={`rounded-2xl border border-dashed border-accent-600/70 px-4 py-3 space-y-2 ${className}`} aria-label="Conta de convidado">
+    <section className={`rounded-2xl border border-dashed border-accent-600/70 px-4 py-3 space-y-2 ${className}`} aria-label={t('Conta de convidado')}>
       <div className="flex flex-wrap items-center gap-3">
         <Ilustra nome="porta" tamanho={22} className="shrink-0" />
         <p className="flex-1 min-w-[12rem] text-sm text-ink">
-          Você está como <strong>convidado</strong>. Tudo fica guardado neste navegador — crie uma conta para não perder a ficha.
-          <span className="block text-ink-dim text-xs">Convidado joga normalmente, mas não cria mesa nem publica na comunidade.</span>
+          {t('Você está como convidado.')} {t('Tudo fica guardado neste navegador — crie uma conta para não perder a ficha.')}
+          <span className="block text-ink-dim text-xs">{t('Convidado joga normalmente, mas não cria mesa nem publica na comunidade.')}</span>
         </p>
-        {!aberto && !msg && <Botao variante="primario" tamanho="sm" onClick={() => setAberto(true)}>Criar conta</Botao>}
+        {!aberto && !msg && <Botao variante="primario" tamanho="sm" onClick={() => setAberto(true)}>{t('Criar conta')}</Botao>}
       </div>
       {aberto && !msg && (
         <form onSubmit={salvar} className="flex flex-wrap items-center gap-2">
-          <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="E-mail" aria-label="E-mail" autoComplete="email" className={CAMPO} />
-          <input type="password" required value={senha} onChange={e => setSenha(e.target.value)} placeholder="Senha" aria-label="Senha" autoComplete="new-password" className={CAMPO} />
-          <Botao type="submit" variante="primario" tamanho="sm" disabled={ocupado}>{ocupado ? 'Salvando…' : 'Salvar conta'}</Botao>
-          <Botao variante="fantasma" tamanho="sm" onClick={() => setAberto(false)}>Cancelar</Botao>
+          <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder={t('E-mail')} aria-label={t('E-mail')} autoComplete="email" className={CAMPO} />
+          <input type="password" required value={senha} onChange={e => setSenha(e.target.value)} placeholder={t('Senha')} aria-label={t('Senha')} autoComplete="new-password" className={CAMPO} />
+          <Botao type="submit" variante="primario" tamanho="sm" disabled={ocupado}>{ocupado ? t('Salvando…') : t('Salvar conta')}</Botao>
+          <Botao variante="fantasma" tamanho="sm" onClick={() => setAberto(false)}>{t('Cancelar')}</Botao>
         </form>
       )}
       {msg && <p className="text-ok text-xs" role="status">{msg}</p>}

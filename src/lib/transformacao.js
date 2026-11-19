@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 /**
  * Fase 33 — transformações (puro). Uma FORMA é uma ficha pendurada na ficha
  * dona (`forma_de_id`); a dona guarda qual está ativa (`forma_ativa_id`).
@@ -33,10 +34,10 @@ export function rotuloDaForma(base, fichas = []) {
  * @throws se a forma não pertence a esta ficha
  */
 export function planejarTransformacao(base, formaId, fichas = []) {
-  if (!base) throw new Error('Ficha não encontrada.')
+  if (!base) throw new Error(t('Ficha não encontrada.'))
   if (!formaId || formaId === base.forma_ativa_id) return { forma_ativa_id: null }
   const forma = fichas.find(f => f.id === formaId)
-  if (!forma || forma.forma_de_id !== base.id) throw new Error('Esta forma não é desta ficha.')
+  if (!forma || forma.forma_de_id !== base.id) throw new Error(t('Esta forma não é desta ficha.'))
   return { forma_ativa_id: formaId }
 }
 

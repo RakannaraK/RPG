@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { t } from '../../i18n'
 
 const INP = 'w-full bg-void border border-border rounded-lg px-2.5 py-1.5 text-sm text-ink focus:outline-none focus:border-accent-500'
 const BTN = 'px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
@@ -10,8 +11,8 @@ const COR_POR_TIPO = { jogador: '#8B5CF6', aliado: '#16A34A', npc: '#D97706', in
  * Os tokens nascem no meio da tela, lado a lado e encaixados na grade.
  */
 export default function PainelTokens({ cards, combatentes, tokens, onAdicionar, onEnviarImagem, acoesBestiario = null }) {
-  const fichasNoMapa = new Set(tokens.filter(t => t.ficha_id).map(t => t.ficha_id))
-  const combatentesNoMapa = new Set(tokens.filter(t => t.combatente_id).map(t => t.combatente_id))
+  const fichasNoMapa = new Set(tokens.filter(tk => tk.ficha_id).map(tk => tk.ficha_id))
+  const combatentesNoMapa = new Set(tokens.filter(tk => tk.combatente_id).map(tk => tk.combatente_id))
 
   const fichasFora = cards.filter(c => !fichasNoMapa.has(c.id))
   const combatentesFora = combatentes.filter(c => (
@@ -34,8 +35,8 @@ export default function PainelTokens({ cards, combatentes, tokens, onAdicionar, 
     <div className="p-4 space-y-6">
       {acoesBestiario && <div>{acoesBestiario}</div>}
       <Secao
-        titulo={`Personagens da mesa (${fichasFora.length} fora do mapa)`}
-        vazio={cards.length === 0 ? 'Nenhuma ficha nesta mesa.' : 'Todos os personagens já estão no mapa.'}
+        titulo={t('Personagens da mesa ({n} fora do mapa)', { n: fichasFora.length })}
+        vazio={cards.length === 0 ? t('Nenhuma ficha nesta mesa.') : t('Todos os personagens já estão no mapa.')}
         itens={fichasFora}
         nome={c => c.nome}
         imagem={c => c.imagem}
@@ -45,8 +46,8 @@ export default function PainelTokens({ cards, combatentes, tokens, onAdicionar, 
 
       {combatentes.length > 0 && (
         <Secao
-          titulo={`Combate ativo (${combatentesFora.length} fora do mapa)`}
-          vazio="Todos os combatentes já estão no mapa."
+          titulo={t('Combate ativo ({n} fora do mapa)', { n: combatentesFora.length })}
+          vazio={t('Todos os combatentes já estão no mapa.')}
           itens={combatentesFora}
           nome={c => c.nome}
           imagem={c => (c.ficha_id ? cards.find(cd => cd.id === c.ficha_id)?.imagem : null)}
@@ -67,7 +68,7 @@ function Secao({ titulo, vazio, itens, nome, imagem, cor, onUm, onTodos }) {
   const executar = fn => async () => {
     setOcupado(true)
     setErro('')
-    try { await fn() } catch (err) { setErro(err.message || 'Não foi possível adicionar.') } finally { setOcupado(false) }
+    try { await fn() } catch (err) { setErro(err.message || t('Não foi possível adicionar.')) } finally { setOcupado(false) }
   }
 
   return (
@@ -86,7 +87,7 @@ function Secao({ titulo, vazio, itens, nome, imagem, cor, onUm, onTodos }) {
                   <span className="w-7 h-7 rounded-full shrink-0" style={{ background: cor?.(item) || 'var(--accent-600)' }} />
                 )}
                 <span className="flex-1 min-w-0 text-ink text-sm truncate">{nome(item)}</span>
-                <button onClick={executar(() => onUm(item))} disabled={ocupado} className={`${BTN} bg-hover text-ink hover:bg-border`} title="Pôr no mapa">
+                <button onClick={executar(() => onUm(item))} disabled={ocupado} className={`${BTN} bg-hover text-ink hover:bg-border`} title={t('Pôr no mapa')}>
                   +
                 </button>
               </li>
@@ -94,7 +95,7 @@ function Secao({ titulo, vazio, itens, nome, imagem, cor, onUm, onTodos }) {
           </ul>
           {itens.length > 1 && (
             <button onClick={executar(onTodos)} disabled={ocupado} className={`${BTN} w-full bg-accent-700 hover:bg-accent-600 text-sobre-acento`}>
-              Pôr todos no mapa ({itens.length})
+              {t('Pôr todos no mapa ({n})', { n: itens.length })}
             </button>
           )}
         </>
@@ -118,12 +119,12 @@ function TokenAvulso({ onAdicionar, onEnviarImagem }) {
     setErro('')
     try {
       const imagem_url = arquivo ? await onEnviarImagem(arquivo) : null
-      await onAdicionar([{ nome: nome.trim() || 'Token', cor, tamanho, imagem_url }], tamanho)
+      await onAdicionar([{ nome: nome.trim() || t('Token'), cor, tamanho, imagem_url }], tamanho)
       setNome('')
       setArquivo(null)
       if (inputRef.current) inputRef.current.value = ''
     } catch (err) {
-      setErro(err.message || 'Não foi possível adicionar.')
+      setErro(err.message || t('Não foi possível adicionar.'))
     } finally {
       setOcupado(false)
     }
@@ -131,17 +132,17 @@ function TokenAvulso({ onAdicionar, onEnviarImagem }) {
 
   return (
     <section className="space-y-2">
-      <h2 className="text-ink-dim text-xs font-semibold uppercase tracking-wider">Token avulso</h2>
-      <input className={INP} placeholder="Nome (ex: Goblin, Baú, Armadilha)" value={nome} onChange={e => setNome(e.target.value)} />
+      <h2 className="text-ink-dim text-xs font-semibold uppercase tracking-wider">{t('Token avulso')}</h2>
+      <input className={INP} placeholder={t('Nome (ex: Goblin, Baú, Armadilha)')} value={nome} onChange={e => setNome(e.target.value)} />
       <div className="grid grid-cols-2 gap-2">
         <label className="block">
-          <span className="text-ink-dim text-xs">Cor</span>
+          <span className="text-ink-dim text-xs">{t('Cor')}</span>
           <input type="color" className="w-full h-8 bg-void border border-border rounded-lg" value={cor} onChange={e => setCor(e.target.value)} />
         </label>
         <label className="block">
-          <span className="text-ink-dim text-xs">Tamanho</span>
+          <span className="text-ink-dim text-xs">{t('Tamanho')}</span>
           <select className={INP} value={tamanho} onChange={e => setTamanho(Number(e.target.value))}>
-            {[0.5, 1, 2, 3, 4].map(t => <option key={t} value={t}>{t}×{t} quadrados</option>)}
+            {[0.5, 1, 2, 3, 4].map(n => <option key={n} value={n}>{t('{n}×{n} quadrados', { n })}</option>)}
           </select>
         </label>
       </div>
@@ -153,7 +154,7 @@ function TokenAvulso({ onAdicionar, onEnviarImagem }) {
         className="block w-full text-sm text-ink-dim file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-hover file:text-ink hover:file:bg-border"
       />
       <button onClick={adicionar} disabled={ocupado} className={`${BTN} w-full bg-accent-700 hover:bg-accent-600 text-sobre-acento`}>
-        {ocupado ? 'Adicionando…' : 'Pôr no mapa'}
+        {ocupado ? t('Adicionando…') : t('Pôr no mapa')}
       </button>
       {erro && <p className="text-harm text-sm">{erro}</p>}
     </section>

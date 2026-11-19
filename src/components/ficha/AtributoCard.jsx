@@ -8,14 +8,15 @@ import { descreverResultado } from '../../lib/resolutionEngine'
 import RerolagemBox from '../dados/RerolagemBox'
 import Dots from './Dots'
 import { usePreferencias } from '../../context/PreferenciasContext'
+import { t } from '../../i18n'
 
 // Aviso visual de vantagem/desvantagem/anulada (Fase 12.3)
 function AvisoVantagem({ estado }) {
   if (!estado || estado === 'normal') return null
   const cfg = {
-    vantagem:    { txt: '⬆ Vantagem',    cls: 'bg-ok/15 text-ok border-ok/60' },
-    desvantagem: { txt: '⬇ Desvantagem', cls: 'bg-harm/15 text-harm border-harm/60' },
-    anulada:     { txt: 'Vant./Desv. anuladas', cls: 'bg-hover text-ink-dim border-border' },
+    vantagem:    { txt: t('⬆ Vantagem'), cls: 'bg-ok/15 text-ok border-ok/60' },
+    desvantagem: { txt: t('⬇ Desvantagem'), cls: 'bg-harm/15 text-harm border-harm/60' },
+    anulada:     { txt: t('Vant./Desv. anuladas'), cls: 'bg-hover text-ink-dim border-border' },
   }[estado]
   return (
     <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-lg border ${cfg.cls}`}>
@@ -34,8 +35,8 @@ function formulaTexto(regra) {
     else if (regra.bonus_fixo < 0) partes.push(String(regra.bonus_fixo))
     return partes.join(' ')
   }
-  if (regra.tipo === 'fixo') return `Fixo ${regra.valor}`
-  if (regra.tipo === 'pontos') return `${regra.pool_total} pts`
+  if (regra.tipo === 'fixo') return t('Fixo {valor}', { valor: regra.valor })
+  if (regra.tipo === 'pontos') return t('{n} pts', { n: regra.pool_total })
   return ''
 }
 
@@ -116,7 +117,7 @@ export default function AtributoCard({
     setSalvando(true)
     setErro('')
     try { await onSave(atributo.id, Math.max(0, n), null) }
-    catch (err) { setErro(err.message || 'Erro ao salvar.') }
+    catch (err) { setErro(err.message || t('Erro ao salvar.')) }
     finally { setSalvando(false) }
   }
 
@@ -126,8 +127,8 @@ export default function AtributoCard({
   useEffect(() => {
     if (prevDisplay.current !== display && prevDisplay.current !== undefined) {
       setPulsando(true)
-      const t = setTimeout(() => setPulsando(false), 700)
-      return () => clearTimeout(t)
+      const timer = setTimeout(() => setPulsando(false), 700)
+      return () => clearTimeout(timer)
     }
     prevDisplay.current = display
   }, [display])
@@ -150,7 +151,7 @@ export default function AtributoCard({
       )
       setRolando(false)
     } catch (err) {
-      setErro(err.message || 'Erro ao salvar.')
+      setErro(err.message || t('Erro ao salvar.'))
     } finally {
       setSalvando(false)
     }
@@ -166,7 +167,7 @@ export default function AtributoCard({
       setEditando(false)
       setValorManual('')
     } catch (err) {
-      setErro(err.message || 'Erro ao salvar.')
+      setErro(err.message || t('Erro ao salvar.'))
     } finally {
       setSalvando(false)
     }
@@ -183,10 +184,10 @@ export default function AtributoCard({
       setTestando(true); setErroTeste('')
       const valorModo = modoResolucao === 'faixas' ? (temMod ? modAtributo : display) : display
       try {
-        const res = await registrarResolvida({ mesaId, fichaId, rotulo: `Teste de ${atributo.nome}`, resolucao, valor: Number(valorModo) || 0, especiaisQtd, vantagem: vantagemEstado })
+        const res = await registrarResolvida({ mesaId, fichaId, rotulo: t('Teste de {nome}', { nome: atributo.nome }), resolucao, valor: Number(valorModo) || 0, especiaisQtd, vantagem: vantagemEstado })
         setTesteResultado(res); setTesteVantagem(vantagemEstado); setTesteRolando(true)
         setTimeout(() => { setTesteRolando(false); setTestando(false) }, 1400)
-      } catch (err) { setErroTeste(err.message || 'Erro ao rolar.'); setTestando(false) }
+      } catch (err) { setErroTeste(err.message || t('Erro ao rolar.')); setTestando(false) }
       return
     }
 
@@ -196,8 +197,8 @@ export default function AtributoCard({
     const valorTeste = temMod ? modAtributo : display
     const notacaoBase = buildNotacaoTeste(valorTeste, dadoPadrao)
     const notacao = aplicarVantagem(notacaoBase, vantagemEstado)
-    const sufixo = vantagemEstado === 'vantagem' ? ' (vantagem)'
-      : vantagemEstado === 'desvantagem' ? ' (desvantagem)' : ''
+    const sufixo = vantagemEstado === 'vantagem' ? ` ${t('(vantagem)')}`
+      : vantagemEstado === 'desvantagem' ? ` ${t('(desvantagem)')}` : ''
     tocarSomDado(preferencias.dado_skin, {
       ativo: preferencias.som_ativo,
       volume: preferencias.som_volume,
@@ -207,7 +208,7 @@ export default function AtributoCard({
       const res = await registrarRolagem({
         mesaId,
         fichaId,
-        rotulo: `Teste de ${atributo.nome}${sufixo}`,
+        rotulo: `${t('Teste de {nome}', { nome: atributo.nome })}${sufixo}`,
         notacao,
       })
       setTesteResultado(res)
@@ -215,7 +216,7 @@ export default function AtributoCard({
       setTesteRolando(true)
       setTimeout(() => { setTesteRolando(false); setTestando(false) }, 1400)
     } catch (err) {
-      setErroTeste(err.message || 'Erro ao rolar.')
+      setErroTeste(err.message || t('Erro ao rolar.'))
       setTestando(false)
     }
   }
@@ -253,9 +254,9 @@ export default function AtributoCard({
             </p>
           )}
           {!usaDots && (temMod ? (
-            <p className="text-ink-dim text-xs leading-none mt-0.5">valor {display}</p>
+            <p className="text-ink-dim text-xs leading-none mt-0.5">{t('valor {n}', { n: display })}</p>
           ) : fontesMod && fontesMod.length > 0 && (
-            <p className="text-ink-dim text-xs leading-none mt-0.5">base {valor}</p>
+            <p className="text-ink-dim text-xs leading-none mt-0.5">{t('base {n}', { n: valor })}</p>
           ))}
           {/* Tooltip de rastreabilidade */}
           {fontesMod && fontesMod.length > 0 && (
@@ -265,7 +266,7 @@ export default function AtributoCard({
                             bg-void border border-accent-700/60 rounded-lg px-3 py-2
                             shadow-2xl w-max">
               <p className="text-accent-300 text-xs font-semibold mb-1">{atributo.nome}</p>
-              <p className="text-ink-dim text-xs">Base: {valor ?? '—'}</p>
+              <p className="text-ink-dim text-xs">{t('Base: {n}', { n: valor ?? '—' })}</p>
               {fontesMod.map((f, i) => {
                 const sinal = sinalFonte(f)
                 return (
@@ -293,10 +294,10 @@ export default function AtributoCard({
               type="button"
               onClick={handleTestar}
               disabled={testando}
-              title={`Teste de ${atributo.nome}`}
+              title={t('Teste de {nome}', { nome: atributo.nome })}
               className="text-xs text-dice-500 hover:text-dice-400 disabled:opacity-40 transition-colors px-1.5 py-0.5 rounded-lg hover:bg-dice-700/20"
             >
-              🎲 Testar
+              🎲 {t('Testar')}
             </button>
           )}
           {canEdit && !rolando && !editando && (
@@ -304,7 +305,7 @@ export default function AtributoCard({
               type="button"
               onClick={() => { setEditando(true); setValorManual(valor !== undefined ? String(valor) : '') }}
               className="text-xs text-ink-dim hover:text-accent-300 transition-colors"
-              title="Editar valor"
+              title={t('Editar valor')}
             >
               ✎
             </button>
@@ -342,7 +343,7 @@ export default function AtributoCard({
             {descTeste?.marcacao && (
               <p className="text-center text-xs font-semibold px-1.5 py-0.5 rounded-lg border bg-harm/10 border-harm/60 text-harm">⚡ {descTeste.marcacao.rotulo}</p>
             )}
-            <RerolagemBox resultado={testeResultado} rerolagem={rerolagem} mesaId={mesaId} fichaId={fichaId} rotulo={`Teste de ${atributo.nome}`} onRerolado={setTesteResultado} />
+            <RerolagemBox resultado={testeResultado} rerolagem={rerolagem} mesaId={mesaId} fichaId={fichaId} rotulo={t('Teste de {nome}', { nome: atributo.nome })} onRerolado={setTesteResultado} />
             {erroTeste && <p className="text-harm text-xs text-center">{erroTeste}</p>}
           </div>
         )}
@@ -356,7 +357,7 @@ export default function AtributoCard({
               onClick={() => setRolando(false)}
               className="mt-1 text-xs text-ink-dim hover:text-accent-300 transition-colors w-full text-center"
             >
-              Cancelar
+              {t('Cancelar')}
             </button>
           </div>
         )}
@@ -395,7 +396,7 @@ export default function AtributoCard({
                 onClick={() => { setEditando(false); setRolando(true) }}
                 className="mt-1.5 w-full py-1 text-xs bg-dice-700 hover:bg-dice-500 text-ink rounded-lg transition-colors"
               >
-                🎲 Rolar dados
+                🎲 {t('Rolar dados')}
               </button>
             )}
           </div>
@@ -435,9 +436,9 @@ export default function AtributoCard({
               </p>
             )}
             {!usaDots && (temMod ? (
-              <p className="text-ink-dim text-xs leading-none">valor {display}</p>
+              <p className="text-ink-dim text-xs leading-none">{t('valor {n}', { n: display })}</p>
             ) : fontesMod && fontesMod.length > 0 && (
-              <p className="text-ink-dim text-xs leading-none">base {valor}</p>
+              <p className="text-ink-dim text-xs leading-none">{t('base {n}', { n: valor })}</p>
             ))}
             {fontesMod && fontesMod.length > 0 && (
               <div className="absolute right-0 bottom-full mb-1.5 z-50
@@ -446,7 +447,7 @@ export default function AtributoCard({
                               bg-void border border-accent-700/60 rounded-lg px-3 py-2
                               shadow-2xl w-max">
                 <p className="text-accent-300 text-xs font-semibold mb-1">{atributo.nome}</p>
-                <p className="text-ink-dim text-xs">Base: {valor ?? '—'}</p>
+                <p className="text-ink-dim text-xs">{t('Base: {n}', { n: valor ?? '—' })}</p>
                 {fontesMod.map((f, i) => {
                   const sinal = sinalFonte(f)
                   return (
@@ -466,10 +467,10 @@ export default function AtributoCard({
               type="button"
               onClick={handleTestar}
               disabled={testando}
-              title={`Teste de ${atributo.nome}`}
+              title={t('Teste de {nome}', { nome: atributo.nome })}
               className="text-xs text-dice-500 hover:text-dice-400 disabled:opacity-40 transition-colors px-2 py-0.5 rounded-lg hover:bg-dice-700/20"
             >
-              🎲 Testar
+              🎲 {t('Testar')}
             </button>
           )}
         </div>
@@ -500,11 +501,11 @@ export default function AtributoCard({
                   descartado={d.descartado}
                   skin={preferencias.dado_skin}
                 />
-                {d.descartado && <span className="text-harm text-xs">desc.</span>}
+                {d.descartado && <span className="text-harm text-xs">{t('desc.')}</span>}
               </div>
             ))}
             <div className="flex items-baseline gap-1.5 ml-1">
-              <span className="text-ink-dim text-xs">{descTeste ? '' : 'Total:'}</span>
+              <span className="text-ink-dim text-xs">{descTeste ? '' : t('Total:')}</span>
               {descTeste
                 ? <span className="text-xl font-bold text-accent-300 leading-none">{descTeste.texto}</span>
                 : <span className="text-2xl font-mono font-bold text-dice-400 leading-none">{testeResultado.total}</span>}
@@ -514,7 +515,7 @@ export default function AtributoCard({
           {descTeste?.marcacao && (
             <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded-lg border bg-harm/10 border-harm/60 text-harm">⚡ {descTeste.marcacao.rotulo}{descTeste.marcacao.texto ? ` — ${descTeste.marcacao.texto}` : ''}</span>
           )}
-          <RerolagemBox resultado={testeResultado} rerolagem={rerolagem} mesaId={mesaId} fichaId={fichaId} rotulo={`Teste de ${atributo.nome}`} onRerolado={setTesteResultado} />
+          <RerolagemBox resultado={testeResultado} rerolagem={rerolagem} mesaId={mesaId} fichaId={fichaId} rotulo={t('Teste de {nome}', { nome: atributo.nome })} onRerolado={setTesteResultado} />
           {!descTeste && (testeResultado.mantidos.length > 1 || testeResultado.modificador !== 0) && (
             <p className="text-ink-dim text-xs">
               ({testeResultado.mantidos.join(' + ')}
@@ -534,7 +535,7 @@ export default function AtributoCard({
             onClick={() => setRolando(false)}
             className="mt-2 text-xs text-ink-dim hover:text-accent-300 transition-colors"
           >
-            Cancelar
+            {t('Cancelar')}
           </button>
         </div>
       )}
@@ -577,7 +578,7 @@ export default function AtributoCard({
               onClick={() => setRolando(true)}
               className="flex-1 py-1.5 text-xs bg-dice-700 hover:bg-dice-500 text-ink rounded-lg transition-colors"
             >
-              🎲 {valor !== undefined ? 'Rolar novamente' : 'Rolar'}
+              🎲 {valor !== undefined ? t('Rolar novamente') : t('Rolar')}
             </button>
           )}
           <button
@@ -588,7 +589,7 @@ export default function AtributoCard({
             }}
             className="flex-1 py-1.5 text-xs bg-hover hover:bg-border text-ink rounded-lg transition-colors"
           >
-            ✎ Editar
+            ✎ {t('Editar')}
           </button>
         </div>
       )}

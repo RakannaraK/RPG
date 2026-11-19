@@ -1,3 +1,5 @@
+import { t, tn } from '../../i18n'
+
 /**
  * Fase 13.2 — barra de presença: avatares (iniciais) de quem está conectado
  * à sessão agora. `meuId` destaca o próprio usuário.
@@ -28,14 +30,14 @@ export default function PresencaBar({ conectados = [], meuId, conectado = true }
           diferentes. O ponto agora é o estado da conexão; o texto, quem está. */}
       <span
         className={`inline-flex items-center gap-1.5 text-xs font-medium shrink-0 ${conectado ? 'text-emerald-300' : 'text-amber-300'}`}
-        title={conectado ? 'Tempo real conectado' : 'Reconectando ao tempo real…'}
+        title={conectado ? t('Tempo real conectado') : t('Reconectando ao tempo real…')}
       >
         <span className={`w-2 h-2 rounded-full ${conectado ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
-        {conectado ? `${conectados.length} online` : 'reconectando…'}
+        {conectado ? t('{n} online', { n: conectados.length }) : t('reconectando…')}
       </span>
       <div className="flex -space-x-2">
         {conectados.map(c => {
-          const titulo = `${c.nome}${c.id === meuId ? ' (você)' : ''}${c.conexoes > 1 ? ` · ${c.conexoes} abas` : ''}`
+          const titulo = `${c.nome}${c.id === meuId ? t(' (você)') : ''}${c.conexoes > 1 ? ` · ${tn(c.conexoes, '{n} aba', '{n} abas')}` : ''}`
           const borda = c.id === meuId ? 'border-emerald-400' : 'border-slate-900'
           return c.avatar ? (
             <img

@@ -7,6 +7,7 @@ import PreferenciasModal from '../preferencias/PreferenciasModal'
 import GuiaMestre from '../ajuda/GuiaMestre'
 import Avatar from './Avatar'
 import Icone from './Icone'
+import { t } from '../../i18n'
 
 /**
  * Fase 52 — menu da pessoa logada (avatar no canto do cabeçalho). Junta o que
@@ -25,7 +26,7 @@ export default function MenuUsuario() {
   useFechaFora(menu, aberto, () => setAberto(false), botao)
 
   if (!session) return null
-  const nome = perfil?.username || session.user.email?.split('@')[0] || 'Você'
+  const nome = perfil?.username || session.user.email?.split('@')[0] || t('Você')
 
   async function sair() {
     setSaindo(true)
@@ -33,10 +34,10 @@ export default function MenuUsuario() {
   }
 
   const itens = [
-    { icone: 'dado', rotulo: 'Minhas mesas', acao: () => navigate('/dashboard') },
-    { icone: 'globo', rotulo: 'Comunidade', acao: () => navigate('/comunidade') },
-    { icone: 'ajustes', rotulo: 'Preferências', acao: () => setModal('prefs') },
-    { icone: 'ajuda', rotulo: 'Guia do mestre', acao: () => setModal('guia') },
+    { icone: 'dado', rotulo: t('Minhas mesas'), acao: () => navigate('/dashboard') },
+    { icone: 'globo', rotulo: t('Comunidade'), acao: () => navigate('/comunidade') },
+    { icone: 'ajustes', rotulo: t('Preferências'), acao: () => setModal('prefs') },
+    { icone: 'ajuda', rotulo: t('Guia do mestre'), acao: () => setModal('guia') },
   ]
 
   function teclado(e) {
@@ -52,7 +53,7 @@ export default function MenuUsuario() {
     <>
       <button
         ref={botao} onClick={() => setAberto(a => !a)}
-        aria-haspopup="menu" aria-expanded={aberto} aria-label={`Menu de ${nome}`}
+        aria-haspopup="menu" aria-expanded={aberto} aria-label={t('Menu de {nome}', { nome })}
         className="flex items-center gap-2 rounded-full sm:rounded-xl p-0.5 sm:pl-1 sm:pr-2 sm:py-1 hover:bg-hover transition-colors duration-rapida focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-400"
       >
         <Avatar url={perfil?.avatar_url} nome={nome} tamanho="sm" />
@@ -62,14 +63,14 @@ export default function MenuUsuario() {
 
       {aberto && (
         <div
-          ref={menu} role="menu" aria-label={`Menu de ${nome}`} onKeyDown={teclado}
+          ref={menu} role="menu" aria-label={t('Menu de {nome}', { nome })} onKeyDown={teclado}
           className="pop-entra absolute right-3 sm:right-6 top-full mt-1 w-64 rounded-2xl border border-border bg-raised shadow-nivel-3 z-menu p-1.5"
         >
           <div className="flex items-center gap-3 px-3 py-2.5 mb-1 border-b border-border/70">
             <Avatar url={perfil?.avatar_url} nome={nome} tamanho="md" />
             <div className="min-w-0">
               <p className="text-ink text-sm font-semibold truncate">{nome}</p>
-              <p className="text-ink-dim text-xs truncate">{session.user.is_anonymous ? 'Convidado' : session.user.email}</p>
+              <p className="text-ink-dim text-xs truncate">{session.user.is_anonymous ? t('Convidado') : session.user.email}</p>
             </div>
           </div>
           {itens.map((it, i) => (
@@ -80,7 +81,7 @@ export default function MenuUsuario() {
           ))}
           <div className="my-1 border-t border-border/70" />
           <button role="menuitem" className={`${item} hover:text-harm`} onClick={sair} disabled={saindo}>
-            <Icone nome="sair" tamanho={18} className="text-ink-dim" />{saindo ? 'Saindo…' : 'Sair'}
+            <Icone nome="sair" tamanho={18} className="text-ink-dim" />{saindo ? t('Saindo…') : t('Sair')}
           </button>
         </div>
       )}

@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 // Fase 30.3 — ficha portátil (puro, sem banco nem React).
 //
 // Exportar troca cada referência ao sistema (atributo, perícia, classe…) pelo
@@ -49,18 +50,18 @@ function colecoes(sistema) {
 
 // tabela da ficha → [coluna com o id, nome no arquivo, coleção do sistema, rótulo do aviso]
 const REFS = {
-  valores_atributos: ['atributo_id', 'atributo', 'atributos', 'Atributo'],
-  pericias_ficha: ['pericia_id', 'pericia', 'pericias', 'Perícia'],
-  classes_ficha: ['classe_id', 'classe', 'classes', 'Classe'],
-  habilidades_ficha: ['habilidade_id', 'habilidade', 'habilidades', 'Habilidade'],
-  poderes_ficha: ['poder_id', 'poder', 'poderes', 'Poder'],
-  linhas_ficha: ['linha_id', 'linha', 'linhas_poder', 'Linha de poder'],
-  pools_ficha: ['pool_id', 'pool', 'pools', 'Reserva'],
-  recompensas_ficha: ['recompensa_id', 'recompensa', 'recompensas_nivel', 'Recompensa'],
-  condicoes_manuais_ficha: ['modificador_id', 'modificador', 'modificadores', 'Condição'],
-  estados_ficha: ['estado_id', 'estado', 'estados', 'Estado'],
-  trilhas_ficha: ['trilha_id', 'trilha', 'trilhas', 'Trilha'],
-  valores_combate: ['campo_id', 'campo', 'campos_combate', 'Campo de combate'],
+  valores_atributos: ['atributo_id', 'atributo', 'atributos', t('Atributo')],
+  pericias_ficha: ['pericia_id', 'pericia', 'pericias', t('Perícia')],
+  classes_ficha: ['classe_id', 'classe', 'classes', t('Classe')],
+  habilidades_ficha: ['habilidade_id', 'habilidade', 'habilidades', t('Habilidade')],
+  poderes_ficha: ['poder_id', 'poder', 'poderes', t('Poder')],
+  linhas_ficha: ['linha_id', 'linha', 'linhas_poder', t('Linha de poder')],
+  pools_ficha: ['pool_id', 'pool', 'pools', t('Reserva')],
+  recompensas_ficha: ['recompensa_id', 'recompensa', 'recompensas_nivel', t('Recompensa')],
+  condicoes_manuais_ficha: ['modificador_id', 'modificador', 'modificadores', t('Condição')],
+  estados_ficha: ['estado_id', 'estado', 'estados', t('Estado')],
+  trilhas_ficha: ['trilha_id', 'trilha', 'trilhas', t('Trilha')],
+  valores_combate: ['campo_id', 'campo', 'campos_combate', t('Campo de combate')],
 }
 const SEM_REFS = ['imagens_ficha', 'projetos_ficha', 'slots_ficha', 'pontos_status_ficha']
 export const TABELAS_FICHA = [...Object.keys(REFS), ...SEM_REFS, 'itens_ficha', 'maestrias_ficha']
@@ -126,10 +127,10 @@ export function nomeArquivoFicha(nome) {
  */
 export function planejarImportacao(json, sistema, gerarId = () => crypto.randomUUID()) {
   if (!json || json.formato !== FORMATO_FICHA.formato || json.tipo !== FORMATO_FICHA.tipo) {
-    throw new Error('Este arquivo não é uma ficha exportada do RPG Ficha.')
+    throw new Error(t('Este arquivo não é uma ficha exportada do RPG Ficha.'))
   }
   if (Number(json.versao) > FORMATO_FICHA.versao) {
-    throw new Error('Esta ficha foi exportada por uma versão mais nova do site. Atualize a página e tente de novo.')
+    throw new Error(t('Esta ficha foi exportada por uma versão mais nova do site. Atualize a página e tente de novo.'))
   }
   const cols = colecoes(sistema)
   // nome → id e id → id (o mesmo sistema reconhece o id direto)
@@ -145,11 +146,11 @@ export function planejarImportacao(json, sistema, gerarId = () => crypto.randomU
 
   const ficha = Object.fromEntries(CAMPOS_FICHA.filter(c => f[c] !== undefined).map(c => [c, f[c]]))
   ficha.id = fichaId
-  ficha.nome_personagem = String(ficha.nome_personagem || '').trim() || 'Personagem importado'
+  ficha.nome_personagem = String(ficha.nome_personagem || '').trim() || t('Personagem importado')
   ficha.raca_id = achar('racas', f.raca_ref)
   ficha.classe_id = achar('classes', f.classe_ref)
-  if (f.raca_ref && !ficha.raca_id) avisos.add(`Raça “${f.raca_ref}” não existe neste sistema (fica só o texto).`)
-  if (f.classe_ref && !ficha.classe_id) avisos.add(`Classe “${f.classe_ref}” não existe neste sistema (fica só o texto).`)
+  if (f.raca_ref && !ficha.raca_id) avisos.add(t('Raça “{nome}” não existe neste sistema (fica só o texto).', { nome: f.raca_ref }))
+  if (f.classe_ref && !ficha.classe_id) avisos.add(t('Classe “{nome}” não existe neste sistema (fica só o texto).', { nome: f.classe_ref }))
 
   const entrada = json.filhos || {}
   const filhos = {}
@@ -159,7 +160,7 @@ export function planejarImportacao(json, sistema, gerarId = () => crypto.randomU
     for (const row of entrada[tabela] || []) {
       const { [como]: nome, ...resto } = semAmbiente(row)
       const id = achar(colecao, nome)
-      if (!id) { avisos.add(`${rotulo} “${nome}” não existe neste sistema.`); continue }
+      if (!id) { avisos.add(t('{rotulo} “{nome}” não existe neste sistema.', { rotulo, nome })); continue }
       if (vistos.has(id)) continue
       vistos.add(id)
       filhos[tabela].push({ ...resto, [coluna]: id, ficha_id: fichaId })
@@ -173,14 +174,14 @@ export function planejarImportacao(json, sistema, gerarId = () => crypto.randomU
     const id = gerarId()
     idDoItem.set(_idx ?? i, id)
     const categoria_id = achar('categorias_item', categoria)
-    if (categoria && !categoria_id) avisos.add(`Categoria de item “${categoria}” não existe neste sistema (o item entra sem categoria).`)
+    if (categoria && !categoria_id) avisos.add(t('Categoria de item “{nome}” não existe neste sistema (o item entra sem categoria).', { nome: categoria }))
     return { ...resto, id, categoria_id, ficha_id: fichaId }
   })
   filhos.maestrias_ficha = []
   for (const row of entrada.maestrias_ficha || []) {
     const { categoria, item, ...resto } = semAmbiente(row)
     const categoria_id = achar('categorias_item', categoria)
-    if (!categoria_id) { avisos.add(`Maestria em “${categoria}” não entra: a categoria não existe neste sistema.`); continue }
+    if (!categoria_id) { avisos.add(t('Maestria em “{nome}” não entra: a categoria não existe neste sistema.', { nome: categoria })); continue }
     filhos.maestrias_ficha.push({ ...resto, categoria_id, item_id: item == null ? null : idDoItem.get(item) ?? null, ficha_id: fichaId })
   }
 

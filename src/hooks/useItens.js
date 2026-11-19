@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 export function useItens(fichaId) {
   const [itens, setItens] = useState([])
@@ -19,7 +20,7 @@ export function useItens(fichaId) {
       if (err) throw err
       setItens(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar itens.')
+      setError(err.message || t('Erro ao carregar itens.'))
     } finally {
       setLoading(false)
     }

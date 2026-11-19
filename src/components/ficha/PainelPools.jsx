@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { gastarPool, recuperarQuantidade, notacaoGasto } from '../../lib/poolEngine'
 import { rolarNotacao } from '../../lib/diceNotation'
+import { t } from '../../i18n'
 
 /**
  * Fase 20.1 — painel de pools da ficha (adaptativo: some se o sistema não tem pools).
@@ -24,7 +25,7 @@ function PoolCard({ pool, atual, maximo, erro, isDono, onDefinirAtual, onRolagem
     try {
       await onDefinirAtual(pool.id, novo)
     } catch (e) {
-      setMsg(e.message || 'Erro ao atualizar.')
+      setMsg(e.message || t('Erro ao atualizar.'))
     } finally {
       setOcupado(false)
     }
@@ -61,12 +62,12 @@ function PoolCard({ pool, atual, maximo, erro, isDono, onDefinirAtual, onRolagem
         <span className="text-accent-300 text-sm font-mono">
           {atual}
           <span className="text-ink-dim"> / {maximo}</span>
-          {ehDados && <span className="text-ink-dim text-xs"> dados</span>}
+          {ehDados && <span className="text-ink-dim text-xs">{t(' dados')}</span>}
         </span>
       </div>
 
       {erro ? (
-        <p className="text-harm text-xs">⚠ Fórmula do máximo inválida: {erro}</p>
+        <p className="text-harm text-xs">{t('⚠ Fórmula do máximo inválida: {erro}', { erro })}</p>
       ) : (
         <div className="h-2 bg-hover rounded-full overflow-hidden">
           <div className={`h-full rounded-full transition-all duration-500 ${cor}`} style={{ width: `${pct}%` }} />
@@ -76,9 +77,9 @@ function PoolCard({ pool, atual, maximo, erro, isDono, onDefinirAtual, onRolagem
       {isDono && (
         <div className="flex items-center gap-1.5 flex-wrap">
           <button onClick={() => aplicar(recuperarQuantidade(atual, maximo, -1))}
-            disabled={ocupado || atual <= 0} className={btn} title="Gastar 1">−</button>
+            disabled={ocupado || atual <= 0} className={btn} title={t('Gastar 1')}>−</button>
           <button onClick={() => aplicar(recuperarQuantidade(atual, maximo, 1))}
-            disabled={ocupado || atual >= maximo} className={btn} title="Recuperar 1">+</button>
+            disabled={ocupado || atual >= maximo} className={btn} title={t('Recuperar 1')}>+</button>
 
           <input
             type="number"
@@ -86,7 +87,7 @@ function PoolCard({ pool, atual, maximo, erro, isDono, onDefinirAtual, onRolagem
             value={qtd}
             onChange={e => setQtd(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && qtd) handleGastar() }}
-            placeholder={ehDados ? 'dados' : 'qtd'}
+            placeholder={ehDados ? t('dados') : t('qtd')}
             disabled={ocupado}
             className="w-16 px-2 py-1 rounded-lg bg-void border border-border text-ink text-xs text-center placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500"
           />
@@ -95,16 +96,16 @@ function PoolCard({ pool, atual, maximo, erro, isDono, onDefinirAtual, onRolagem
             disabled={ocupado || !qtd}
             className="px-2.5 py-1 text-xs font-medium rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors disabled:opacity-40"
           >
-            {ehDados ? 'Gastar e rolar' : 'Gastar'}
+            {ehDados ? t('Gastar e rolar') : t('Gastar')}
           </button>
 
           <button
             onClick={() => aplicar(maximo)}
             disabled={ocupado || atual >= maximo}
             className="px-2 py-1 text-xs text-ink-dim hover:text-ink transition-colors disabled:opacity-40"
-            title="Encher o pool"
+            title={t('Encher o pool')}
           >
-            encher
+            {t('encher')}
           </button>
         </div>
       )}
@@ -120,7 +121,7 @@ function PoolCard({ pool, atual, maximo, erro, isDono, onDefinirAtual, onRolagem
               onClick={() => { onCurar(rolagem.total); setRolagem(null) }}
               className="px-2 py-0.5 text-xs font-medium rounded-lg bg-ok/80 hover:bg-ok text-ink transition-colors"
             >
-              Aplicar à vida
+              {t('Aplicar à vida')}
             </button>
           )}
           <button onClick={() => setRolagem(null)} className="text-ink-dim hover:text-ink text-xs ml-auto">✕</button>
@@ -147,7 +148,7 @@ export default function PainelPools({
 
   return (
     <div className="bg-raised border border-border rounded-2xl p-4 space-y-2.5">
-      <p className="text-ink text-sm font-semibold">Recursos</p>
+      <p className="text-ink text-sm font-semibold">{t('Recursos')}</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         {visiveis.map(pool => (
           <PoolCard

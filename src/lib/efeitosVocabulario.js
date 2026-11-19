@@ -6,41 +6,43 @@
  * NÃO renomear nem remover um id — só acrescentar.
  */
 
+import { t } from '../i18n'
+
 /** Efeitos de atmosfera. `som` = laço de SONS_AMBIENTE; `luz` = o efeito LOCAL também ilumina;
  *  `soCena` = não pode ser colocado num ponto do mapa (vale para a cena inteira). */
 export const TIPOS_ATMOSFERA = {
-  fogo:      { nome: 'Fogo',           som: 'fogo',   luz: true,  cor: '#FF7A1A' },
-  brasas:    { nome: 'Brasas',         som: null,     luz: false, cor: '#FF9A3C' },
-  cinzas:    { nome: 'Cinzas',         som: null,     luz: false, cor: '#9AA0A8' },
-  neblina:   { nome: 'Neblina',        som: null,     luz: false, cor: '#C9D3E0' },
-  chuva:     { nome: 'Chuva',          som: 'chuva',  luz: false, cor: '#9CC2FF' },
-  neve:      { nome: 'Neve',           som: 'vento',  luz: false, cor: '#FFFFFF' },
-  areia:     { nome: 'Areia ao vento', som: 'vento',  luz: false, cor: '#D9B77A' },
-  vagalumes: { nome: 'Vaga-lumes',     som: 'noite',  luz: false, cor: '#D8FF7A' },
-  bolhas:    { nome: 'Bolhas',         som: 'agua',   luz: false, cor: '#9FE8FF' },
-  runas:     { nome: 'Runas arcanas',  som: 'arcano', luz: false, cor: '#A9C4FF' },
-  relampago: { nome: 'Relâmpagos',     som: null,     luz: false, cor: '#EAF2FF', soCena: true },
+  fogo:      { nome: t('Fogo'),           som: 'fogo',   luz: true,  cor: '#FF7A1A' },
+  brasas:    { nome: t('Brasas'),         som: null,     luz: false, cor: '#FF9A3C' },
+  cinzas:    { nome: t('Cinzas'),         som: null,     luz: false, cor: '#9AA0A8' },
+  neblina:   { nome: t('Neblina'),        som: null,     luz: false, cor: '#C9D3E0' },
+  chuva:     { nome: t('Chuva'),          som: 'chuva',  luz: false, cor: '#9CC2FF' },
+  neve:      { nome: t('Neve'),           som: 'vento',  luz: false, cor: '#FFFFFF' },
+  areia:     { nome: t('Areia ao vento'), som: 'vento',  luz: false, cor: '#D9B77A' },
+  vagalumes: { nome: t('Vaga-lumes'),     som: 'noite',  luz: false, cor: '#D8FF7A' },
+  bolhas:    { nome: t('Bolhas'),         som: 'agua',   luz: false, cor: '#9FE8FF' },
+  runas:     { nome: t('Runas arcanas'),  som: 'arcano', luz: false, cor: '#A9C4FF' },
+  relampago: { nome: t('Relâmpagos'),     som: null,     luz: false, cor: '#EAF2FF', soCena: true },
 }
 
 /** Laços de som ambiente, sintetizados em src/audio/somAmbiente.js. */
 export const SONS_AMBIENTE = {
-  fogo: 'Fogo crepitando',
-  chuva: 'Chuva',
-  vento: 'Vento',
-  noite: 'Noite (grilos)',
-  agua: 'Água',
-  infernal: 'Zumbido infernal',
-  arcano: 'Zumbido arcano',
+  fogo: t('Fogo crepitando'),
+  chuva: t('Chuva'),
+  vento: t('Vento'),
+  noite: t('Noite (grilos)'),
+  agua: t('Água'),
+  infernal: t('Zumbido infernal'),
+  arcano: t('Zumbido arcano'),
 }
 
 /** Formas de um efeito de ação (o desenho fica em CamadaVfx). */
 export const FORMAS_VFX = {
-  projetil: 'Projétil',
-  explosao: 'Explosão',
-  raio: 'Raio',
-  cura: 'Cura',
-  corte: 'Corte',
-  onda: 'Onda',
+  projetil: t('Projétil'),
+  explosao: t('Explosão'),
+  raio: t('Raio'),
+  cura: t('Cura'),
+  corte: t('Corte'),
+  onda: t('Onda'),
 }
 
 /** Sons de um efeito de ação = presets que JÁ existem em src/audio/actionSynth.js. */
@@ -69,5 +71,5 @@ export function limitar(n, min, max, padrao = min) {
 }
 
 /** Texto curto e sem quebra de linha (vem de arquivo importado: não confiar). */
-export const textoCurto = (t, max = LIMITES.texto) =>
-  typeof t === 'string' ? t.replace(/\s+/g, ' ').trim().slice(0, max) : ''
+export const textoCurto = (txt, max = LIMITES.texto) =>
+  typeof txt === 'string' ? txt.replace(/\s+/g, ' ').trim().slice(0, max) : ''

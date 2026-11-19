@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 /**
  * Fase 20.3 — Slots (função PURA). MODO OPCIONAL por sistema.
  * Não acessa banco nem React. Nada de D&D embutido: a grade é digitada pelo mestre.
@@ -107,8 +108,8 @@ export function gastarSlot(circulo, totais, usados = {}) {
   const c = Number(circulo)
   const total = Number(totais?.[c]) || 0
   const jaUsados = Number(usados[c]) || 0
-  if (total <= 0) return { ok: false, usados: jaUsados, motivo: `Sem slots de ${c}º círculo.` }
-  if (jaUsados >= total) return { ok: false, usados: jaUsados, motivo: `Slots de ${c}º círculo esgotados (${total}/${total}).` }
+  if (total <= 0) return { ok: false, usados: jaUsados, motivo: t('Sem slots de {c}º círculo.', { c }) }
+  if (jaUsados >= total) return { ok: false, usados: jaUsados, motivo: t('Slots de {c}º círculo esgotados ({total}/{total}).', { c, total }) }
   return { ok: true, usados: jaUsados + 1 }
 }
 

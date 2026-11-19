@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
+    "i18n": "node scripts/i18n-extrair.mjs",
     "test:watch": "vitest"
   },
   "dependencies": {

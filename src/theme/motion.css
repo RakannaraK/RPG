@@ -145,3 +145,14 @@
 @media (prefers-reduced-motion: reduce) {
   .luz-tremula { animation: none; }
 }
+
+/* F64 — imagem da cinemática: aproximação lenta */
+@keyframes cinematica-zoom {
+  from { transform: scale(1); }
+  to   { transform: scale(1.08); }
+}
+.cinematica-zoom { animation: cinematica-zoom 30s ease-out forwards; }
+:root[data-movimento="reduzido"] .cinematica-zoom { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .cinematica-zoom { animation: none; }
+}

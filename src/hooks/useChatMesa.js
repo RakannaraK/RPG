@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useId, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { contarNaoLidas } from '../lib/chatMesa'
+import { t } from '../i18n'
 
 // ponytail: mostra as 200 mensagens mais recentes; "carregar anteriores" quando alguém sentir falta
 const LIMITE_MENSAGENS = 200
@@ -53,8 +54,8 @@ export function useChatMesa(mesaId, meuId) {
     const { data, error } = await supabase
       .from('mensagens_mesa').insert({ mesa_id: mesaId, texto, para }).select().single()
     if (error) {
-      if (tabelaAusente(error)) throw new Error('Chat ainda não ativado neste banco (sql/fase29_chat_notas_calendario.sql).')
-      if (error.code === '42501') throw new Error('Sem permissão para falar nesta mesa (arquivada?).')
+      if (tabelaAusente(error)) throw new Error(t('Chat ainda não ativado neste banco (sql/fase29_chat_notas_calendario.sql).'))
+      if (error.code === '42501') throw new Error(t('Sem permissão para falar nesta mesa (arquivada?).'))
       throw new Error(error.message)
     }
     setMensagens(prev => (prev.some(m => m.id === data.id) ? prev : [...prev, data]))

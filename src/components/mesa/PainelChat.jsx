@@ -6,20 +6,21 @@ import Avatar from '../ui/Avatar'
 import Botao from '../ui/Botao'
 import Icone from '../ui/Icone'
 import Ilustra from '../arte/Ilustra'
+import { t, locale } from '../../i18n'
 
 function dia(iso) {
   const d = new Date(iso)
   const hoje = new Date()
   const ontem = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - 1)
-  if (d.toDateString() === hoje.toDateString()) return 'Hoje'
-  if (d.toDateString() === ontem.toDateString()) return 'Ontem'
-  return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })
+  if (d.toDateString() === hoje.toDateString()) return t('Hoje')
+  if (d.toDateString() === ontem.toDateString()) return t('Ontem')
+  return d.toLocaleDateString(locale(), { weekday: 'long', day: '2-digit', month: '2-digit' })
 }
 
 function hora(iso) {
   const d = new Date(iso)
-  const hm = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-  return d.toDateString() === new Date().toDateString() ? hm : `${d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} ${hm}`
+  const hm = d.toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' })
+  return d.toDateString() === new Date().toDateString() ? hm : `${d.toLocaleDateString(locale(), { day: '2-digit', month: '2-digit' })} ${hm}`
 }
 
 /**
@@ -52,7 +53,7 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
     const entrada = interpretarEntrada(texto)
     if (!entrada) return
     if (entrada.tipo === 'erro') { setErro(entrada.erro); return }
-    if (entrada.tipo === 'rolagem' && !podeRolar) { setErro('Como espectador, você não rola dados.'); return }
+    if (entrada.tipo === 'rolagem' && !podeRolar) { setErro(t('Como espectador, você não rola dados.')); return }
     setEnviando(true); setErro('')
     try {
       if (entrada.tipo === 'rolagem') {
@@ -63,7 +64,7 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
       }
       setTexto('')
     } catch (e) {
-      setErro(e.message || 'Não foi possível enviar.')
+      setErro(e.message || t('Não foi possível enviar.'))
     } finally {
       setEnviando(false)
     }
@@ -74,7 +75,7 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
   }
 
   if (indisponivel) {
-    return <p className="text-ink-dim text-sm italic">Chat ainda não ativado neste banco (sql/fase29_chat_notas_calendario.sql).</p>
+    return <p className="text-ink-dim text-sm italic">{t('Chat ainda não ativado neste banco (sql/fase29_chat_notas_calendario.sql).')}</p>
   }
 
   return (
@@ -88,14 +89,14 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
         {mensagens.length === 0 && (
           <li className="h-full flex flex-col items-center justify-center text-center px-6 py-10">
             <Ilustra nome="pergaminho" tamanho={56} className="opacity-80 mb-3" />
-            <p className="text-ink font-medium">Nenhuma mensagem ainda</p>
-            <p className="text-ink-dim text-sm mt-1">Diga oi para a mesa. Comece com <span className="font-mono text-ink">/r 1d20</span> para rolar daqui.</p>
+            <p className="text-ink font-medium">{t('Nenhuma mensagem ainda')}</p>
+            <p className="text-ink-dim text-sm mt-1">{t('Diga oi para a mesa. Comece com')} <span className="font-mono text-ink">/r 1d20</span> {t('para rolar daqui.')}</p>
           </li>
         )}
         {agruparMensagens(mensagens).map(({ m, inicioGrupo, novoDia }) => {
           const minha = m.autor_id === meuId
           const sussurro = rotuloSussurro(m, meuId, nomeDe)
-          const nome = minha ? 'Você' : nomeDe(m.autor_id)
+          const nome = minha ? t('Você') : nomeDe(m.autor_id)
           return (
             <li key={m.id} className={`group relative ${inicioGrupo ? 'mt-3 first:mt-0' : ''}`}>
               {novoDia && (
@@ -120,7 +121,7 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
                           // Responder o sussurro: quem recebeu responde só para o autor
                           onClick={() => !minha && setDestino(m.autor_id)}
                           className="text-accent-300 text-xs hover:underline min-h-[24px] inline-flex items-center"
-                          title={minha ? undefined : 'Responder em sussurro'}
+                          title={minha ? undefined : t('Responder em sussurro')}
                         >{sussurro}</button>
                       )}
                     </div>
@@ -131,7 +132,7 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
                   <button
                     type="button" onClick={() => aoApagar(m.id)}
                     className="botao-icone !min-w-[28px] !min-h-[28px] self-start opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:!text-harm"
-                    aria-label="Apagar mensagem" data-dica="Apagar"
+                    aria-label={t('Apagar mensagem')} data-dica={t('Apagar')}
                   ><Icone nome="lixeira" tamanho={15} /></button>
                 )}
               </div>
@@ -147,7 +148,7 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
               value={opcoes.some(o => o.valor === destino) ? destino : 'todos'}
               onChange={e => setDestino(e.target.value)}
               className="campo w-full !min-h-[36px] !py-1.5"
-              aria-label="Para quem"
+              aria-label={t('Para quem')}
             >
               {opcoes.map(o => <option key={o.valor} value={o.valor}>{o.rotulo}</option>)}
             </select>
@@ -159,19 +160,19 @@ export default function PainelChat({ chat, mesaId, meuId, isGestor, podeFalar = 
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); aoEnviar() } }}
               rows={2}
               maxLength={TAMANHO_MAX_MENSAGEM + 50}
-              placeholder={destino === 'todos' ? 'Mensagem para a mesa… (/r 1d20+5 rola)' : 'Sussurro…'}
+              placeholder={destino === 'todos' ? t('Mensagem para a mesa… (/r 1d20+5 rola)') : t('Sussurro…')}
               className="campo flex-1 resize-none"
-              aria-label="Mensagem"
+              aria-label={t('Mensagem')}
             />
-            <Botao variante="primario" onClick={aoEnviar} disabled={enviando || !texto.trim()} aria-label="Enviar mensagem" className="!min-h-[44px] !px-4">
+            <Botao variante="primario" onClick={aoEnviar} disabled={enviando || !texto.trim()} aria-label={t('Enviar mensagem')} className="!min-h-[44px] !px-4">
               <Icone nome="seta-dir" tamanho={18} className={enviando ? 'opacity-50' : ''} />
             </Botao>
           </div>
           {(erro || erroRolagem) && <p className="aviso-erro !text-xs" role="alert">{erro || erroRolagem}</p>}
-          <p className="text-ink-dim text-xs">Enter envia · Shift+Enter quebra linha · /r 2d6+3 rótulo rola no feed</p>
+          <p className="text-ink-dim text-xs">{t('Enter envia · Shift+Enter quebra linha · /r 2d6+3 rótulo rola no feed')}</p>
         </div>
       ) : (
-        <p className="text-ink-dim text-xs italic pt-3">Mesa arquivada — o chat é só leitura.</p>
+        <p className="text-ink-dim text-xs italic pt-3">{t('Mesa arquivada — o chat é só leitura.')}</p>
       )}
     </div>
   )

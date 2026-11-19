@@ -8,6 +8,7 @@ import Captcha, { CHAVE_CAPTCHA } from '../components/auth/Captcha'
 import Marca from '../components/marca/Marca'
 import Ilustra from '../components/arte/Ilustra'
 import Botao from '../components/ui/Botao'
+import { t } from '../i18n'
 
 /** O login anônimo é ligado no painel do Supabase; o site pergunta antes de oferecer. */
 async function convidadoLigado() {
@@ -26,7 +27,7 @@ async function entrarNaMesa(codigo) {
     const id = (Array.isArray(data) ? data[0] : data)?.mesa_id
     if (id) return id
     // lista vazia = código errado (a tentativa conta no limite do banco)
-    throw new Error('Código de convite inválido ou a mesa não existe mais.')
+    throw new Error(t('Código de convite inválido ou a mesa não existe mais.'))
   }
   const { data: m } = await supabase.from('mesas').select('id').eq('codigo_convite', codigo).maybeSingle()
   if (m?.id) return m.id
@@ -81,38 +82,38 @@ export default function ConvitePage() {
           <div className="flex items-center gap-3">
             <Ilustra nome="porta" tamanho={40} className="shrink-0" />
             <div>
-              <h1 className="text-ink text-lg font-semibold">Você foi convidado para uma mesa</h1>
-              <p className="text-ink-dim text-xs">Código <span className="font-mono text-ink">{codigo}</span></p>
+              <h1 className="text-ink text-lg font-semibold">{t('Você foi convidado para uma mesa')}</h1>
+              <p className="text-ink-dim text-xs">{t('Código')} <span className="font-mono text-ink">{codigo}</span></p>
             </div>
           </div>
 
           {loading || ocupado ? (
-            <p className="text-ink-dim text-sm" role="status">{ocupado ? 'Abrindo a mesa…' : 'Carregando…'}</p>
+            <p className="text-ink-dim text-sm" role="status">{ocupado ? t('Abrindo a mesa…') : t('Carregando…')}</p>
           ) : session ? (
-            <Botao variante="primario" tamanho="lg" className="w-full" onClick={entrarComConta}>Entrar na mesa</Botao>
+            <Botao variante="primario" tamanho="lg" className="w-full" onClick={entrarComConta}>{t('Entrar na mesa')}</Botao>
           ) : (
             <>
               {ligado && (
                 <form onSubmit={entrarComoConvidado} className="space-y-2">
-                  <label className="flex flex-col gap-1 text-xs text-ink-dim">Como quer ser chamado na mesa?
+                  <label className="flex flex-col gap-1 text-xs text-ink-dim">{t('Como quer ser chamado na mesa?')}
                     <input
                       value={nome} onChange={e => setNome(e.target.value)} maxLength={LIMITE_NOME_CONVIDADO} autoFocus
-                      placeholder="Seu nome ou o do personagem"
+                      placeholder={t('Seu nome ou o do personagem')}
                       className="px-3 py-2.5 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500"
                     />
                   </label>
                   <Captcha onToken={setCaptcha} versao={versaoCaptcha} />
-                  <Botao type="submit" variante="primario" tamanho="lg" className="w-full" disabled={!!CHAVE_CAPTCHA && !captcha}>Entrar como convidado</Botao>
+                  <Botao type="submit" variante="primario" tamanho="lg" className="w-full" disabled={!!CHAVE_CAPTCHA && !captcha}>{t('Entrar como convidado')}</Botao>
                   <p className="text-ink-dim text-xs">
-                    Sem e-mail e sem senha. Sua ficha fica guardada neste navegador, e dá para criar a conta depois sem perder nada.
+                    {t('Sem e-mail e sem senha. Sua ficha fica guardada neste navegador, e dá para criar a conta depois sem perder nada.')}
                   </p>
                 </form>
               )}
-              {ligado && <p className="text-center text-ink-dim text-xs">ou</p>}
+              {ligado && <p className="text-center text-ink-dim text-xs">{t('ou')}</p>}
               <Botao
                 variante={ligado ? 'contorno' : 'primario'} tamanho="lg" className="w-full"
                 onClick={() => navigate('/', { state: { depois: `/convite/${codigo}` } })}
-              >Entrar com minha conta ou criar uma</Botao>
+              >{t('Entrar com minha conta ou criar uma')}</Botao>
             </>
           )}
           {erro && <p className="text-harm text-sm" role="alert">{erro}</p>}

@@ -1,4 +1,5 @@
 import { NOMES_DIFICULDADE, JOGOS, classificar, textoClassificacao } from './resultado'
+import { t } from '../../i18n'
 
 /**
  * Fase 28.5 — regras puras dos desafios (o mestre põe vários jogadores na
@@ -30,18 +31,18 @@ export function situacaoDesafio(desafio, resultados, nomeDe = id => id) {
 
 /** Texto do feed ao encerrar: classificação, meta e quem não jogou. */
 export function textoEncerramento(desafio, situacao, nomeDe = id => id) {
-  const partes = [`🏆 Desafio encerrado: ${tituloDesafio(desafio)}`]
+  const partes = [t('🏆 Desafio encerrado: {titulo}', { titulo: tituloDesafio(desafio) })]
   if (desafio.motivo) partes.push(desafio.motivo)
-  partes.push(situacao.classificados.length ? textoClassificacao(situacao.classificados) : 'ninguém jogou')
-  if (desafio.meta != null) partes.push(`meta ${desafio.meta}`)
-  if (situacao.faltam.length) partes.push(`não jogou: ${situacao.faltam.map(nomeDe).join(', ')}`)
+  partes.push(situacao.classificados.length ? textoClassificacao(situacao.classificados) : t('ninguém jogou'))
+  if (desafio.meta != null) partes.push(t('meta {meta}', { meta: desafio.meta }))
+  if (situacao.faltam.length) partes.push(t('não jogou: {nomes}', { nomes: situacao.faltam.map(nomeDe).join(', ') }))
   return partes.join(' — ')
 }
 
 export function textoLancamento(desafio, nomeDe = id => id) {
-  const partes = [`📣 Desafio: ${tituloDesafio(desafio)}`]
+  const partes = [t('📣 Desafio: {titulo}', { titulo: tituloDesafio(desafio) })]
   if (desafio.motivo) partes.push(desafio.motivo)
-  partes.push(`participantes: ${desafio.participantes.map(nomeDe).join(', ')}`)
-  if (desafio.meta != null) partes.push(`meta ${desafio.meta}`)
+  partes.push(t('participantes: {nomes}', { nomes: desafio.participantes.map(nomeDe).join(', ') }))
+  if (desafio.meta != null) partes.push(t('meta {meta}', { meta: desafio.meta }))
   return partes.join(' — ')
 }

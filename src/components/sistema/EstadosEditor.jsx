@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ModificadorForm, labelModificador } from './RacasClassesEditor'
+import { t } from '../../i18n'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
@@ -25,17 +26,17 @@ function FaixaEfeito({ faixa, onChange, onRemove, atributos, pericias, camposCom
   return (
     <div className="rounded-lg border border-purple-900/50 bg-slate-900/40 p-2 space-y-1.5">
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-accent-300 text-xs">de</span>
+        <span className="text-accent-300 text-xs">{t('de')}</span>
         <input type="number" value={faixa.de ?? ''} onChange={e => set({ de: e.target.value === '' ? null : Number(e.target.value) })} placeholder="−∞" className={`${INP} w-14 text-center`} />
-        <span className="text-accent-300 text-xs">até</span>
+        <span className="text-accent-300 text-xs">{t('até')}</span>
         <input type="number" value={faixa.ate ?? ''} onChange={e => set({ ate: e.target.value === '' ? null : Number(e.target.value) })} placeholder="+∞" className={`${INP} w-14 text-center`} />
         <input type="text" value={faixa.aviso || ''} onChange={e => set({ aviso: e.target.value })}
-          placeholder="aviso (chip na ficha — ex: A Besta está próxima.)" className={`${INP} flex-1 min-w-[10rem]`} />
+          placeholder={t('aviso (chip na ficha — ex: A Besta está próxima.)')} className={`${INP} flex-1 min-w-[10rem]`} />
         <button onClick={onRemove} className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
       </div>
       <input type="text" value={(faixa.bloqueios || []).join(', ')}
         onChange={e => set({ bloqueios: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
-        placeholder="bloqueios informativos, separados por vírgula (ex: gastar recurso X)" className={`${INP} w-full`} />
+        placeholder={t('bloqueios informativos, separados por vírgula (ex: gastar recurso X)')} className={`${INP} w-full`} />
 
       {/* Efeitos (modificadores F12) da faixa */}
       {mods.length > 0 && (
@@ -54,12 +55,12 @@ function FaixaEfeito({ faixa, onChange, onRemove, atributos, pericias, camposCom
             atributos={atributos} pericias={pericias} camposCombate={camposCombate} pools={pools}
             onAdd={payload => { set({ modificadores: [...mods, { id: novoId('m'), ...payload }] }); setAddMod(false) }}
           />
-          <button onClick={() => setAddMod(false)} className="mt-1 text-xs text-accent-300 hover:text-purple-300">Cancelar</button>
+          <button onClick={() => setAddMod(false)} className="mt-1 text-xs text-accent-300 hover:text-purple-300">{t('Cancelar')}</button>
         </div>
       ) : (
         <button onClick={() => setAddMod(true)}
           className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
-          + efeito (modificador)
+          {t('+ efeito (modificador)')}
         </button>
       )}
     </div>
@@ -77,11 +78,10 @@ export default function EstadosEditor({ estados = [], onChange, atributos = [], 
   return (
     <div className="bg-slate-800 border border-purple-700 rounded-xl p-4 space-y-3">
       <div>
-        <p className="text-purple-200 text-sm font-semibold">Estados com gatilhos</p>
+        <p className="text-purple-200 text-sm font-semibold">{t('Estados com gatilhos')}</p>
         <p className="text-accent-300 text-xs mt-0.5">
-          Contadores centrais do sistema (ex: Fome 0-5) com efeitos por faixa de valor. Os efeitos
-          entram e saem sozinhos; avisos viram chips; bloqueios informam (a mesa arbitra).
-          A variável <span className="font-mono text-purple-300">estado(nome)</span> fica disponível nas fórmulas.
+          {t('Contadores centrais do sistema (ex: Fome 0-5) com efeitos por faixa de valor. Os efeitos entram e saem sozinhos; avisos viram chips; bloqueios informam (a mesa arbitra).')}
+          {t('A variável')} <span className="font-mono text-purple-300">estado(nome)</span> {t('fica disponível nas fórmulas.')}
         </p>
       </div>
 
@@ -89,12 +89,12 @@ export default function EstadosEditor({ estados = [], onChange, atributos = [], 
         <div key={cfg.id} className="rounded-xl border border-purple-900/60 bg-slate-900/40 p-3 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
             <input type="text" value={cfg.nome || ''} onChange={e => setEstado(i, { nome: e.target.value })}
-              placeholder="Nome (ex: Fome)" className={`${INP} w-32 font-semibold`} />
-            <label className="text-purple-400 text-xs flex items-center gap-1">min
+              placeholder={t('Nome (ex: Fome)')} className={`${INP} w-32 font-semibold`} />
+            <label className="text-purple-400 text-xs flex items-center gap-1">{t('min')}
               <input type="number" value={cfg.min ?? 0} onChange={e => setEstado(i, { min: Number(e.target.value) })} className={`${INP} w-14 text-center`} /></label>
-            <label className="text-purple-400 text-xs flex items-center gap-1">max
+            <label className="text-purple-400 text-xs flex items-center gap-1">{t('max')}
               <input type="number" value={cfg.max ?? 5} onChange={e => setEstado(i, { max: Number(e.target.value) })} className={`${INP} w-14 text-center`} /></label>
-            <label className="text-purple-400 text-xs flex items-center gap-1">inicial
+            <label className="text-purple-400 text-xs flex items-center gap-1">{t('inicial')}
               <input type="number" value={cfg.inicial ?? 0} onChange={e => setEstado(i, { inicial: Number(e.target.value) })} className={`${INP} w-14 text-center`} /></label>
             <button onClick={() => onChange(estados.filter((_, j) => j !== i))}
               className="ml-auto w-6 h-6 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">✕</button>
@@ -102,19 +102,19 @@ export default function EstadosEditor({ estados = [], onChange, atributos = [], 
           <div className="flex items-center gap-3 flex-wrap">
             <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" checked={cfg.destaque !== false} onChange={e => setEstado(i, { destaque: e.target.checked })} className="accent-purple-500" />
-              destaque (cabeçalho da ficha + card de sessão)
+              {t('destaque (cabeçalho da ficha + card de sessão)')}
             </label>
             <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" checked={cfg.feed !== false} onChange={e => setEstado(i, { feed: e.target.checked })} className="accent-purple-500" />
-              registrar mudanças no feed
+              {t('registrar mudanças no feed')}
             </label>
             <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" checked={!!cfg.alimenta_dados_especiais} onChange={e => setEstado(i, { alimenta_dados_especiais: e.target.checked })} className="accent-purple-500" />
-              alimenta os dados especiais (F23): quantidade = valor deste estado
+              {t('alimenta os dados especiais (F23): quantidade = valor deste estado')}
             </label>
           </div>
 
-          <p className="text-purple-400 text-xs">Efeitos por faixa de valor</p>
+          <p className="text-purple-400 text-xs">{t('Efeitos por faixa de valor')}</p>
           {(cfg.efeitos_por_faixa || []).map((f, k) => (
             <FaixaEfeito key={k} faixa={f}
               onChange={nova => setEstado(i, { efeitos_por_faixa: cfg.efeitos_por_faixa.map((x, j) => (j === k ? nova : x)) })}
@@ -124,14 +124,14 @@ export default function EstadosEditor({ estados = [], onChange, atributos = [], 
           ))}
           <button onClick={() => setEstado(i, { efeitos_por_faixa: [...(cfg.efeitos_por_faixa || []), { de: null, ate: null, aviso: '', bloqueios: [], modificadores: [] }] })}
             className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
-            + faixa
+            {t('+ faixa')}
           </button>
         </div>
       ))}
 
       <button onClick={() => onChange([...estados, ESTADO_NOVO()])}
         className="text-xs px-3 py-1.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
-        + Adicionar estado
+        {t('+ Adicionar estado')}
       </button>
     </div>
   )

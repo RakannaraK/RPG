@@ -1,0 +1,10 @@
+import ui from './es/ui.js'
+import pages from './es/pages.js'
+import ficha from './es/ficha.js'
+import sistema from './es/sistema.js'
+import mesa from './es/mesa.js'
+import mapa from './es/mapa.js'
+import sessao from './es/sessao.js'
+import jogos from './es/jogos.js'
+import lib from './es/lib.js'
+export default { ...ui, ...pages, ...ficha, ...sistema, ...mesa, ...mapa, ...sessao, ...jogos, ...lib }

@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { createPortal } from 'react-dom'
 import Icone from './Icone'
 import { DUR_NORMAL, movimentoReduzido } from '../../theme/motion'
+import { t } from '../../i18n'
 
 /**
  * Fase 52 — aviso curto de resultado de ação ("Mesa criada", "Código copiado",
@@ -27,7 +28,7 @@ export function useToast() {
 }
 
 function Aviso({ item, onSumir }) {
-  const t = TIPOS[item.tipo] || TIPOS.info
+  const cfg = TIPOS[item.tipo] || TIPOS.info
   const [saindo, setSaindo] = useState(false)
   const timer = useRef(null)
 
@@ -38,8 +39,8 @@ function Aviso({ item, onSumir }) {
 
   const armar = useCallback(() => {
     clearTimeout(timer.current)
-    timer.current = setTimeout(sair, item.duracao ?? t.duracao)
-  }, [sair, item.duracao, t.duracao])
+    timer.current = setTimeout(sair, item.duracao ?? cfg.duracao)
+  }, [sair, item.duracao, cfg.duracao])
 
   useEffect(() => { armar(); return () => clearTimeout(timer.current) }, [armar])
 
@@ -47,14 +48,14 @@ function Aviso({ item, onSumir }) {
     <div
       role={item.tipo === 'erro' ? 'alert' : 'status'}
       onMouseEnter={() => clearTimeout(timer.current)} onMouseLeave={armar}
-      className={`toast pointer-events-auto w-full sm:w-[22rem] flex items-start gap-3 rounded-xl border ${t.borda} bg-raised/95 shadow-nivel-2 px-4 py-3 ${saindo ? 'toast-sai' : ''}`}
+      className={`toast pointer-events-auto w-full sm:w-[22rem] flex items-start gap-3 rounded-xl border ${cfg.borda} bg-raised/95 shadow-nivel-2 px-4 py-3 ${saindo ? 'toast-sai' : ''}`}
     >
-      <Icone nome={t.icone} tamanho={20} className={`${t.cor} mt-px`} />
+      <Icone nome={cfg.icone} tamanho={20} className={`${cfg.cor} mt-px`} />
       <div className="flex-1 min-w-0">
         <p className="text-ink text-sm font-medium">{item.mensagem}</p>
         {item.detalhe && <p className="text-ink-dim text-sm mt-0.5">{item.detalhe}</p>}
       </div>
-      <button type="button" onClick={sair} aria-label="Fechar aviso" className="botao-icone -mr-2 -my-1.5 !min-w-[32px] !min-h-[32px]">
+      <button type="button" onClick={sair} aria-label={t('Fechar aviso')} className="botao-icone -mr-2 -my-1.5 !min-w-[32px] !min-h-[32px]">
         <Icone nome="x" tamanho={16} />
       </button>
     </div>

@@ -4,9 +4,10 @@ import { useMembrosMesa } from '../../hooks/useMembrosMesa'
 import { acessoDaFicha, colunasDeAcesso } from '../../lib/permissoesFicha'
 import Modal, { FecharModal } from '../ui/Modal'
 import Botao from '../ui/Botao'
+import { t, locale } from '../../i18n'
 
 const INP = 'w-full px-3 py-2 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
-const PAPEL = { mestre: 'mestre', 'co-mestre': 'co-mestre', jogador: 'jogador', espectador: 'espectador' }
+const PAPEL = { mestre: t('mestre'), 'co-mestre': t('co-mestre'), jogador: t('jogador'), espectador: t('espectador') }
 
 /**
  * Fase 30.2 — pasta, privacidade e acesso por membro de UMA ficha.
@@ -26,7 +27,7 @@ export default function AcessoFicha({ ficha, mesaId, podeCompartilhar, onSalvar,
   useEffect(() => {
     let ativo = true
     supabase.from('fichas').select('pasta').eq('mesa_id', mesaId).not('pasta', 'is', null).then(({ data }) => {
-      if (ativo) setPastas([...new Set((data || []).map(f => f.pasta))].sort((a, b) => a.localeCompare(b, 'pt-BR')))
+      if (ativo) setPastas([...new Set((data || []).map(f => f.pasta))].sort((a, b) => a.localeCompare(b, locale())))
     })
     return () => { ativo = false }
   }, [mesaId])
@@ -46,7 +47,7 @@ export default function AcessoFicha({ ficha, mesaId, podeCompartilhar, onSalvar,
       })
       onFechar()
     } catch (e) {
-      setErro(e.message || 'Não foi possível salvar.')
+      setErro(e.message || t('Não foi possível salvar.'))
       setSalvando(false)
     }
   }
@@ -56,27 +57,27 @@ export default function AcessoFicha({ ficha, mesaId, podeCompartilhar, onSalvar,
   return (
     <Modal
       onFechar={onFechar} bloqueado={salvando}
-      titulo="Acesso e pasta" subtitulo={ficha.nome_personagem}
+      titulo={t('Acesso e pasta')} subtitulo={ficha.nome_personagem}
       rodape={
         <>
           <FecharModal disabled={salvando} />
-          <Botao variante="primario" onClick={salvar} disabled={salvando}>{salvando ? 'Salvando…' : 'Salvar'}</Botao>
+          <Botao variante="primario" onClick={salvar} disabled={salvando}>{salvando ? t('Salvando…') : t('Salvar')}</Botao>
         </>
       }
     >
       <div className="space-y-5">
 
         <label className="block space-y-1">
-          <span className="text-ink-dim text-xs">Pasta (vazio = sem pasta)</span>
-          <input value={pasta} onChange={e => setPasta(e.target.value)} maxLength={60} list="pastas-da-mesa" placeholder="Ex.: Heróis, Vilões, Aliados" className={INP} />
+          <span className="text-ink-dim text-xs">{t('Pasta (vazio = sem pasta)')}</span>
+          <input value={pasta} onChange={e => setPasta(e.target.value)} maxLength={60} list="pastas-da-mesa" placeholder={t('Ex.: Heróis, Vilões, Aliados')} className={INP} />
           <datalist id="pastas-da-mesa">{pastas.map(p => <option key={p} value={p} />)}</datalist>
         </label>
 
         {podeCompartilhar ? (
           <>
             <div className="space-y-2">
-              <p className="text-ink-dim text-xs">Quem vê a ficha</p>
-              {[[false, '👥 Pública', 'Toda a mesa vê.'], [true, '🔒 Privada', 'Só você, o mestre e quem você liberar abaixo.']].map(([valor, rotulo, dica]) => (
+              <p className="text-ink-dim text-xs">{t('Quem vê a ficha')}</p>
+              {[[false, t('👥 Pública'), t('Toda a mesa vê.')], [true, t('🔒 Privada'), t('Só você, o mestre e quem você liberar abaixo.')]].map(([valor, rotulo, dica]) => (
                 <label key={rotulo} className={`flex items-start gap-3 rounded-xl border px-3 py-2 cursor-pointer ${privada === valor ? 'border-accent-500 bg-hover' : 'border-border'}`}>
                   <input type="radio" name="privada" checked={privada === valor} onChange={() => setPrivada(valor)} className="mt-1" />
                   <span><span className="text-ink text-sm font-medium block">{rotulo}</span><span className="text-ink-dim text-xs">{dica}</span></span>
@@ -85,8 +86,8 @@ export default function AcessoFicha({ ficha, mesaId, podeCompartilhar, onSalvar,
             </div>
 
             <div className="space-y-2">
-              <p className="text-ink-dim text-xs">Acesso por pessoa</p>
-              {outros.length === 0 && <p className="text-ink-dim text-xs italic">Ninguém mais na mesa.</p>}
+              <p className="text-ink-dim text-xs">{t('Acesso por pessoa')}</p>
+              {outros.length === 0 && <p className="text-ink-dim text-xs italic">{t('Ninguém mais na mesa.')}</p>}
               <ul className="space-y-1.5">
                 {outros.map(m => (
                   <li key={m.usuario_id} className="flex items-center gap-2">
@@ -95,20 +96,20 @@ export default function AcessoFicha({ ficha, mesaId, podeCompartilhar, onSalvar,
                       value={acesso[m.usuario_id] || 'nenhum'}
                       onChange={e => setAcesso(a => ({ ...a, [m.usuario_id]: e.target.value }))}
                       className="px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-sm"
-                      aria-label={`Acesso de ${m.nome}`}
+                      aria-label={t('Acesso de {nome}', { nome: m.nome })}
                     >
-                      <option value="nenhum">{m.role === 'mestre' || m.role === 'co-mestre' ? 'Vê (é mestre)' : privada ? 'Não vê' : 'Vê (pública)'}</option>
-                      <option value="ver">Pode ver</option>
-                      {m.role !== 'espectador' && <option value="editar">Pode editar</option>}
+                      <option value="nenhum">{m.role === 'mestre' || m.role === 'co-mestre' ? t('Vê (é mestre)') : privada ? t('Não vê') : t('Vê (pública)')}</option>
+                      <option value="ver">{t('Pode ver')}</option>
+                      {m.role !== 'espectador' && <option value="editar">{t('Pode editar')}</option>}
                     </select>
                   </li>
                 ))}
               </ul>
-              <p className="text-ink-dim text-xs">Quem edita mexe em tudo como você, menos apagar a ficha e mudar o acesso.</p>
+              <p className="text-ink-dim text-xs">{t('Quem edita mexe em tudo como você, menos apagar a ficha e mudar o acesso.')}</p>
             </div>
           </>
         ) : (
-          <p className="text-ink-dim text-xs">Só o dono da ficha ou o mestre mudam quem vê e quem edita.</p>
+          <p className="text-ink-dim text-xs">{t('Só o dono da ficha ou o mestre mudam quem vê e quem edita.')}</p>
         )}
 
         {erro && <p className="aviso-erro" role="alert">{erro}</p>}

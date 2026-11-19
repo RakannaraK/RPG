@@ -9,13 +9,14 @@ import { usePreferencias } from '../../../context/PreferenciasContext'
 import Dice3D from '../../dados/Dice3D'
 import RerolagemBox from '../../dados/RerolagemBox'
 import Dots from '../Dots'
+import { t } from '../../../i18n'
 
 function AvisoVantagem({ estado }) {
   if (!estado || estado === 'normal') return null
   const cfg = {
-    vantagem:    { txt: '⬆ Vantagem',    cls: 'bg-ok/70 text-ok border-ok/50' },
-    desvantagem: { txt: '⬇ Desvantagem', cls: 'bg-harm/70 text-harm border-harm/50' },
-    anulada:     { txt: 'anuladas',      cls: 'bg-hover text-ink-dim border-border' },
+    vantagem:    { txt: t('⬆ Vantagem'), cls: 'bg-ok/70 text-ok border-ok/50' },
+    desvantagem: { txt: t('⬇ Desvantagem'), cls: 'bg-harm/70 text-harm border-harm/50' },
+    anulada:     { txt: t('anuladas'), cls: 'bg-hover text-ink-dim border-border' },
   }[estado]
   return (
     <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-lg border ${cfg.cls}`}>
@@ -107,7 +108,7 @@ export default function PainelPericias({
       setRollAtivo({ periciaId: pericia.id, resultado: null, rolando: true, estado })
       tocarSomDado(preferencias.dado_skin, { ativo: preferencias.som_ativo, volume: preferencias.som_volume, numDados: modoResolucao === 'sucessos' ? valorModo : 2 })
       try {
-        const res = await registrarResolvida({ mesaId, fichaId, rotulo: `Teste de ${pericia.nome}`, resolucao, valor: valorModo, especiaisQtd, vantagem: estado })
+        const res = await registrarResolvida({ mesaId, fichaId, rotulo: t('Teste de {nome}', { nome: String(pericia.nome ?? '') }), resolucao, valor: valorModo, especiaisQtd, vantagem: estado })
         setRollAtivo({ periciaId: pericia.id, resultado: res, rolando: false, estado })
       } catch { setRollAtivo(null) } finally { setRolando(false) }
       return
@@ -118,8 +119,8 @@ export default function PainelPericias({
     // Vantagem/desvantagem desta perícia (12.3)
     const estado = resolverVantagem({ alvo: pericia.id, modificadoresAtivos })
     const notacao = aplicarVantagem(notacaoBase, estado)
-    const sufixo = estado === 'vantagem' ? ' (vantagem)'
-      : estado === 'desvantagem' ? ' (desvantagem)' : ''
+    const sufixo = estado === 'vantagem' ? ` (${t('vantagem')})`
+      : estado === 'desvantagem' ? ` (${t('desvantagem')})` : ''
 
     setRolando(true)
     setRollAtivo({ periciaId: pericia.id, resultado: null, rolando: true, estado })
@@ -133,7 +134,7 @@ export default function PainelPericias({
       const res = await registrarRolagem({
         mesaId,
         fichaId,
-        rotulo: `Teste de ${pericia.nome}${sufixo}`,
+        rotulo: `${t('Teste de {nome}', { nome: String(pericia.nome ?? '') })}${sufixo}`,
         notacao,
       })
       setRollAtivo({ periciaId: pericia.id, resultado: res, rolando: false, estado })
@@ -147,11 +148,11 @@ export default function PainelPericias({
   return (
     <div className="bg-raised border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-border">
-        <p className="text-ink text-sm font-semibold">Perícias</p>
+        <p className="text-ink text-sm font-semibold">{t('Perícias')}</p>
       </div>
 
       {pericias.length === 0 ? (
-        <p className="px-4 py-4 text-ink-dim text-xs">Nenhuma perícia definida no sistema.</p>
+        <p className="px-4 py-4 text-ink-dim text-xs">{t('Nenhuma perícia definida no sistema.')}</p>
       ) : (
         <div className="divide-y divide-void/40 max-h-[28rem] overflow-y-auto">
           {pericias.map(pericia => {
@@ -175,7 +176,7 @@ export default function PainelPericias({
                           ? 'bg-dice-500 border-dice-400'
                           : 'bg-transparent border-ink-dim hover:border-accent-400'
                       }`}
-                      title={pf.proficiente ? 'Proficiente' : 'Não proficiente'}
+                      title={pf.proficiente ? t('Proficiente') : t('Não proficiente')}
                     />
                   ) : (
                     <div
@@ -220,7 +221,7 @@ export default function PainelPericias({
                   ) : (
                     <span
                       className={`text-sm font-semibold w-8 text-right shrink-0 ${temModPericia ? 'text-ok' : 'text-ink'}`}
-                      title={temModPericia ? `base ${pf.bonus ?? 0} + efeitos` : undefined}
+                      title={temModPericia ? t('base {n} + efeitos', { n: String(pf.bonus ?? 0) }) : undefined}
                     >
                       {bonusDisplay}
                     </span>
@@ -231,7 +232,7 @@ export default function PainelPericias({
                     <button
                       onClick={() => handleRolar(pericia)}
                       disabled={rolando}
-                      title={`Teste de ${pericia.nome}`}
+                      title={t('Teste de {nome}', { nome: String(pericia.nome ?? '') })}
                       className="text-dice-500 hover:text-dice-400 disabled:opacity-40 transition-colors shrink-0 text-base leading-none"
                     >
                       🎲
@@ -293,7 +294,7 @@ export default function PainelPericias({
                       rerolagem={rerolagem}
                       mesaId={mesaId}
                       fichaId={fichaId}
-                      rotulo={`Teste de ${pericia.nome}`}
+                      rotulo={t('Teste de {nome}', { nome: String(pericia.nome ?? '') })}
                       onRerolado={novo => setRollAtivo(prev => ({ ...prev, resultado: novo }))}
                     />
                   </div>

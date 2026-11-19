@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 import { useAuth } from '../context/AuthContext'
 import { useMapas } from '../hooks/useMapas'
 import { useTokensMapa } from '../hooks/useTokensMapa'
@@ -34,6 +35,11 @@ import PainelTokens from '../components/mapa/PainelTokens'
 import InvocarBestiario from '../components/bestiario/InvocarBestiario'
 import CamadaTokens, { MenuToken } from '../components/mapa/CamadaTokens'
 import { BarraNevoa, CamadaNevoa, EditorNevoa } from '../components/mapa/Nevoa'
+import { BarraParedes, CamadaVisao, EditorParedes, ParedesGestor } from '../components/mapa/Paredes'
+import {
+  adicionarSegmento, alternarPorta, bloqueios, caminhoSvg, definirVisaoAtiva, enxerga, limparParedes,
+  normalizarParedes, poligonoVisivel, removerSegmento,
+} from '../lib/visao'
 import {
   BarraDesenho, BarraFerramentas, CamadaDesenhos, CamadaPings, CamadaReguas, EditorDesenho, EditorPing, EditorRegua,
 } from '../components/mapa/Desenhos'
@@ -46,6 +52,7 @@ import { podeEditarFicha } from '../lib/permissoesFicha'
 import Ilustra from '../components/arte/Ilustra'
 import TrilhaMesa from '../components/mesa/TrilhaMesa'
 import XCard from '../components/mesa/XCard'
+import { ehCampoDefesa } from '../lib/defesaEngine'
 
 const BTN_ICONE = 'h-9 min-w-9 px-2 rounded-lg text-sm transition-colors'
 const telaCheiaDisponivel = typeof document !== 'undefined' && document.fullscreenEnabled
@@ -57,6 +64,17 @@ function lerCamadas() {
   try { return { ...CAMADAS_PADRAO, ...JSON.parse(localStorage.getItem('mapa-camadas') || '{}'), comoJogador: false } }
   catch { return CAMADAS_PADRAO }
 }
+
+// F63 — origens da visão viajam como texto "x,y|x,y" para o useMemo só refazer quando algo se mexe
+const chaveDasOrigens = (tokens, isGestor, cardsPorFicha) => tokens
+  .filter(tt => (isGestor ? !!tt.ficha_id && cardsPorFicha[tt.ficha_id]?.ficha?.tipo_ficha !== 'criatura' : tt.meu))
+  .map(tt => `${tt.x},${tt.y}`).join('|')
+// F63 — um recorte de luz por fonte; `chave` = "id,x,y,raio|…" (ids de fonte não têm vírgula nem barra)
+const recortesDasFontes = (chave, blocos, dims) => Object.fromEntries(chave.split('|').filter(Boolean).map(s => {
+  const [id, x, y] = s.split(',')
+  return [id, caminhoSvg(poligonoVisivel({ x: Number(x), y: Number(y) }, blocos, dims))]
+}))
+const origensDaChave =chave => (chave ? chave.split('|').map(s => { const [x, y] = s.split(',').map(Number); return { x, y } }) : [])
 
 /** Vida exibida no token: ficha (motor da sessão, ou caixinhas livres da trilha) ou combatente. */
 function vidaDoToken(card, combatente, verTudo) {
@@ -115,6 +133,11 @@ export default function MapaPage() {
   // F57 — atmosfera (otimista, grava com atraso), "colocar no mapa", efeito de ação
   const [atmLocal, setAtmLocal] = useState(null) // { cenaId, atmosfera }
   const gravandoAtm = useRef(null) // { timer, cenaId, nova }
+  // F63 — paredes e linha de visão (otimista, grava com atraso como a atmosfera)
+  const [parLocal, setParLocal] = useState(null) // { cenaId, paredes }
+  const gravandoPar = useRef(null) // { timer, cenaId, nova }
+  const [modoParede, setModoParede] = useState('parede') // 'parede' | 'porta'
+  const [selParede, setSelParede] = useState(null)
   const [colocando, setColocando] = useState(null)
   const [extAberto, setExtAberto] = useState(false)
   const [efeitoEscolhido, setEfeitoEscolhido] = useState(null)
@@ -144,9 +167,9 @@ export default function MapaPage() {
     return () => { cancelado = true }
   }, [mesaId, session])
 
-  // Atalhos: V mover · D desenhar · R régua · P ping · N névoa · E efeito · Esc volta a mover.
+  // Atalhos: V mover · D desenhar · R régua · P ping · N névoa · E efeito · W paredes · Esc volta a mover.
   useEffect(() => {
-    const atalhos = { v: 'mover', d: 'desenho', r: 'regua', p: 'ping', n: 'nevoa', e: 'efeito', escape: 'mover' }
+    const atalhos = { v: 'mover', d: 'desenho', r: 'regua', p: 'ping', n: 'nevoa', e: 'efeito', w: 'parede', escape: 'mover' }
     const aoTeclar = e => {
       if (e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return
       if (e.key === 'Escape') setColocando(null)
@@ -174,16 +197,13 @@ export default function MapaPage() {
   const tokensApi = useTokensMapa(cena?.id, mesaId)
   const desenhosApi = useDesenhosMapa(cena?.id)
   const cardsPorFicha = useMemo(() => Object.fromEntries(cards.map(c => [c.id, c])), [cards])
-  const campoCa = camposCombate.find(cc => {
-    const n = (cc.nome || '').trim().toLowerCase()
-    return n === 'ca' || n.includes('armadura') || n.includes('defesa')
-  }) || null
+  const campoCa = camposCombate.find(cc => ehCampoDefesa(cc.nome)) || null
 
   // "Ver como jogador" (26.5): o mestre enxerga exatamente o que a mesa enxerga.
   const verTudo = isGestor && !camadas.comoJogador
   // Mesmas regras do RLS (26.4): gestor sempre; jogador se liberado e não espectador.
   const podeDesenhar = isGestor || (!!cena?.jogadores_desenham && papel !== 'espectador')
-  const ferramentaAtiva = (ferramenta === 'desenho' && !podeDesenhar) || ((ferramenta === 'nevoa' || ferramenta === 'efeito') && !isGestor) ? 'mover' : ferramenta
+  const ferramentaAtiva = (ferramenta === 'desenho' && !podeDesenhar) || ((ferramenta === 'nevoa' || ferramenta === 'efeito' || ferramenta === 'parede') && !isGestor) ? 'mover' : ferramenta
   // Painéis de gestor não abrem para jogador
   const painelVisivel = !isGestor && (painel === 'cenas' || painel === 'tokens' || painel === 'atmosfera') ? null : painel
 
@@ -203,11 +223,12 @@ export default function MapaPage() {
   const alternarPainel = nome => setPainel(p => (p === nome ? null : nome))
 
   async function tentar(fn) {
-    try { await fn() } catch (err) { setAviso(err.message || 'Algo deu errado.') }
+    try { await fn() } catch (err) { setAviso(err.message || t('Algo deu errado.')) }
   }
 
   const combatentesAtivos = encontro ? combatentes : []
   const daVez = encontro ? ordenarPorIniciativa(combatentes)[encontro.turno_atual ?? 0] : null
+  const nomeDaVez = String(daVez?.nome ?? '')
   const minhasFichas = cards.filter(c => podeEditarFicha(c.ficha, meuId))
   const fichasDaGaveta = isGestor ? cards : minhasFichas
 
@@ -237,14 +258,32 @@ export default function MapaPage() {
   const nevoa = useMemo(() => normalizarNevoa(nevoaSalva), [nevoaSalva])
   // Jogador não recebe tokens sob a névoa nem ocultos (a máscara só pinta; nome e
   // barra vazariam). O próprio token segue visível para o dono.
-  const tokensNaTela = verTudo ? tokensVisuais : tokensVisuais.filter(t => tokenVisivelParaJogador(t, nevoa))
-  const selecionado = tokensNaTela.find(t => t.id === selecionadoId) || null
+  // F63 — paredes da cena aberta (cópia local enquanto a gravação não sai)
+  const parSalvas = cena && parLocal?.cenaId === cena.id ? parLocal.paredes : cena?.paredes
+  const paredes = useMemo(() => normalizarParedes(parSalvas), [parSalvas])
+  const blocos = useMemo(() => bloqueios(paredes), [paredes])
+  // Origens da visão: tokens do jogador; o gestor "como jogador" usa as fichas que não são criatura.
+  const chaveOrigens = verTudo ? '' : chaveDasOrigens(tokensVisuais, isGestor, cardsPorFicha)
+  const origens = origensDaChave(chaveOrigens)
+  const visaoLigada = paredes.ativa && blocos.length > 0 && origens.length > 0 && !verTudo
+  const larguraCena = cena?.largura
+  const alturaCena = cena?.altura
+  // ponytail: a CamadaVisao recalcula a cada movimento de token (O(pontas × segmentos) por origem); se pesar, limitar a frequência
+  const tokensNaTela = (verTudo ? tokensVisuais : tokensVisuais.filter(tt => tokenVisivelParaJogador(tt, nevoa)))
+    .filter(tt => !visaoLigada || tt.meu || origens.some(o => enxerga(o, tt, blocos)))
+  const selecionado = tokensNaTela.find(tt => tt.id === selecionadoId) || null
   const tamanhoGrade = Number(normalizarGrade(grade).tamanho) > 0 ? Number(normalizarGrade(grade).tamanho) : 70
 
   // F57 — atmosfera da cena aberta (cópia local enquanto a gravação não sai)
   const atmSalva = cena && atmLocal?.cenaId === cena.id ? atmLocal.atmosfera : cena?.atmosfera
   const atmosfera = useMemo(() => normalizarAtmosfera(atmSalva), [atmSalva])
   const fontes = useMemo(() => fontesDeLuz({ atmosfera, tokens: tokensNaTela, grade }), [atmosfera, tokensNaTela, grade])
+  // Luz nunca atravessa parede (independe de a linha de visão estar ligada)
+  const chaveFontes = fontes.map(f => `${f.id},${f.x},${f.y},${f.raioPx}`).join('|')
+  const recortes = useMemo(
+    () => (blocos.length && larguraCena ? recortesDasFontes(chaveFontes, blocos, { largura: larguraCena, altura: alturaCena }) : undefined),
+    [chaveFontes, blocos, larguraCena, alturaCena],
+  )
   const densidade = camadas.efeitos === false ? 0
     : particulasLigadas(preferencias.efeitos, reduzido) ? 1
       : preferencias.efeitos === 'sutis' && !reduzido ? 0.5 : 0
@@ -252,13 +291,15 @@ export default function MapaPage() {
   const efeitoAtual = efeitos.find(e => e.id === efeitoEscolhido) || efeitos[0] || null
   // Efeitos de ação já resolvidos para px do mapa (jogador não vê o que cai só sob a névoa)
   const ativosVfx = useMemo(() => {
-    const tokens = tokensApi.tokens.map(t => ({ ...t, x: tokensApi.remotos[t.id]?.x ?? t.x, y: tokensApi.remotos[t.id]?.y ?? t.y }))
+    const tokens = tokensApi.tokens.map(tt => ({ ...tt, x: tokensApi.remotos[tt.id]?.x ?? tt.x, y: tokensApi.remotos[tt.id]?.y ?? tt.y }))
     return vfx.eventos.flatMap(e => {
       const r = resolverVfx(e.evento, { tokens, efeitos, grade })
       if (!r || (!verTudo && !r.para.some(p => pontoRevelado(nevoa, p)))) return []
+      // F63: efeito cujo destino nenhuma origem enxerga não aparece para o jogador
+      if (visaoLigada && !r.para.some(p => origensDaChave(chaveOrigens).some(o => enxerga(o, p, blocos)))) return []
       return [{ ...r, id: e.id, inicio: e.em }]
     })
-  }, [vfx.eventos, tokensApi.tokens, tokensApi.remotos, efeitos, grade, verTudo, nevoa])
+  }, [vfx.eventos, tokensApi.tokens, tokensApi.remotos, efeitos, grade, verTudo, nevoa, visaoLigada, chaveOrigens, blocos])
 
   async function gravarAtmosfera() {
     const g = gravandoAtm.current
@@ -268,7 +309,7 @@ export default function MapaPage() {
     try {
       await atualizar(g.cenaId, { atmosfera: g.nova })
     } catch (err) {
-      setAviso(`A atmosfera não foi salva: ${err.message || 'erro'}`)
+      setAviso(t('A atmosfera não foi salva: {erro}', { erro: err.message || t('erro') }))
     } finally {
       if (!gravandoAtm.current) setAtmLocal(null)
     }
@@ -284,14 +325,37 @@ export default function MapaPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => () => { gravarAtmosfera() }, [cena?.id])
 
+  async function gravarParedes() {
+    const g = gravandoPar.current
+    if (!g) return
+    clearTimeout(g.timer)
+    gravandoPar.current = null
+    try {
+      await atualizar(g.cenaId, { paredes: g.nova })
+    } catch (err) {
+      setAviso(t('As paredes não foram salvas: {erro}', { erro: err.message || t('erro') }))
+    } finally {
+      if (!gravandoPar.current) setParLocal(null)
+    }
+  }
+  function mudarParedes(nova) {
+    if (!isGestor || !cena) return
+    const norm = normalizarParedes(nova)
+    setParLocal({ cenaId: cena.id, paredes: norm })
+    if (gravandoPar.current) clearTimeout(gravandoPar.current.timer)
+    gravandoPar.current = { cenaId: cena.id, nova: norm, timer: setTimeout(gravarParedes, 400) }
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => () => { gravarParedes() }, [cena?.id])
+
   // F53 — quem está dentro do círculo (só tokens que esta pessoa enxerga)
   const gradeNorm = normalizarGrade(grade)
   const raioPxArea = area ? (area.raio / (Number(gradeNorm.unidade) || 1)) * tamanhoGrade : 0
   const idsNaArea = area?.centro
     ? alvosNaArea({ centro: area.centro, raio: area.raio, tokens: tokensNaTela, combatentes: combatentesAtivos, grade: gradeNorm })
     : []
-  const tokensDentroArea = tokensNaTela.filter(t =>
-    idsNaArea.some(id => { const c = combatentesAtivos.find(x => x.id === id); return t.combatente_id === id || (!t.combatente_id && c?.ficha_id && t.ficha_id === c.ficha_id) }))
+  const tokensDentroArea = tokensNaTela.filter(tt =>
+    idsNaArea.some(id => { const c = combatentesAtivos.find(x => x.id === id); return tt.combatente_id === id || (!tt.combatente_id && c?.ficha_id && tt.ficha_id === c.ficha_id) }))
 
   function marcarCentroArea(p) {
     setArea(a => (a ? { ...a, centro: p } : a))
@@ -311,7 +375,7 @@ export default function MapaPage() {
     try {
       await atualizar(cenaId, { nevoa: nova })
     } catch (err) {
-      setAviso(`A névoa não foi salva: ${err.message || 'erro'}`)
+      setAviso(t('A névoa não foi salva: {erro}', { erro: err.message || t('erro') }))
     } finally {
       if (seqNevoa.current === seq) setNevoaLocal(null)
     }
@@ -323,7 +387,7 @@ export default function MapaPage() {
     if (!cena) return
     const centro = visorApi.current?.centroVisivel() || { x: cena.largura / 2, y: cena.altura / 2 }
     const posicoes = espalhar(centro, lista.length, normalizarGrade(grade), cena.largura, cena.altura, tamanho, tokensApi.tokens)
-    await tokensApi.adicionar(lista.map((t, i) => ({ ...t, ...posicoes[i] })))
+    await tokensApi.adicionar(lista.map((tt, i) => ({ ...tt, ...posicoes[i] })))
   }
 
   // F31.3 — invocar do bestiário no mapa: combatentes (se há combate) + tokens com a arte
@@ -341,8 +405,8 @@ export default function MapaPage() {
   }
 
   function focarCombatente(c) {
-    const tk = tokensNaTela.find(t => (c.ficha_id && t.ficha_id === c.ficha_id) || t.combatente_id === c.id)
-    if (!tk) { setAviso(`${c.nome} não tem token nesta cena.`); return }
+    const tk = tokensNaTela.find(tt => (c.ficha_id && tt.ficha_id === c.ficha_id) || tt.combatente_id === c.id)
+    if (!tk) { setAviso(t('{nome} não tem token nesta cena.', { nome: c.nome })); return }
     visorApi.current?.centralizar(tk)
     setSelecionadoId(tk.id)
   }
@@ -354,18 +418,18 @@ export default function MapaPage() {
 
   let conteudo
   if (loading || !papelCarregado) {
-    conteudo = <Aviso>Carregando mapa…</Aviso>
+    conteudo = <Aviso>{t('Carregando mapa…')}</Aviso>
   } else if (indisponivel) {
     conteudo = (
       <Aviso>
-        O mapa ainda não está ativado neste banco.
-        {isGestor && <span className="block mt-2 text-ink-dim text-sm">Rode o arquivo <code>sql/fase26_mesa_virtual.sql</code> no SQL Editor do Supabase.</span>}
+        {t('O mapa ainda não está ativado neste banco.')}
+        {isGestor && <span className="block mt-2 text-ink-dim text-sm">{t('Rode o arquivo')} <code>sql/fase26_mesa_virtual.sql</code> {t('no SQL Editor do Supabase.')}</span>}
       </Aviso>
     )
   } else if (!cena) {
     conteudo = (
       <Aviso>
-        {isGestor ? 'Envie a imagem do primeiro mapa no painel de cenas.' : 'O mestre ainda não mostrou nenhum mapa.'}
+        {isGestor ? t('Envie a imagem do primeiro mapa no painel de cenas.') : t('O mestre ainda não mostrou nenhum mapa.')}
       </Aviso>
     )
   } else {
@@ -400,13 +464,15 @@ export default function MapaPage() {
               />
             )}
             {camadas.tokens && (
-              <CamadaTokens ctx={ctx} tokens={verTudo ? tokensNaTela : tokensNaTela.filter(t => !t.meu)} {...propsTokens} />
+              <CamadaTokens ctx={ctx} tokens={verTudo ? tokensNaTela : tokensNaTela.filter(tt => !tt.meu)} {...propsTokens} />
             )}
-            <CamadaLuz atmosfera={atmosfera} fontes={fontes} largura={cena.largura} altura={cena.altura} translucida={verTudo} reduzido={reduzido} />
+            <CamadaLuz atmosfera={atmosfera} fontes={fontes} largura={cena.largura} altura={cena.altura} translucida={verTudo} reduzido={reduzido} recortes={recortes} />
             <CamadaNevoa nevoa={nevoa} rascunho={rascunhoNevoa} largura={cena.largura} altura={cena.altura} translucida={verTudo} />
+            {visaoLigada && <CamadaVisao chave={chaveOrigens} blocos={blocos} largura={cena.largura} altura={cena.altura} translucida={camadas.comoJogador} />}
+            {isGestor && (ferramentaAtiva === 'parede' || verTudo) && <ParedesGestor paredes={paredes} selecionada={selParede} />}
             {/* Jogador: o próprio token fica ACIMA da névoa (nunca some para o dono) */}
             {camadas.tokens && !verTudo && (
-              <CamadaTokens ctx={ctx} tokens={tokensNaTela.filter(t => t.meu)} comDefs={false} {...propsTokens} />
+              <CamadaTokens ctx={ctx} tokens={tokensNaTela.filter(tt => tt.meu)} comDefs={false} {...propsTokens} />
             )}
             <CamadaReguas ctx={ctx} reguas={desenhosApi.reguas} />
             <CamadaPings ctx={ctx} pings={desenhosApi.pings} />
@@ -418,6 +484,19 @@ export default function MapaPage() {
                 config={{ ...configNevoa, raio: configNevoa.raio ?? tamanhoGrade }}
                 onRascunho={setRascunhoNevoa}
                 onConcluir={aplicarOpNevoa}
+              />
+            )}
+            {ferramentaAtiva === 'parede' && (
+              <EditorParedes
+                ctx={ctx}
+                largura={cena.largura}
+                altura={cena.altura}
+                paredes={paredes}
+                grade={grade}
+                modo={modoParede}
+                onAdicionar={seg => mudarParedes(adicionarSegmento(paredes, seg))}
+                onAlternarPorta={id => mudarParedes(alternarPorta(paredes, id))}
+                onSelecionar={setSelParede}
               />
             )}
             {ferramentaAtiva === 'desenho' && configDesenho.forma !== 'borracha' && (
@@ -508,29 +587,29 @@ export default function MapaPage() {
     <div className="h-[100dvh] flex flex-col bg-void overflow-hidden">
       <header className="relative h-12 shrink-0 flex items-center gap-1 sm:gap-2 px-2 sm:px-3 border-b border-border bg-bg/90 backdrop-blur z-20">
         <button onClick={() => navigate(voltarPara)} className="text-accent-400 hover:text-ink text-sm px-1 sm:px-2 shrink-0">
-          ← <span className="hidden sm:inline">Voltar</span>
+          ← <span className="hidden sm:inline">{t('Voltar')}</span>
         </button>
-        <h1 className="text-ink font-semibold truncate min-w-0">{cena?.nome || 'Mapa'}</h1>
+        <h1 className="text-ink font-semibold truncate min-w-0">{cena?.nome || t('Mapa')}</h1>
         {isGestor && cena && (
           <span className={`hidden md:inline text-xs shrink-0 ${cena.ativo ? 'text-ok' : 'text-ink-dim'}`}>
-            {cena.ativo ? '● jogadores veem' : 'só gestores veem'}
+            {cena.ativo ? t('● jogadores veem') : t('só gestores veem')}
           </span>
         )}
-        {camadas.comoJogador && <span className="hidden sm:inline text-xs text-warn shrink-0">vendo como jogador</span>}
-        {daVez && <span className="hidden xl:inline text-xs text-dice-400 shrink-0 truncate">Vez de {daVez.nome}</span>}
+        {camadas.comoJogador && <span className="hidden sm:inline text-xs text-warn shrink-0">{t('vendo como jogador')}</span>}
+        {daVez && <span className="hidden xl:inline text-xs text-dice-400 shrink-0 truncate">{t('Vez de {nome}', { nome: nomeDaVez })}</span>}
         <div className="ml-auto flex items-center gap-0.5 sm:gap-1 shrink-0">
           {!indisponivel && (
             <>
-              {botaoPainel('rolagens', '🎲', 'Rolagens')}
-              {botaoPainel('chat', '💬', 'Chat')}
-              {botaoPainel('notas', '📝', 'Notas')}
-              {(encontro || (isGestor && sessaoAtiva)) && botaoPainel('combate', '⚔', 'Combate')}
-              {fichasDaGaveta.length > 0 && botaoPainel('ficha', '📜', 'Ficha')}
+              {botaoPainel('rolagens', '🎲', t('Rolagens'))}
+              {botaoPainel('chat', '💬', t('Chat'))}
+              {botaoPainel('notas', '📝', t('Notas'))}
+              {(encontro || (isGestor && sessaoAtiva)) && botaoPainel('combate', '⚔', t('Combate'))}
+              {fichasDaGaveta.length > 0 && botaoPainel('ficha', '📜', t('Ficha'))}
               <button
                 onClick={() => setMenuCamadas(v => !v)}
                 className={`${BTN_ICONE} hover:bg-hover ${menuCamadas ? 'text-accent-300 bg-hover' : 'text-ink'}`}
-                title="Camadas visíveis"
-                aria-label="Camadas visíveis"
+                title={t('Camadas visíveis')}
+                aria-label={t('Camadas visíveis')}
               >
                 👁
               </button>
@@ -538,9 +617,9 @@ export default function MapaPage() {
           )}
           {isGestor && !indisponivel && (
             <>
-              {botaoPainel('tokens', '●', 'Tokens', { disabled: !cena })}
-              {botaoPainel('atmosfera', '✨', 'Atmosfera', { disabled: !cena })}
-              {botaoPainel('cenas', <Ilustra nome="mapa" tamanho={18} />, 'Cenas')}
+              {botaoPainel('tokens', '●', t('Tokens'), { disabled: !cena })}
+              {botaoPainel('atmosfera', '✨', t('Atmosfera'), { disabled: !cena })}
+              {botaoPainel('cenas', <Ilustra nome="mapa" tamanho={18} />, t('Cenas'))}
             </>
           )}
         </div>
@@ -556,7 +635,7 @@ export default function MapaPage() {
           {avisoAtual && (
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 w-[min(28rem,calc(100%-1.5rem))] rounded-xl border border-amber-700/70 bg-amber-950/90 px-4 py-2 flex items-start gap-3">
               <p className="text-amber-100 text-sm flex-1">{avisoAtual}</p>
-              <button onClick={() => { setAviso(''); turno.setAvisoTurno('') }} className="text-amber-400 hover:text-amber-100 text-sm" title="Dispensar">✕</button>
+              <button onClick={() => { setAviso(''); turno.setAvisoTurno('') }} className="text-amber-400 hover:text-amber-100 text-sm" title={t('Dispensar')}>✕</button>
             </div>
           )}
           {cena && !indisponivel && (
@@ -575,8 +654,8 @@ export default function MapaPage() {
           {cena && isGestor && colocando && (
             // No celular o painel sai da frente enquanto se escolhe o ponto: o aviso e o cancelar ficam no mapa
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-3 rounded-xl border border-border bg-bg/95 px-3 py-2 shadow-xl text-sm text-ink">
-              <span>Toque no mapa para {colocando.oQue === 'mover' ? 'mover' : 'colocar'}</span>
-              <button type="button" onClick={() => setColocando(null)} className="min-h-[24px] px-2 rounded-lg bg-hover text-ink hover:bg-border">Cancelar</button>
+              <span>{colocando.oQue === 'mover' ? t('Toque no mapa para mover') : t('Toque no mapa para colocar')}</span>
+              <button type="button" onClick={() => setColocando(null)} className="min-h-[24px] px-2 rounded-lg bg-hover text-ink hover:bg-border">{t('Cancelar')}</button>
             </div>
           )}
           {cena && ferramentaAtiva === 'nevoa' && (
@@ -587,6 +666,18 @@ export default function MapaPage() {
               onConfig={setConfigNevoa}
               onAlternar={() => salvarNevoa({ ...nevoa, ativa: !nevoa.ativa })}
               onTudo={modo => aplicarOpNevoa({ modo, forma: 'tudo' })}
+              onFechar={() => escolherFerramenta('mover')}
+            />
+          )}
+          {cena && ferramentaAtiva === 'parede' && (
+            <BarraParedes
+              paredes={paredes}
+              modo={modoParede}
+              onModo={setModoParede}
+              selecionada={paredes.segmentos.some(s => s.id === selParede) ? selParede : null}
+              onAlternarVisao={() => mudarParedes(definirVisaoAtiva(paredes, !paredes.ativa))}
+              onApagar={() => { mudarParedes(removerSegmento(paredes, selParede)); setSelParede(null) }}
+              onLimpar={() => { mudarParedes(limparParedes(paredes)); setSelParede(null) }}
               onFechar={() => escolherFerramenta('mover')}
             />
           )}
@@ -642,7 +733,7 @@ export default function MapaPage() {
                     comMapa={!!cena}
                     onInvocar={invocarNoMapa}
                     className="w-full py-2 rounded-lg bg-hover text-ink text-sm hover:bg-border transition-colors"
-                    rotulo={<span className="inline-flex items-center justify-center gap-2 w-full"><Ilustra nome="garra" tamanho={18} /> Invocar do bestiário</span>}
+                    rotulo={<span className="inline-flex items-center justify-center gap-2 w-full"><Ilustra nome="garra" tamanho={18} /> {t('Invocar do bestiário')}</span>}
                   />
                 )}
               />

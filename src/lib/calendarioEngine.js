@@ -6,22 +6,24 @@
  * deixa avançar/voltar e dia da semana triviais.
  */
 
+import { t, tn } from '../i18n'
+
 export const PRESETS_CALENDARIO = {
   gregoriano: {
-    nome: 'Gregoriano (sem ano bissexto)',
+    nome: t('Gregoriano (sem ano bissexto)'),
     meses: [
-      ['Janeiro', 31], ['Fevereiro', 28], ['Março', 31], ['Abril', 30], ['Maio', 31], ['Junho', 30],
-      ['Julho', 31], ['Agosto', 31], ['Setembro', 30], ['Outubro', 31], ['Novembro', 30], ['Dezembro', 31],
+      [t('Janeiro'), 31], [t('Fevereiro'), 28], [t('Março'), 31], [t('Abril'), 30], [t('Maio'), 31], [t('Junho'), 30],
+      [t('Julho'), 31], [t('Agosto'), 31], [t('Setembro'), 30], [t('Outubro'), 31], [t('Novembro'), 30], [t('Dezembro'), 31],
     ].map(([nome, dias]) => ({ nome, dias })),
-    dias_semana: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
+    dias_semana: [t('Domingo'), t('Segunda'), t('Terça'), t('Quarta'), t('Quinta'), t('Sexta'), t('Sábado')],
     deslocamento: 1, // 1/1 do ano 1 foi uma segunda
     sufixo_ano: '',
   },
   fantasia: {
-    nome: 'Fantasia (12 meses de 30 dias)',
-    meses: ['Degelo', 'Semeadura', 'Florada', 'Chuvas', 'Sol Alto', 'Colheita',
-      'Vindima', 'Brumas', 'Geada', 'Longa Noite', 'Cinzas', 'Renascer'].map(nome => ({ nome, dias: 30 })),
-    dias_semana: ['Dia da Lua', 'Dia do Ferro', 'Dia da Chama', 'Dia da Raiz', 'Dia do Vento', 'Dia da Pedra', 'Dia do Sol'],
+    nome: t('Fantasia (12 meses de 30 dias)'),
+    meses: [t('Degelo'), t('Semeadura'), t('Florada'), t('Chuvas'), t('Sol Alto'), t('Colheita'),
+      t('Vindima'), t('Brumas'), t('Geada'), t('Longa Noite'), t('Cinzas'), t('Renascer')].map(nome => ({ nome, dias: 30 })),
+    dias_semana: [t('Dia da Lua'), t('Dia do Ferro'), t('Dia da Chama'), t('Dia da Raiz'), t('Dia do Vento'), t('Dia da Pedra'), t('Dia do Sol')],
     deslocamento: 0,
     sufixo_ano: '',
   },
@@ -34,11 +36,11 @@ const mod = (a, n) => ((a % n) + n) % n
 export function normalizarCalendario(config) {
   const c = config && typeof config === 'object' ? config : {}
   const meses = (Array.isArray(c.meses) ? c.meses : [])
-    .map((m, i) => ({ nome: String(m?.nome || '').trim() || `Mês ${i + 1}`, dias: Math.max(1, inteiro(m?.dias, 30)) }))
+    .map((m, i) => ({ nome: String(m?.nome || '').trim() || t('Mês {n}', { n: i + 1 }), dias: Math.max(1, inteiro(m?.dias, 30)) }))
   if (meses.length === 0) return { ...PRESETS_CALENDARIO.fantasia, nome: String(c.nome || '').trim() || PRESETS_CALENDARIO.fantasia.nome }
   const dias_semana = (Array.isArray(c.dias_semana) ? c.dias_semana : []).map(d => String(d || '').trim()).filter(Boolean)
   return {
-    nome: String(c.nome || '').trim() || 'Calendário',
+    nome: String(c.nome || '').trim() || t('Calendário'),
     meses,
     dias_semana,
     deslocamento: dias_semana.length ? mod(inteiro(c.deslocamento, 0), dias_semana.length) : 0,
@@ -127,13 +129,13 @@ export function proximosEventos(eventos, data, cal, { horizonte = diasNoAno(cal)
 export function formatarData(data, cal, { semana = true } = {}) {
   const d = limitarData(data, cal)
   const sd = semana ? diaDaSemana(d, cal) : null
-  const base = `${d.dia} de ${cal.meses[d.mes - 1].nome} de ${d.ano}${cal.sufixo_ano ? ` ${cal.sufixo_ano}` : ''}`
+  const base = t('{dia} de {mes} de {ano}', { dia: d.dia, mes: cal.meses[d.mes - 1].nome, ano: d.ano }) + (cal.sufixo_ano ? ` ${cal.sufixo_ano}` : '')
   return sd == null ? base : `${cal.dias_semana[sd]}, ${base}`
 }
 
 export function textoPassagem(n) {
   const abs = Math.abs(n)
-  const dias = `${abs} ${abs === 1 ? 'dia' : 'dias'}`
-  if (n < 0) return `O calendário voltou ${dias}`
-  return abs === 1 ? 'Passou 1 dia' : `Passaram ${dias}`
+  const dias = tn(abs, '{n} dia', '{n} dias')
+  if (n < 0) return t('O calendário voltou {dias}', { dias })
+  return abs === 1 ? t('Passou 1 dia') : t('Passaram {dias}', { dias })
 }

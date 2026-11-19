@@ -10,6 +10,7 @@
  * ficha não virar um arquivo gigante.
  */
 import { resolverNotacaoFormula, validarNotacao } from './diceNotation'
+import { t } from '../i18n'
 
 export const LIMITE_NOME = 40
 export const LIMITE_NOTACAO = 200
@@ -27,19 +28,19 @@ export function resolverMacro(macro, contexto = {}) {
 export function validarMacro(macro, contexto = {}) {
   const nome = String(macro?.nome || '').trim()
   const notacao = String(macro?.notacao || '').trim()
-  if (!nome) return { ok: false, erro: 'Dê um nome à macro.' }
-  if (nome.length > LIMITE_NOME) return { ok: false, erro: `Nome com até ${LIMITE_NOME} caracteres.` }
-  if (!notacao) return { ok: false, erro: 'Escreva a rolagem (ex.: 1d20+mod(forca)).' }
-  if (notacao.length > LIMITE_NOTACAO) return { ok: false, erro: `Rolagem com até ${LIMITE_NOTACAO} caracteres.` }
+  if (!nome) return { ok: false, erro: t('Dê um nome à macro.') }
+  if (nome.length > LIMITE_NOME) return { ok: false, erro: t('Nome com até {max} caracteres.', { max: LIMITE_NOME }) }
+  if (!notacao) return { ok: false, erro: t('Escreva a rolagem (ex.: 1d20+mod(forca)).') }
+  if (notacao.length > LIMITE_NOTACAO) return { ok: false, erro: t('Rolagem com até {max} caracteres.', { max: LIMITE_NOTACAO }) }
 
   let resolvida
   try {
     resolvida = resolverMacro({ notacao }, contexto)
   } catch (e) {
-    return { ok: false, erro: e?.message || 'Fórmula inválida.' }
+    return { ok: false, erro: e?.message || t('Fórmula inválida.') }
   }
   if (!validarNotacao(resolvida)) {
-    return { ok: false, erro: `"${resolvida}" não é uma rolagem válida.` }
+    return { ok: false, erro: t('"{rolagem}" não é uma rolagem válida.', { rolagem: resolvida }) }
   }
   return { ok: true, notacao: resolvida }
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLinhasPoder } from '../../hooks/useLinhasPoder'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
@@ -22,7 +23,7 @@ export default function LinhasPoderEditor({ sistemaId }) {
     try {
       await criarLinha({ nome: '', maximo: 5, auto_conceder: false })
     } catch (e) {
-      setErro(e.message || 'Erro ao criar linha.')
+      setErro(e.message || t('Erro ao criar linha.'))
     } finally {
       setSalvando(false)
     }
@@ -30,9 +31,9 @@ export default function LinhasPoderEditor({ sistemaId }) {
 
   return (
     <div className="bg-slate-800 border border-purple-700 rounded-xl p-4 space-y-3">
-      <p className="text-purple-200 text-sm font-semibold">Linhas de poder</p>
+      <p className="text-purple-200 text-sm font-semibold">{t('Linhas de poder')}</p>
       <p className="text-accent-300 text-xs">
-        Linhas com rating próprio (ex: uma disciplina). Cada nível do rating desbloqueia os poderes daquele nível.
+        {t('Linhas com rating próprio (ex: uma disciplina). Cada nível do rating desbloqueia os poderes daquele nível.')}
       </p>
 
       {linhas.length > 0 && (
@@ -46,7 +47,7 @@ export default function LinhasPoderEditor({ sistemaId }) {
                   const v = e.target.value.trim()
                   if (v !== l.nome) atualizarLinha(l.id, { nome: v }).catch(err => setErro(err.message))
                 }}
-                placeholder="Nome da linha"
+                placeholder={t('Nome da linha')}
                 className={`${INP} flex-1 min-w-[8rem]`}
               />
               <input
@@ -56,7 +57,7 @@ export default function LinhasPoderEditor({ sistemaId }) {
                   const v = e.target.value.trim()
                   if (v !== (l.descricao || '')) atualizarLinha(l.id, { descricao: v || null }).catch(err => setErro(err.message))
                 }}
-                placeholder="Descrição"
+                placeholder={t('Descrição')}
                 className={`${INP} flex-1 min-w-[10rem]`}
               />
               <input
@@ -65,7 +66,7 @@ export default function LinhasPoderEditor({ sistemaId }) {
                 value={l.maximo ?? 5}
                 onChange={e => atualizarLinha(l.id, { maximo: Number(e.target.value) || 1 }).catch(err => setErro(err.message))}
                 className={`${INP} w-16 text-center`}
-                title="Rating máximo"
+                title={t('Rating máximo')}
               />
               <label className="text-purple-400 text-xs flex items-center gap-1 cursor-pointer">
                 <input
@@ -74,12 +75,12 @@ export default function LinhasPoderEditor({ sistemaId }) {
                   onChange={e => atualizarLinha(l.id, { auto_conceder: e.target.checked }).catch(err => setErro(err.message))}
                   className="accent-purple-500"
                 />
-                conceder automaticamente os poderes do nível atingido
+                {t('conceder automaticamente os poderes do nível atingido')}
               </label>
               <button
                 onClick={() => removerLinha(l.id).catch(err => setErro(err.message))}
                 className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors shrink-0"
-                title="Remover linha"
+                title={t('Remover linha')}
               >
                 ×
               </button>
@@ -91,7 +92,7 @@ export default function LinhasPoderEditor({ sistemaId }) {
       <Botao variante="contorno" tamanho="sm"
         onClick={handleAdicionar}
         disabled={salvando}>
-        + Adicionar linha
+        {t('+ Adicionar linha')}
       </Botao>
 
       {erro && <p className="text-red-400 text-xs">{erro}</p>}

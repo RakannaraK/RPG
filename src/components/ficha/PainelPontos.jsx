@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { validarDistribuicao } from '../../lib/pontosEngine'
+import { t } from '../../i18n'
 
 const fmtTipo = {
-  ganho_inicial: 'Inicial',
-  ganho_nivel: 'Nível',
-  gasto: 'Distribuído',
-  ajuste: 'Ajuste (mestre)',
+  ganho_inicial: t('Inicial'),
+  ganho_nivel: t('Nível'),
+  gasto: t('Distribuído'),
+  ajuste: t('Ajuste (mestre)'),
 }
 
 /** Tela de distribuição: +/- por atributo, contador de restantes, teto. */
@@ -34,12 +35,12 @@ function Distribuir({ atributos, disponiveis, config, onConfirmar, onCancelar })
     setErro('')
     if (!check.valido) { setErro(check.erro); return }
     const gastos = Object.entries(dist).filter(([, d]) => d > 0)
-    if (gastos.length === 0) { setErro('Nada a distribuir.'); return }
+    if (gastos.length === 0) { setErro(t('Nada a distribuir.')); return }
     setSalvando(true)
     try {
       await onConfirmar(dist, check.custo)
     } catch (e) {
-      setErro(e.message || 'Erro ao distribuir.')
+      setErro(e.message || t('Erro ao distribuir.'))
     } finally {
       setSalvando(false)
     }
@@ -50,9 +51,9 @@ function Distribuir({ atributos, disponiveis, config, onConfirmar, onCancelar })
   return (
     <div className="border-t border-border pt-2.5 space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-accent-300 text-xs font-medium">Distribuir pontos</p>
+        <p className="text-accent-300 text-xs font-medium">{t('Distribuir pontos')}</p>
         <span className={`text-xs font-mono ${check.valido ? 'text-dice-400' : 'text-harm'}`}>
-          restam {check.restante}
+          {t('restam {n}', { n: check.restante })}
         </span>
       </div>
       <div className="space-y-1">
@@ -69,14 +70,14 @@ function Distribuir({ atributos, disponiveis, config, onConfirmar, onCancelar })
         })}
       </div>
       {erro && <p className="text-harm text-xs">{erro}</p>}
-      <p className="text-ink-dim text-xs">O gasto é definitivo — só o mestre corrige depois (ajuste).</p>
+      <p className="text-ink-dim text-xs">{t('O gasto é definitivo — só o mestre corrige depois (ajuste).')}</p>
       <div className="flex gap-2">
         <button onClick={confirmar} disabled={salvando || !check.valido}
           className="px-3 py-1.5 bg-accent-700 hover:bg-accent-600 disabled:opacity-50 text-sobre-acento text-xs rounded-lg transition-colors">
-          {salvando ? '...' : 'Confirmar'}
+          {salvando ? '...' : t('Confirmar')}
         </button>
         <button onClick={onCancelar} className="px-3 py-1.5 bg-hover hover:bg-border text-ink text-xs rounded-lg transition-colors">
-          Cancelar
+          {t('Cancelar')}
         </button>
       </div>
     </div>
@@ -98,33 +99,33 @@ export default function PainelPontos({
   const [msg, setMsg] = useState('')
 
   if (!config?.ativo) return null
-  const rotulo = config.rotulo || 'Pontos de Status'
+  const rotulo = config.rotulo || t('Pontos de Status')
 
   async function receber() {
     setMsg('')
-    try { await onReceberInicial() } catch (e) { setMsg(e.message || 'Erro.') }
+    try { await onReceberInicial() } catch (e) { setMsg(e.message || t('Erro.')) }
   }
   async function aplicarAjuste() {
     setMsg('')
     const q = Math.trunc(Number(ajuste.q) || 0)
-    if (!q) { setMsg('Informe a quantidade do ajuste.'); return }
+    if (!q) { setMsg(t('Informe a quantidade do ajuste.')); return }
     try {
       await onAjustar(q, ajuste.motivo)
       setAjuste({ q: '', motivo: '' }); setShowAjuste(false)
-    } catch (e) { setMsg(e.message || 'Erro.') }
+    } catch (e) { setMsg(e.message || t('Erro.')) }
   }
 
   return (
     <div className="bg-raised border border-border rounded-2xl p-4 space-y-2.5">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <p className="text-ink text-sm font-semibold">{rotulo}</p>
-        <span className="text-dice-400 text-sm font-mono">{disponiveis} a distribuir</span>
+        <span className="text-dice-400 text-sm font-mono">{t('{n} a distribuir', { n: disponiveis })}</span>
       </div>
 
       {isDono && !jaRecebeuInicial && (
         <button onClick={receber}
           className="w-full py-2 rounded-lg bg-dice-700 hover:bg-dice-500 text-ink text-sm font-medium transition-colors">
-          Receber pontos iniciais{inicialResolvido != null && ` (${inicialResolvido})`}
+          {t('Receber pontos iniciais')}{inicialResolvido != null && ` (${inicialResolvido})`}
         </button>
       )}
 
@@ -132,7 +133,7 @@ export default function PainelPontos({
         <div className="flex gap-2">
           <button onClick={() => setDistribuindo(true)} disabled={disponiveis <= 0}
             className="px-3 py-1.5 bg-accent-700 hover:bg-accent-600 disabled:opacity-40 text-sobre-acento text-xs rounded-lg transition-colors">
-            Distribuir {disponiveis > 0 ? `(${disponiveis})` : ''}
+            {t('Distribuir')} {disponiveis > 0 ? `(${disponiveis})` : ''}
           </button>
         </div>
       )}
@@ -154,13 +155,13 @@ export default function PainelPontos({
             <input type="number" value={ajuste.q} onChange={e => setAjuste({ ...ajuste, q: e.target.value })}
               placeholder="±" className="w-16 px-2 py-1 rounded-lg bg-void border border-border text-ink text-xs text-center focus:outline-none focus:ring-1 focus:ring-accent-500" />
             <input type="text" value={ajuste.motivo} onChange={e => setAjuste({ ...ajuste, motivo: e.target.value })}
-              placeholder="motivo" className="flex-1 min-w-[8rem] px-2 py-1 rounded-lg bg-void border border-border text-ink text-xs placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500" />
-            <button onClick={aplicarAjuste} className="px-2.5 py-1 text-xs rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors">Ajustar</button>
+              placeholder={t('motivo')} className="flex-1 min-w-[8rem] px-2 py-1 rounded-lg bg-void border border-border text-ink text-xs placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500" />
+            <button onClick={aplicarAjuste} className="px-2.5 py-1 text-xs rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors">{t('Ajustar')}</button>
             <button onClick={() => setShowAjuste(false)} className="text-ink-dim hover:text-ink text-xs">✕</button>
           </div>
         ) : (
           <button onClick={() => setShowAjuste(true)} className="text-ink-dim hover:text-ink text-xs border-t border-border/50 pt-2 w-full text-left">
-            + Ajuste do mestre
+            {t('+ Ajuste do mestre')}
           </button>
         )
       )}
@@ -168,7 +169,7 @@ export default function PainelPontos({
       {/* Histórico */}
       {log.length > 0 && (
         <details className="text-xs">
-          <summary className="text-ink-dim cursor-pointer hover:text-accent-300">Histórico ({log.length})</summary>
+          <summary className="text-ink-dim cursor-pointer hover:text-accent-300">{t('Histórico ({n})', { n: log.length })}</summary>
           <div className="mt-1.5 space-y-0.5 max-h-40 overflow-y-auto">
             {log.map(l => (
               <div key={l.id} className="flex items-center justify-between gap-2 text-ink-dim">

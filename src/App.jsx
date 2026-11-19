@@ -8,6 +8,8 @@ import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import OuvinteDadosMesa from './components/dados/OuvinteDadosMesa'
 import OuvinteDesafios from './components/minigames/OuvinteDesafios'
+import OuvinteCinematica from './components/cinematica/OuvinteCinematica'
+import BarraChamada from './components/chamada/BarraChamada'
 import Selo from './components/marca/Selo'
 import { ToastProvider } from './components/ui/Toast'
 import { ConfirmarProvider } from './components/ui/Confirmar'
@@ -15,6 +17,7 @@ import PaletaComandos from './components/ui/PaletaComandos'
 import EfeitosAmbiente from './components/ui/EfeitosAmbiente'
 import { destinoDepoisDoLogin } from './lib/convite'
 import { tipoDaRota, registrarVisita, lerRecentes, gravarRecentes } from './lib/recentes'
+import { t } from './i18n'
 
 // F52 — cada página grande vira um pedaço próprio do código: quem abre o site
 // baixa só a entrada e o painel; a mesa, a ficha, a sessão e o mapa chegam
@@ -33,7 +36,7 @@ function CarregandoPagina() {
   return (
     <div className="min-h-screen flex items-center justify-center" role="status">
       <Selo tamanho={44} pulso />
-      <span className="sr-only">Carregando…</span>
+      <span className="sr-only">{t('Carregando…')}</span>
     </div>
   )
 }
@@ -158,6 +161,10 @@ export default function App() {
                 <PaletaComandos />
                 {/* F28 — aviso de desafio de minigame (fora da transição de página) */}
                 <OuvinteDesafios />
+                {/* F64 — cinemática em tela cheia, em qualquer página da mesa */}
+                <OuvinteCinematica />
+                {/* F65 — chamada de voz e vídeo da mesa */}
+                <BarraChamada />
               </ConfirmarProvider>
             </ToastProvider>
           </PreferenciasProvider>

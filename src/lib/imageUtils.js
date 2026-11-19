@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 const MAX_ANIMADA = 3 * 1024 * 1024
 
 const ascii = (b, i, txt) => [...txt].every((c, k) => b[i + k] === c.charCodeAt(0))
@@ -25,7 +26,7 @@ export async function redimensionarImagem(file, maxSize = 1200, sempreComprimir 
   if (['image/gif', 'image/webp', 'image/png'].includes(file.type)) {
     const inicio = new Uint8Array(await file.slice(0, 65536).arrayBuffer())
     if (ehAnimada(inicio, file.type)) {
-      if (file.size > MAX_ANIMADA) throw new Error('Imagem animada grande demais (máximo 3 MB).')
+      if (file.size > MAX_ANIMADA) throw new Error(t('Imagem animada grande demais (máximo 3 MB).'))
       return file
     }
   }
@@ -57,7 +58,7 @@ export async function redimensionarImagem(file, maxSize = 1200, sempreComprimir 
 
       canvas.toBlob(
         blob => {
-          if (!blob) { reject(new Error('Falha ao processar imagem.')); return }
+          if (!blob) { reject(new Error(t('Falha ao processar imagem.'))); return }
           const nome = file.name.replace(/\.[^.]+$/, '.jpg')
           resolve(new File([blob], nome, { type: 'image/jpeg' }))
         },
@@ -68,7 +69,7 @@ export async function redimensionarImagem(file, maxSize = 1200, sempreComprimir 
 
     img.onerror = () => {
       URL.revokeObjectURL(objectUrl)
-      reject(new Error('Não foi possível carregar a imagem.'))
+      reject(new Error(t('Não foi possível carregar a imagem.')))
     }
 
     img.src = objectUrl

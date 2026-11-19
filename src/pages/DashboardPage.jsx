@@ -22,6 +22,7 @@ import MeusPersonagens from '../components/painel/MeusPersonagens'
 import { useMeusPersonagens } from '../hooks/useMeusPersonagens'
 import { lerRecentes } from '../lib/recentes'
 import { usePreferencias } from '../context/PreferenciasContext'
+import { t, tn } from '../i18n'
 
 export default function DashboardPage() {
   const { session } = useAuth()
@@ -56,26 +57,26 @@ export default function DashboardPage() {
 
   function handleMesaCreated(mesa) {
     setShowCreate(false)
-    toast.ok('Mesa criada', { detalhe: 'Convide os jogadores pela aba Membros.' })
+    toast.ok(t('Mesa criada'), { detalhe: t('Convide os jogadores pela aba Membros.') })
     refetch()
     navigate(`/mesa/${mesa.id}`)
   }
 
   function handleMesaJoined(mesa) {
     setShowInvite(false)
-    toast.ok('Você entrou na mesa')
+    toast.ok(t('Você entrou na mesa'))
     refetch()
     navigate(`/mesa/${mesa.id}`)
   }
 
   const novaMesa = podeCriar && (
     <Botao variante="primario" tamanho="lg" onClick={() => setShowCreate(true)}>
-      <Icone nome="mais" tamanho={18} /> Nova mesa
+      <Icone nome="mais" tamanho={18} /> {t('Nova mesa')}
     </Botao>
   )
   const entrarCodigo = (
     <Botao variante="contorno" tamanho="lg" onClick={() => setShowInvite(true)}>
-      Entrar com código
+      {t('Entrar com código')}
     </Botao>
   )
 
@@ -88,27 +89,27 @@ export default function DashboardPage() {
         <Saudacao mesas={ativas} personagens={personagens} recentes={recentes} />
         <MeusPersonagens personagens={personagens} loading={carregandoPersonagens} />
         {progresso && !preferencias.guia_dispensado && feitos < passos.length && !souConvidado(session) && (
-          <section className="mb-8 rounded-2xl border border-accent-700/50 bg-raised/70 p-5 flex flex-col sm:flex-row sm:items-center gap-4" aria-label="Primeiros passos">
+          <section className="mb-8 rounded-2xl border border-accent-700/50 bg-raised/70 p-5 flex flex-col sm:flex-row sm:items-center gap-4" aria-label={t('Primeiros passos')}>
             <div className="flex-1 min-w-0">
-              <p className="text-ink-dim text-xs font-semibold uppercase tracking-wider">Primeiros passos do mestre · {feitos} de {passos.length}</p>
-              <p className="font-sora text-ink text-lg font-semibold mt-1">Próximo: {proximoPasso?.titulo}</p>
+              <p className="text-ink-dim text-xs font-semibold uppercase tracking-wider">{t('Primeiros passos do mestre · {feitos} de {total}', { feitos, total: passos.length })}</p>
+              <p className="font-sora text-ink text-lg font-semibold mt-1">{t('Próximo: {titulo}', { titulo: proximoPasso?.titulo })}</p>
               <div className="mt-3 h-1.5 rounded-full bg-void ring-1 ring-inset ring-border overflow-hidden max-w-sm" aria-hidden="true">
                 <div className="h-full rounded-full bg-accent-500" style={{ width: `${(feitos / passos.length) * 100}%` }} />
               </div>
             </div>
             <div className="flex gap-2 shrink-0">
-              <Botao variante="fantasma" onClick={() => salvarPreferencias({ guia_dispensado: true })}>Pular</Botao>
-              <Botao variante="primario" onClick={() => setShowGuia(true)}>Ver o guia</Botao>
+              <Botao variante="fantasma" onClick={() => salvarPreferencias({ guia_dispensado: true })}>{t('Pular')}</Botao>
+              <Botao variante="primario" onClick={() => setShowGuia(true)}>{t('Ver o guia')}</Botao>
             </div>
           </section>
         )}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5 mb-8">
           <div>
-            <h2 className="font-sora text-2xl sm:text-3xl font-bold text-ink tracking-tight">Suas mesas</h2>
+            <h2 className="font-sora text-2xl sm:text-3xl font-bold text-ink tracking-tight">{t('Suas mesas')}</h2>
             <p className="text-ink-dim mt-1.5">
-              {loading ? 'Abrindo o grimório…'
-                : ativas.length === 0 ? 'Nenhuma mesa ativa'
-                : `${ativas.length} ${ativas.length === 1 ? 'mesa ativa' : 'mesas ativas'}`}
+              {loading ? t('Abrindo o grimório…')
+                : ativas.length === 0 ? t('Nenhuma mesa ativa')
+                : tn(ativas.length, '{n} mesa ativa', '{n} mesas ativas')}
             </p>
           </div>
           {!loading && mesas.length > 0 && (
@@ -121,8 +122,8 @@ export default function DashboardPage() {
 
         {error && (
           <div className="aviso-erro mb-6 flex flex-wrap items-center justify-between gap-3" role="alert">
-            <span>Não foi possível carregar as suas mesas. {error}</span>
-            <Botao variante="secundario" tamanho="sm" onClick={refetch}>Tentar novamente</Botao>
+            <span>{t('Não foi possível carregar as suas mesas.')} {error}</span>
+            <Botao variante="secundario" tamanho="sm" onClick={refetch}>{t('Tentar novamente')}</Botao>
           </div>
         )}
 
@@ -130,10 +131,10 @@ export default function DashboardPage() {
           <EsqueletoCartoes quantos={3} className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5" altura="h-52" />
         ) : mesas.length === 0 ? (
           <EstadoVazio
-            arte="mapa" titulo="Nenhuma mesa ainda"
+            arte="mapa" titulo={t('Nenhuma mesa ainda')}
             descricao={podeCriar
-              ? 'Crie a mesa da sua campanha ou entre numa com o código que o mestre mandou.'
-              : 'Entre numa mesa com o código que o mestre mandou.'}
+              ? t('Crie a mesa da sua campanha ou entre numa com o código que o mestre mandou.')
+              : t('Entre numa mesa com o código que o mestre mandou.')}
           >
             {entrarCodigo}
             {novaMesa}
@@ -149,7 +150,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <EstadoVazio compacto arte="tomo" titulo="Nenhuma mesa ativa" descricao="Suas mesas arquivadas estão logo abaixo." />
+              <EstadoVazio compacto arte="tomo" titulo={t('Nenhuma mesa ativa')} descricao={t('Suas mesas arquivadas estão logo abaixo.')} />
             )}
 
             {/* Arquivadas (16.8) */}
@@ -160,7 +161,7 @@ export default function DashboardPage() {
                   className="inline-flex items-center gap-2 text-ink-dim hover:text-ink text-sm font-medium transition-colors duration-rapida"
                 >
                   <Icone nome="chevron-dir" tamanho={16} className={`transition-transform duration-normal ${showArquivadas ? 'rotate-90' : ''}`} />
-                  Arquivadas ({arquivadas.length})
+                  {t('Arquivadas ({n})', { n: arquivadas.length })}
                 </button>
                 {showArquivadas && (
                   <div className="entra-lista grid sm:grid-cols-2 xl:grid-cols-3 gap-5 mt-4 opacity-80">

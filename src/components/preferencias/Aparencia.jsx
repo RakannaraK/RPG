@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { LIMITE_SOM, extensaoDoSom, validarSom } from '../../lib/personalizacao'
 import Botao from '../ui/Botao'
 import Icone from '../ui/Icone'
+import { t } from '../../i18n'
 
 const BUCKET = 'fichas-imagens' // mesmo bucket das imagens: pasta do próprio usuário
 
@@ -49,7 +50,7 @@ export function EnvioDeSom({ campo, campoVolume, pasta, titulo, dica, rodape }) 
       const { data } = supabase.storage.from(BUCKET).getPublicUrl(caminho)
       await salvarPreferencias({ [campo]: data.publicUrl })
     } catch (err) {
-      setErro(err.message || 'Não foi possível enviar o som.')
+      setErro(err.message || t('Não foi possível enviar o som.'))
     } finally {
       setEnviando(false)
     }
@@ -59,24 +60,24 @@ export function EnvioDeSom({ campo, campoVolume, pasta, titulo, dica, rodape }) 
     if (!som) return
     const audio = new Audio(som)
     audio.volume = preferencias[campoVolume] ?? 0.6
-    audio.play().catch(() => setErro('O navegador bloqueou o som; clique de novo.'))
+    audio.play().catch(() => setErro(t('O navegador bloqueou o som; clique de novo.')))
   }
 
   return (
     <div className="space-y-1.5">
       <p className="text-sm text-ink">
-        {titulo} <span className="text-ink-dim">(até {LIMITE_SOM.segundos} s e {(LIMITE_SOM.bytes / 1_000_000).toFixed(1)} MB)</span>
+        {titulo} <span className="text-ink-dim">{t('(até {s} s e {mb} MB)', { s: LIMITE_SOM.segundos, mb: (LIMITE_SOM.bytes / 1_000_000).toFixed(1) })}</span>
       </p>
       {dica && <p className="text-ink-dim text-sm">{dica}</p>}
       <input ref={inputRef} type="file" accept="audio/*" onChange={enviarSom} className="hidden" />
       <div className="flex flex-wrap items-center gap-2">
         <Botao variante="secundario" onClick={() => inputRef.current?.click()} disabled={enviando}>
-          <Icone nome="enviar" tamanho={16} /> {enviando ? 'Enviando…' : som ? 'Trocar som' : 'Enviar som'}
+          <Icone nome="enviar" tamanho={16} /> {enviando ? t('Enviando…') : som ? t('Trocar som') : t('Enviar som')}
         </Botao>
         {som && (
           <>
-            <Botao variante="contorno" type="button" onClick={ouvir}><Icone nome="volume" tamanho={16} /> Ouvir</Botao>
-            <Botao variante="fantasma" className="hover:!text-harm" onClick={() => salvarPreferencias({ [campo]: null })}>Remover</Botao>
+            <Botao variante="contorno" type="button" onClick={ouvir}><Icone nome="volume" tamanho={16} /> {t('Ouvir')}</Botao>
+            <Botao variante="fantasma" className="hover:!text-harm" onClick={() => salvarPreferencias({ [campo]: null })}>{t('Remover')}</Botao>
           </>
         )}
       </div>

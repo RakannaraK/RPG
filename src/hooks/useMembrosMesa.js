@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /**
  * Membros da mesa com nome de exibição (apelido na mesa > username).
@@ -16,7 +17,7 @@ export function useMembrosMesa(mesaId) {
       .eq('mesa_id', mesaId)
     setMembros((data || []).map(m => ({
       usuario_id: m.usuario?.id,
-      nome: m.apelido || m.usuario?.username || 'Jogador',
+      nome: m.apelido || m.usuario?.username || t('Jogador'),
       role: m.role,
       avatar_url: m.avatar_url || null,
     })).filter(m => m.usuario_id))
@@ -25,7 +26,7 @@ export function useMembrosMesa(mesaId) {
   useEffect(() => { recarregar() }, [recarregar])
 
   const nomeDe = useCallback(
-    usuarioId => membros.find(m => m.usuario_id === usuarioId)?.nome || 'Jogador',
+    usuarioId => membros.find(m => m.usuario_id === usuarioId)?.nome || t('Jogador'),
     [membros]
   )
 

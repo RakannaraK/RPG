@@ -1,3 +1,4 @@
+import { t, tn } from '../i18n'
 import { pontosDaArvore } from '../lib/arvoreHabilidades'
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
@@ -207,18 +208,18 @@ export default function FichaPage() {
       const { ficha: f, arquivo } = await exportarFichaDoBanco(fichaId)
       baixarJson(nomeArquivoFicha(f.nome_personagem), arquivo)
     } catch (e) {
-      toast.erro('Não foi possível exportar', { detalhe: e.message })
+      toast.erro(t('Não foi possível exportar'), { detalhe: e.message })
     } finally { setPortatil('') }
   }
 
   async function handleDuplicar() {
-    if (!(await confirmar({ titulo: 'Duplicar ficha?', mensagem: 'Cria uma cópia desta ficha nesta mesa. A original não muda.', confirmar: 'Duplicar' }))) return
+    if (!(await confirmar({ titulo: t('Duplicar ficha?'), mensagem: t('Cria uma cópia desta ficha nesta mesa. A original não muda.'), confirmar: t('Duplicar') }))) return
     setPortatil('duplicando')
     try {
       const novoId = await duplicarFicha(fichaId, { mesaId, donoId: session.user.id })
       navigate(`/mesa/${mesaId}/ficha/${novoId}`)
     } catch (e) {
-      toast.erro('Não foi possível duplicar', { detalhe: e.message })
+      toast.erro(t('Não foi possível duplicar'), { detalhe: e.message })
     } finally { setPortatil('') }
   }
   const [deleting, setDeleting] = useState(false)
@@ -232,7 +233,7 @@ export default function FichaPage() {
       if (err) throw err
       navigate(`/mesa/${mesaId}`)
     } catch (err) {
-      setDeleteError(err.message || 'Erro ao deletar ficha.')
+      setDeleteError(err.message || t('Erro ao deletar ficha.'))
       setDeleting(false)
     }
   }
@@ -344,7 +345,7 @@ export default function FichaPage() {
         const nota = notacaoDoGanho(expr, contextoFormula)
         const r = rolarNotacao(nota)
         await registrarPontos({ delta: r.total, tipo: 'ganho_nivel', detalhe: { rolagem: nota, resultado: r.total, nivel } })
-        await registrarEvento({ mesaId, fichaId, rotulo: `${ficha.nome_personagem} ganhou ${r.total} ${ps.rotulo || 'pontos'} (${nota})`, notacao: nota, total: r.total, dados: r.dados })
+        await registrarEvento({ mesaId, fichaId, rotulo: t('{nome} ganhou {total} {pontos} ({nota})', { nome: ficha.nome_personagem, total: r.total, pontos: ps.rotulo || t('pontos'), nota }), notacao: nota, total: r.total, dados: r.dados })
       } else {
         const v = avaliarGanho(expr, contextoFormula)
         await registrarPontos({ delta: v, tipo: 'ganho_nivel', detalhe: { valor: v, nivel } })
@@ -358,7 +359,7 @@ export default function FichaPage() {
       await registrarEvento({
         mesaId,
         fichaId,
-        rotulo: `${ficha.nome_personagem} subiu para o nível ${nivelNovo}!${detalheClasse ? ` (${detalheClasse})` : ''}`,
+        rotulo: t('{nome} subiu para o nível {nivel}!', { nome: ficha.nome_personagem, nivel: nivelNovo }) + (detalheClasse ? ` (${detalheClasse})` : ''),
         notacao: '',
         total: nivelNovo,
         dados: [],
@@ -384,7 +385,7 @@ export default function FichaPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-3">
           <div className="w-10 h-10 border-4 border-accent-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-ink-dim text-sm">Carregando ficha...</p>
+          <p className="text-ink-dim text-sm">{t('Carregando ficha...')}</p>
         </div>
       </div>
     )
@@ -394,12 +395,12 @@ export default function FichaPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-harm mb-4">{error || 'Ficha não encontrada.'}</p>
+          <p className="text-harm mb-4">{error || t('Ficha não encontrada.')}</p>
           <button
             onClick={() => navigate(`/mesa/${mesaId}`)}
             className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-sobre-acento rounded-lg transition-colors"
           >
-            Voltar à mesa
+            {t('Voltar à mesa')}
           </button>
         </div>
       </div>
@@ -412,7 +413,7 @@ export default function FichaPage() {
   const config = sistema?.config_layout ? mergeConfigLayout(sistema.config_layout) : mergeConfigLayout(null)
   const secoes = config.secoes
   const camposCombate = config.campos_combate || []
-  const rotuloVida = config.rotulo_vida || 'Pontos de Vida'
+  const rotuloVida = config.rotulo_vida || t('Pontos de Vida')
   const dadoPadrao = config.dado_padrao || 20
 
   // Motor de modificadores
@@ -614,7 +615,7 @@ export default function FichaPage() {
   // F54 — orçamento da árvore de habilidades (fórmula do mestre − custo do que aprendeu à mão)
   const pontosArvore = {
     ...pontosDaArvore({ formula: config.arvore?.formula_pontos, contexto: contextoFormula, habilidades, habilidadesFicha }),
-    rotulo: config.arvore?.rotulo_pontos || 'Pontos de habilidade',
+    rotulo: config.arvore?.rotulo_pontos || t('Pontos de habilidade'),
   }
 
   // 23.5/24.4 — quantidade de dados especiais (ex: Fome): um estado com
@@ -658,15 +659,15 @@ export default function FichaPage() {
       if (hab.midia_url && midiaEhSom(hab.midia_url)) {
         tocarSomProprio(hab.midia_url, { volume: preferencias.som_acao_volume ?? 0.6 })
       }
-      const detalhe = hab.carga_max ? ' (ultimate!)' : hab.recarga_turnos ? ` — recarrega em ${hab.recarga_turnos} turno${hab.recarga_turnos === 1 ? '' : 's'}` : ''
+      const detalhe = hab.carga_max ? t(' (ultimate!)') : hab.recarga_turnos ? ' — ' + tn(hab.recarga_turnos, 'recarrega em {n} turno', 'recarrega em {n} turnos') : ''
       await registrarEvento({
         mesaId, fichaId,
-        rotulo: `${ficha?.nome_personagem || 'Personagem'} usou ${hab.nome || 'a habilidade'}${detalhe}`,
+        rotulo: t('{nome} usou {habilidade}', { nome: ficha?.nome_personagem || t('Personagem'), habilidade: hab.nome || t('a habilidade') }) + detalhe,
         notacao: '', total: 0, dados: [],
         som: hab.som_preset ? { presetId: hab.som_preset } : null,
       })
     } catch (e) {
-      toast.erro('Não foi possível usar a habilidade', { detalhe: e.message })
+      toast.erro(t('Não foi possível usar a habilidade'), { detalhe: e.message })
     }
   }
 
@@ -707,7 +708,7 @@ export default function FichaPage() {
       await registrarEvento({
         mesaId,
         fichaId,
-        rotulo: `${mod.tipo === 'cura' ? 'Cura' : 'Vida temporária'} — ${nomeHab}`,
+        rotulo: `${mod.tipo === 'cura' ? t('Cura') : t('Vida temporária')} — ${nomeHab}`,
         notacao: dados.length ? valorStr : '',
         total,
         dados,
@@ -737,12 +738,12 @@ export default function FichaPage() {
         await definirUsados(s.circulo, s.para)
       }
       // 24.2 — trilhas curadas pelo descanso (por tipo de marca, conforme a config)
-      for (const t of config.trilhas || []) {
-        const atuais = marcasDe(t.id)
+      for (const tr of config.trilhas || []) {
+        const atuais = marcasDe(tr.id)
         if (!atuais) continue
-        const r = recuperarTrilha(atuais, t, tipo.id)
+        const r = recuperarTrilha(atuais, tr, tipo.id)
         if (Object.keys(r.curadas).length > 0) {
-          try { await salvarMarcas(t.id, r.marcas) } catch { /* segue */ }
+          try { await salvarMarcas(tr.id, r.marcas) } catch { /* segue */ }
         }
       }
       try {
@@ -773,7 +774,7 @@ export default function FichaPage() {
       if (cfg.feed !== false) {
         await registrarEvento({
           mesaId, fichaId,
-          rotulo: `${ficha.nome_personagem} — ${cfg.nome}: ${v}`,
+          rotulo: t('{nome} — {valor}: {v}', { nome: ficha.nome_personagem, valor: cfg.nome, v }),
           notacao: '', total: v, dados: [],
         })
       }
@@ -795,7 +796,7 @@ export default function FichaPage() {
           valor: Math.floor(Number(periciasFichaPage.find(x => x.pericia_id === p.id)?.bonus) || 0),
         }))
       case 'trilha_tamanho_bonus':
-        return (config.trilhas || []).map(t => ({ id: t.id, nome: t.nome, valor: bonusDe(t.id) }))
+        return (config.trilhas || []).map(tr => ({ id: tr.id, nome: tr.nome, valor: bonusDe(tr.id) }))
       case 'linha_poder': {
         const nativas = new Set([
           ...(racaAtiva?.linhas_nativas || []),
@@ -846,31 +847,31 @@ export default function FichaPage() {
     } else if (categoria.alvo === 'linha_poder') {
       await handleDefinirRatingLinha(alvo.id, novoValor)
     } else {
-      throw new Error('Categoria de compra desconhecida: ' + categoria.alvo)
+      throw new Error(t('Categoria de compra desconhecida: {alvo}', { alvo: categoria.alvo }))
     }
     await handleAddXp(-custo)
     await inserirXpLog(registroDeCompra(categoria, alvo.id, alvo.valor, custo))
     await registrarEvento({
       mesaId, fichaId,
-      rotulo: `${ficha.nome_personagem} subiu ${alvo.nome} para ${novoValor} — ${custo} XP`,
+      rotulo: t('{nome} subiu {alvo} para {valor} — {custo} XP', { nome: ficha.nome_personagem, alvo: alvo.nome, valor: novoValor, custo }),
       notacao: '', total: custo, dados: [],
     })
     refetch()
   }
 
   // 24.2 — eventos de trilha (encheu do maior / transbordo) anunciados no feed
-  async function handleEventosTrilha(t, eventos) {
-    if (t.feed === false) return
-    if (eventos.includes('encheu_do_maior') && t.ao_encher_do_maior?.rotulo) {
+  async function handleEventosTrilha(tr, eventos) {
+    if (tr.feed === false) return
+    if (eventos.includes('encheu_do_maior') && tr.ao_encher_do_maior?.rotulo) {
       await registrarEvento({
         mesaId, fichaId,
-        rotulo: `${ficha.nome_personagem} — ${t.ao_encher_do_maior.rotulo}! (${t.nome} cheia)`,
+        rotulo: t('{nome} — {rotulo}! ({trilha} cheia)', { nome: ficha.nome_personagem, rotulo: tr.ao_encher_do_maior.rotulo, trilha: tr.nome }),
         notacao: '', total: 0, dados: [],
       })
     } else if (eventos.includes('transbordo_convertido')) {
       await registrarEvento({
         mesaId, fichaId,
-        rotulo: `${ficha.nome_personagem} — ${t.nome}: dano transbordou (marca agravada)`,
+        rotulo: t('{nome} — {trilha}: dano transbordou (marca agravada)', { nome: ficha.nome_personagem, trilha: tr.nome }),
         notacao: '', total: 0, dados: [],
       })
     }
@@ -883,7 +884,7 @@ export default function FichaPage() {
       if (r.subiu) {
         await registrarEvento({
           mesaId, fichaId,
-          rotulo: `${ficha.nome_personagem} — Maestria em ${nome} subiu para ${r.nivel}!`,
+          rotulo: t('{personagem} — Maestria em {nome} subiu para {nivel}!', { personagem: ficha.nome_personagem, nome, nivel: r.nivel }),
           notacao: '', total: r.nivel, dados: [],
         })
       }
@@ -898,7 +899,7 @@ export default function FichaPage() {
       const nota = notacaoDoGanho(expr, contextoFormula)
       const r = rolarNotacao(nota)
       await registrarPontos({ delta: r.total, tipo: 'ganho_inicial', detalhe: { rolagem: nota, resultado: r.total } })
-      try { await registrarEvento({ mesaId, fichaId, rotulo: `${ficha.nome_personagem} — ${ps.rotulo || 'pontos'} iniciais: ${r.total} (${nota})`, notacao: nota, total: r.total, dados: r.dados }) } catch {}
+      try { await registrarEvento({ mesaId, fichaId, rotulo: t('{nome} — {pontos} iniciais: {total} ({nota})', { nome: ficha.nome_personagem, pontos: ps.rotulo || t('pontos'), total: r.total, nota }), notacao: nota, total: r.total, dados: r.dados }) } catch {}
     } else {
       const v = avaliarGanho(expr, contextoFormula)
       await registrarPontos({ delta: v, tipo: 'ganho_inicial', detalhe: { valor: v } })
@@ -967,7 +968,7 @@ export default function FichaPage() {
     }
 
     // 3) feed. Dano de poder vira "aplicável": o mestre lança num alvo no combate (F14.6).
-    const rotulo = `${ficha.nome_personagem} ${frasesDeUso(poder, circuloUsado, 'usou')}`
+    const rotulo = `${ficha.nome_personagem} ${frasesDeUso(poder, circuloUsado)}`
     try {
       await registrarEvento({
         mesaId, fichaId, rotulo,
@@ -1044,7 +1045,7 @@ export default function FichaPage() {
     <div className="min-h-screen">
       {/* Barra de navegação */}
       <BarraTopo
-        voltar={{ para: `/mesa/${mesaId}`, rotulo: 'Voltar para a mesa' }}
+        voltar={{ para: `/mesa/${mesaId}`, rotulo: t('Voltar para a mesa') }}
         titulo={ficha.nome_personagem}
         subtitulo={[ficha.raca, ficha.classe].filter(Boolean).join(' • ') || null}
         largura="max-w-7xl"
@@ -1052,33 +1053,33 @@ export default function FichaPage() {
           <>
             {!isDono && (
               <span className="hidden sm:inline-flex items-center gap-1 text-xs text-ink-dim border border-border px-2 py-1 rounded-full mr-1">
-                <Icone nome="olho" tamanho={13} /> Visualizando
+                <Icone nome="olho" tamanho={13} /> {t('Visualizando')}
               </span>
             )}
             {ficha.privada && (
-              <span className="hidden sm:inline-flex items-center gap-1 text-xs text-ink-dim border border-border px-2 py-1 rounded-full mr-1" title="Só quem tem acesso vê esta ficha">
-                <Icone nome="olho" tamanho={13} /> Privada
+              <span className="hidden sm:inline-flex items-center gap-1 text-xs text-ink-dim border border-border px-2 py-1 rounded-full mr-1" title={t('Só quem tem acesso vê esta ficha')}>
+                <Icone nome="olho" tamanho={13} /> {t('Privada')}
               </span>
             )}
             {/* F45 — ficha em A4, com QR code para a versão online */}
-            <button onClick={() => window.print()} aria-label="Imprimir a ficha (A4)" data-dica="Imprimir (A4)" className="botao-icone">
+            <button onClick={() => window.print()} aria-label={t('Imprimir a ficha (A4)')} data-dica={t('Imprimir (A4)')} className="botao-icone">
               <Icone nome="imprimir" tamanho={20} />
             </button>
-            <button onClick={handleExportar} disabled={!!portatil} aria-label="Exportar ficha (.json)" data-dica="Exportar (.json)" className="botao-icone disabled:opacity-50">
+            <button onClick={handleExportar} disabled={!!portatil} aria-label={t('Exportar ficha (.json)')} data-dica={t('Exportar (.json)')} className="botao-icone disabled:opacity-50">
               <Icone nome="baixar" tamanho={20} />
             </button>
             {(isDono || souGestor) && (
-              <button onClick={handleDuplicar} disabled={!!portatil} aria-label="Duplicar ficha nesta mesa" data-dica="Duplicar" className="botao-icone disabled:opacity-50">
+              <button onClick={handleDuplicar} disabled={!!portatil} aria-label={t('Duplicar ficha nesta mesa')} data-dica={t('Duplicar')} className="botao-icone disabled:opacity-50">
                 <Icone nome="copiar" tamanho={20} />
               </button>
             )}
             {(isDono || souGestor) && (
-              <button onClick={() => setShowAcesso(true)} aria-label="Acesso e pasta" data-dica="Acesso e pasta" className="botao-icone">
+              <button onClick={() => setShowAcesso(true)} aria-label={t('Acesso e pasta')} data-dica={t('Acesso e pasta')} className="botao-icone">
                 <Icone nome="cadeado" tamanho={20} />
               </button>
             )}
             {souDonoDeFato && (
-              <button onClick={() => setShowDeleteConfirm(true)} aria-label="Apagar ficha" data-dica="Apagar ficha" className="botao-icone hover:!text-harm">
+              <button onClick={() => setShowDeleteConfirm(true)} aria-label={t('Apagar ficha')} data-dica={t('Apagar ficha')} className="botao-icone hover:!text-harm">
                 <Icone nome="lixeira" tamanho={20} />
               </button>
             )}
@@ -1106,11 +1107,11 @@ export default function FichaPage() {
         {/* F33 — esta ficha É uma forma: atalho de volta para a dona */}
         {ficha.forma_de_id && (
           <div className="rounded-2xl border border-dice-600/60 bg-dice-700/10 px-3 py-2 flex items-center gap-2 flex-wrap">
-            <span className="text-dice-200 text-sm">🐺 Esta é uma <b>forma</b> de outro personagem.</span>
+            <span className="text-dice-200 text-sm">🐺 {t('Esta é uma')} <b>{t('forma')}</b> {t('de outro personagem.')}</span>
             <button
               onClick={() => navigate(`/mesa/${mesaId}/ficha/${ficha.forma_de_id}`)}
               className="text-dice-300 hover:text-white text-sm underline"
-            >Abrir a ficha original</button>
+            >{t('Abrir a ficha original')}</button>
           </div>
         )}
 
@@ -1141,7 +1142,7 @@ export default function FichaPage() {
           vidaMaxFinal={valoresFinais.vida_max}
           vidaTemp={valoresFinais.vida_temp}
           vidaTempPontual={ficha.vida_temp_atual ?? 0}
-          esconderVida={(config.trilhas || []).some(t => t.substitui_vida)}
+          esconderVida={(config.trilhas || []).some(tr => tr.substitui_vida)}
         />
 
         {/* Estados com gatilhos (24.4) — destaque ao lado da vida/trilha */}
@@ -1210,7 +1211,7 @@ export default function FichaPage() {
         {/* Slots (20.3) — modo opcional; some se desativado ou sem slots */}
         {slotsAtivos(config) && (
           <PainelSlots
-            rotulo={config.slots?.rotulo || 'Espaços'}
+            rotulo={config.slots?.rotulo || t('Espaços')}
             totais={totaisSlots}
             usados={usadosSlots}
             isDono={isDono}
@@ -1231,7 +1232,7 @@ export default function FichaPage() {
 
         {/* Poderes (20.4) — adaptativo: some se o sistema não tem catálogo */}
         <PainelPoderes
-          rotulo={config.poderes_rotulo || 'Poderes'}
+          rotulo={config.poderes_rotulo || t('Poderes')}
           catalogo={catalogoPoderes}
           poderesFicha={poderesFicha}
           estado={estadoPoderes}
@@ -1472,18 +1473,18 @@ export default function FichaPage() {
       {showDeleteConfirm && (
         <Modal
           onFechar={() => { setShowDeleteConfirm(false); setDeleteError('') }} bloqueado={deleting}
-          tamanho="sm" tom="perigo" titulo="Apagar ficha?"
+          tamanho="sm" tom="perigo" titulo={t('Apagar ficha?')}
           rodape={
             <>
               <FecharModal disabled={deleting} />
-              <Botao variante="perigo" onClick={handleDeleteFicha} disabled={deleting}>{deleting ? 'Apagando…' : 'Apagar ficha'}</Botao>
+              <Botao variante="perigo" onClick={handleDeleteFicha} disabled={deleting}>{deleting ? t('Apagando…') : t('Apagar ficha')}</Botao>
             </>
           }
         >
           <p className="text-ink text-sm">
-            <strong>{ficha?.nome_personagem}</strong> será apagada com todos os atributos, equipamentos e imagens.
+            <strong>{ficha?.nome_personagem}</strong> {t('será apagada com todos os atributos, equipamentos e imagens.')}
           </p>
-          <p className="text-ink-dim text-sm mt-2">Esta ação não pode ser desfeita.</p>
+          <p className="text-ink-dim text-sm mt-2">{t('Esta ação não pode ser desfeita.')}</p>
           {deleteError && <p className="aviso-erro mt-3" role="alert">{deleteError}</p>}
         </Modal>
       )}

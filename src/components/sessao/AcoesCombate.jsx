@@ -8,6 +8,7 @@ import { calcularValoresFinais } from '../../lib/modifierEngine'
 import { resolverAcertos } from '../../lib/alvosCombate'
 import Botao from '../ui/Botao'
 import ModalAplicarResultado from './ModalAplicarResultado'
+import { t } from '../../i18n'
 
 /**
  * Fase 14.6 + 53 — ações do combatente da vez. Armas da ficha (14.6) e "ação
@@ -15,7 +16,7 @@ import ModalAplicarResultado from './ModalAplicarResultado'
  * (o mapa devolve os ids em `alvosArea`). Com alvos, o dano abre o modal de
  * resultado: ataque x defesa por alvo e barras afetadas.
  */
-const MODOS = [['unico', 'Único'], ['varios', 'Vários'], ['area', 'Área']]
+const MODOS = [['unico', t('Único')], ['varios', t('Vários')], ['area', t('Área')]]
 const campo = 'w-full px-2 py-1 rounded-lg bg-void border border-border text-ink text-xs focus:outline-none focus:ring-1 focus:ring-accent-500'
 
 export default function AcoesCombate({
@@ -75,7 +76,7 @@ export default function AcoesCombate({
       const res = await registrarRolagem({ mesaId, sessaoId, fichaId, rotulo, notacao, ...extra })
       return res.total
     } catch (e) {
-      setErro(e.message || 'Não foi possível rolar.')
+      setErro(e.message || t('Não foi possível rolar.'))
       return null
     }
   }
@@ -91,28 +92,30 @@ export default function AcoesCombate({
       categoria: item.atributos_extras?.categoria || null,
       modificadoresAtivos,
     })
-    const total = await rolarNotacao(`${item.nome} — ${tipo === 'ataque' ? 'Ataque' : 'Dano'}`, notacaoFinal, { percentual })
+    const nomeItem = String(item.nome ?? '')
+    const rotuloRolagem = tipo === 'ataque' ? t('{nome} — Ataque', { nome: nomeItem }) : t('{nome} — Dano', { nome: nomeItem })
+    const total = await rolarNotacao(rotuloRolagem, notacaoFinal, { percentual })
     if (total == null) return
     if (tipo === 'ataque') setAtaques(a => ({ ...a, [item.id]: total }))
     else abrirModal(item.nome, total, 'dano', ataques[item.id] ?? null)
   }
 
   async function rolarLivre(modo) {
-    const nomeAcao = livre.rotulo.trim() || 'Ação livre'
+    const nomeAcao = livre.rotulo.trim() || t('Ação livre')
     let ataque = null
     if (livre.ataque.trim()) {
-      ataque = await rolarNotacao(`${nomeAcao} — Ataque`, livre.ataque.trim())
+      ataque = await rolarNotacao(t('{nome} — Ataque', { nome: nomeAcao }), livre.ataque.trim())
       if (ataque == null) return
       setAtaques(a => ({ ...a, livre: ataque }))
     }
     if (!livre.dano.trim()) return
-    const total = await rolarNotacao(`${nomeAcao} — ${modo === 'cura' ? 'Cura' : 'Dano'}`, livre.dano.trim())
+    const total = await rolarNotacao(modo === 'cura' ? t('{nome} — Cura', { nome: nomeAcao }) : t('{nome} — Dano', { nome: nomeAcao }), livre.dano.trim())
     if (total != null) abrirModal(nomeAcao, total, modo, modo === 'cura' ? null : ataque)
   }
 
   function abrirModal(rotulo, valor, modo, ataque) {
     if (alvosEscolhidos.length === 0) return // sem alvo = só rolar
-    setModal({ rotulo: `${nome}: ${rotulo}`, valor, modo, ataque, alvos: acertosDe(ataque) })
+    setModal({ rotulo: t('{nome}: {rotulo}', { nome, rotulo }), valor, modo, ataque, alvos: acertosDe(ataque) })
   }
 
   // Depois que o modal aplica SEM erro, solta o efeito escolhido no mapa
@@ -131,9 +134,9 @@ export default function AcoesCombate({
 
   const selos = ataque => ataque != null && alvosEscolhidos.length > 0 && (
     <p className="text-xs text-ink-dim w-full">
-      Ataque {ataque}:{' '}
+      {t('Ataque {ataque}:', { ataque })}{' '}
       {acertosDe(ataque).map(a => (
-        <span key={a.id} className={`mr-2 ${a.acertou ? 'text-ok' : 'text-harm'}`}>{a.c.nome} {a.acertou ? 'acerta' : 'erra'}</span>
+        <span key={a.id} className={`mr-2 ${a.acertou ? 'text-ok' : 'text-harm'}`}>{a.c.nome} {a.acertou ? t('acerta') : t('erra')}</span>
       ))}
     </p>
   )
@@ -143,7 +146,7 @@ export default function AcoesCombate({
       {/* Alvos */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-1 flex-wrap">
-          <span className="text-ink-dim text-xs mr-1">Alvos:</span>
+          <span className="text-ink-dim text-xs mr-1">{t('Alvos:')}</span>
           {MODOS.filter(([m]) => m !== 'area' || onEscolherArea).map(([m, rot]) => (
             <button
               key={m} type="button" onClick={() => setModoAlvo(m)}
@@ -152,8 +155,8 @@ export default function AcoesCombate({
           ))}
         </div>
         {modoAlvo === 'unico' && (
-          <select value={alvoId} onChange={e => setAlvoId(e.target.value)} className={campo} aria-label="Alvo">
-            <option value="">Nenhum (só rolar)</option>
+          <select value={alvoId} onChange={e => setAlvoId(e.target.value)} className={campo} aria-label={t('Alvo')}>
+            <option value="">{t('Nenhum (só rolar)')}</option>
             {emJogo.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select>
         )}
@@ -174,17 +177,17 @@ export default function AcoesCombate({
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 flex-wrap">
               <label className="flex items-center gap-1.5 text-ink-dim text-xs">
-                Raio
+                {t('Raio')}
                 <input type="number" min="0" step="any" value={raio} onChange={e => setRaio(e.target.value)} className={`${campo} w-16`} />
                 {unidadeArea}
               </label>
               <Botao variante="secundario" tamanho="sm" onClick={() => onEscolherArea(Number(raio) || 0)} disabled={!(Number(raio) > 0)}>
-                Marcar no mapa
+                {t('Marcar no mapa')}
               </Botao>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {alvosEscolhidos.length === 0
-                ? <span className="text-ink-dim text-xs">Nenhum alvo marcado.</span>
+                ? <span className="text-ink-dim text-xs">{t('Nenhum alvo marcado.')}</span>
                 : alvosEscolhidos.map(c => <span key={c.id} className="text-xs px-2 py-0.5 rounded-full border border-border text-ink">{c.nome}</span>)}
             </div>
           </div>
@@ -192,8 +195,8 @@ export default function AcoesCombate({
       </div>
 
       {onEfeito && efeitosVfx.length > 0 && (
-        <select value={efeitoId} onChange={e => setEfeitoId(e.target.value)} className={campo} aria-label="Efeito visual">
-          <option value="">Efeito visual: nenhum</option>
+        <select value={efeitoId} onChange={e => setEfeitoId(e.target.value)} className={campo} aria-label={t('Efeito visual')}>
+          <option value="">{t('Efeito visual: nenhum')}</option>
           {efeitosVfx.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
         </select>
       )}
@@ -205,29 +208,29 @@ export default function AcoesCombate({
         return (
           <div key={item.id} className="flex items-center gap-2 flex-wrap">
             <span className="text-ink text-sm flex-1 min-w-0 truncate">{item.nome}</span>
-            {temAtaque && <Botao variante="dado" tamanho="sm" onClick={() => rolarArma(item, 'ataque')}>🎲 Ataque</Botao>}
-            {temDano && <Botao variante="perigo" tamanho="sm" onClick={() => rolarArma(item, 'dano')}>💥 Dano</Botao>}
+            {temAtaque && <Botao variante="dado" tamanho="sm" onClick={() => rolarArma(item, 'ataque')}>{t('🎲 Ataque')}</Botao>}
+            {temDano && <Botao variante="perigo" tamanho="sm" onClick={() => rolarArma(item, 'dano')}>{t('💥 Dano')}</Botao>}
             {selos(ataques[item.id])}
           </div>
         )
       })}
       {fichaId && armas.length === 0 && (
         <p className="text-ink-dim text-xs">
-          {nome} não tem armas cadastradas (itens com <span className="font-mono">ataque</span>/<span className="font-mono">dano</span>) — use a ação livre.
+          {t('{nome} não tem armas cadastradas (itens com', { nome })} <span className="font-mono">ataque</span>/<span className="font-mono">dano</span>{t(') — use a ação livre.')}
         </p>
       )}
 
       {/* Ação livre (53): NPC, criatura, qualquer coisa sem arma */}
       <div className="rounded-lg border border-border bg-void p-2 space-y-1.5">
-        <p className="text-ink-dim text-xs font-semibold">Ação livre</p>
+        <p className="text-ink-dim text-xs font-semibold">{t('Ação livre')}</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
-          <input value={livre.rotulo} onChange={e => setLivre(l => ({ ...l, rotulo: e.target.value }))} placeholder="Nome da ação" className={campo} aria-label="Nome da ação" />
-          <input value={livre.ataque} onChange={e => setLivre(l => ({ ...l, ataque: e.target.value }))} placeholder="Ataque (opcional) 1d20+5" className={campo} aria-label="Notação de ataque" />
-          <input value={livre.dano} onChange={e => setLivre(l => ({ ...l, dano: e.target.value }))} placeholder="Dano/cura 2d6+3" className={campo} aria-label="Notação de dano ou cura" />
+          <input value={livre.rotulo} onChange={e => setLivre(l => ({ ...l, rotulo: e.target.value }))} placeholder={t('Nome da ação')} className={campo} aria-label={t('Nome da ação')} />
+          <input value={livre.ataque} onChange={e => setLivre(l => ({ ...l, ataque: e.target.value }))} placeholder={t('Ataque (opcional) 1d20+5')} className={campo} aria-label={t('Notação de ataque')} />
+          <input value={livre.dano} onChange={e => setLivre(l => ({ ...l, dano: e.target.value }))} placeholder={t('Dano/cura 2d6+3')} className={campo} aria-label={t('Notação de dano ou cura')} />
         </div>
         <div className="flex gap-2 flex-wrap items-center">
-          <Botao variante="perigo" tamanho="sm" onClick={() => rolarLivre('dano')} disabled={!livre.dano.trim()}>💥 Dano</Botao>
-          <Botao variante="secundario" tamanho="sm" onClick={() => rolarLivre('cura')} disabled={!livre.dano.trim()}>＋ Cura</Botao>
+          <Botao variante="perigo" tamanho="sm" onClick={() => rolarLivre('dano')} disabled={!livre.dano.trim()}>{t('💥 Dano')}</Botao>
+          <Botao variante="secundario" tamanho="sm" onClick={() => rolarLivre('cura')} disabled={!livre.dano.trim()}>{t('＋ Cura')}</Botao>
           {selos(ataques.livre)}
         </div>
       </div>

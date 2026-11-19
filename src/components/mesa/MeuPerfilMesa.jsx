@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { redimensionarImagem, extensaoDe } from '../../lib/imageUtils'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 /**
  * Fase 16.6 — "Meu perfil nesta mesa": apelido + avatar específicos da mesa.
@@ -31,7 +32,7 @@ export default function MeuPerfilMesa({ mesaId, usuarioId, username, apelidoInic
       const { data } = supabase.storage.from('fichas-imagens').getPublicUrl(path)
       setAvatarUrl(data.publicUrl)
     } catch (err) {
-      setErro(err.message || 'Erro ao enviar avatar.')
+      setErro(err.message || t('Erro ao enviar avatar.'))
     } finally {
       setUploading(false)
     }
@@ -51,7 +52,7 @@ export default function MeuPerfilMesa({ mesaId, usuarioId, username, apelidoInic
       setSalvo(true)
       setTimeout(() => setSalvo(false), 2500)
     } catch (err) {
-      setErro(err.message || 'Erro ao salvar perfil.')
+      setErro(err.message || t('Erro ao salvar perfil.'))
     } finally {
       setSaving(false)
     }
@@ -61,10 +62,10 @@ export default function MeuPerfilMesa({ mesaId, usuarioId, username, apelidoInic
 
   return (
     <div className="bg-slate-800 border border-purple-800 rounded-xl p-5">
-      <p className="text-purple-300 text-sm font-medium mb-3">Meu perfil nesta mesa</p>
+      <p className="text-purple-300 text-sm font-medium mb-3">{t('Meu perfil nesta mesa')}</p>
       <div className="flex items-center gap-4">
         {avatarUrl ? (
-          <img src={avatarUrl} alt="avatar" className="w-14 h-14 rounded-full object-cover border-2 border-purple-700 shrink-0" />
+          <img src={avatarUrl} alt={t('avatar')} className="w-14 h-14 rounded-full object-cover border-2 border-purple-700 shrink-0" />
         ) : (
           <div className="w-14 h-14 rounded-full bg-purple-950 border-2 border-purple-800 flex items-center justify-center shrink-0">
             <span className="text-purple-300 font-bold">{inicial}</span>
@@ -75,17 +76,17 @@ export default function MeuPerfilMesa({ mesaId, usuarioId, username, apelidoInic
             type="text"
             value={apelido}
             onChange={e => setApelido(e.target.value)}
-            placeholder={`Apelido (padrão: ${username || 'seu nome'})`}
+            placeholder={t('Apelido (padrão: {nome})', { nome: username || t('seu nome') })}
             className="w-full px-3 py-2 rounded-lg bg-void border border-border text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500"
           />
           <div className="flex items-center gap-2 flex-wrap">
             <label className="text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-purple-200 rounded-lg cursor-pointer transition-colors">
-              {uploading ? 'Enviando...' : '📷 Trocar avatar'}
+              {uploading ? t('Enviando...') : t('📷 Trocar avatar')}
               <input type="file" accept="image/*" onChange={handleAvatar} disabled={uploading} className="hidden" />
             </label>
             {avatarUrl && (
               <button onClick={() => setAvatarUrl('')} className="text-xs text-purple-400 hover:text-white transition-colors">
-                Remover avatar
+                {t('Remover avatar')}
               </button>
             )}
           </div>
@@ -95,9 +96,9 @@ export default function MeuPerfilMesa({ mesaId, usuarioId, username, apelidoInic
         <Botao variante="primario" tamanho="md"
           onClick={salvar}
           disabled={saving || uploading}>
-          {saving ? 'Salvando...' : 'Salvar perfil'}
+          {saving ? t('Salvando...') : t('Salvar perfil')}
         </Botao>
-        {salvo && <span className="text-green-400 text-xs">✓ Salvo</span>}
+        {salvo && <span className="text-green-400 text-xs">{t('✓ Salvo')}</span>}
         {erro && <span className="text-red-400 text-xs">{erro}</span>}
       </div>
     </div>

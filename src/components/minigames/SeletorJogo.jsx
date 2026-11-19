@@ -1,20 +1,21 @@
 import { JOGOS, NOMES_DIFICULDADE } from '../../lib/minigames/resultado'
+import { t } from '../../i18n'
 
 const DIFICULDADES = ['normal', 'dificil', 'impossivel', 'personalizada']
 
 // Parâmetros editáveis na dificuldade Personalizada (sem teto: só o mínimo que faz sentido)
 const PARAMETROS = {
   roda: [
-    ['vidas', 'Vidas', 1, 1], ['velocidade', 'Velocidade (°/s)', 10, 5], ['aceleracao', 'Acelera por acerto', 0, 1],
-    ['largura', 'Largura da runa (°)', 2, 1], ['larguraMin', 'Largura mínima (°)', 1, 1], ['encolhe', 'Encolhe por acerto (°)', 0, 0.5],
-    ['inverte', 'Inverte o giro a cada acerto', null],
+    ['vidas', t('Vidas'), 1, 1], ['velocidade', t('Velocidade (°/s)'), 10, 5], ['aceleracao', t('Acelera por acerto'), 0, 1],
+    ['largura', t('Largura da runa (°)'), 2, 1], ['larguraMin', t('Largura mínima (°)'), 1, 1], ['encolhe', t('Encolhe por acerto (°)'), 0, 0.5],
+    ['inverte', t('Inverte o giro a cada acerto'), null],
   ],
   cronometro: [
-    ['alvoMin', 'Alvo mínimo (s)', 0.5, 0.5], ['alvoMax', 'Alvo máximo (s)', 0.5, 0.5], ['ocultarFracao', 'Some depois de (fração do alvo, 0–1)', 0, 0.05],
+    ['alvoMin', t('Alvo mínimo (s)'), 0.5, 0.5], ['alvoMax', t('Alvo máximo (s)'), 0.5, 0.5], ['ocultarFracao', t('Some depois de (fração do alvo, 0–1)'), 0, 0.05],
   ],
   memoria: [
-    ['tamanhoInicial', 'Runas na 1ª rodada', 1, 1], ['opcoes', 'Runas na grade (2–24)', 2, 1], ['exibir', 'Tempo para memorizar (s)', 0.2, 0.1],
-    ['repete', 'Sequência pode repetir runas', null],
+    ['tamanhoInicial', t('Runas na 1ª rodada'), 1, 1], ['opcoes', t('Runas na grade (2–24)'), 2, 1], ['exibir', t('Tempo para memorizar (s)'), 0.2, 0.1],
+    ['repete', t('Sequência pode repetir runas'), null],
   ],
 }
 

@@ -5,6 +5,7 @@ import { useFechaFora } from '../../hooks/useFechaFora'
 import { agruparPorDia, iconeDaNotificacao, quandoFoi } from '../../lib/notificacoes'
 import Icone from '../ui/Icone'
 import Ilustra from '../arte/Ilustra'
+import { t, tn } from '../../i18n'
 
 /**
  * Fase 16.7 → 52 — sininho de notificações. Contador de não lidas (pulsa UMA
@@ -37,14 +38,14 @@ export default function Sininho() {
   }
 
   const grupos = agruparPorDia(notificacoes)
-  const rotulo = naoLidas > 0 ? `Notificações: ${naoLidas} não lida${naoLidas > 1 ? 's' : ''}` : 'Notificações'
+  const rotulo = naoLidas > 0 ? tn(naoLidas, 'Notificações: {n} não lida', 'Notificações: {n} não lidas') : t('Notificações')
 
   return (
     <>
       <button
         ref={botao}
         onClick={() => setAberto(a => !a)}
-        aria-label={rotulo} aria-expanded={aberto} aria-haspopup="dialog" data-dica="Notificações"
+        aria-label={rotulo} aria-expanded={aberto} aria-haspopup="dialog" data-dica={t('Notificações')}
         className="botao-icone relative"
       >
         <Icone nome="sino" tamanho={20} />
@@ -58,17 +59,17 @@ export default function Sininho() {
       {aberto && (
         <div
           ref={painel}
-          role="dialog" aria-label="Notificações"
+          role="dialog" aria-label={t('Notificações')}
           className="pop-entra absolute right-3 sm:right-6 top-full mt-1 w-[min(24rem,calc(100vw-1.5rem))] rounded-2xl border border-border bg-raised shadow-nivel-3 z-menu overflow-hidden"
         >
           <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border/70">
             <p className="text-ink font-semibold">
-              Notificações
-              {naoLidas > 0 && <span className="ml-2 text-ink-dim text-sm font-normal">{naoLidas} nova{naoLidas > 1 ? 's' : ''}</span>}
+              {t('Notificações')}
+              {naoLidas > 0 && <span className="ml-2 text-ink-dim text-sm font-normal">{tn(naoLidas, '{n} nova', '{n} novas')}</span>}
             </p>
             {naoLidas > 0 && (
               <button onClick={marcarTodasLidas} className="text-accent-300 hover:text-ink text-sm transition-colors duration-rapida">
-                Marcar todas como lidas
+                {t('Marcar todas como lidas')}
               </button>
             )}
           </div>
@@ -76,8 +77,8 @@ export default function Sininho() {
           {notificacoes.length === 0 ? (
             <div className="px-6 py-10 text-center">
               <Ilustra nome="sino" tamanho={56} className="mx-auto mb-3 opacity-80" />
-              <p className="text-ink font-medium">Tudo em dia</p>
-              <p className="text-ink-dim text-sm mt-1">Sessões que começam, convites e mudanças de papel aparecem aqui.</p>
+              <p className="text-ink font-medium">{t('Tudo em dia')}</p>
+              <p className="text-ink-dim text-sm mt-1">{t('Sessões que começam, convites e mudanças de papel aparecem aqui.')}</p>
             </div>
           ) : (
             <div className="max-h-[min(28rem,70vh)] overflow-y-auto overscroll-contain">
@@ -99,12 +100,12 @@ export default function Sininho() {
                             {n.corpo && <span className="block text-ink-dim text-sm mt-0.5 line-clamp-2">{n.corpo}</span>}
                             <span className="block text-ink-dim text-xs mt-1 tabular-nums">{quandoFoi(n.created_at)}</span>
                           </span>
-                          {!n.lida && <span className="mt-2 w-2 h-2 rounded-full bg-accent-400 shrink-0" aria-label="nova" />}
+                          {!n.lida && <span className="mt-2 w-2 h-2 rounded-full bg-accent-400 shrink-0" aria-label={t('nova')} />}
                         </button>
                         {!n.lida && (
                           <button
                             onClick={() => marcarLida(n.id)}
-                            aria-label={`Marcar "${n.titulo}" como lida`} data-dica="Marcar como lida"
+                            aria-label={t('Marcar "{titulo}" como lida', { titulo: n.titulo })} data-dica={t('Marcar como lida')}
                             className="botao-icone !min-w-[32px] !min-h-[32px] absolute right-2 bottom-2 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
                           ><Icone nome="check" tamanho={16} /></button>
                         )}

@@ -2,15 +2,16 @@
  * Fase 51 — mesas procurando jogadores (puro).
  */
 import { normalizar } from './formulaEngine'
+import { t } from '../i18n'
 
 export const textoVagas = n => `${n} ${Number(n) === 1 ? 'vaga' : 'vagas'}`
 
 export function validarAnuncio({ sistema, quando, vagas, iniciantes, descricao } = {}) {
   const d = String(descricao || '').trim()
-  if (!d) return { ok: false, erro: 'Conte em poucas linhas como é a campanha.' }
-  if (d.length > 1000) return { ok: false, erro: 'Descrição com até 1000 letras.' }
+  if (!d) return { ok: false, erro: t('Conte em poucas linhas como é a campanha.') }
+  if (d.length > 1000) return { ok: false, erro: t('Descrição com até 1000 letras.') }
   const v = Number(vagas)
-  if (!Number.isInteger(v) || v < 1 || v > 20) return { ok: false, erro: 'Vagas de 1 a 20.' }
+  if (!Number.isInteger(v) || v < 1 || v > 20) return { ok: false, erro: t('Vagas de 1 a 20.') }
   return {
     ok: true,
     linha: {
@@ -37,7 +38,7 @@ export function situacao(mesaId, { logado, convidado, minhasMesas = [], meusPedi
 
 /** Busca sem acento no nome, sistema, horário e descrição; filtro "aceita iniciantes". */
 export function filtrarMesas(lista = [], { busca = '', iniciantes = false } = {}) {
-  const t = normalizar(busca)
+  const termo = normalizar(busca)
   return lista.filter(m => (!iniciantes || m.iniciantes)
-    && (!t || normalizar([m.nome, m.sistema, m.quando, m.descricao].filter(Boolean).join(' ')).includes(t)))
+    && (!termo || normalizar([m.nome, m.sistema, m.quando, m.descricao].filter(Boolean).join(' ')).includes(termo)))
 }

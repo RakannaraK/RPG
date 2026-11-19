@@ -7,6 +7,7 @@ import Botao from '../ui/Botao'
 import Modal from '../ui/Modal'
 import Icone from '../ui/Icone'
 import Esqueleto from '../ui/Esqueleto'
+import { t } from '../../i18n'
 
 /**
  * Lê no banco o que já foi feito nas mesas onde você é mestre/co-mestre.
@@ -65,19 +66,19 @@ export default function GuiaMestre({ onFechar, onCriarMesa }) {
   return (
     <Modal
       onFechar={onFechar} tamanho="lg"
-      titulo="Guia do mestre" subtitulo="Do zero à primeira sessão, em cinco passos."
-      rodape={<Botao variante="primario" onClick={onFechar}>{feitos === passos.length ? 'Tudo pronto' : 'Fechar'}</Botao>}
+      titulo={t('Guia do mestre')} subtitulo={t('Do zero à primeira sessão, em cinco passos.')}
+      rodape={<Botao variante="primario" onClick={onFechar}>{feitos === passos.length ? t('Tudo pronto') : t('Fechar')}</Botao>}
     >
       {!estado ? (
-        <div className="space-y-3" role="status" aria-label="Carregando"><Esqueleto className="h-3 w-40" /><Esqueleto className="h-16" /><Esqueleto className="h-16" /><Esqueleto className="h-16" /></div>
+        <div className="space-y-3" role="status" aria-label={t('Carregando')}><Esqueleto className="h-3 w-40" /><Esqueleto className="h-16" /><Esqueleto className="h-16" /><Esqueleto className="h-16" /></div>
       ) : (
         <div className="space-y-5">
           <div>
             <div className="flex items-center justify-between text-sm mb-1.5">
-              <span className="text-ink font-medium">{feitos} de {passos.length} concluídos</span>
-              {feitos === passos.length && <span className="text-ok inline-flex items-center gap-1"><Icone nome="check" tamanho={14} /> Mesa pronta para jogar</span>}
+              <span className="text-ink font-medium">{t('{feitos} de {total} concluídos', { feitos, total: passos.length })}</span>
+              {feitos === passos.length && <span className="text-ok inline-flex items-center gap-1"><Icone nome="check" tamanho={14} /> {t('Mesa pronta para jogar')}</span>}
             </div>
-            <div className="h-2 rounded-full bg-void ring-1 ring-inset ring-border overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={passos.length} aria-valuenow={feitos} aria-label="Progresso do guia">
+            <div className="h-2 rounded-full bg-void ring-1 ring-inset ring-border overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={passos.length} aria-valuenow={feitos} aria-label={t('Progresso do guia')}>
               <div className="h-full rounded-full bg-accent-500 transition-[width] duration-lenta ease-padrao" style={{ width: `${(feitos / passos.length) * 100}%` }} />
             </div>
           </div>
@@ -93,7 +94,7 @@ export default function GuiaMestre({ onFechar, onCriarMesa }) {
                   >{p.feito ? <Icone nome="check" tamanho={16} espessura={2.4} /> : i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <p className={`font-semibold ${p.feito ? 'text-ink-dim' : 'text-ink'}`}>
-                      <span className="sr-only">{p.feito ? 'Feito: ' : ehProximo ? 'Próximo: ' : ''}</span>{p.titulo}
+                      <span className="sr-only">{p.feito ? t('Feito: ') : ehProximo ? t('Próximo: ') : ''}</span>{p.titulo}
                     </p>
                     <p className="text-ink-dim text-sm mt-0.5">{p.texto}</p>
                     {ehProximo && p.acao && (
@@ -108,11 +109,11 @@ export default function GuiaMestre({ onFechar, onCriarMesa }) {
           </ol>
 
           <details className="rounded-xl border border-border/60 px-4 py-3 text-sm">
-            <summary className="cursor-pointer text-ink font-medium">Dicas</summary>
+            <summary className="cursor-pointer text-ink font-medium">{t('Dicas')}</summary>
             <ul className="mt-2 space-y-1.5 text-ink-dim">
-              <li>Não precisa configurar tudo de uma vez: ligue as seções do sistema conforme precisar.</li>
-              <li><strong className="text-ink">Exporte</strong> o sistema (botão no editor) para ter um backup ou usar em outra mesa.</li>
-              <li>O seu <strong className="text-ink">nome de exibição</strong> fica em Preferências, no menu do seu avatar.</li>
+              <li>{t('Não precisa configurar tudo de uma vez: ligue as seções do sistema conforme precisar.')}</li>
+              <li><strong className="text-ink">{t('Exporte')}</strong>{' '}{t('o sistema (botão no editor) para ter um backup ou usar em outra mesa.')}</li>
+              <li>{t('O seu')} <strong className="text-ink">{t('nome de exibição')}</strong>{' '}{t('fica em Preferências, no menu do seu avatar.')}</li>
             </ul>
           </details>
         </div>

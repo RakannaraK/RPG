@@ -1,6 +1,7 @@
 import { memo, useRef, useState } from 'react'
 import { encaixar, medir } from '../../lib/mapaEngine'
 import CapturaMapa from './CapturaMapa'
+import { t } from '../../i18n'
 
 const CORES_DESENHO = ['#FBBF24', '#F87171', '#60A5FA', '#34D399', '#FFFFFF', '#111827']
 const ESPESSURAS_DESENHO = [2, 4, 8] // px de TELA no momento do traço
@@ -152,9 +153,9 @@ export function BarraDesenho({ config, onConfig, isGestor, jogadoresDesenham, on
   return (
     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 max-w-[calc(100%-1.5rem)]" onPointerDown={e => e.stopPropagation()}>
       <div className="flex flex-wrap items-center justify-center gap-1.5 rounded-xl border border-border bg-bg/95 backdrop-blur shadow-xl px-2 py-2">
-        <button onClick={() => set({ forma: 'livre' })} className={`${BTN} ${ativoCls(config.forma === 'livre')}`} title="Traço livre">✏️</button>
-        <button onClick={() => set({ forma: 'linha' })} className={`${BTN} ${ativoCls(config.forma === 'linha')}`} title="Linha reta">／</button>
-        <button onClick={() => set({ forma: 'borracha' })} className={`${BTN} ${ativoCls(config.forma === 'borracha')}`} title="Borracha: toque num traço para apagar">🧽</button>
+        <button onClick={() => set({ forma: 'livre' })} className={`${BTN} ${ativoCls(config.forma === 'livre')}`} title={t('Traço livre')}>✏️</button>
+        <button onClick={() => set({ forma: 'linha' })} className={`${BTN} ${ativoCls(config.forma === 'linha')}`} title={t('Linha reta')}>／</button>
+        <button onClick={() => set({ forma: 'borracha' })} className={`${BTN} ${ativoCls(config.forma === 'borracha')}`} title={t('Borracha: toque num traço para apagar')}>🧽</button>
         <span className="w-px h-6 bg-border" />
         {CORES_DESENHO.map(c => (
           <button
@@ -162,32 +163,32 @@ export function BarraDesenho({ config, onConfig, isGestor, jogadoresDesenham, on
             onClick={() => set({ cor: c, forma: config.forma === 'borracha' ? 'livre' : config.forma })}
             className={`w-6 h-6 rounded-full border-2 ${config.cor === c ? 'border-accent-300 scale-110' : 'border-border'}`}
             style={{ background: c }}
-            title="Cor"
+            title={t('Cor')}
           />
         ))}
         <span className="w-px h-6 bg-border" />
         {ESPESSURAS_DESENHO.map(e => (
-          <button key={e} onClick={() => set({ espessura: e })} className={`${BTN} ${ativoCls(config.espessura === e)}`} title="Espessura">
+          <button key={e} onClick={() => set({ espessura: e })} className={`${BTN} ${ativoCls(config.espessura === e)}`} title={t('Espessura')}>
             <span className="block rounded-full bg-current" style={{ width: e + 4, height: e + 4 }} />
           </button>
         ))}
         <span className="w-px h-6 bg-border" />
-        <button onClick={() => onLimpar(false)} className={`${BTN} bg-hover text-ink hover:bg-border`}>Limpar meus</button>
+        <button onClick={() => onLimpar(false)} className={`${BTN} bg-hover text-ink hover:bg-border`}>{t('Limpar meus')}</button>
         {isGestor && (confirmarTudo ? (
           <>
-            <button onClick={() => { setConfirmarTudo(false); onLimpar(true) }} className={`${BTN} bg-red-700 hover:bg-red-600 text-white`}>Apagar todos</button>
+            <button onClick={() => { setConfirmarTudo(false); onLimpar(true) }} className={`${BTN} bg-red-700 hover:bg-red-600 text-white`}>{t('Apagar todos')}</button>
             <button onClick={() => setConfirmarTudo(false)} className={`${BTN} bg-hover text-ink`}>✕</button>
           </>
         ) : (
-          <button onClick={() => setConfirmarTudo(true)} className={`${BTN} bg-hover text-ink hover:bg-border`}>Limpar tudo</button>
+          <button onClick={() => setConfirmarTudo(true)} className={`${BTN} bg-hover text-ink hover:bg-border`}>{t('Limpar tudo')}</button>
         ))}
         {isGestor && (
           <label className="flex items-center gap-1.5 text-sm text-ink px-1 cursor-pointer">
             <input type="checkbox" checked={jogadoresDesenham} onChange={onAlternarJogadores} />
-            Jogadores desenham
+            {t('Jogadores desenham')}
           </label>
         )}
-        <button onClick={onFechar} className={`${BTN} text-ink-dim hover:text-ink`} title="Voltar a mover">✕</button>
+        <button onClick={onFechar} className={`${BTN} text-ink-dim hover:text-ink`} title={t('Voltar a mover')}>✕</button>
       </div>
     </div>
   )
@@ -196,16 +197,17 @@ export function BarraDesenho({ config, onConfig, isGestor, jogadoresDesenham, on
 /** Barra vertical de ferramentas (todas as pessoas; névoa só gestor). */
 export function BarraFerramentas({ ferramenta, onFerramenta, podeDesenhar, isGestor, onEnquadrar, onTelaCheia }) {
   const itens = [
-    { id: 'mover', icone: '✋', nome: 'Mover (V)' },
-    podeDesenhar && { id: 'desenho', icone: '✏️', nome: 'Desenhar (D)' },
-    { id: 'regua', icone: '📏', nome: 'Régua (R)' },
-    { id: 'ping', icone: '📍', nome: 'Ping (P) — ou segure o clique parado' },
-    isGestor && { id: 'nevoa', icone: '🌫', nome: 'Névoa de guerra (N)' },
-    isGestor && { id: 'efeito', icone: '✨', nome: '✨ Efeito (E)' },
+    { id: 'mover', icone: '✋', nome: t('Mover (V)') },
+    podeDesenhar && { id: 'desenho', icone: '✏️', nome: t('Desenhar (D)') },
+    { id: 'regua', icone: '📏', nome: t('Régua (R)') },
+    { id: 'ping', icone: '📍', nome: t('Ping (P) — ou segure o clique parado') },
+    isGestor && { id: 'nevoa', icone: '🌫', nome: t('Névoa de guerra (N)') },
+    isGestor && { id: 'efeito', icone: '✨', nome: t('✨ Efeito (E)') },
+    isGestor && { id: 'parede', icone: '🧱', nome: t('🧱 Paredes (W)') },
   ].filter(Boolean)
   return (
     <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10" onPointerDown={e => e.stopPropagation()}>
-      <div className="flex flex-col gap-1 rounded-xl border border-border bg-bg/90 backdrop-blur shadow-xl p-1">
+      <div className="flex flex-col gap-1 rounded-xl border border-border bg-bg/90 backdrop-blur shadow-xl p-1 max-h-[calc(100dvh-8rem)] overflow-y-auto">
         {itens.map(it => (
           <button
             key={it.id}
@@ -219,9 +221,9 @@ export function BarraFerramentas({ ferramenta, onFerramenta, podeDesenhar, isGes
           </button>
         ))}
         <span className="h-px mx-1 my-0.5 bg-border" />
-        <button onClick={onEnquadrar} title="Ajustar à tela" aria-label="Ajustar à tela" className="w-10 h-10 rounded-lg text-lg text-ink hover:bg-hover">⤢</button>
+        <button onClick={onEnquadrar} title={t('Ajustar à tela')} aria-label={t('Ajustar à tela')} className="w-10 h-10 rounded-lg text-lg text-ink hover:bg-hover">⤢</button>
         {onTelaCheia && (
-          <button onClick={onTelaCheia} title="Tela cheia" aria-label="Tela cheia" className="w-10 h-10 rounded-lg text-lg text-ink hover:bg-hover">⛶</button>
+          <button onClick={onTelaCheia} title={t('Tela cheia')} aria-label={t('Tela cheia')} className="w-10 h-10 rounded-lg text-lg text-ink hover:bg-hover">⛶</button>
         )}
       </div>
     </div>

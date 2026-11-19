@@ -1,4 +1,5 @@
 import { validarFaixasDefesa } from '../../lib/defesaEngine'
+import { t } from '../../i18n'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
@@ -25,27 +26,25 @@ export default function DefesaAtivaEditor({ cfg = {}, onChange }) {
   return (
     <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-purple-200 text-sm font-semibold">Defesa ativa</p>
+        <p className="text-purple-200 text-sm font-semibold">{t('Defesa ativa')}</p>
         <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer">
           <input type="checkbox" checked={!!cfg.ativo} onChange={e => set({ ativo: e.target.checked })} className="accent-purple-500" />
-          ativar
+          {t('ativar')}
         </label>
       </div>
       <p className="text-accent-300 text-xs">
-        No combate, o alvo pode reagir (rolagem oposta). A faixa é escolhida por
-        <span className="font-mono text-purple-300"> defesa − ataque</span> e reduz o dano. É
-        <span className="text-amber-400"> assíncrona</span>: sem resposta, o mestre resolve — nunca trava o turno.
+        {t('No combate, o alvo pode reagir (rolagem oposta). A faixa é escolhida por defesa − ataque e reduz o dano. É assíncrona: sem resposta, o mestre resolve — nunca trava o turno.')}
       </p>
 
       {cfg.ativo && (
         <>
           {/* Opções de reação */}
           <div className="space-y-1.5 border-t border-purple-900/50 pt-2">
-            <p className="text-purple-400 text-xs">Reações (o defensor rola a notação escolhida)</p>
+            <p className="text-purple-400 text-xs">{t('Reações (o defensor rola a notação escolhida)')}</p>
             {opcoes.map((o, i) => (
               <div key={o.id || i} className="flex items-center gap-2 flex-wrap">
                 <input type="text" value={o.nome || ''} onChange={e => setOpcao(i, { nome: e.target.value })}
-                  placeholder="Desviar" className={`${INP} w-28`} />
+                  placeholder={t('Desviar')} className={`${INP} w-28`} />
                 <input type="text" value={o.notacao || ''} onChange={e => setOpcao(i, { notacao: e.target.value })}
                   placeholder="1d100 + atributo(agilidade)" className={`${INP} flex-1 min-w-[10rem] font-mono`} />
                 <button onClick={() => set({ opcoes: opcoes.filter((_, j) => j !== i) })}
@@ -54,63 +53,63 @@ export default function DefesaAtivaEditor({ cfg = {}, onChange }) {
             ))}
             <button onClick={() => set({ opcoes: [...opcoes, { id: novoId(), nome: '', notacao: '' }] })}
               className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
-              + reação
+              {t('+ reação')}
             </button>
           </div>
 
           {/* Faixas de redução */}
           <div className="space-y-1.5 border-t border-purple-900/50 pt-2">
-            <p className="text-purple-400 text-xs">Faixas de redução (por defesa − ataque). Vazio = aberto (−∞ / +∞).</p>
+            <p className="text-purple-400 text-xs">{t('Faixas de redução (por defesa − ataque). Vazio = aberto (−∞ / +∞).')}</p>
             {faixas.map((f, i) => (
               <div key={i} className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-accent-300 text-xs">de</span>
+                <span className="text-accent-300 text-xs">{t('de')}</span>
                 <input type="number" value={f.de ?? ''} onChange={e => setFaixa(i, { de: e.target.value === '' ? null : Number(e.target.value) })}
                   placeholder="−∞" className={`${INP} w-14 text-center`} />
-                <span className="text-accent-300 text-xs">até</span>
+                <span className="text-accent-300 text-xs">{t('até')}</span>
                 <input type="number" value={f.ate ?? ''} onChange={e => setFaixa(i, { ate: e.target.value === '' ? null : Number(e.target.value) })}
                   placeholder="+∞" className={`${INP} w-14 text-center`} />
-                <span className="text-accent-300 text-xs">reduz</span>
+                <span className="text-accent-300 text-xs">{t('reduz')}</span>
                 <input type="number" value={f.reducao_percentual ?? ''} onChange={e => setFaixa(i, { reducao_percentual: e.target.value === '' ? '' : Number(e.target.value) })}
                   placeholder="%" className={`${INP} w-14 text-center`} />
                 <span className="text-accent-300 text-xs">%</span>
                 <input type="text" value={f.rotulo || ''} onChange={e => setFaixa(i, { rotulo: e.target.value })}
-                  placeholder="rótulo" className={`${INP} flex-1 min-w-[6rem]`} />
+                  placeholder={t('rótulo')} className={`${INP} flex-1 min-w-[6rem]`} />
                 <button onClick={() => set({ faixas: faixas.filter((_, j) => j !== i) })}
                   className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors">×</button>
               </div>
             ))}
             <button onClick={() => set({ faixas: [...faixas, { de: null, ate: null, reducao_percentual: '', rotulo: '' }] })}
               className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
-              + faixa
+              {t('+ faixa')}
             </button>
             {status && !status.valida && <p className="text-red-400 text-xs">⚠ {status.erro}</p>}
-            {status && status.valida && <p className="text-green-600 text-xs">✓ faixas contíguas</p>}
+            {status && status.valida && <p className="text-green-600 text-xs">{t('✓ faixas contíguas')}</p>}
           </div>
 
           {/* Contra-ataque */}
           <div className="space-y-1.5 border-t border-purple-900/50 pt-2">
-            <p className="text-purple-400 text-xs">Contra-ataque</p>
+            <p className="text-purple-400 text-xs">{t('Contra-ataque')}</p>
             <label className="text-purple-400 text-xs flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" checked={contra.sofre_dano_cheio !== false} onChange={e => setContra({ sofre_dano_cheio: e.target.checked })} className="accent-purple-500" />
-              o defensor sofre o dano cheio
+              {t('o defensor sofre o dano cheio')}
             </label>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-accent-300 text-xs">aplica no atacante:</span>
+              <span className="text-accent-300 text-xs">{t('aplica no atacante:')}</span>
               <input type="text" value={contra.condicao?.nome || ''} onChange={e => setCond({ nome: e.target.value })}
-                placeholder="Exposto" className={`${INP} w-28`} />
-              <span className="text-accent-300 text-xs">por</span>
+                placeholder={t('Exposto')} className={`${INP} w-28`} />
+              <span className="text-accent-300 text-xs">{t('por')}</span>
               <input type="number" min={1} value={contra.condicao?.duracao_rodadas ?? 1} onChange={e => setCond({ duracao_rodadas: Number(e.target.value) })}
                 className={`${INP} w-14 text-center`} />
-              <span className="text-accent-300 text-xs">rodada(s)</span>
+              <span className="text-accent-300 text-xs">{t('rodada(s)')}</span>
             </div>
             <input type="text" value={contra.condicao?.descricao || ''} onChange={e => setCond({ descricao: e.target.value })}
-              placeholder="Descrição da condição (ex: desvantagem no próximo desvio)" className={`${INP} w-full`} />
+              placeholder={t('Descrição da condição (ex: desvantagem no próximo desvio)')} className={`${INP} w-full`} />
             {/* F32.5 — dano do troco: rolado pelo defensor na hora do contra-ataque */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-accent-300 text-xs">dano do troco:</span>
+              <span className="text-accent-300 text-xs">{t('dano do troco:')}</span>
               <input type="text" value={contra.notacao || ''} onChange={e => setContra({ notacao: e.target.value })}
                 placeholder="Ex: 1d6+atributo(Força)" className={`${INP} w-56`}
-                title="O defensor rola isto ao contra-atacar; o resultado vira dano pendente para o mestre aplicar no atacante. Vazio = sem rolagem." />
+                title={t('O defensor rola isto ao contra-atacar; o resultado vira dano pendente para o mestre aplicar no atacante. Vazio = sem rolagem.')} />
             </div>
           </div>
         </>

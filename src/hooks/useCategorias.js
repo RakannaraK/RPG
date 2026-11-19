@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /**
  * Fase 21.1 — categorias de item do sistema ("Machados", "Arcos"...).
@@ -25,7 +26,7 @@ export function useCategorias(sistemaId) {
       if (err) throw err
       setCategorias(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar categorias.')
+      setError(err.message || t('Erro ao carregar categorias.'))
     } finally {
       setLoading(false)
     }

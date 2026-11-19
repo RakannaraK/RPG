@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useProjetos } from '../../hooks/useProjetos'
+import { t } from '../../i18n'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-ink text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 
@@ -21,13 +22,13 @@ export default function PainelProjetos({ fichaId, isDono }) {
   if (projetos.length === 0 && !isDono) return null
 
   async function handleCriar() {
-    if (!nome.trim()) { setErro('Dê um nome ao projeto.'); return }
+    if (!nome.trim()) { setErro(t('Dê um nome ao projeto.')); return }
     setCriando(true); setErro('')
     try {
       await criar({ nome, meta })
       setNome(''); setMeta(4)
     } catch (e) {
-      setErro(e.message || 'Erro ao criar o projeto.')
+      setErro(e.message || t('Erro ao criar o projeto.'))
     } finally {
       setCriando(false)
     }
@@ -37,15 +38,15 @@ export default function PainelProjetos({ fichaId, isDono }) {
     <div className="bg-raised border border-border rounded-xl p-4 space-y-3">
       <div>
         <p className="text-ink-dim text-xs font-medium uppercase tracking-[.12em] pb-1.5 border-b border-border">
-          Projetos
+          {t('Projetos')}
         </p>
         <p className="text-ink-dim text-xs mt-1.5">
-          O que este personagem toca entre as sessões.
+          {t('O que este personagem toca entre as sessões.')}
         </p>
       </div>
 
       {projetos.length === 0 && (
-        <p className="text-ink-dim text-xs italic">Nenhum projeto em andamento.</p>
+        <p className="text-ink-dim text-xs italic">{t('Nenhum projeto em andamento.')}</p>
       )}
 
       <div className="space-y-2">
@@ -88,7 +89,7 @@ export default function PainelProjetos({ fichaId, isDono }) {
                   <button
                     type="button" onClick={() => remover(p.id)}
                     className="ml-auto text-harm/70 hover:text-harm transition-colors px-1 text-xs"
-                    title="Remover projeto"
+                    title={t('Remover projeto')}
                   >✕</button>
                 </div>
               )}
@@ -101,19 +102,19 @@ export default function PainelProjetos({ fichaId, isDono }) {
         <div className="flex gap-1.5 flex-wrap items-center border-t border-border pt-2.5">
           <input
             type="text" value={nome} onChange={e => setNome(e.target.value)}
-            placeholder="Novo projeto (ex: Forjar a lâmina)"
+            placeholder={t('Novo projeto (ex: Forjar a lâmina)')}
             className={`${INP} flex-1 min-w-[9rem]`}
           />
           <input
             type="number" min={1} max={99} value={meta}
             onChange={e => setMeta(Number(e.target.value) || 4)}
-            className={`${INP} w-14 text-center`} title="Etapas até concluir"
+            className={`${INP} w-14 text-center`} title={t('Etapas até concluir')}
           />
           <button
             type="button" onClick={handleCriar} disabled={criando}
             className="px-2.5 py-1.5 text-xs bg-accent-700 hover:bg-accent-600 disabled:opacity-50 text-sobre-acento rounded-lg transition-colors"
           >
-            {criando ? '...' : '+ Criar'}
+            {criando ? '...' : t('+ Criar')}
           </button>
           {erro && <p className="text-harm text-xs w-full">{erro}</p>}
         </div>

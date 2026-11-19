@@ -3,6 +3,7 @@
  * para ficarem no mesmo lugar do desenho em qualquer tamanho de tela.
  */
 import { tipoDe } from './enciclopedia'
+import { t } from '../i18n'
 
 const entre01 = v => Math.min(1, Math.max(0, v))
 
@@ -26,7 +27,7 @@ export function pinosDoMapa(pinos = [], atlasId, verbetes = []) {
     .filter(p => p.atlas_id === atlasId && porId.has(p.verbete_id))
     .map(p => {
       const v = porId.get(p.verbete_id)
-      return { ...p, verbete: v, rotulo: v.titulo || `${tipoDe(v.tipo).nome} desconhecido`, icone: tipoDe(v.tipo).icone }
+      return { ...p, verbete: v, rotulo: v.titulo || t('{tipo} desconhecido', { tipo: tipoDe(v.tipo).nome }), icone: tipoDe(v.tipo).icone }
     })
 }
 
@@ -38,8 +39,8 @@ export function semPino(verbetes = [], pinos = [], atlasId) {
 
 export function validarAtlas({ nome, imagem_url } = {}) {
   const n = String(nome || '').trim()
-  if (!n) return { ok: false, erro: 'Dê um nome ao mapa.' }
-  if (n.length > 80) return { ok: false, erro: 'Nome com até 80 letras.' }
-  if (!imagem_url) return { ok: false, erro: 'Escolha a imagem do mapa.' }
+  if (!n) return { ok: false, erro: t('Dê um nome ao mapa.') }
+  if (n.length > 80) return { ok: false, erro: t('Nome com até 80 letras.') }
+  if (!imagem_url) return { ok: false, erro: t('Escolha a imagem do mapa.') }
   return { ok: true, nome: n }
 }

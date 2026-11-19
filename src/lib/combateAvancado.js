@@ -3,6 +3,8 @@
  * recarga em turnos, carga de ultimate, efeitos por rodada e troca de reserva.
  */
 
+import { t } from '../i18n'
+
 const inteiro = v => {
   const n = Number(v)
   return Number.isFinite(n) ? Math.trunc(n) : null
@@ -60,7 +62,7 @@ export function efeitosDoTurno(condicoes = [], combatenteId) {
       const tipo = e.tipo === 'cura' ? 'cura' : 'dano'
       const notacao = typeof e.notacao === 'string' && e.notacao.trim() ? e.notacao.trim() : null
       const valor = notacao ? null : inteiro(e.valor)
-      return { condicaoId: c.id, nome: c.nome || (tipo === 'cura' ? 'Regeneração' : 'Dano contínuo'), tipo, valor, notacao }
+      return { condicaoId: c.id, nome: c.nome || (tipo === 'cura' ? t('Regeneração') : t('Dano contínuo')), tipo, valor, notacao }
     })
     .filter(e => e.notacao || (e.valor != null && e.valor !== 0))
 }
@@ -78,10 +80,10 @@ export const textoEfeitoTurno = (efeito, total) =>
 export function planejarTroca(combatentes = [], saiId, entraId) {
   const sai = combatentes.find(c => c.id === saiId)
   const entra = combatentes.find(c => c.id === entraId)
-  if (!sai || !entra) throw new Error('Escolha quem sai e quem entra.')
-  if (sai.id === entra.id) throw new Error('Escolha dois combatentes diferentes.')
-  if (!entra.reserva) throw new Error(`${entra.nome} já está em jogo.`)
-  if (sai.reserva) throw new Error(`${sai.nome} já está na reserva.`)
+  if (!sai || !entra) throw new Error(t('Escolha quem sai e quem entra.'))
+  if (sai.id === entra.id) throw new Error(t('Escolha dois combatentes diferentes.'))
+  if (!entra.reserva) throw new Error(t('{nome} já está em jogo.', { nome: entra.nome }))
+  if (sai.reserva) throw new Error(t('{nome} já está na reserva.', { nome: sai.nome }))
   return {
     patches: [
       { id: sai.id, reserva: true },

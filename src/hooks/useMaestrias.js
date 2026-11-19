@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { calcularMaestria } from '../lib/masteryEngine'
+import { t } from '../i18n'
 
 /**
  * Fase 21.3 — maestrias de uma ficha (XP por categoria ou item).
@@ -25,7 +26,7 @@ export function useMaestrias(fichaId, curva) {
       if (err) throw err
       setLinhas(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar maestrias.')
+      setError(err.message || t('Erro ao carregar maestrias.'))
     } finally {
       setLoading(false)
     }

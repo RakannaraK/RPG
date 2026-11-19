@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /**
  * Fase 19.6 — catálogo de recompensas por nível do sistema (CRUD do mestre).
@@ -23,7 +24,7 @@ export function useRecompensas(sistemaId) {
       if (err) throw err
       setRecompensas(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar recompensas.')
+      setError(err.message || t('Erro ao carregar recompensas.'))
     } finally {
       setLoading(false)
     }
@@ -79,7 +80,7 @@ export function useRecompensasFicha(fichaId) {
       if (err) throw err
       setRows(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar recompensas da ficha.')
+      setError(err.message || t('Erro ao carregar recompensas da ficha.'))
     } finally {
       setLoading(false)
     }

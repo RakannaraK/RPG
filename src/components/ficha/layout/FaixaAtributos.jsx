@@ -1,4 +1,5 @@
 import AtributoCard from '../AtributoCard'
+import { t } from '../../../i18n'
 
 export default function FaixaAtributos({
   valoresAtributos,
@@ -23,10 +24,10 @@ export default function FaixaAtributos({
   if (!valoresAtributos || valoresAtributos.length === 0) {
     return (
       <div className="border border-dashed border-border rounded-xl py-6 text-center">
-        <p className="text-ink-dim text-sm">Nenhum atributo definido no sistema.</p>
+        <p className="text-ink-dim text-sm">{t('Nenhum atributo definido no sistema.')}</p>
         {isDono && (
           <p className="text-ink-dim text-xs mt-1">
-            Configure os atributos em Sistema → Atributos.
+            {t('Configure os atributos em Sistema → Atributos.')}
           </p>
         )}
       </div>
@@ -36,7 +37,7 @@ export default function FaixaAtributos({
   return (
     <div>
       <p className="text-ink-dim text-xs font-medium uppercase tracking-[.12em] mb-3 pb-1.5 border-b border-border">
-        Atributos
+        {t('Atributos')}
       </p>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-2">
         {/* linha sem atributo (dado torto) é ignorada: melhor faltar um card do que derrubar a ficha */}

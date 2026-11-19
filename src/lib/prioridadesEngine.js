@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 /**
  * Fase 25.4 — Motor de distribuição por PRIORIDADES (função PURA).
  * Não acessa banco nem React.
@@ -26,12 +27,12 @@ export function prioridadeDoGrupo(ordemGrupos, valoresPrioridade, grupoId) {
 export function validarOrdemGrupos(grupos = [], ordemGrupos = []) {
   const ids = grupos.map(g => g.id)
   if (ordemGrupos.length !== ids.length) {
-    return { valido: false, erro: `Ordene todos os ${ids.length} grupos.` }
+    return { valido: false, erro: t('Ordene todos os {n} grupos.', { n: ids.length }) }
   }
   const vistos = new Set()
   for (const id of ordemGrupos) {
-    if (!ids.includes(id)) return { valido: false, erro: `Grupo desconhecido: ${id}.` }
-    if (vistos.has(id)) return { valido: false, erro: 'Grupo repetido na ordem.' }
+    if (!ids.includes(id)) return { valido: false, erro: t('Grupo desconhecido: {id}.', { id }) }
+    if (vistos.has(id)) return { valido: false, erro: t('Grupo repetido na ordem.') }
     vistos.add(id)
   }
   return { valido: true }
@@ -57,13 +58,13 @@ export function validarDistribuicaoGrupo({ membros = [], prioridade = 0, alocaca
     if (maximoPorMembro != null) {
       const final = valorFinalMembro(basePorMembro, a)
       if (final > Number(maximoPorMembro)) {
-        return { valido: false, gasto, restante: prioridade - gasto, erro: `Excede o máximo (${maximoPorMembro}).` }
+        return { valido: false, gasto, restante: prioridade - gasto, erro: t('Excede o máximo ({max}).', { max: maximoPorMembro }) }
       }
     }
   }
   const restante = prioridade - gasto
   if (restante !== 0) {
-    return { valido: false, gasto, restante, erro: restante > 0 ? `Falta distribuir ${restante} ponto(s).` : `Excedeu em ${-restante} ponto(s).` }
+    return { valido: false, gasto, restante, erro: restante > 0 ? t('Falta distribuir {n} ponto(s).', { n: restante }) : t('Excedeu em {n} ponto(s).', { n: -restante }) }
   }
   return { valido: true, gasto, restante: 0 }
 }
@@ -80,12 +81,12 @@ export function validarPontosLivres({ itens = [], pontos = 0, alocacao = {}, max
     const a = Math.max(0, Math.floor(Number(alocacao[id]) || 0))
     gasto += a
     if (maximoPorItem != null && a > Number(maximoPorItem)) {
-      return { valido: false, gasto, restante: pontos - gasto, erro: `Excede o máximo por item (${maximoPorItem}).` }
+      return { valido: false, gasto, restante: pontos - gasto, erro: t('Excede o máximo por item ({max}).', { max: maximoPorItem }) }
     }
   }
   const restante = pontos - gasto
   if (restante !== 0) {
-    return { valido: false, gasto, restante, erro: restante > 0 ? `Falta distribuir ${restante} ponto(s).` : `Excedeu em ${-restante} ponto(s).` }
+    return { valido: false, gasto, restante, erro: restante > 0 ? t('Falta distribuir {n} ponto(s).', { n: restante }) : t('Excedeu em {n} ponto(s).', { n: -restante }) }
   }
   return { valido: true, gasto, restante: 0 }
 }

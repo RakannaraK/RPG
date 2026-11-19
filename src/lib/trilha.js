@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 /**
  * Fase 43 — trilha sonora sincronizada e mesa de efeitos (puro).
  *
@@ -8,27 +9,27 @@
 
 /** Efeitos da mesa: presets do sintetizador (F11/FV.4) + três de ambiente. */
 export const EFEITOS_MESA = [
-  { id: 'trovao', nome: 'Trovão' },
-  { id: 'sino', nome: 'Sino' },
-  { id: 'porta', nome: 'Porta' },
-  { id: 'lamina', nome: 'Lâmina' },
-  { id: 'impacto', nome: 'Impacto' },
-  { id: 'disparo', nome: 'Disparo' },
-  { id: 'projetil', nome: 'Flecha' },
-  { id: 'arcano', nome: 'Magia' },
-  { id: 'cura', nome: 'Cura' },
-  { id: 'escudo', nome: 'Escudo' },
-  { id: 'critico', nome: 'Crítico' },
-  { id: 'falha', nome: 'Falha' },
+  { id: 'trovao', nome: t('Trovão') },
+  { id: 'sino', nome: t('Sino') },
+  { id: 'porta', nome: t('Porta') },
+  { id: 'lamina', nome: t('Lâmina') },
+  { id: 'impacto', nome: t('Impacto') },
+  { id: 'disparo', nome: t('Disparo') },
+  { id: 'projetil', nome: t('Flecha') },
+  { id: 'arcano', nome: t('Magia') },
+  { id: 'cura', nome: t('Cura') },
+  { id: 'escudo', nome: t('Escudo') },
+  { id: 'critico', nome: t('Crítico') },
+  { id: 'falha', nome: t('Falha') },
 ]
 
 const ID = /^[A-Za-z0-9_-]{11}$/
 
 /** "1h2m3s", "90", "1m30" -> segundos. */
-function lerTempo(t) {
-  if (!t) return 0
-  if (/^\d+$/.test(t)) return Number(t)
-  const m = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?$/.exec(t)
+function lerTempo(tempo) {
+  if (!tempo) return 0
+  if (/^\d+$/.test(tempo)) return Number(tempo)
+  const m = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?$/.exec(tempo)
   return m ? (Number(m[1] || 0) * 3600 + Number(m[2] || 0) * 60 + Number(m[3] || 0)) : 0
 }
 

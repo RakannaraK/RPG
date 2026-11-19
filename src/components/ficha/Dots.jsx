@@ -6,6 +6,8 @@
  * alta já cheia reduz para N−1. Buffs além do valor base (ou acima do máximo de
  * bolinhas) aparecem como ◆ de destaque — o clique edita sempre o valor BASE.
  */
+import { t } from '../../i18n'
+
 export default function Dots({
   valor = 0,           // valor FINAL exibido (base + buffs)
   valorBase = null,    // valor BASE editável (null = igual ao valor)
@@ -39,7 +41,7 @@ export default function Dots({
             onClick={() => clicar(n)}
             disabled={!canEdit}
             className={`p-1 -m-0.5 ${canEdit ? 'cursor-pointer group/dot' : 'cursor-default'}`}
-            title={canEdit ? `Definir ${n === base ? n - 1 : n}` : `${v}`}
+            title={canEdit ? t('Definir {n}', { n: n === base ? n - 1 : n }) : `${v}`}
           >
             <span className={`block ${dim} rounded-full border-2 transition-all duration-150 ${
               buffada ? 'bg-ok border-ok'
@@ -50,7 +52,7 @@ export default function Dots({
         )
       })}
       {extras > 0 && (
-        <span className="text-ok text-xs font-bold ml-0.5" title={`+${extras} acima do máximo (modificadores)`}>
+        <span className="text-ok text-xs font-bold ml-0.5" title={t('+{n} acima do máximo (modificadores)', { n: extras })}>
           +{extras}
         </span>
       )}

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import Icone from './Icone'
 import Botao from './Botao'
 import { DUR_NORMAL, movimentoReduzido } from '../../theme/motion'
+import { t } from '../../i18n'
 
 /**
  * Fase 52 — janela modal do site. Antes eram 23 modais escritos à mão, cada
@@ -34,7 +35,7 @@ const ModalCtx = createContext(null)
 export const useFecharModal = () => useContext(ModalCtx)
 
 /** Botão "Cancelar" de rodapé: fecha com a animação de saída. */
-export function FecharModal({ children = 'Cancelar', disabled }) {
+export function FecharModal({ children = t('Cancelar'), disabled }) {
   const fechar = useFecharModal()
   return <Botao variante="fantasma" onClick={fechar} disabled={disabled}>{children}</Botao>
 }
@@ -78,11 +79,11 @@ export default function Modal({
 
   useEffect(() => {
     if (estado !== 'saindo') return
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       setEstado('fechado')
       if (avisarAoFim.current) { avisarAoFim.current = false; onFecharRef.current?.() }
     }, movimentoReduzido() ? 0 : DUR_NORMAL)
-    return () => clearTimeout(t)
+    return () => clearTimeout(timer)
   }, [estado])
 
   const visivel = estado !== 'fechado'
@@ -142,7 +143,7 @@ export default function Modal({
           ref={painelRef}
           role="dialog" aria-modal="true"
           aria-labelledby={vis.titulo ? idTitulo : undefined}
-          aria-label={vis.titulo ? undefined : 'Janela'}
+          aria-label={vis.titulo ? undefined : t('Janela')}
           tabIndex={-1}
           className={`modal-painel relative w-full ${LARGURAS[tamanho] || LARGURAS.md} max-h-[92dvh] sm:max-h-[88vh] flex flex-col bg-raised border ${TONS[tom] || TONS.normal} rounded-t-2xl sm:rounded-2xl shadow-nivel-3 outline-none ${className}`}
         >
@@ -154,7 +155,7 @@ export default function Modal({
               </div>
               {!bloqueado && (
                 <button
-                  type="button" onClick={fechar} aria-label="Fechar"
+                  type="button" onClick={fechar} aria-label={t('Fechar')}
                   className="botao-icone -mr-2 -mt-1 shrink-0"
                 ><Icone nome="x" tamanho={20} /></button>
               )}

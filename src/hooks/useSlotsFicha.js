@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /**
  * Fase 20.3 — estado dos slots de uma ficha.
@@ -57,7 +58,7 @@ export function useSlotsFicha(fichaId) {
       setLinhas(prev =>
         anterior ? prev.map(l => (l.circulo === c ? anterior : l)) : prev.filter(l => l.circulo !== c)
       )
-      throw new Error(err.message || 'Não foi possível atualizar os slots.')
+      throw new Error(err.message || t('Não foi possível atualizar os slots.'))
     }
   }
 

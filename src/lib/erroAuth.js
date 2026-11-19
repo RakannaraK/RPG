@@ -2,16 +2,18 @@
  * Erros do login/cadastro do Supabase vêm em inglês: aqui viram português.
  * Usa o `code` quando existe (mais estável que a mensagem).
  */
+import { t } from '../i18n'
+
 const POR_CODIGO = {
-  invalid_credentials: 'E-mail ou senha incorretos.',
-  email_not_confirmed: 'Confirme seu e-mail antes de entrar: procure a mensagem que enviamos (veja também o spam).',
-  user_already_exists: 'Já existe uma conta com esse e-mail. Entre com ela ou peça uma senha nova.',
-  email_exists: 'Já existe uma conta com esse e-mail. Entre com ela ou peça uma senha nova.',
-  weak_password: 'Senha fraca: use pelo menos 6 caracteres, misturando letras e números.',
-  captcha_failed: 'A verificação anti-robô falhou. Marque a caixa de novo e tente outra vez.',
-  over_email_send_rate_limit: 'Muitos e-mails enviados agora. Espere alguns minutos e tente de novo.',
-  over_request_rate_limit: 'Muitas tentativas seguidas. Espere alguns minutos e tente de novo.',
-  anonymous_provider_disabled: 'A entrada de convidados está desligada neste site. Entre com uma conta.',
+  invalid_credentials: t('E-mail ou senha incorretos.'),
+  email_not_confirmed: t('Confirme seu e-mail antes de entrar: procure a mensagem que enviamos (veja também o spam).'),
+  user_already_exists: t('Já existe uma conta com esse e-mail. Entre com ela ou peça uma senha nova.'),
+  email_exists: t('Já existe uma conta com esse e-mail. Entre com ela ou peça uma senha nova.'),
+  weak_password: t('Senha fraca: use pelo menos 6 caracteres, misturando letras e números.'),
+  captcha_failed: t('A verificação anti-robô falhou. Marque a caixa de novo e tente outra vez.'),
+  over_email_send_rate_limit: t('Muitos e-mails enviados agora. Espere alguns minutos e tente de novo.'),
+  over_request_rate_limit: t('Muitas tentativas seguidas. Espere alguns minutos e tente de novo.'),
+  anonymous_provider_disabled: t('A entrada de convidados está desligada neste site. Entre com uma conta.'),
 }
 
 const POR_TEXTO = [

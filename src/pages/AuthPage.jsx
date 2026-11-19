@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import LoginForm from '../components/auth/LoginForm'
 import RegisterForm from '../components/auth/RegisterForm'
 import Marca from '../components/marca/Marca'
+import { IDIOMAS, idiomaAtual, t, trocarIdioma, tx } from '../i18n'
 
 export default function AuthPage() {
   const [mode, setMode] = useState('login')
@@ -31,7 +32,7 @@ export default function AuthPage() {
                   : 'text-purple-400 hover:text-purple-200'
               }`}
             >
-              Entrar
+              {tx('conta', 'Entrar')}
             </button>
             <button
               onClick={() => setMode('register')}
@@ -41,7 +42,7 @@ export default function AuthPage() {
                   : 'text-purple-400 hover:text-purple-200'
               }`}
             >
-              Criar conta
+              {t('Criar conta')}
             </button>
           </div>
 
@@ -56,11 +57,17 @@ export default function AuthPage() {
 
         {/* F36 — dá para experimentar antes de criar conta */}
         <p className="text-center mt-5 text-sm text-purple-400">
-          Quer ver antes?{' '}
+          {t('Quer ver antes?')}{' '}
           <Link to="/comunidade" className="text-purple-200 underline hover:text-white">
-            Rode um dado e veja o que a comunidade compartilha
+            {t('Rode um dado e veja o que a comunidade compartilha')}
           </Link>{' '}
-          — sem conta.
+          {t('— sem conta.')}
+        </p>
+
+        <p className="text-center mt-4">
+          <select value={idiomaAtual()} onChange={e => trocarIdioma(e.target.value)} className="campo" aria-label={t('Idioma')}>
+            {IDIOMAS.map(i => <option key={i.id} value={i.id}>{i.nome}</option>)}
+          </select>
         </p>
       </div>
     </div>

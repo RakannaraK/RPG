@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useId } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { caminhoNoBucket, redimensionarImagem, lerDimensoes, extensaoDe } from '../lib/imageUtils'
+import { t } from '../i18n'
 
 const BUCKET = 'fichas-imagens'
 const MAX_LADO = 4096
@@ -81,7 +82,7 @@ export function useMapas(mesaId) {
   async function criar({ nome, arquivo }) {
     const comprimida = await redimensionarImagem(arquivo, MAX_LADO, true)
     if (comprimida.size > MAX_BYTES) {
-      throw new Error('A imagem passa de 10 MB mesmo comprimida. Use uma imagem menor.')
+      throw new Error(t('A imagem passa de 10 MB mesmo comprimida. Use uma imagem menor.'))
     }
     const { largura, altura } = await lerDimensoes(comprimida)
     const path = `${session.user.id}/mapas/${mesaId}/${Date.now()}.${extensaoDe(comprimida)}`
@@ -133,7 +134,7 @@ export function useMapas(mesaId) {
     // Imagens de tokens avulsos somem junto (o CASCADE apaga as linhas, não os arquivos)
     const { data: tokens } = await supabase.from('tokens_mapa').select('imagem_url').eq('mapa_id', mapa.id)
     const imagensTokens = (tokens || [])
-      .map(t => (t.imagem_url ? caminhoNoBucket(t.imagem_url) : null))
+      .map(tk => (tk.imagem_url ? caminhoNoBucket(tk.imagem_url) : null))
       .filter(p => p?.includes('/tokens/'))
 
     const { error } = await supabase.from('mapas').delete().eq('id', mapa.id)

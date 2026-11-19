@@ -8,6 +8,7 @@ import {
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
 import { useConfirmar } from '../ui/Confirmar'
+import { t } from '../../i18n'
 
 // cada pessoa vê o horário no próprio fuso
 // ponytail: a recorrência mensal é calculada no fuso de quem vê; mesas com gente
@@ -16,9 +17,9 @@ const FUSO = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Pa
 const CAMPO = 'px-2.5 py-1.5 rounded-lg bg-void border border-border text-ink text-sm focus:outline-none'
 const DURACOES = [60, 120, 180, 240, 300, 360, 480]
 const RESPOSTAS = [
-  { id: 'vou', rotulo: 'Vou' },
-  { id: 'talvez', rotulo: 'Talvez' },
-  { id: 'nao', rotulo: 'Não vou' },
+  { id: 'vou', rotulo: t('Vou') },
+  { id: 'talvez', rotulo: t('Talvez') },
+  { id: 'nao', rotulo: t('Não vou') },
 ]
 
 /** ISO -> valor do <input type="datetime-local"> no fuso de quem vê. */
@@ -56,32 +57,32 @@ function FormAgenda({ inicial, onSalvar, onCancelar }) {
     <form onSubmit={enviar} className="space-y-2">
       <div className="flex flex-wrap gap-2">
         <label className="flex flex-col gap-1 text-xs text-ink-dim">
-          Dia e hora
+          {t('Dia e hora')}
           <input type="datetime-local" required value={v.inicio} onChange={muda('inicio')} className={CAMPO} />
         </label>
         <label className="flex flex-col gap-1 text-xs text-ink-dim">
-          Duração
+          {t('Duração')}
           <select value={v.duracao_min} onChange={muda('duracao_min')} className={CAMPO}>
             {DURACOES.map(m => <option key={m} value={m}>{m / 60} h</option>)}
           </select>
         </label>
         <label className="flex flex-col gap-1 text-xs text-ink-dim">
-          Repete
+          {t('Repete')}
           <select value={v.recorrencia} onChange={muda('recorrencia')} className={CAMPO}>
             {RECORRENCIAS.map(r => <option key={r.id} value={r.id}>{r.nome}</option>)}
           </select>
         </label>
         {v.recorrencia !== 'nenhuma' && (
           <label className="flex flex-col gap-1 text-xs text-ink-dim">
-            Até (opcional)
+            {t('Até (opcional)')}
             <input type="date" value={v.ate} onChange={muda('ate')} className={CAMPO} />
           </label>
         )}
       </div>
-      <input value={v.titulo} onChange={muda('titulo')} maxLength={80} placeholder="Título (opcional) — ex.: Capítulo 3, a torre" aria-label="Título da sessão" className={`${CAMPO} w-full`} />
+      <input value={v.titulo} onChange={muda('titulo')} maxLength={80} placeholder={t('Título (opcional) — ex.: Capítulo 3, a torre')} aria-label={t('Título da sessão')} className={`${CAMPO} w-full`} />
       <div className="flex flex-wrap items-center gap-2">
-        <Botao type="submit" variante="primario" tamanho="sm" disabled={salvando}>{salvando ? 'Salvando…' : 'Salvar e avisar a mesa'}</Botao>
-        <Botao variante="fantasma" tamanho="sm" onClick={onCancelar}>Cancelar</Botao>
+        <Botao type="submit" variante="primario" tamanho="sm" disabled={salvando}>{salvando ? t('Salvando…') : t('Salvar e avisar a mesa')}</Botao>
+        <Botao variante="fantasma" tamanho="sm" onClick={onCancelar}>{t('Cancelar')}</Botao>
         {erro && <span className="text-harm text-xs">{erro}</span>}
       </div>
     </form>
@@ -103,8 +104,8 @@ export default function AgendaMesa({ mesaId, isGestor, className = '' }) {
 
   // "daqui a 40 min" precisa andar sozinho
   useEffect(() => {
-    const t = setInterval(() => setAgora(new Date()), 60 * 1000)
-    return () => clearInterval(t)
+    const id = setInterval(() => setAgora(new Date()), 60 * 1000)
+    return () => clearInterval(id)
   }, [])
 
   if (indisponivel) return null
@@ -113,9 +114,9 @@ export default function AgendaMesa({ mesaId, isGestor, className = '' }) {
 
   if (editando) {
     return (
-      <section className={`rounded-2xl border border-border bg-raised/70 p-5 space-y-3 ${className}`} aria-label="Marcar sessão">
+      <section className={`rounded-2xl border border-border bg-raised/70 p-5 space-y-3 ${className}`} aria-label={t('Marcar sessão')}>
         <h2 className="flex items-center gap-2 text-ink text-sm font-semibold">
-          <Ilustra nome="calendario" tamanho={18} /> {editando === 'novo' ? 'Marcar sessão' : 'Editar sessão'}
+          <Ilustra nome="calendario" tamanho={18} /> {editando === 'novo' ? t('Marcar sessão') : t('Editar sessão')}
         </h2>
         <FormAgenda
           inicial={editando === 'novo' ? null : editando}
@@ -128,10 +129,10 @@ export default function AgendaMesa({ mesaId, isGestor, className = '' }) {
 
   if (!prox) {
     return (
-      <section className={`rounded-2xl border border-dashed border-border p-5 flex flex-col items-start gap-3 ${className}`} aria-label="Próxima sessão">
-        <p className="text-ink-dim text-xs font-semibold uppercase tracking-wider flex items-center gap-2"><Ilustra nome="calendario" tamanho={20} /> Próxima sessão</p>
-        <p className="text-ink-dim text-sm">Nenhuma sessão marcada. Marque a próxima e a mesa recebe o aviso.</p>
-        <Botao variante="primario" tamanho="sm" onClick={() => setEditando('novo')}>Marcar sessão</Botao>
+      <section className={`rounded-2xl border border-dashed border-border p-5 flex flex-col items-start gap-3 ${className}`} aria-label={t('Próxima sessão')}>
+        <p className="text-ink-dim text-xs font-semibold uppercase tracking-wider flex items-center gap-2"><Ilustra nome="calendario" tamanho={20} /> {t('Próxima sessão')}</p>
+        <p className="text-ink-dim text-sm">{t('Nenhuma sessão marcada. Marque a próxima e a mesa recebe o aviso.')}</p>
+        <Botao variante="primario" tamanho="sm" onClick={() => setEditando('novo')}>{t('Marcar sessão')}</Botao>
       </section>
     )
   }
@@ -151,17 +152,17 @@ export default function AgendaMesa({ mesaId, isGestor, className = '' }) {
 
   async function desmarcar() {
     const repete = evento.recorrencia !== 'nenhuma'
-    if (!(await confirmar({ titulo: repete ? 'Desmarcar todas as sessões?' : 'Desmarcar a sessão?', mensagem: repete ? 'Todas as sessões desta agenda saem do calendário.' : 'A sessão sai do calendário e as presenças confirmadas somem.', confirmar: 'Desmarcar', perigo: true }))) return
+    if (!(await confirmar({ titulo: repete ? t('Desmarcar todas as sessões?') : t('Desmarcar a sessão?'), mensagem: repete ? t('Todas as sessões desta agenda saem do calendário.') : t('A sessão sai do calendário e as presenças confirmadas somem.'), confirmar: t('Desmarcar'), perigo: true }))) return
     try { await remover(evento.id) } catch (e) { setErro(e.message) }
   }
 
   return (
-    <section className={`rounded-2xl border border-border bg-raised/70 p-5 space-y-3 ${className}`} aria-label="Próxima sessão">
+    <section className={`rounded-2xl border border-border bg-raised/70 p-5 space-y-3 ${className}`} aria-label={t('Próxima sessão')}>
       <div className="flex flex-wrap items-start gap-3">
         <Ilustra nome="calendario" tamanho={26} className="shrink-0 mt-0.5" />
         <div className="flex-1 min-w-[12rem]">
           <p className="text-ink-dim text-xs uppercase tracking-wider font-semibold">
-            {acontecendo ? 'Sessão agora' : 'Próxima sessão'}{evento.titulo ? ` · ${evento.titulo}` : ''}
+            {acontecendo ? t('Sessão agora') : t('Próxima sessão')}{evento.titulo ? ` · ${evento.titulo}` : ''}
           </p>
           <p className="text-ink text-base font-semibold">{textoQuando(inicio, agora, FUSO)}</p>
           <p className="text-ink-dim text-xs">
@@ -170,14 +171,14 @@ export default function AgendaMesa({ mesaId, isGestor, className = '' }) {
         </div>
         {isGestor && (
           <div className="flex items-center gap-1">
-            <Botao variante="fantasma" tamanho="sm" onClick={() => setEditando(evento)}>Editar</Botao>
-            <Botao variante="fantasma" tamanho="sm" onClick={() => setEditando('novo')}>+ Outra</Botao>
-            <Botao variante="fantasma" tamanho="sm" className="text-red-300 hover:text-white hover:bg-red-950/40" onClick={desmarcar}>Desmarcar</Botao>
+            <Botao variante="fantasma" tamanho="sm" onClick={() => setEditando(evento)}>{t('Editar')}</Botao>
+            <Botao variante="fantasma" tamanho="sm" onClick={() => setEditando('novo')}>{t('+ Outra')}</Botao>
+            <Botao variante="fantasma" tamanho="sm" className="text-red-300 hover:text-white hover:bg-red-950/40" onClick={desmarcar}>{t('Desmarcar')}</Botao>
           </div>
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Você vai?">
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('Você vai?')}>
         {RESPOSTAS.map(r => (
           <Botao
             key={r.id} tamanho="sm" variante={minha === r.id ? 'primario' : 'contorno'}
@@ -189,7 +190,7 @@ export default function AgendaMesa({ mesaId, isGestor, className = '' }) {
           className="ml-1 min-h-[24px] px-1 text-xs text-ink-dim hover:text-ink transition-colors"
           aria-expanded={verNomes}
         >
-          {contagem.vou} {contagem.vou === 1 ? 'vai' : 'vão'} · {contagem.talvez} talvez · {contagem.nao} não
+          {contagem.vou} {contagem.vou === 1 ? t('vai') : t('vão')} · {contagem.talvez} {t('talvez')} · {contagem.nao} {t('não')}
         </button>
       </div>
 

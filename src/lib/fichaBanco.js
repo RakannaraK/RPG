@@ -3,6 +3,7 @@ import { carregarSistemaCompleto } from './carregarSistemaCompleto'
 import { TABELAS_FICHA, exportarFicha, planejarImportacao } from './fichaPortatil'
 import { serializarSistema } from '../engines/systemSerializer'
 import { TABELAS_MESA, montarArquivoMesa } from './exportMesa'
+import { t } from '../i18n'
 
 /** Fase 30.3 — ler e gravar a ficha inteira (export, import, duplicar). */
 
@@ -20,9 +21,9 @@ async function grafoDoSistema(sistemaId) {
 export async function carregarFichaCompleta(fichaId) {
   const { data: ficha, error } = await supabase.from('fichas').select('*').eq('id', fichaId).single()
   if (error) throw new Error(error.message)
-  const respostas = await Promise.all(TABELAS_FICHA.map(t => supabase.from(t).select('*').eq('ficha_id', fichaId)))
+  const respostas = await Promise.all(TABELAS_FICHA.map(tab => supabase.from(tab).select('*').eq('ficha_id', fichaId)))
   const filhos = {}
-  TABELAS_FICHA.forEach((t, i) => { filhos[t] = respostas[i].data || [] })
+  TABELAS_FICHA.forEach((tab, i) => { filhos[tab] = respostas[i].data || [] })
   return { ficha, filhos }
 }
 
@@ -56,13 +57,13 @@ export async function gravarImportacao(plano, { mesaId, donoId, nome = null, ext
       const { error: e } = await supabase.from('itens_ficha').insert(itens)
       if (e) throw e
     }
-    const outras = Object.entries(plano.filhos).filter(([t, linhas]) => t !== 'itens_ficha' && linhas.length)
-    const resultados = await Promise.all(outras.map(([t, linhas]) => supabase.from(t).insert(linhas)))
+    const outras = Object.entries(plano.filhos).filter(([tab, linhas]) => tab !== 'itens_ficha' && linhas.length)
+    const resultados = await Promise.all(outras.map(([tab, linhas]) => supabase.from(tab).insert(linhas)))
     const falhou = resultados.findIndex(r => r.error)
     if (falhou >= 0) throw resultados[falhou].error
   } catch (e) {
     await supabase.from('fichas').delete().eq('id', plano.fichaId)
-    throw new Error(`Importação desfeita: ${e.message}`)
+    throw new Error(t('Importação desfeita: {motivo}', { motivo: e.message }))
   }
   return plano.fichaId
 }
@@ -78,7 +79,7 @@ export async function duplicarFicha(fichaId, { mesaId, donoId, extras = {}, nome
     : {}
   return gravarImportacao(plano, {
     mesaId, donoId, extras: { ...herdado, ...extras },
-    nome: nome || `${ficha.nome_personagem} (cópia)`.slice(0, 200),
+    nome: nome || t('{nome} (cópia)', { nome: ficha.nome_personagem }).slice(0, 200),
   })
 }
 
@@ -104,7 +105,7 @@ export async function exportarMesaDoBanco(mesaId) {
     const { ficha, filhos } = await carregarFichaCompleta(id)
     return exportarFicha({ ficha, filhos, sistema: grafo })
   }))
-  const tabelas = Object.fromEntries(await Promise.all(TABELAS_MESA.map(async t => [t, await todasAsLinhas(t, mesaId)])))
+  const tabelas = Object.fromEntries(await Promise.all(TABELAS_MESA.map(async tab => [tab, await todasAsLinhas(tab, mesaId)])))
   const { data: bau } = await supabase.from('itens_ficha').select('*').eq('bau_mesa_id', mesaId)
   return montarArquivoMesa({ mesa, sistema: grafo ? serializarSistema(grafo) : null, fichas, tabelas, bau: bau || [] })
 }

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { dependentesConhecidos, ligacoesArvore, montarArvore, posicoesArvore, resumoArvore } from '../../lib/arvoreHabilidades'
 import Botao from '../ui/Botao'
+import { t, tn } from '../../i18n'
 
 const LARGURA = 1000   // coordenadas internas do SVG (escala pela largura real)
 const RAIO = 26
@@ -23,7 +24,7 @@ function linhasDoNome(nome = '') {
     if (!l[u] || u === 1 || `${l[u]} ${p}`.length <= 14) l[u] = l[u] ? `${l[u]} ${p}` : p
     else l.push(p)
   }
-  return l.map(t => (t.length > 15 ? `${t.slice(0, 14)}…` : t))
+  return l.map(x => (x.length > 15 ? `${x.slice(0, 14)}…` : x))
 }
 
 /**
@@ -46,7 +47,7 @@ export default function ArvoreHabilidades({ habilidades = [], habilidadesFicha =
   const ceu = useMemo(() => estrelas(altura), [altura])
 
   if (habilidades.length === 0) {
-    return <p className="text-ink-dim text-sm p-4">Nenhuma habilidade no sistema. O mestre cria em Sistema → Raças/Classes → Habilidades.</p>
+    return <p className="text-ink-dim text-sm p-4">{t('Nenhuma habilidade no sistema. O mestre cria em Sistema → Raças/Classes → Habilidades.')}</p>
   }
 
   const ponto = id => {
@@ -56,7 +57,7 @@ export default function ArvoreHabilidades({ habilidades = [], habilidadesFicha =
 
   async function rodar(id, fn) {
     setOcupado(id); setErro('')
-    try { await fn() } catch (e) { setErro(e.message || 'Não foi possível salvar.') } finally { setOcupado('') }
+    try { await fn() } catch (e) { setErro(e.message || t('Não foi possível salvar.')) } finally { setOcupado('') }
   }
   const pegar = no => isDono && no.estado === 'disponivel' && onAdicionar && rodar(no.id, () => onAdicionar(no.id))
 
@@ -74,20 +75,20 @@ export default function ArvoreHabilidades({ habilidades = [], habilidadesFicha =
           <span className="mr-2">
             <span className="text-ink-dim">{pontos.rotulo}</span>{' '}
             <span className="text-ink text-2xl font-bold tabular-nums">{pontos.saldo}</span>
-            <span className="text-ink-dim text-sm"> de {pontos.total}</span>
+            <span className="text-ink-dim text-sm">{' '}{t('de {total}', { total: pontos.total })}</span>
           </span>
         )}
-        <span className="text-ok">● {resumo.conhecida} já tem</span>
-        <span className="text-accent-300">○ {resumo.disponivel} disponíve{resumo.disponivel === 1 ? 'l' : 'is'}</span>
-        <span className="text-ink-dim">○ {resumo.bloqueada} bloqueada{resumo.bloqueada === 1 ? '' : 's'}</span>
-        {isDono && <span className="text-ink-dim ml-auto">Clique numa disponível para aprender.</span>}
+        <span className="text-ok">● {t('{n} já tem', { n: resumo.conhecida })}</span>
+        <span className="text-accent-300">○ {tn(resumo.disponivel, '{n} disponível', '{n} disponíveis')}</span>
+        <span className="text-ink-dim">○ {tn(resumo.bloqueada, '{n} bloqueada', '{n} bloqueadas')}</span>
+        {isDono && <span className="text-ink-dim ml-auto">{t('Clique numa disponível para aprender.')}</span>}
       </div>
-      {pontos?.erro && <p className="text-warn text-xs">⚠ A fórmula de pontos da árvore tem erro ({pontos.erro}); a árvore está sem orçamento.</p>}
+      {pontos?.erro && <p className="text-warn text-xs">{t('⚠ A fórmula de pontos da árvore tem erro ({erro}); a árvore está sem orçamento.', { erro: pontos.erro })}</p>}
 
       <div className="overflow-x-auto rounded-xl border border-border bg-bg">
         {/* altura segue a largura (sem altura fixa: senão o SVG encolhe e sobram faixas nas laterais);
             +30 embaixo para o nome da última camada */}
-        <svg viewBox={`0 0 ${LARGURA} ${altura + 30}`} className="block w-full min-w-[40rem]" role="group" aria-label="Árvore de habilidades">
+        <svg viewBox={`0 0 ${LARGURA} ${altura + 30}`} className="block w-full min-w-[40rem]" role="group" aria-label={t('Árvore de habilidades')}>
           <defs>
             <radialGradient id="arv-fundo" cx="50%" cy="45%" r="70%">
               <stop offset="0%" stopColor="var(--accent-800)" stopOpacity="0.45" />
@@ -141,7 +142,7 @@ export default function ArvoreHabilidades({ habilidades = [], habilidadesFicha =
                 // o contorno branco do nó selecionado faz o papel do foco (o do navegador vira um quadrado)
                 style={{ cursor: clicavel ? 'pointer' : 'default', outline: 'none' }}
                 opacity={ocupado === no.id ? 0.5 : no.estado === 'bloqueada' ? 0.55 : 1}
-                aria-label={`${no.hab.nome} — ${{ conhecida: 'você já tem', disponivel: 'disponível', bloqueada: 'bloqueada' }[no.estado]}${no.motivo ? `: ${no.motivo}` : ''}`}
+                aria-label={`${no.hab.nome} — ${{ conhecida: t('você já tem'), disponivel: t('disponível'), bloqueada: t('bloqueada') }[no.estado]}${no.motivo ? `: ${no.motivo}` : ''}`}
               >
                 {disponivel && <polygon points={hexagono(x, y, RAIO)} fill="none" stroke="var(--accent-400)" strokeWidth="2" className="arv-pulso" />}
                 <polygon
@@ -172,21 +173,21 @@ export default function ArvoreHabilidades({ habilidades = [], habilidadesFicha =
         <div className="rounded-xl border border-border bg-void p-3 space-y-1">
           <p className="text-ink text-sm font-semibold">
             {detalhe.hab.nome}
-            {detalhe.custo > 0 && <span className="text-ink-dim font-normal"> · custa {detalhe.custo} ponto{detalhe.custo === 1 ? '' : 's'}</span>}
+            {detalhe.custo > 0 && <span className="text-ink-dim font-normal"> · {tn(detalhe.custo, 'custa {n} ponto', 'custa {n} pontos')}</span>}
           </p>
           {detalhe.hab.descricao && <p className="text-ink-dim text-xs">{detalhe.hab.descricao}</p>}
           <p className="text-xs">
-            {detalhe.estado === 'conhecida' && <span className="text-ok">Você já tem esta habilidade.</span>}
-            {detalhe.estado === 'disponivel' && <span className="text-accent-300">Disponível{isDono ? ' — clique no nó para aprender.' : '.'}</span>}
+            {detalhe.estado === 'conhecida' && <span className="text-ok">{t('Você já tem esta habilidade.')}</span>}
+            {detalhe.estado === 'disponivel' && <span className="text-accent-300">{isDono ? t('Disponível — clique no nó para aprender.') : t('Disponível.')}</span>}
             {detalhe.estado === 'bloqueada' && <span className="text-ink-dim">{detalhe.motivo}</span>}
           </p>
           {podeEsquecer && (
             <Botao variante="contorno" tamanho="sm" disabled={ocupado === detalhe.id}
               onClick={() => rodar(detalhe.id, async () => { await onRemover(linhaFicha.id); setSelecionado(null) })}>
-              Esquecer{detalhe.custo > 0 ? ` (devolve ${detalhe.custo} ponto${detalhe.custo === 1 ? '' : 's'})` : ''}
+              {t('Esquecer')}{detalhe.custo > 0 ? ` (${tn(detalhe.custo, 'devolve {n} ponto', 'devolve {n} pontos')})` : ''}
             </Botao>
           )}
-          {temDependente && <p className="text-ink-dim text-xs">Não dá para esquecer: outra habilidade que você tem depende desta.</p>}
+          {temDependente && <p className="text-ink-dim text-xs">{t('Não dá para esquecer: outra habilidade que você tem depende desta.')}</p>}
         </div>
       )}
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 export function useHabilidades(sistemaId) {
   const [habilidades, setHabilidades] = useState([])
@@ -34,7 +35,7 @@ export function useHabilidades(sistemaId) {
         modificadores: mods.filter(m => m.habilidade_id === h.id),
       })))
     } catch (err) {
-      setError(err.message || 'Erro ao carregar habilidades.')
+      setError(err.message || t('Erro ao carregar habilidades.'))
     } finally {
       setLoading(false)
     }

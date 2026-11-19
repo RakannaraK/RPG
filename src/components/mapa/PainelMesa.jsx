@@ -5,6 +5,7 @@ import PainelMinigames from '../minigames/PainelMinigames'
 import AcoesCombate from '../sessao/AcoesCombate'
 import { ordenarPorIniciativa } from '../../lib/iniciativa'
 import { defesaDoAlvo, podeAgirNoCombate } from '../../lib/alvosCombate'
+import { t } from '../../i18n'
 
 const BTN = 'px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
 const COR_TIPO = { jogador: 'text-accent-300', aliado: 'text-emerald-300', npc: 'text-amber-300', inimigo: 'text-red-300' }
@@ -15,19 +16,19 @@ export function PainelRolagens({ mesaId, podeRolar, meuId, sessaoId }) {
     <div className="p-4 space-y-5">
       {podeRolar && (
         <section>
-          <h2 className="text-ink-dim text-xs font-semibold uppercase tracking-wider mb-2">Rolar dados</h2>
+          <h2 className="text-ink-dim text-xs font-semibold uppercase tracking-wider mb-2">{t('Rolar dados')}</h2>
           <RoladorGenerico mesaId={mesaId} />
         </section>
       )}
       {/* F28 — minigames sem sair do mapa */}
       <details className="rounded-xl border border-border bg-void">
-        <summary className="cursor-pointer px-3 py-2 text-ink text-sm font-semibold">🎮 Minigames</summary>
+        <summary className="cursor-pointer px-3 py-2 text-ink text-sm font-semibold">{t('🎮 Minigames')}</summary>
         <div className="p-3 pt-1">
           <PainelMinigames mesaId={mesaId} meuId={meuId} sessaoId={sessaoId} podeJogar={podeRolar} />
         </div>
       </details>
       <section>
-        <h2 className="text-ink-dim text-xs font-semibold uppercase tracking-wider mb-2">Rolagens da mesa</h2>
+        <h2 className="text-ink-dim text-xs font-semibold uppercase tracking-wider mb-2">{t('Rolagens da mesa')}</h2>
         <FeedRolagens mesaId={mesaId} />
       </section>
     </div>
@@ -50,15 +51,15 @@ export function PainelCombateMapa({
   const executar = fn => async () => {
     setOcupado(true)
     setErro('')
-    try { await fn() } catch (err) { setErro(err.message || 'Falhou.') } finally { setOcupado(false) }
+    try { await fn() } catch (err) { setErro(err.message || t('Falhou.')) } finally { setOcupado(false) }
   }
 
   if (!encontro) {
     return (
       <div className="p-4 space-y-3">
-        <p className="text-ink-dim text-sm">Nenhum combate em andamento.</p>
+        <p className="text-ink-dim text-sm">{t('Nenhum combate em andamento.')}</p>
         {onAbrirSessao && isGestor && (
-          <button onClick={onAbrirSessao} className={`${BTN} w-full bg-hover text-ink hover:bg-border`}>Abrir a sessão para iniciar um combate</button>
+          <button onClick={onAbrirSessao} className={`${BTN} w-full bg-hover text-ink hover:bg-border`}>{t('Abrir a sessão para iniciar um combate')}</button>
         )}
       </div>
     )
@@ -67,19 +68,20 @@ export function PainelCombateMapa({
   const ordem = ordenarPorIniciativa(combatentes)
   const vez = encontro.turno_atual ?? 0
   const daVez = ordem[Math.min(Math.max(0, vez), Math.max(0, ordem.length - 1))] || null
+  const nome = String(daVez?.nome ?? '')
   const card = daVez?.ficha_id ? cardsPorFicha[daVez.ficha_id] : null
   const condicoesDe = id => condicoes.filter(c => c.combatente_id === id)
   return (
     <div className="p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-ink font-semibold">{encontro.titulo || 'Combate'}</h2>
-        <span className="text-dice-400 text-sm font-semibold">Rodada {encontro.rodada ?? 1}</span>
+        <h2 className="text-ink font-semibold">{encontro.titulo || t('Combate')}</h2>
+        <span className="text-dice-400 text-sm font-semibold">{t('Rodada {n}', { n: encontro.rodada ?? 1 })}</span>
       </div>
       {isGestor && (
         <div className="flex gap-2">
           <button onClick={executar(onAnterior)} disabled={ocupado} className={`${BTN} bg-hover text-ink hover:bg-border`}>◀</button>
           <button onClick={executar(onProximo)} disabled={ocupado || ordem.length === 0} className={`${BTN} flex-1 bg-accent-600 hover:bg-accent-500 text-sobre-acento`}>
-            Próximo turno ▶
+            {t('Próximo turno ▶')}
           </button>
         </div>
       )}
@@ -91,18 +93,18 @@ export function PainelCombateMapa({
               className={`w-full flex items-center gap-2 rounded-lg px-2 py-1.5 text-left border transition-colors ${
                 i === vez ? 'border-dice-400 bg-raised' : 'border-border bg-void hover:bg-hover'
               }`}
-              title="Centralizar no mapa"
+              title={t('Centralizar no mapa')}
             >
               <span className={`w-6 text-center text-xs font-mono ${i === vez ? 'text-dice-400' : 'text-ink-dim'}`}>{i === vez ? '▶' : c.iniciativa ?? '–'}</span>
               <span className={`flex-1 min-w-0 truncate text-sm ${COR_TIPO[c.tipo] || 'text-ink'}`}>{c.nome}</span>
-              {i === vez && <span className="text-xs text-dice-400 uppercase tracking-wider">vez</span>}
+              {i === vez && <span className="text-xs text-dice-400 uppercase tracking-wider">{t('vez')}</span>}
             </button>
           </li>
         ))}
       </ol>
       {daVez && podeAgirNoCombate(daVez, { isGestor, meuUserId, cardsPorFicha }) && (
         <div className="rounded-xl border border-border bg-void p-3 space-y-2">
-          <p className="text-ink text-sm font-semibold">Ações de {daVez.nome}</p>
+          <p className="text-ink text-sm font-semibold">{t('Ações de {nome}', { nome })}</p>
           <AcoesCombate
             key={daVez.id}
             fichaId={card ? daVez.ficha_id : null}
@@ -126,7 +128,7 @@ export function PainelCombateMapa({
         </div>
       )}
       {onAbrirSessao && (
-        <button onClick={onAbrirSessao} className={`${BTN} w-full bg-hover text-ink-dim hover:text-ink`}>Combate completo na sessão ↗</button>
+        <button onClick={onAbrirSessao} className={`${BTN} w-full bg-hover text-ink-dim hover:text-ink`}>{t('Combate completo na sessão ↗')}</button>
       )}
       {erro && <p className="text-harm text-sm">{erro}</p>}
     </div>
@@ -147,17 +149,17 @@ export function GavetaFicha({ mesaId, fichaId, fichas, onEscolher }) {
           onChange={e => onEscolher(e.target.value || null)}
           className="flex-1 min-w-0 bg-void border border-border rounded-lg px-2 py-1.5 text-sm text-ink"
         >
-          <option value="">Escolha uma ficha…</option>
+          <option value="">{t('Escolha uma ficha…')}</option>
           {fichas.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
         </select>
         {url && (
-          <a href={url} target="_blank" rel="noreferrer" className={`${BTN} bg-hover text-ink hover:bg-border shrink-0`} title="Abrir em nova aba">↗</a>
+          <a href={url} target="_blank" rel="noreferrer" className={`${BTN} bg-hover text-ink hover:bg-border shrink-0`} title={t('Abrir em nova aba')}>↗</a>
         )}
       </div>
       {url ? (
-        <iframe key={url} src={url} title="Ficha" className="flex-1 w-full bg-bg" />
+        <iframe key={url} src={url} title={t('Ficha')} className="flex-1 w-full bg-bg" />
       ) : (
-        <p className="p-4 text-ink-dim text-sm">{fichas.length ? 'Escolha a ficha acima.' : 'Nenhuma ficha disponível.'}</p>
+        <p className="p-4 text-ink-dim text-sm">{fichas.length ? t('Escolha a ficha acima.') : t('Nenhuma ficha disponível.')}</p>
       )}
     </div>
   )
@@ -173,13 +175,13 @@ export function MenuCamadas({ camadas, onCamadas, isGestor }) {
   )
   return (
     <div className="absolute right-2 top-12 z-30 w-56 rounded-xl border border-border bg-bg/95 backdrop-blur shadow-xl py-1.5">
-      <p className="px-3 pb-1 text-ink-dim text-xs uppercase tracking-wider">Camadas (só para você)</p>
-      {item('grade', 'Grade')}
-      {item('desenhos', 'Desenhos')}
-      {item('tokens', 'Tokens')}
-      {item('efeitos', 'Efeitos da cena')}
-      {item('som', 'Som da cena')}
-      {isGestor && item('comoJogador', 'Ver como jogador')}
+      <p className="px-3 pb-1 text-ink-dim text-xs uppercase tracking-wider">{t('Camadas (só para você)')}</p>
+      {item('grade', t('Grade'))}
+      {item('desenhos', t('Desenhos'))}
+      {item('tokens', t('Tokens'))}
+      {item('efeitos', t('Efeitos da cena'))}
+      {item('som', t('Som da cena'))}
+      {isGestor && item('comoJogador', t('Ver como jogador'))}
     </div>
   )
 }

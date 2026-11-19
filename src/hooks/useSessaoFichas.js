@@ -9,7 +9,9 @@ import { avaliarFormula } from '../lib/formulaEngine'
 import { redimensionar, ordenarExibicao, contarMarcas, tipoMaisSevero } from '../lib/trackEngine'
 import { modificadoresDeEstados, mapaEstados, clampEstado, faixaAtivaDoEstado, calorDoEstado } from '../lib/estadosEngine'
 import { calcularMaximos, mapaPools, atualDePool } from '../lib/poolEngine'
+import { t } from '../i18n'
 import { slotsTotais, usadosPorCirculo, slotsDisponiveis, slotsAtivos } from '../lib/slotsEngine'
+import { ehCampoDefesa } from '../lib/defesaEngine'
 
 function groupBy(rows, key) {
   const out = {}
@@ -188,40 +190,37 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
   // ao vivo via Realtime de trilhas_ficha). trilhaVida = a que substitui a vida.
   const trilhasCard = []
   let trilhaVida = null
-  for (const t of sis.trilhas || []) {
-    const row = (trilhasRows || []).find(r => r.trilha_id === t.id)
+  for (const trl of sis.trilhas || []) {
+    const row = (trilhasRows || []).find(r => r.trilha_id === trl.id)
     let tamanho
-    const f = String(t.tamanho_formula || '').trim()
+    const f = String(trl.tamanho_formula || '').trim()
     try { tamanho = Math.max(0, Math.floor(avaliarFormula(f, ctxCalc))) }
     catch { tamanho = Math.max(0, Math.floor(Number(f) || 0)) }
     tamanho += Number(row?.tamanho_bonus) || 0 // 25.2 — caixinhas compradas com XP
     const raw = row?.marcas ?? Array(tamanho).fill(null)
-    const ajuste = redimensionar(raw, tamanho, t)
+    const ajuste = redimensionar(raw, tamanho, trl)
     const marcas = raw.length > tamanho && ajuste.removidas.length > 0 ? raw : ajuste.marcas
-    const topo = tipoMaisSevero(t)
+    const topo = tipoMaisSevero(trl)
     const cheia = marcas.length > 0 && !!topo && marcas.every(m => m === topo)
     const item = {
-      id: t.id, nome: t.nome, config: t, marcas,
-      exibicao: ordenarExibicao(marcas, t),
+      id: trl.id, nome: trl.nome, config: trl, marcas,
+      exibicao: ordenarExibicao(marcas, trl),
       cont: contarMarcas(marcas),
       cheiaDoMaior: cheia,
-      rotuloCheia: t.ao_encher_do_maior?.rotulo || null,
-      substitui_vida: !!t.substitui_vida,
+      rotuloCheia: trl.ao_encher_do_maior?.rotulo || null,
+      substitui_vida: !!trl.substitui_vida,
     }
     trilhasCard.push(item)
-    if (t.substitui_vida && !trilhaVida) trilhaVida = item
+    if (trl.substitui_vida && !trilhaVida) trilhaVida = item
   }
 
   // 22.7 — interruptores de condição manual (F12) p/ o dono ligar/desligar na
   // sessão (ex: CA situacional 17/19/21). Ativos+inativos, com o delta na CA.
-  const caCampo = camposCombate.find(cc => {
-    const n = (cc.nome || '').trim().toLowerCase()
-    return n === 'ca' || n.includes('armadura') || n.includes('defesa')
-  }) || null
+  const caCampo = camposCombate.find(cc => ehCampoDefesa(cc.nome)) || null
   const togglesVistos = new Set()
   const togglesManuais = []
   for (const m of listarCondicoesManuais({ raca, classe, classes: classesParaMotor, habilidadesFicha, itens: itensRows || [], estadoFicha })) {
-    const rotulo = (m.condicao_config?.rotulo || '').trim() || 'Condição'
+    const rotulo = (m.condicao_config?.rotulo || '').trim() || t('Condição')
     if (togglesVistos.has(m.id)) continue
     togglesVistos.add(m.id)
     const mexeCa = caCampo && m.tipo === 'combate' && m.alvo === caCampo.id
@@ -249,7 +248,7 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
   const rotulosVistos = new Set()
   for (const m of modificadoresAtivos) {
     if (m.condicao_tipo === 'manual') {
-      const rot = (m.condicao_config?.rotulo || '').trim() || 'Condição'
+      const rot = (m.condicao_config?.rotulo || '').trim() || t('Condição')
       if (!rotulosVistos.has(rot)) {
         rotulosVistos.add(rot)
         chips.push({ key: `cond-${rot}`, tipo: 'condicao', label: rot })
@@ -260,7 +259,7 @@ function construirCard(fichaRow, habsRows, condRows, combateRows, sis, classesRo
   for (const m of modificadoresAtivos) {
     if (m.tipo === 'vantagem' || m.tipo === 'desvantagem') {
       const alvoNome = nomes[m.alvo] || ''
-      const label = `${m.tipo === 'vantagem' ? 'Vantagem' : 'Desvantagem'}${alvoNome ? `: ${alvoNome}` : ''}`
+      const label = `${m.tipo === 'vantagem' ? t('Vantagem') : t('Desvantagem')}${alvoNome ? `: ${alvoNome}` : ''}`
       if (!vantVistos.has(label)) {
         vantVistos.add(label)
         chips.push({ key: `vant-${label}`, tipo: m.tipo, label })
@@ -445,7 +444,7 @@ export function useSessaoFichas(mesaId, sistemaBundle) {
         return f.id === base.id ? card : { ...card, id: base.id, nome: rotuloDaForma(base, todas), forma: f }
       }))
     } catch (err) {
-      setError(err.message || 'Erro ao carregar fichas da sessão.')
+      setError(err.message || t('Erro ao carregar fichas da sessão.'))
     } finally {
       setLoading(false)
     }

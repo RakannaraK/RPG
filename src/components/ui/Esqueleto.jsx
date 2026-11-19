@@ -13,7 +13,7 @@ export default function Esqueleto({ className = '' }) {
 /** Cartões genéricos (lista de mesas, fichas, criaturas). */
 export function EsqueletoCartoes({ quantos = 3, className = 'grid gap-3', altura = 'h-24' }) {
   return (
-    <div className={className} role="status" aria-label="Carregando">
+    <div className={className} role="status" aria-label={t('Carregando')}>
       {Array.from({ length: quantos }, (_, i) => (
         <div key={i} className={`rounded-2xl border border-border bg-raised/60 p-4 ${altura}`}>
           <Esqueleto className="h-4 w-1/2 mb-3" />
@@ -24,3 +24,4 @@ export function EsqueletoCartoes({ quantos = 3, className = 'grid gap-3', altura
     </div>
   )
 }
+import { t } from '../../i18n'

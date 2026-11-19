@@ -18,15 +18,16 @@ import GeradorNpc from './GeradorNpc'
 import PainelAtlas from './PainelAtlas'
 import { useConfirmar } from '../ui/Confirmar'
 import { useToast } from '../ui/Toast'
+import { t } from '../../i18n'
 
 // estado de revelação: ícone + texto + forma (não depende só da cor)
 const ESTADOS = {
-  oculto:   { nome: 'Oculto',   icone: 'cadeado', cls: 'border-border text-ink-dim bg-void/60' },
-  parcial:  { nome: 'Parcial',  icone: 'olho',    cls: 'border-accent-500/60 text-accent-300 bg-accent-800/20' },
-  revelado: { nome: 'Revelado', icone: 'check',   cls: 'border-ok/50 text-ok bg-ok/10' },
+  oculto:   { nome: t('Oculto'),   icone: 'cadeado', cls: 'border-border text-ink-dim bg-void/60' },
+  parcial:  { nome: t('Parcial'),  icone: 'olho',    cls: 'border-accent-500/60 text-accent-300 bg-accent-800/20' },
+  revelado: { nome: t('Revelado'), icone: 'check',   cls: 'border-ok/50 text-ok bg-ok/10' },
 }
 const GESTORES = ['mestre', 'co-mestre']
-const PLURAL = { npc: 'NPCs', local: 'Locais', faccao: 'Facções', divindade: 'Divindades', item: 'Itens', lore: 'História', handout: 'Documentos', outro: 'Outros' }
+const PLURAL = { npc: t('NPCs'), local: t('Locais'), faccao: t('Facções'), divindade: t('Divindades'), item: t('Itens'), lore: t('História'), handout: t('Documentos'), outro: t('Outros') }
 
 function SeloEstado({ estado }) {
   const e = ESTADOS[estado]
@@ -94,30 +95,30 @@ function FormVerbete({ inicial, verbetes = [], onSalvar, onCancelar, enviarImage
   return (
     <form onSubmit={enviar} className="space-y-7">
       <section className={SECAO}>
-        <p className={TITULO_SECAO}>Tipo</p>
-        <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Tipo do verbete">
-          {TIPOS_VERBETE.map(t => (
+        <p className={TITULO_SECAO}>{t('Tipo')}</p>
+        <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t('Tipo do verbete')}>
+          {TIPOS_VERBETE.map(tv => (
             <button
-              key={t.id} type="button" role="radio" aria-checked={v.tipo === t.id}
-              onClick={() => setV(x => ({ ...x, tipo: t.id }))}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm transition-colors duration-rapida ${v.tipo === t.id ? 'selecionado text-ink font-medium' : 'border-border text-ink-dim hover:text-ink hover:border-accent-700'}`}
-            ><Ilustra nome={t.icone} tamanho={16} />{t.nome}</button>
+              key={tv.id} type="button" role="radio" aria-checked={v.tipo === tv.id}
+              onClick={() => setV(x => ({ ...x, tipo: tv.id }))}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm transition-colors duration-rapida ${v.tipo === tv.id ? 'selecionado text-ink font-medium' : 'border-border text-ink-dim hover:text-ink hover:border-accent-700'}`}
+            ><Ilustra nome={tv.icone} tamanho={16} />{tv.nome}</button>
           ))}
         </div>
       </section>
 
       <section className={SECAO}>
-        <label className="block"><span className="rotulo">Nome</span>
-          <input value={v.titulo} onChange={muda('titulo')} maxLength={LIMITES.titulo} required className="campo w-full !text-base" placeholder="Ex.: Velha Mirta" />
+        <label className="block"><span className="rotulo">{t('Nome')}</span>
+          <input value={v.titulo} onChange={muda('titulo')} maxLength={LIMITES.titulo} required className="campo w-full !text-base" placeholder={t('Ex.: Velha Mirta')} />
         </label>
-        <label className="block"><span className="rotulo">Resumo <span className="rotulo-dica inline">· o que os jogadores veem primeiro</span></span>
-          <textarea value={v.resumo} onChange={muda('resumo')} maxLength={LIMITES.resumo} rows={2} className="campo w-full" placeholder="Uma ou duas frases." />
+        <label className="block"><span className="rotulo">{t('Resumo')} <span className="rotulo-dica inline">{t('· o que os jogadores veem primeiro')}</span></span>
+          <textarea value={v.resumo} onChange={muda('resumo')} maxLength={LIMITES.resumo} rows={2} className="campo w-full" placeholder={t('Uma ou duas frases.')} />
         </label>
       </section>
 
       {tipo.campos.length > 0 && (
         <section className={SECAO}>
-          <p className={TITULO_SECAO}>Detalhes de {tipo.nome.toLowerCase()}</p>
+          <p className={TITULO_SECAO}>{t('Detalhes de {tipo}', { tipo: tipo.nome.toLowerCase() })}</p>
           <div className="grid gap-3 sm:grid-cols-2">
             {tipo.campos.map(c => (
               <label key={c.id} className="block"><span className="rotulo">{c.nome}</span>
@@ -133,46 +134,46 @@ function FormVerbete({ inicial, verbetes = [], onSalvar, onCancelar, enviarImage
 
       <section className={SECAO}>
         <div className="flex flex-wrap items-end justify-between gap-2">
-          <p className={TITULO_SECAO}>{v.tipo === 'handout' ? 'Texto do documento' : 'Texto'}</p>
+          <p className={TITULO_SECAO}>{v.tipo === 'handout' ? t('Texto do documento') : t('Texto')}</p>
           {outros.length > 0 && (
-            <select value="" onChange={e => ligar(e.target.value)} className="campo !min-h-[34px] !py-1 !text-sm max-w-[16rem]" aria-label="Ligar a outro verbete">
-              <option value="">Ligar a outro verbete…</option>
+            <select value="" onChange={e => ligar(e.target.value)} className="campo !min-h-[34px] !py-1 !text-sm max-w-[16rem]" aria-label={t('Ligar a outro verbete')}>
+              <option value="">{t('Ligar a outro verbete…')}</option>
               {outros.map(o => <option key={o.id} value={o.titulo}>{tipoDe(o.tipo).nome}: {o.titulo}</option>)}
             </select>
           )}
         </div>
-        <textarea ref={corpoRef} value={v.corpo} onChange={muda('corpo')} maxLength={LIMITES.corpo} rows={9} className="campo w-full leading-relaxed" aria-describedby="dica-mencao" aria-label="Texto" />
-        <p id="dica-mencao" className="text-xs text-ink-dim">Escreva <code className="text-ink">[[Nome de outro verbete]]</code> (ou use o seletor acima) para ligar os dois. Ligação para verbete ainda secreto aparece como texto comum para os jogadores.</p>
+        <textarea ref={corpoRef} value={v.corpo} onChange={muda('corpo')} maxLength={LIMITES.corpo} rows={9} className="campo w-full leading-relaxed" aria-describedby="dica-mencao" aria-label={t('Texto')} />
+        <p id="dica-mencao" className="text-xs text-ink-dim">{t('Escreva')} <code className="text-ink">[[{t('Nome de outro verbete')}]]</code> {t('(ou use o seletor acima) para ligar os dois. Ligação para verbete ainda secreto aparece como texto comum para os jogadores.')}</p>
       </section>
 
       <section className="rounded-xl border border-dashed border-accent-600/60 bg-accent-800/10 p-4 space-y-2">
-        <p className="flex items-center gap-1.5 text-sm font-semibold text-accent-300"><Icone nome="cadeado" tamanho={14} /> Apenas o mestre</p>
-        <textarea value={v.segredo} onChange={muda('segredo')} maxLength={LIMITES.segredo} rows={3} className="campo w-full" placeholder="O que só você sabe. Nunca é revelado." aria-label="Notas do mestre" />
+        <p className="flex items-center gap-1.5 text-sm font-semibold text-accent-300"><Icone nome="cadeado" tamanho={14} /> {t('Apenas o mestre')}</p>
+        <textarea value={v.segredo} onChange={muda('segredo')} maxLength={LIMITES.segredo} rows={3} className="campo w-full" placeholder={t('O que só você sabe. Nunca é revelado.')} aria-label={t('Notas do mestre')} />
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 items-start">
-        <label className="block"><span className="rotulo">Etiquetas</span>
-          <input value={v.tags} onChange={muda('tags')} className="campo w-full" placeholder="aliada, capítulo 2" />
-          <span className="rotulo-dica">Separadas por vírgula.</span>
+        <label className="block"><span className="rotulo">{t('Etiquetas')}</span>
+          <input value={v.tags} onChange={muda('tags')} className="campo w-full" placeholder={t('aliada, capítulo 2')} />
+          <span className="rotulo-dica">{t('Separadas por vírgula.')}</span>
         </label>
         <div>
-          <span className="rotulo">Imagem</span>
+          <span className="rotulo">{t('Imagem')}</span>
           <div className="flex flex-wrap items-center gap-2">
             {v.imagem_url && <img src={v.imagem_url} alt="" className="h-14 w-14 rounded-lg object-cover border border-border" />}
             <label className="botao inline-flex items-center gap-1.5 min-h-[36px] px-3 py-2 rounded-lg bg-hover hover:bg-border text-ink text-sm cursor-pointer has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent-400">
               <Icone nome="enviar" tamanho={16} />
-              {ocupado === 'imagem' ? 'Enviando…' : v.imagem_url ? 'Trocar' : 'Escolher imagem'}
+              {ocupado === 'imagem' ? t('Enviando…') : v.imagem_url ? t('Trocar') : t('Escolher imagem')}
               <input type="file" accept="image/*" onChange={imagem} disabled={!!ocupado} className="sr-only" />
             </label>
-            {v.imagem_url && <Botao variante="fantasma" tamanho="sm" onClick={() => setV(x => ({ ...x, imagem_url: '' }))}>Tirar</Botao>}
+            {v.imagem_url && <Botao variante="fantasma" tamanho="sm" onClick={() => setV(x => ({ ...x, imagem_url: '' }))}>{t('Tirar')}</Botao>}
           </div>
         </div>
       </section>
 
       {erro && <p className="aviso-erro" role="alert">{erro}</p>}
       <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/60">
-        <Botao type="submit" variante="primario" disabled={!!ocupado}>{ocupado === 'salvando' ? 'Salvando…' : 'Salvar verbete'}</Botao>
-        <Botao variante="fantasma" onClick={onCancelar}>Cancelar</Botao>
+        <Botao type="submit" variante="primario" disabled={!!ocupado}>{ocupado === 'salvando' ? t('Salvando…') : t('Salvar verbete')}</Botao>
+        <Botao variante="fantasma" onClick={onCancelar}>{t('Cancelar')}</Botao>
       </div>
     </form>
   )
@@ -191,8 +192,8 @@ function RevelarVerbete({ verbete, jogadores, onEntregar, onFechar }) {
   const documento = verbete.tipo === 'handout'
 
   async function confirmar() {
-    if (!campos.length) { setErro('Marque o que revelar.'); return }
-    if (!paraTodos && !alvos.length) { setErro('Escolha para quem.'); return }
+    if (!campos.length) { setErro(t('Marque o que revelar.')); return }
+    if (!paraTodos && !alvos.length) { setErro(t('Escolha para quem.')); return }
     setOcupado(true); setErro('')
     try { await onEntregar(paraTodos ? [] : alvos, campos, avisar); onFechar(true) }
     catch (e) { setErro(e.message); setOcupado(false) }
@@ -202,22 +203,22 @@ function RevelarVerbete({ verbete, jogadores, onEntregar, onFechar }) {
   return (
     <Modal
       onFechar={() => onFechar(false)} bloqueado={ocupado} tamanho="md"
-      titulo={documento ? 'Entregar documento' : 'Revelar aos jogadores'} subtitulo={verbete.titulo}
+      titulo={documento ? t('Entregar documento') : t('Revelar aos jogadores')} subtitulo={verbete.titulo}
       rodape={
         <>
           <FecharModal disabled={ocupado} />
-          <Botao variante="primario" onClick={confirmar} disabled={ocupado}>{ocupado ? 'Revelando…' : documento ? 'Entregar' : 'Revelar'}</Botao>
+          <Botao variante="primario" onClick={confirmar} disabled={ocupado}>{ocupado ? t('Revelando…') : documento ? t('Entregar') : t('Revelar')}</Botao>
         </>
       }
     >
       <div className="space-y-5">
         <fieldset className="space-y-1">
-          <legend className="rotulo">Para quem</legend>
-          <label className={OPCAO}><input type="radio" checked={paraTodos} onChange={() => setParaTodos(true)} className="accent-purple-500" /> A mesa toda</label>
-          <label className={OPCAO}><input type="radio" checked={!paraTodos} onChange={() => setParaTodos(false)} className="accent-purple-500" /> Só alguns</label>
+          <legend className="rotulo">{t('Para quem')}</legend>
+          <label className={OPCAO}><input type="radio" checked={paraTodos} onChange={() => setParaTodos(true)} className="accent-purple-500" /> {t('A mesa toda')}</label>
+          <label className={OPCAO}><input type="radio" checked={!paraTodos} onChange={() => setParaTodos(false)} className="accent-purple-500" /> {t('Só alguns')}</label>
           {!paraTodos && (
             <div className="flex flex-wrap gap-x-4 pl-7">
-              {jogadores.length === 0 && <span className="text-sm text-ink-dim">Ninguém na mesa ainda.</span>}
+              {jogadores.length === 0 && <span className="text-sm text-ink-dim">{t('Ninguém na mesa ainda.')}</span>}
               {jogadores.map(j => (
                 <label key={j.usuario_id} className={OPCAO}>
                   <input type="checkbox" checked={alvos.includes(j.usuario_id)} onChange={() => alterna(alvos, setAlvos, j.usuario_id)} className="accent-purple-500" /> {j.nome}
@@ -227,7 +228,7 @@ function RevelarVerbete({ verbete, jogadores, onEntregar, onFechar }) {
           )}
         </fieldset>
         <fieldset>
-          <legend className="rotulo">O quê</legend>
+          <legend className="rotulo">{t('O quê')}</legend>
           <div className="flex flex-wrap gap-x-5">
             {revelaveis.map(c => (
               <label key={c} className={OPCAO}>
@@ -235,10 +236,10 @@ function RevelarVerbete({ verbete, jogadores, onEntregar, onFechar }) {
               </label>
             ))}
           </div>
-          <p className="text-xs text-ink-dim mt-1">As notas do mestre nunca são reveladas.</p>
+          <p className="text-xs text-ink-dim mt-1">{t('As notas do mestre nunca são reveladas.')}</p>
         </fieldset>
         <label className={OPCAO}>
-          <input type="checkbox" checked={avisar} onChange={e => setAvisar(e.target.checked)} className="accent-purple-500" /> Avisar pelo sininho
+          <input type="checkbox" checked={avisar} onChange={e => setAvisar(e.target.checked)} className="accent-purple-500" /> {t('Avisar pelo sininho')}
         </label>
         {erro && <p className="aviso-erro" role="alert">{erro}</p>}
       </div>
@@ -261,8 +262,8 @@ function MatrizRevelacao({ verbete, revelacoes, jogadores, onEntregar, onEsconde
         <table className="text-sm w-full">
           <thead className="bg-void/60">
             <tr className="text-xs text-ink-dim">
-              <th className="text-left font-semibold px-3 py-2">Campo</th>
-              <th className="font-semibold px-2 py-2">Mesa toda</th>
+              <th className="text-left font-semibold px-3 py-2">{t('Campo')}</th>
+              <th className="font-semibold px-2 py-2">{t('Mesa toda')}</th>
               {jogadores.map(j => <th key={j.usuario_id} className="font-semibold px-2 py-2 max-w-[7rem] truncate">{j.nome}</th>)}
             </tr>
           </thead>
@@ -275,18 +276,18 @@ function MatrizRevelacao({ verbete, revelacoes, jogadores, onEntregar, onEsconde
                   <td className="px-2 py-1.5 text-center">
                     <button
                       type="button" className={`${cel} ${todos.has(c) ? 'bg-accent-600 text-sobre-acento' : 'border border-border text-ink-dim hover:bg-hover'}`}
-                      aria-label={todos.has(c) ? `Esconder ${nome} da mesa toda` : `Revelar ${nome} à mesa toda`} aria-pressed={todos.has(c)}
+                      aria-label={todos.has(c) ? t('Esconder {nome} da mesa toda', { nome }) : t('Revelar {nome} à mesa toda', { nome })} aria-pressed={todos.has(c)}
                       onClick={acao(() => todos.has(c) ? onEsconder(null, c) : onEntregar([], [c], false))}
                     >{todos.has(c) ? <Icone nome="check" tamanho={16} espessura={2.2} /> : <Icone nome="menos" tamanho={14} />}</button>
                   </td>
                   {jogadores.map(j => {
                     const sabe = direto(j.usuario_id, c)
-                    if (todos.has(c) && !sabe) return <td key={j.usuario_id} className="px-2 py-1.5 text-center text-ink-dim" title="Revelado à mesa toda"><Icone nome="check" tamanho={16} className="mx-auto" /></td>
+                    if (todos.has(c) && !sabe) return <td key={j.usuario_id} className="px-2 py-1.5 text-center text-ink-dim" title={t('Revelado à mesa toda')}><Icone nome="check" tamanho={16} className="mx-auto" /></td>
                     return (
                       <td key={j.usuario_id} className="px-2 py-1.5 text-center">
                         <button
                           type="button" className={`${cel} ${sabe ? 'bg-accent-700 text-white' : 'border border-border text-ink-dim hover:bg-hover'}`}
-                          aria-label={sabe ? `Esconder ${nome} de ${j.nome}` : `Revelar ${nome} a ${j.nome}`} aria-pressed={sabe}
+                          aria-label={sabe ? t('Esconder {nome} de {jogador}', { nome, jogador: j.nome }) : t('Revelar {nome} a {jogador}', { nome, jogador: j.nome })} aria-pressed={sabe}
                           onClick={acao(() => sabe ? onEsconder(j.usuario_id, c) : onEntregar([j.usuario_id], [c], false))}
                         >{sabe ? <Icone nome="check" tamanho={16} espessura={2.2} /> : <Icone nome="menos" tamanho={14} />}</button>
                       </td>
@@ -298,7 +299,7 @@ function MatrizRevelacao({ verbete, revelacoes, jogadores, onEntregar, onEsconde
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-ink-dim">Clique num quadrado para revelar só aquele campo (sem aviso) ou para esconder de novo.</p>
+      <p className="text-xs text-ink-dim">{t('Clique num quadrado para revelar só aquele campo (sem aviso) ou para esconder de novo.')}</p>
       {erro && <p className="aviso-erro" role="alert">{erro}</p>}
     </div>
   )
@@ -310,25 +311,25 @@ function ArtigoVerbete({ verbete, verbetes, isGestor, estado, onAbrir, acoes, ch
   const campos = tipo.campos.filter(c => verbete.campos?.[c.id])
   const { cita, citadoPor } = relacionados(verbete, verbetes)
   const temCaixa = verbete.imagem_url || campos.length > 0
-  const ligacoes = [...cita.map(v => ({ v, rel: 'citado aqui' })), ...citadoPor.filter(v => !cita.some(c => c.id === v.id)).map(v => ({ v, rel: 'cita este' }))]
+  const ligacoes = [...cita.map(v => ({ v, rel: t('citado aqui') })), ...citadoPor.filter(v => !cita.some(c => c.id === v.id)).map(v => ({ v, rel: t('cita este') }))]
 
   return (
     <article className="space-y-6">
       <header className="space-y-3">
-        <nav aria-label="Caminho" className="flex items-center gap-1.5 text-xs text-ink-dim">
-          <span>Enciclopédia</span><Icone nome="chevron-dir" tamanho={12} /><span>{PLURAL[tipo.id] || tipo.nome}</span>
+        <nav aria-label={t('Caminho')} className="flex items-center gap-1.5 text-xs text-ink-dim">
+          <span>{t('Enciclopédia')}</span><Icone nome="chevron-dir" tamanho={12} /><span>{PLURAL[tipo.id] || tipo.nome}</span>
         </nav>
         <div className="flex flex-wrap items-start gap-3">
           <div className="flex-1 min-w-[12rem]">
             <h2 className="font-sora text-3xl font-bold text-ink leading-tight tracking-tight break-words">
-              {verbete.titulo || <span className="italic text-ink-dim font-normal">Nome ainda desconhecido</span>}
+              {verbete.titulo || <span className="italic text-ink-dim font-normal">{t('Nome ainda desconhecido')}</span>}
             </h2>
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-ink-dim border border-border rounded-full px-2 py-0.5">
                 <Ilustra nome={tipo.icone} tamanho={14} /> {tipo.nome}
               </span>
               {estado && <SeloEstado estado={estado} />}
-              {verbete.tags?.map(t => <span key={t} className="text-xs text-accent-300">#{t}</span>)}
+              {verbete.tags?.map(tag => <span key={tag} className="text-xs text-accent-300">#{tag}</span>)}
             </div>
           </div>
           {acoes}
@@ -338,7 +339,7 @@ function ArtigoVerbete({ verbete, verbetes, isGestor, estado, onAbrir, acoes, ch
       <div className={`grid gap-6 grid-cols-1 ${temCaixa ? 'xl:grid-cols-[minmax(0,1fr)_17rem]' : ''}`}>
         {/* caixa de informações: no celular vem antes do texto */}
         {temCaixa && (
-          <aside className="xl:order-2 rounded-2xl border border-border bg-void/50 overflow-hidden self-start" aria-label="Informações">
+          <aside className="xl:order-2 rounded-2xl border border-border bg-void/50 overflow-hidden self-start" aria-label={t('Informações')}>
             {verbete.imagem_url && <img src={verbete.imagem_url} alt={verbete.titulo || ''} className="w-full max-h-72 object-cover border-b border-border/70" />}
             {campos.length > 0 && (
               <dl className="divide-y divide-border/60">
@@ -364,11 +365,11 @@ function ArtigoVerbete({ verbete, verbetes, isGestor, estado, onAbrir, acoes, ch
             />
           )}
           {!isGestor && !verbete.resumo && !verbete.corpo && !campos.length && !verbete.imagem_url && (
-            <p className="text-ink-dim">Por enquanto, só isso. O mestre pode revelar mais depois.</p>
+            <p className="text-ink-dim">{t('Por enquanto, só isso. O mestre pode revelar mais depois.')}</p>
           )}
           {isGestor && verbete.segredo && (
             <div className="rounded-xl border border-dashed border-accent-600/60 bg-accent-800/10 p-4">
-              <p className="flex items-center gap-1.5 text-sm font-semibold text-accent-300 mb-1"><Icone nome="cadeado" tamanho={14} /> Apenas o mestre</p>
+              <p className="flex items-center gap-1.5 text-sm font-semibold text-accent-300 mb-1"><Icone nome="cadeado" tamanho={14} /> {t('Apenas o mestre')}</p>
               <p className="text-ink text-sm whitespace-pre-wrap">{verbete.segredo}</p>
             </div>
           )}
@@ -376,8 +377,8 @@ function ArtigoVerbete({ verbete, verbetes, isGestor, estado, onAbrir, acoes, ch
       </div>
 
       {ligacoes.length > 0 && (
-        <section className="space-y-2" aria-label="Relacionados">
-          <p className="text-ink-dim text-xs font-semibold uppercase tracking-wider">Relacionados</p>
+        <section className="space-y-2" aria-label={t('Relacionados')}>
+          <p className="text-ink-dim text-xs font-semibold uppercase tracking-wider">{t('Relacionados')}</p>
           <div className="flex flex-wrap gap-2">
             {ligacoes.map(({ v, rel }) => (
               <button
@@ -426,7 +427,7 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
   const aberto = enc.verbetes.find(v => v.id === abertoId)
   const estadoDe = v => (isGestor ? estadoRevelacao(v, enc.revelacoes, idsJogadores) : null)
 
-  if (enc.indisponivel) return <p className="text-ink-dim text-sm">A enciclopédia ainda não está disponível neste servidor.</p>
+  if (enc.indisponivel) return <p className="text-ink-dim text-sm">{t('A enciclopédia ainda não está disponível neste servidor.')}</p>
 
   function abrir(id) {
     setAbertoId(id); setModo('ler'); setErro('')
@@ -437,8 +438,8 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
   }
 
   async function apagar() {
-    if (!(await confirmar({ titulo: 'Apagar verbete?', mensagem: `${aberto.titulo} sai da enciclopédia. Quem já viu deixa de ver.`, confirmar: 'Apagar', perigo: true }))) return
-    try { await enc.remover(aberto.id); setAbertoId(null); toast.ok('Verbete apagado') } catch (e) { setErro(e.message) }
+    if (!(await confirmar({ titulo: t('Apagar verbete?'), mensagem: t('{titulo} sai da enciclopédia. Quem já viu deixa de ver.', { titulo: aberto.titulo }), confirmar: t('Apagar'), perigo: true }))) return
+    try { await enc.remover(aberto.id); setAbertoId(null); toast.ok(t('Verbete apagado')) } catch (e) { setErro(e.message) }
   }
 
   const vazio = !enc.carregando && enc.verbetes.length === 0
@@ -446,7 +447,7 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
   const agrupar = !busca.trim() && !tipo
 
   const item = v => {
-    const t = tipoDe(v.tipo)
+    const ti = tipoDe(v.tipo)
     const estado = estadoDe(v)
     const atual = v.id === abertoId
     return (
@@ -455,9 +456,9 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
           type="button" onClick={() => abrir(v.id)} aria-current={atual || undefined}
           className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg border text-left transition-colors duration-rapida ${atual ? 'selecionado' : 'border-transparent hover:bg-hover/70'}`}
         >
-          <Ilustra nome={t.icone} tamanho={22} className="shrink-0" />
+          <Ilustra nome={ti.icone} tamanho={22} className="shrink-0" />
           <span className="flex-1 min-w-0">
-            <span className={`block text-sm truncate ${v.titulo ? 'text-ink font-medium' : 'italic text-ink-dim'}`}>{v.titulo || `${t.nome} desconhecido`}</span>
+            <span className={`block text-sm truncate ${v.titulo ? 'text-ink font-medium' : 'italic text-ink-dim'}`}>{v.titulo || t('{tipo} desconhecido', { tipo: ti.nome })}</span>
             {v.resumo && <span className="block text-xs text-ink-dim truncate">{v.resumo}</span>}
           </span>
           {estado && <SeloEstado estado={estado} />}
@@ -469,22 +470,22 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
   return (
     <div className="space-y-6">
       <CabecalhoSecao
-        titulo="Enciclopédia da campanha"
+        titulo={t('Enciclopédia da campanha')}
         descricao={isGestor
-          ? 'NPCs, lugares, facções, itens e documentos. Tudo nasce secreto; você revela campo a campo.'
-          : 'O que a mesa já descobriu sobre o mundo.'}
+          ? t('NPCs, lugares, facções, itens e documentos. Tudo nasce secreto; você revela campo a campo.')
+          : t('O que a mesa já descobriu sobre o mundo.')}
         acoes={isGestor && vista === 'verbetes' && (
           <>
-            <Botao variante="contorno" onClick={() => { setAbertoId(null); setModo('gerar') }}><Ilustra nome="elmo" tamanho={16} /> Gerar NPC</Botao>
-            <Botao variante="primario" onClick={() => { setAbertoId(null); setRascunho(null); setModo('novo') }}><Icone nome="mais" tamanho={18} /> Novo verbete</Botao>
+            <Botao variante="contorno" onClick={() => { setAbertoId(null); setModo('gerar') }}><Ilustra nome="elmo" tamanho={16} /> {t('Gerar NPC')}</Botao>
+            <Botao variante="primario" onClick={() => { setAbertoId(null); setRascunho(null); setModo('novo') }}><Icone nome="mais" tamanho={18} /> {t('Novo verbete')}</Botao>
           </>
         )}
       />
 
       <div className="max-w-xs">
-        <Abas tamanho="sm" rotulo="Ver" atual={vista} onTrocar={setVista} abas={[
-          { id: 'verbetes', rotulo: 'Verbetes', icone: <Ilustra nome="tomo" tamanho={16} /> },
-          { id: 'atlas', rotulo: 'Atlas', icone: <Ilustra nome="mapa" tamanho={16} /> },
+        <Abas tamanho="sm" rotulo={t('Ver')} atual={vista} onTrocar={setVista} abas={[
+          { id: 'verbetes', rotulo: t('Verbetes'), icone: <Ilustra nome="tomo" tamanho={16} /> },
+          { id: 'atlas', rotulo: t('Atlas'), icone: <Ilustra nome="mapa" tamanho={16} /> },
         ]} />
       </div>
 
@@ -497,35 +498,35 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
           />
         </div>
       ) : enc.carregando ? (
-        <div className="grid gap-6 grid-cols-1 lg:grid-cols-[19rem_minmax(0,1fr)]" role="status" aria-label="Carregando">
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-[19rem_minmax(0,1fr)]" role="status" aria-label={t('Carregando')}>
           <div className="space-y-2">{[1, 2, 3, 4].map(i => <Esqueleto key={i} className="h-11" />)}</div>
           <div className="rounded-2xl border border-border p-6 space-y-3"><Esqueleto className="h-8 w-1/2" /><Esqueleto className="h-4" /><Esqueleto className="h-4 w-5/6" /></div>
         </div>
       ) : vazio && !criando ? (
         <EstadoVazio
-          arte="tomo" titulo={isGestor ? 'A enciclopédia está vazia' : 'Nada revelado ainda'}
+          arte="tomo" titulo={isGestor ? t('A enciclopédia está vazia') : t('Nada revelado ainda')}
           descricao={isGestor
-            ? 'Crie o primeiro verbete ou gere um NPC. Os jogadores só veem o que você revelar.'
-            : 'Quando o mestre revelar algo, aparece aqui e você recebe um aviso.'}
+            ? t('Crie o primeiro verbete ou gere um NPC. Os jogadores só veem o que você revelar.')
+            : t('Quando o mestre revelar algo, aparece aqui e você recebe um aviso.')}
         >
           {isGestor && (
             <>
-              <Botao variante="contorno" onClick={() => setModo('gerar')}>Gerar NPC</Botao>
-              <Botao variante="primario" onClick={() => setModo('novo')}><Icone nome="mais" tamanho={18} /> Novo verbete</Botao>
+              <Botao variante="contorno" onClick={() => setModo('gerar')}>{t('Gerar NPC')}</Botao>
+              <Botao variante="primario" onClick={() => setModo('novo')}><Icone nome="mais" tamanho={18} /> {t('Novo verbete')}</Botao>
             </>
           )}
         </EstadoVazio>
       ) : (
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-[19rem_minmax(0,1fr)] items-start">
           {/* ── Índice ── */}
-          <aside className={`space-y-3 lg:sticky lg:top-32 ${aberto || criando ? 'hidden lg:block' : ''}`} aria-label="Índice">
+          <aside className={`space-y-3 lg:sticky lg:top-32 ${aberto || criando ? 'hidden lg:block' : ''}`} aria-label={t('Índice')}>
             <label className="relative block">
-              <span className="sr-only">Buscar na enciclopédia</span>
+              <span className="sr-only">{t('Buscar na enciclopédia')}</span>
               <Icone nome="busca" tamanho={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-dim pointer-events-none" />
-              <input type="search" value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar em tudo…" className="campo w-full !pl-9" />
+              <input type="search" value={busca} onChange={e => setBusca(e.target.value)} placeholder={t('Buscar em tudo…')} className="campo w-full !pl-9" />
             </label>
-            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Categoria">
-              {[{ id: '', nome: 'Tudo', n: enc.verbetes.length }, ...TIPOS_VERBETE.filter(t => contagem[t.id]).map(t => ({ id: t.id, nome: PLURAL[t.id], n: contagem[t.id] }))].map(c => (
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('Categoria')}>
+              {[{ id: '', nome: t('Tudo'), n: enc.verbetes.length }, ...TIPOS_VERBETE.filter(x => contagem[x.id]).map(x => ({ id: x.id, nome: PLURAL[x.id], n: contagem[x.id] }))].map(c => (
                 <button
                   key={c.id || 'tudo'} type="button" onClick={() => setTipo(c.id)} aria-pressed={tipo === c.id}
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs transition-colors duration-rapida ${tipo === c.id ? 'selecionado text-ink font-semibold' : 'border-border text-ink-dim hover:text-ink'}`}
@@ -535,7 +536,7 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
 
             <div className="lg:max-h-[calc(100vh-17rem)] lg:overflow-y-auto lg:pr-1 -mx-1 px-1">
               {filtrada.length === 0 ? (
-                <p className="text-ink-dim text-sm px-1 py-4">Nada encontrado com essa busca.</p>
+                <p className="text-ink-dim text-sm px-1 py-4">{t('Nada encontrado com essa busca.')}</p>
               ) : agrupar ? (
                 <div className="space-y-4">
                   {indicePorTipo(filtrada).map(g => (
@@ -552,16 +553,16 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
           </aside>
 
           {/* ── Artigo ── */}
-          <section ref={artigoRef} className="min-w-0 rounded-2xl border border-border bg-raised/60 p-5 sm:p-7 scroll-mt-32" aria-label="Artigo">
+          <section ref={artigoRef} className="min-w-0 rounded-2xl border border-border bg-raised/60 p-5 sm:p-7 scroll-mt-32" aria-label={t('Artigo')}>
             {(aberto || criando) && (
               <Botao variante="fantasma" tamanho="sm" className="lg:hidden mb-4" onClick={() => { setAbertoId(null); setModo('ler') }}>
-                <Icone nome="seta-esq" tamanho={16} /> Voltar ao índice
+                <Icone nome="seta-esq" tamanho={16} /> {t('Voltar ao índice')}
               </Botao>
             )}
             {modo === 'gerar' && (
               <div key="gerar" className="entra-aba">
                 <GeradorNpc
-                  onSalvar={async linha => { const c = validarVerbete(linha); if (!c.ok) throw new Error(c.erro); const v = await enc.salvar(null, c.linha); abrir(v.id); toast.ok('NPC salvo na enciclopédia', { detalhe: 'Nasce secreto: revele quando quiser.' }) }}
+                  onSalvar={async linha => { const c = validarVerbete(linha); if (!c.ok) throw new Error(c.erro); const v = await enc.salvar(null, c.linha); abrir(v.id); toast.ok(t('NPC salvo na enciclopédia'), { detalhe: t('Nasce secreto: revele quando quiser.') }) }}
                   onAjustar={linha => { setRascunho(linha); setModo('novo') }}
                   onCancelar={() => setModo('ler')}
                 />
@@ -569,21 +570,21 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
             )}
             {modo === 'novo' && (
               <div key={rascunho ? 'rascunho' : 'novo'} className="entra-aba space-y-5">
-                <h2 className="font-sora text-2xl font-bold text-ink">Novo verbete</h2>
+                <h2 className="font-sora text-2xl font-bold text-ink">{t('Novo verbete')}</h2>
                 <FormVerbete
                   inicial={rascunho} verbetes={enc.verbetes}
                   enviarImagem={f => enc.enviarImagem(f, meuId)}
-                  onSalvar={async linha => { const v = await enc.salvar(null, linha); abrir(v.id); toast.ok('Verbete criado', { detalhe: 'Nasce secreto: revele quando quiser.' }) }}
+                  onSalvar={async linha => { const v = await enc.salvar(null, linha); abrir(v.id); toast.ok(t('Verbete criado'), { detalhe: t('Nasce secreto: revele quando quiser.') }) }}
                   onCancelar={() => setModo('ler')}
                 />
               </div>
             )}
             {!criando && aberto && modo === 'editar' && (
               <div key={`editar-${aberto.id}`} className="entra-aba space-y-5">
-                <h2 className="font-sora text-2xl font-bold text-ink">Editar verbete</h2>
+                <h2 className="font-sora text-2xl font-bold text-ink">{t('Editar verbete')}</h2>
                 <FormVerbete
                   inicial={aberto} verbetes={enc.verbetes} enviarImagem={f => enc.enviarImagem(f, meuId)}
-                  onSalvar={async linha => { await enc.salvar(aberto.id, linha); setModo('ler'); toast.ok('Verbete salvo') }}
+                  onSalvar={async linha => { await enc.salvar(aberto.id, linha); setModo('ler'); toast.ok(t('Verbete salvo')) }}
                   onCancelar={() => setModo('ler')}
                 />
               </div>
@@ -595,10 +596,10 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
                   acoes={isGestor && (
                     <div className="flex flex-wrap gap-1.5">
                       <Botao variante="primario" tamanho="sm" onClick={() => setRevelando(true)}>
-                        <Icone nome="olho" tamanho={16} /> {aberto.tipo === 'handout' ? 'Entregar' : 'Revelar'}
+                        <Icone nome="olho" tamanho={16} /> {aberto.tipo === 'handout' ? t('Entregar') : t('Revelar')}
                       </Botao>
-                      <Botao variante="contorno" tamanho="sm" onClick={() => setModo('editar')}><Icone nome="editar" tamanho={16} /> Editar</Botao>
-                      <button type="button" onClick={apagar} aria-label="Apagar verbete" data-dica="Apagar" className="botao-icone hover:!text-harm"><Icone nome="lixeira" tamanho={18} /></button>
+                      <Botao variante="contorno" tamanho="sm" onClick={() => setModo('editar')}><Icone nome="editar" tamanho={16} /> {t('Editar')}</Botao>
+                      <button type="button" onClick={apagar} aria-label={t('Apagar verbete')} data-dica={t('Apagar')} className="botao-icone hover:!text-harm"><Icone nome="lixeira" tamanho={18} /></button>
                     </div>
                   )}
                 >
@@ -606,8 +607,8 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
                     <details className="group/rev rounded-xl border border-border/70 p-4" open={estadoDe(aberto) !== 'oculto'}>
                       <summary className="cursor-pointer list-none flex items-center gap-2 text-ink font-medium">
                         <Icone nome="chevron-dir" tamanho={16} className="text-ink-dim transition-transform duration-normal group-open/rev:rotate-90" />
-                        Quem sabe o quê
-                        <span className="text-ink-dim text-sm font-normal">· só você vê</span>
+                        {t('Quem sabe o quê')}
+                        <span className="text-ink-dim text-sm font-normal">{t('· só você vê')}</span>
                       </summary>
                       <div className="mt-4">
                         <MatrizRevelacao
@@ -624,7 +625,7 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
                   <RevelarVerbete
                     verbete={aberto} jogadores={jogadores}
                     onEntregar={(us, cs, av) => enc.entregar(aberto.id, us, cs, av)}
-                    onFechar={feito => { setRevelando(false); if (feito) toast.ok(aberto.tipo === 'handout' ? 'Documento entregue' : 'Revelado aos jogadores') }}
+                    onFechar={feito => { setRevelando(false); if (feito) toast.ok(aberto.tipo === 'handout' ? t('Documento entregue') : t('Revelado aos jogadores')) }}
                   />
                 )}
               </div>
@@ -632,8 +633,8 @@ export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
             {!criando && !aberto && (
               <div className="flex flex-col items-center text-center gap-3 py-12">
                 <Ilustra nome="tomo" tamanho={64} />
-                <p className="text-ink font-medium">Escolha um verbete no índice</p>
-                <p className="text-ink-dim text-sm max-w-sm">Os nomes sublinhados dentro dos textos levam de um verbete para outro.</p>
+                <p className="text-ink font-medium">{t('Escolha um verbete no índice')}</p>
+                <p className="text-ink-dim text-sm max-w-sm">{t('Os nomes sublinhados dentro dos textos levam de um verbete para outro.')}</p>
               </div>
             )}
           </section>

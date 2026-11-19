@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { avancarRoda, iniciarRoda, pontosPorAcerto, resultadoRoda, tocarRoda } from '../../lib/minigames/rodaRunica'
 import { RUNAS } from '../../lib/minigames/memoria'
+import { t } from '../../i18n'
 
 const R = 78 // raio do anel no viewBox 200×200
 const ponto = (angulo, raio = R) => {
@@ -74,17 +75,17 @@ export default function JogoRodaRunica({ config, semente, onFim, onSom }) {
   return (
     <div className="flex flex-col items-center gap-3 select-none">
       <div className="flex items-center justify-between w-full max-w-sm text-sm">
-        <span className="text-ink font-bold tabular-nums">{estado.pontos} pts</span>
+        <span className="text-ink font-bold tabular-nums">{t('{n} pts', { n: estado.pontos })}</span>
         <span className={`tabular-nums ${estado.combo >= 5 ? 'text-dice-400 font-bold' : 'text-ink-dim'}`}>
-          combo {estado.combo}{proximoValor > 1 ? ` · ×${proximoValor}` : ''}
+          {t('combo {n}', { n: estado.combo })}{proximoValor > 1 ? ` · ×${proximoValor}` : ''}
         </span>
-        <span className="text-harm tracking-widest" aria-label={`${estado.vidas} vidas`}>{'♥'.repeat(Math.max(0, estado.vidas))}</span>
+        <span className="text-harm tracking-widest" aria-label={t('{n} vidas', { n: estado.vidas })}>{'♥'.repeat(Math.max(0, estado.vidas))}</span>
       </div>
       <button
         type="button"
         onPointerDown={e => { e.preventDefault(); tocar() }}
         className="relative w-full max-w-[22rem] aspect-square rounded-full touch-none focus:outline-none"
-        aria-label="Roda Rúnica — toque quando o ponteiro estiver na runa acesa"
+        aria-label={t('Roda Rúnica — toque quando o ponteiro estiver na runa acesa')}
       >
         <svg viewBox="0 0 200 200" className="w-full h-full">
           <circle cx="100" cy="100" r={R} fill="none" stroke={corAnel} strokeWidth="10" style={{ transition: 'stroke .12s' }} />

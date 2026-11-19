@@ -18,6 +18,7 @@ import EstadoVazio from '../ui/EstadoVazio'
 import { EsqueletoCartoes } from '../ui/Esqueleto'
 import { nivelAmeaca, ordemAmeaca } from '../../lib/ameaca'
 import { ChamaArcana } from '../ui/EfeitosAmbiente'
+import { t, tn } from '../../i18n'
 
 const AMEACAS = ['Trivial', 'Fácil', 'Normal', 'Difícil', 'Mortal', 'Lendária']
 const ESPECIES = ['Fera', 'Humanoide', 'Morto-vivo', 'Aberração', 'Elemental', 'Construto', 'Dragão', 'Espírito']
@@ -45,11 +46,11 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
   const doBestiario = criaturas.filter(c => !c.origem_id) // cópias em jogo não poluem a lista
   const filtro = busca.trim().toLocaleLowerCase('pt-BR')
   const lista = filtro
-    ? doBestiario.filter(c => [c.nome_personagem, c.especie, c.ameaca].some(t => (t || '').toLocaleLowerCase('pt-BR').includes(filtro)))
+    ? doBestiario.filter(c => [c.nome_personagem, c.especie, c.ameaca].some(campo => (campo || '').toLocaleLowerCase('pt-BR').includes(filtro)))
     : doBestiario
 
   async function criar() {
-    if (!novo?.nome?.trim()) { setErro('Dê um nome à criatura.'); return }
+    if (!novo?.nome?.trim()) { setErro(t('Dê um nome à criatura.')); return }
     setOcupado('criando'); setErro('')
     try {
       const ficha = await createFicha({
@@ -61,7 +62,7 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
       refetch()
       onAbrir?.(ficha.id)
     } catch (e) {
-      setErro(e.message || 'Não foi possível criar.')
+      setErro(e.message || t('Não foi possível criar.'))
     } finally { setOcupado('') }
   }
 
@@ -80,7 +81,7 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
   }
 
   async function apagar(c) {
-    if (!(await confirmar({ titulo: 'Excluir criatura?', mensagem: `${c.nome_personagem} sai do bestiário desta mesa.`, detalhe: 'Esta ação não pode ser desfeita.', confirmar: 'Excluir', perigo: true }))) return
+    if (!(await confirmar({ titulo: t('Excluir criatura?'), mensagem: t('{nome} sai do bestiário desta mesa.', { nome: String(c.nome_personagem ?? '') }), detalhe: t('Esta ação não pode ser desfeita.'), confirmar: t('Excluir'), perigo: true }))) return
     setOcupado(c.id); setErro('')
     const { error } = await supabase.from('fichas').delete().eq('id', c.id)
     if (error) setErro(error.message)
@@ -110,25 +111,25 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
   return (
     <div className="space-y-5">
       <CabecalhoSecao
-        titulo="Bestiário da mesa"
-        descricao="As criaturas desta campanha. Nascem privadas: os jogadores não veem a ficha do monstro."
+        titulo={t('Bestiário da mesa')}
+        descricao={t('As criaturas desta campanha. Nascem privadas: os jogadores não veem a ficha do monstro.')}
         acoes={podeEscrever && (
           <>
             <ImportarFicha
               mesaId={mesaId} donoId={meuId}
               extras={{ tipo_ficha: 'criatura', privada: true }}
-              rotulo="Importar"
+              rotulo={t('Importar')}
               className="botao inline-flex items-center gap-1.5 px-3 py-2 min-h-[36px] rounded-lg border border-border text-ink text-sm hover:border-accent-500"
               onImportada={id => { refetch(); onAbrir?.(id) }}
             />
-            <Botao variante="contorno" onClick={() => setSrd(true)}><Icone nome="globo" tamanho={16} /> Biblioteca SRD</Botao>
-            <Botao variante="primario" onClick={() => setNovo({ nome: '', especie: '', ameaca: '', vida: '' })}><Icone nome="mais" tamanho={18} /> Nova criatura</Botao>
+            <Botao variante="contorno" onClick={() => setSrd(true)}><Icone nome="globo" tamanho={16} /> {t('Biblioteca SRD')}</Botao>
+            <Botao variante="primario" onClick={() => setNovo({ nome: '', especie: '', ameaca: '', vida: '' })}><Icone nome="mais" tamanho={18} /> {t('Nova criatura')}</Botao>
           </>
         )}
       />
 
       {srd && (
-        <Modal onFechar={() => setSrd(false)} tamanho="xl" titulo="Biblioteca SRD 5e" subtitulo="Criaturas prontas. Escolha uma para copiar para o bestiário desta mesa.">
+        <Modal onFechar={() => setSrd(false)} tamanho="xl" titulo={t('Biblioteca SRD 5e')} subtitulo={t('Criaturas prontas. Escolha uma para copiar para o bestiário desta mesa.')}>
           <BestiarioSrd
             mesaId={mesaId} meuId={meuId} sistemaId={sistema?.id}
             onImportada={id => { setSrd(false); refetch(); onAbrir?.(id) }}
@@ -139,26 +140,26 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
       {novo && (
         <Modal
           onFechar={() => { setNovo(null); setErro('') }} bloqueado={ocupado === 'criando'}
-          titulo="Nova criatura" subtitulo="Atributos, habilidades e itens você monta depois, na ficha dela."
+          titulo={t('Nova criatura')} subtitulo={t('Atributos, habilidades e itens você monta depois, na ficha dela.')}
           rodape={
             <>
               <FecharModal disabled={ocupado === 'criando'} />
-              <Botao variante="primario" onClick={criar} disabled={ocupado === 'criando'}>{ocupado === 'criando' ? 'Criando…' : 'Criar e abrir a ficha'}</Botao>
+              <Botao variante="primario" onClick={criar} disabled={ocupado === 'criando'}>{ocupado === 'criando' ? t('Criando…') : t('Criar e abrir a ficha')}</Botao>
             </>
           }
         >
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="block sm:col-span-2"><span className="rotulo">Nome</span>
-              <input autoFocus value={novo.nome} onChange={e => setNovo({ ...novo, nome: e.target.value })} placeholder="Ex.: Goblin" className="campo w-full" />
+            <label className="block sm:col-span-2"><span className="rotulo">{t('Nome')}</span>
+              <input autoFocus value={novo.nome} onChange={e => setNovo({ ...novo, nome: e.target.value })} placeholder={t('Ex.: Goblin')} className="campo w-full" />
             </label>
-            <label className="block"><span className="rotulo">Espécie</span>
-              <input value={novo.especie} onChange={e => setNovo({ ...novo, especie: e.target.value })} placeholder="Fera, Humanoide…" list="especies-bestiario" className="campo w-full" />
+            <label className="block"><span className="rotulo">{t('Espécie')}</span>
+              <input value={novo.especie} onChange={e => setNovo({ ...novo, especie: e.target.value })} placeholder={t('Fera, Humanoide…')} list="especies-bestiario" className="campo w-full" />
             </label>
-            <label className="block"><span className="rotulo">Ameaça</span>
-              <input value={novo.ameaca} onChange={e => setNovo({ ...novo, ameaca: e.target.value })} placeholder="Normal, ND 5…" list="ameacas-bestiario" className="campo w-full" />
+            <label className="block"><span className="rotulo">{t('Ameaça')}</span>
+              <input value={novo.ameaca} onChange={e => setNovo({ ...novo, ameaca: e.target.value })} placeholder={t('Normal, ND 5…')} list="ameacas-bestiario" className="campo w-full" />
             </label>
-            <label className="block"><span className="rotulo">Vida</span>
-              <input type="number" min={1} value={novo.vida} onChange={e => setNovo({ ...novo, vida: e.target.value })} placeholder="Ex.: 7" className="campo w-full" />
+            <label className="block"><span className="rotulo">{t('Vida')}</span>
+              <input type="number" min={1} value={novo.vida} onChange={e => setNovo({ ...novo, vida: e.target.value })} placeholder={t('Ex.: 7')} className="campo w-full" />
             </label>
           </div>
           <datalist id="especies-bestiario">{ESPECIES.map(e => <option key={e} value={e} />)}</datalist>
@@ -172,11 +173,11 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
       {loading ? (
         <EsqueletoCartoes quantos={3} className="grid gap-3 lg:max-w-sm" altura="h-20" />
       ) : doBestiario.length === 0 ? (
-        <EstadoVazio arte="garra" titulo="O bestiário está vazio" descricao="Crie uma criatura do zero ou copie uma pronta da biblioteca SRD. Depois é só invocar no combate ou no mapa.">
+        <EstadoVazio arte="garra" titulo={t('O bestiário está vazio')} descricao={t('Crie uma criatura do zero ou copie uma pronta da biblioteca SRD. Depois é só invocar no combate ou no mapa.')}>
           {podeEscrever && (
             <>
-              <Botao variante="contorno" onClick={() => setSrd(true)}>Abrir a biblioteca SRD</Botao>
-              <Botao variante="primario" onClick={() => setNovo({ nome: '', especie: '', ameaca: '', vida: '' })}><Icone nome="mais" tamanho={18} /> Nova criatura</Botao>
+              <Botao variante="contorno" onClick={() => setSrd(true)}>{t('Abrir a biblioteca SRD')}</Botao>
+              <Botao variante="primario" onClick={() => setNovo({ nome: '', especie: '', ameaca: '', vida: '' })}><Icone nome="mais" tamanho={18} /> {t('Nova criatura')}</Botao>
             </>
           )}
         </EstadoVazio>
@@ -185,26 +186,26 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
           {/* ── Lista ── */}
           <div className="space-y-3">
             <label className="relative block">
-              <span className="sr-only">Buscar criatura</span>
+              <span className="sr-only">{t('Buscar criatura')}</span>
               <Icone nome="busca" tamanho={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-dim pointer-events-none" />
-              <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por nome, espécie ou ameaça" className="campo w-full !pl-9" />
+              <input value={busca} onChange={e => setBusca(e.target.value)} placeholder={t('Buscar por nome, espécie ou ameaça')} className="campo w-full !pl-9" />
             </label>
             {especies.length > 1 && (
-              <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filtrar por espécie">
-                {chip(!fEspecie, 'Todas', () => setFEspecie(''), '__todas')}
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('Filtrar por espécie')}>
+                {chip(!fEspecie, t('Todas'), () => setFEspecie(''), '__todas')}
                 {especies.map(e => chip(fEspecie === e, e, () => setFEspecie(fEspecie === e ? '' : e)))}
               </div>
             )}
             {ameacas.length > 1 && (
-              <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filtrar por ameaça">
-                {chip(!fAmeaca, 'Qualquer ameaça', () => setFAmeaca(''), '__qualquer')}
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('Filtrar por ameaça')}>
+                {chip(!fAmeaca, t('Qualquer ameaça'), () => setFAmeaca(''), '__qualquer')}
                 {ameacas.map(a => chip(fAmeaca === a, a, () => setFAmeaca(fAmeaca === a ? '' : a)))}
               </div>
             )}
-            <p className="text-ink-dim text-xs">{filtrada.length} de {doBestiario.length} criatura{doBestiario.length > 1 ? 's' : ''}</p>
+            <p className="text-ink-dim text-xs">{tn(doBestiario.length, '{a} de {n} criatura', '{a} de {n} criaturas', { a: filtrada.length })}</p>
 
             {filtrada.length === 0 ? (
-              <EstadoVazio compacto arte="garra" titulo="Nada encontrado" descricao="Tente outro nome ou tire um filtro." />
+              <EstadoVazio compacto arte="garra" titulo={t('Nada encontrado')} descricao={t('Tente outro nome ou tire um filtro.')} />
             ) : (
               <ul className="entra-lista space-y-2">
                 {filtrada.map((c, i) => (
@@ -219,7 +220,7 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
                           {c.nome_personagem}
                           {c.privada && <Icone nome="cadeado" tamanho={13} className="text-ink-dim" />}
                         </span>
-                        <span className="block text-ink-dim text-xs truncate mt-0.5">{[c.especie, c.hp_maximo ? `${c.hp_maximo} de vida` : null].filter(Boolean).join(' • ') || 'sem espécie'}</span>
+                        <span className="block text-ink-dim text-xs truncate mt-0.5">{[c.especie, c.hp_maximo ? t('{n} de vida', { n: c.hp_maximo }) : null].filter(Boolean).join(' • ') || t('sem espécie')}</span>
                       </span>
                       {c.ameaca && <SeloAmeaca ameaca={c.ameaca} />}
                     </button>
@@ -247,36 +248,36 @@ export default function PainelBestiario({ mesaId, meuId, isGestor, podeEscrever,
                       <h3 className="flex-1 font-sora text-2xl font-bold text-ink leading-tight">{selecionada.nome_personagem}</h3>
                       {selecionada.ameaca && <SeloAmeaca ameaca={selecionada.ameaca} grande />}
                     </div>
-                    <p className="text-ink-dim mt-1">{selecionada.especie || 'Espécie não definida'}</p>
+                    <p className="text-ink-dim mt-1">{selecionada.especie || t('Espécie não definida')}</p>
                   </div>
                   {selecionada.hp_maximo && (
                     <div className="inline-flex items-center gap-2 rounded-xl bg-void/70 border border-border px-3 py-2">
                       <Icone nome="coracao" tamanho={16} className="text-harm" />
                       <span className="text-ink font-semibold tabular-nums">{selecionada.hp_maximo}</span>
-                      <span className="text-ink-dim text-sm">de vida</span>
+                      <span className="text-ink-dim text-sm">{t('de vida')}</span>
                     </div>
                   )}
                   {selecionada.privada && (
-                    <p className="inline-flex items-center gap-1.5 text-sm text-ink-dim"><Icone nome="cadeado" tamanho={14} /> Apenas o mestre vê esta ficha</p>
+                    <p className="inline-flex items-center gap-1.5 text-sm text-ink-dim"><Icone nome="cadeado" tamanho={14} /> {t('Apenas o mestre vê esta ficha')}</p>
                   )}
                   <div className="flex flex-wrap gap-2 pt-1">
-                    <Botao variante="primario" onClick={() => onAbrir?.(selecionada.id)}>Abrir a ficha completa <Icone nome="seta-dir" tamanho={16} /></Botao>
-                    <Botao variante="contorno" onClick={() => exportar(selecionada)} disabled={ocupado === selecionada.id}><Icone nome="baixar" tamanho={16} /> Exportar</Botao>
+                    <Botao variante="primario" onClick={() => onAbrir?.(selecionada.id)}>{t('Abrir a ficha completa')} <Icone nome="seta-dir" tamanho={16} /></Botao>
+                    <Botao variante="contorno" onClick={() => exportar(selecionada)} disabled={ocupado === selecionada.id}><Icone nome="baixar" tamanho={16} /> {t('Exportar')}</Botao>
                     {(podeEditarFicha(selecionada, meuId) || isGestor) && (
                       <>
-                        <Botao variante="contorno" onClick={() => duplicar(selecionada)} disabled={ocupado === selecionada.id}><Icone nome="copiar" tamanho={16} /> Duplicar</Botao>
-                        <Botao variante="fantasma" className="hover:!text-harm" onClick={() => apagar(selecionada)} disabled={ocupado === selecionada.id}><Icone nome="lixeira" tamanho={16} /> Excluir</Botao>
+                        <Botao variante="contorno" onClick={() => duplicar(selecionada)} disabled={ocupado === selecionada.id}><Icone nome="copiar" tamanho={16} /> {t('Duplicar')}</Botao>
+                        <Botao variante="fantasma" className="hover:!text-harm" onClick={() => apagar(selecionada)} disabled={ocupado === selecionada.id}><Icone nome="lixeira" tamanho={16} /> {t('Excluir')}</Botao>
                       </>
                     )}
                   </div>
-                  <p className="text-ink-dim text-xs pb-3">Atributos, ações, reações e notas do mestre ficam na ficha completa.</p>
+                  <p className="text-ink-dim text-xs pb-3">{t('Atributos, ações, reações e notas do mestre ficam na ficha completa.')}</p>
                 </div>
               </article>
             ) : (
               <div className="rounded-2xl border border-dashed border-border p-10 text-center">
                 <Ilustra nome="garra" tamanho={56} className="mx-auto mb-3 opacity-80" />
-                <p className="text-ink font-medium">Escolha uma criatura</p>
-                <p className="text-ink-dim text-sm mt-1">A prévia aparece aqui; a ficha completa abre com um clique.</p>
+                <p className="text-ink font-medium">{t('Escolha uma criatura')}</p>
+                <p className="text-ink-dim text-sm mt-1">{t('A prévia aparece aqui; a ficha completa abre com um clique.')}</p>
               </div>
             )}
           </div>
@@ -297,7 +298,7 @@ function Retrato({ c, tamanho }) {
 function SeloAmeaca({ ameaca, grande = false }) {
   const n = nivelAmeaca(ameaca)
   return (
-    <span className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border border-border bg-void/70 font-semibold text-ink ${grande ? 'px-3 py-1 text-sm' : 'px-2 py-0.5 text-xs'}`} title={`Ameaça: ${ameaca}`}>
+    <span className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border border-border bg-void/70 font-semibold text-ink ${grande ? 'px-3 py-1 text-sm' : 'px-2 py-0.5 text-xs'}`} title={t('Ameaça: {ameaca}', { ameaca: String(ameaca ?? '') })}>
       {n > 0 && (
         <span className="inline-flex gap-0.5" aria-hidden="true">
           {[1, 2, 3, 4, 5].map(i => <span key={i} className={`w-1 h-2.5 rounded-sm ${i <= n ? (n >= 4 ? 'bg-harm' : n >= 3 ? 'bg-warn' : 'bg-ok') : 'bg-border'}`} />)}

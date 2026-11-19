@@ -1,5 +1,6 @@
 import { validarFaixas } from '../../lib/faixas'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 const inputCls =
   'px-2 py-1 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
@@ -14,7 +15,7 @@ const inputCls =
  *
  * `valorPlaceholder` muda conforme o campo (número, fórmula ou notação de dado).
  */
-export default function FaixasEditor({ spec, onChange, classes = [], valorPlaceholder = 'ex: 2', campos = [] }) {
+export default function FaixasEditor({ spec, onChange, classes = [], valorPlaceholder = t('ex: 2'), campos = [] }) {
   const faixas = spec?.faixas || []
   const variavel = spec?.variavel || 'nivel'
   const campo = spec?.campo || 'valor'
@@ -49,21 +50,21 @@ export default function FaixasEditor({ spec, onChange, classes = [], valorPlaceh
   return (
     <div className="space-y-2 border-l-2 border-purple-800 pl-3">
       <div className="flex items-center gap-2 flex-wrap">
-        <label className="text-purple-400 text-xs">Escala por</label>
+        <label className="text-purple-400 text-xs">{t('Escala por')}</label>
         <select
           value={variavel}
           onChange={e => setSpec({ variavel: e.target.value })}
           className={inputCls}
         >
-          <option value="nivel">Nível total</option>
+          <option value="nivel">{t('Nível total')}</option>
           {classes.map(c => (
-            <option key={c.id} value={`nivel:${c.id}`}>Nível de {c.nome}</option>
+            <option key={c.id} value={`nivel:${c.id}`}>{t('Nível de {nome}', { nome: c.nome })}</option>
           ))}
         </select>
 
         {campos.length > 1 && (
           <>
-            <label className="text-purple-400 text-xs">escalando</label>
+            <label className="text-purple-400 text-xs">{t('escalando')}</label>
             <select value={campo} onChange={e => setSpec({ campo: e.target.value })} className={inputCls}>
               {campos.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
             </select>
@@ -75,14 +76,14 @@ export default function FaixasEditor({ spec, onChange, classes = [], valorPlaceh
         const aberta = f.ate == null || f.ate === ''
         return (
           <div key={i} className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-accent-300 text-xs">de</span>
+            <span className="text-accent-300 text-xs">{t('de')}</span>
             <input
               type="number"
               value={f.de ?? ''}
               onChange={e => setFaixa(i, { de: e.target.value === '' ? '' : Number(e.target.value) })}
               className={`${inputCls} w-16 text-center`}
             />
-            <span className="text-accent-300 text-xs">até</span>
+            <span className="text-accent-300 text-xs">{t('até')}</span>
             <input
               type="number"
               value={aberta ? '' : f.ate}
@@ -103,7 +104,7 @@ export default function FaixasEditor({ spec, onChange, classes = [], valorPlaceh
               type="button"
               onClick={() => remover(i)}
               className="w-6 h-6 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors"
-              title="Remover faixa"
+              title={t('Remover faixa')}
             >
               ×
             </button>
@@ -114,12 +115,12 @@ export default function FaixasEditor({ spec, onChange, classes = [], valorPlaceh
       <Botao variante="contorno" tamanho="sm"
         type="button"
         onClick={adicionar}>
-        + Faixa
+        {t('+ Faixa')}
       </Botao>
 
       {status && !status.valida && <p className="text-red-400 text-xs">⚠ {status.erro}</p>}
       {status && status.valida && (
-        <p className="text-green-600 text-xs">✓ faixas contíguas{faixas[faixas.length - 1]?.ate == null ? ' (última aberta)' : ''}</p>
+        <p className="text-green-600 text-xs">{t('✓ faixas contíguas')}{faixas[faixas.length - 1]?.ate == null ? t(' (última aberta)') : ''}</p>
       )}
     </div>
   )

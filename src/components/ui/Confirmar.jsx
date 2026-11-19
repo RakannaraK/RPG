@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react'
 import Modal from './Modal'
 import Botao from './Botao'
+import { t } from '../../i18n'
 
 /**
  * Fase 52 — confirmação e pergunta com a cara do site, no lugar de
@@ -51,16 +52,16 @@ export function ConfirmarProvider({ children }) {
       {children}
       <Modal
         aberto={aberto} onFechar={cancelar} tamanho="sm" tom={p.perigo ? 'perigo' : 'normal'}
-        titulo={p.titulo || (p.tipo === 'perguntar' ? 'Responder' : 'Tem certeza?')}
+        titulo={p.titulo || (p.tipo === 'perguntar' ? t('Responder') : t('Tem certeza?'))}
         rodape={
           <>
             {/* ação destrutiva: o foco começa no Cancelar (Enter não apaga nada sem querer) */}
-            <Botao variante="fantasma" onClick={cancelar} autoFocus={p.tipo !== 'perguntar' && !!p.perigo}>{p.cancelar || 'Cancelar'}</Botao>
+            <Botao variante="fantasma" onClick={cancelar} autoFocus={p.tipo !== 'perguntar' && !!p.perigo}>{p.cancelar || t('Cancelar')}</Botao>
             <Botao
               variante={p.perigo ? 'perigo' : 'primario'} autoFocus={p.tipo !== 'perguntar' && !p.perigo}
               onClick={p.tipo === 'perguntar' ? undefined : () => responder(true)}
               type={p.tipo === 'perguntar' ? 'submit' : 'button'} form={p.tipo === 'perguntar' ? 'form-pergunta' : undefined}
-            >{p.confirmar || (p.tipo === 'perguntar' ? 'Salvar' : 'Confirmar')}</Botao>
+            >{p.confirmar || (p.tipo === 'perguntar' ? t('Salvar') : t('Confirmar'))}</Botao>
           </>
         }
       >
@@ -68,7 +69,7 @@ export function ConfirmarProvider({ children }) {
         {p.detalhe && <p className="text-ink-dim text-sm mt-2">{p.detalhe}</p>}
         {p.tipo === 'perguntar' && (
           <form id="form-pergunta" onSubmit={e => { e.preventDefault(); responder(valor) }} className={p.mensagem ? 'mt-4' : ''}>
-            <label className="block text-ink-dim text-sm mb-1.5">{p.rotulo || 'Resposta'}</label>
+            <label className="block text-ink-dim text-sm mb-1.5">{p.rotulo || t('Resposta')}</label>
             <input
               value={valor} onChange={e => setValor(e.target.value)}
               maxLength={p.maxLength || 200} placeholder={p.placeholder || ''}

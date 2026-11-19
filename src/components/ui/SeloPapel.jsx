@@ -1,4 +1,5 @@
 import Icone from './Icone'
+import { t } from '../../i18n'
 
 /**
  * Fase 52 — papel na mesa. Antes eram 3 cópias de cores diferentes (o
@@ -6,10 +7,10 @@ import Icone from './Icone'
  * não depende só da cor para ser reconhecido.
  */
 export const PAPEIS = {
-  mestre:      { rotulo: 'Mestre',     icone: 'coroa',  cls: 'bg-accent-600 text-sobre-acento border-transparent' },
-  'co-mestre': { rotulo: 'Co-mestre',  icone: 'escudo', cls: 'bg-accent-800/40 text-accent-300 border-accent-500/60' },
-  jogador:     { rotulo: 'Jogador',    icone: 'dado',   cls: 'bg-hover text-ink border-border' },
-  espectador:  { rotulo: 'Espectador', icone: 'olho',   cls: 'bg-transparent text-ink-dim border-border border-dashed' },
+  mestre:      { rotulo: t('Mestre'),     icone: 'coroa',  cls: 'bg-accent-600 text-sobre-acento border-transparent' },
+  'co-mestre': { rotulo: t('Co-mestre'),  icone: 'escudo', cls: 'bg-accent-800/40 text-accent-300 border-accent-500/60' },
+  jogador:     { rotulo: t('Jogador'),    icone: 'dado',   cls: 'bg-hover text-ink border-border' },
+  espectador:  { rotulo: t('Espectador'), icone: 'olho',   cls: 'bg-transparent text-ink-dim border-border border-dashed' },
 }
 
 export const rotuloPapel = papel => (PAPEIS[papel] || PAPEIS.jogador).rotulo

@@ -13,14 +13,14 @@ const TAMANHOS = {
  */
 // `compacta`: no celular fica só o selo (o título da página precisa do espaço)
 export default function Marca({ tamanho = 'sm', comTagline = false, pulso = false, compacta = false, className = '' }) {
-  const t = TAMANHOS[tamanho] || TAMANHOS.sm
+  const tam = TAMANHOS[tamanho] || TAMANHOS.sm
   return (
-    <div className={`flex items-center ${t.espaco} ${className}`}>
-      <Selo tamanho={t.selo} pulso={pulso} />
+    <div className={`flex items-center ${tam.espaco} ${className}`}>
+      <Selo tamanho={tam.selo} pulso={pulso} />
       <div className={`leading-none ${compacta ? 'hidden sm:block' : ''}`}>
-        <div className={`font-bold tracking-tight text-white ${t.texto}`} style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+        <div className={`font-bold tracking-tight text-white ${tam.texto}`} style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
           {NOME_PARTES.antes}
-          <span className={t.elo} style={{ color: 'var(--dice-400)' }}>{NOME_PARTES.elo}</span>
+          <span className={tam.elo} style={{ color: 'var(--dice-400)' }}>{NOME_PARTES.elo}</span>
           {NOME_PARTES.depois}
         </div>
         {comTagline && (

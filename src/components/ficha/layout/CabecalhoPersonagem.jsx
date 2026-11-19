@@ -5,6 +5,7 @@ import BarraVida from '../../ui/BarraVida'
 import Botao from '../../ui/Botao'
 import Icone from '../../ui/Icone'
 import Ilustra from '../../arte/Ilustra'
+import { t } from '../../../i18n'
 
 export default function CabecalhoPersonagem({
   ficha,
@@ -50,7 +51,7 @@ export default function CabecalhoPersonagem({
       setTimeout(() => setHpSalvo(false), 2000)
       onRefetch()
     } catch (err) {
-      setHpErro(err.message || 'Erro ao salvar.')
+      setHpErro(err.message || t('Erro ao salvar.'))
     }
   }
 
@@ -94,9 +95,9 @@ export default function CabecalhoPersonagem({
     const atual = Number(ficha.hp_atual ?? 0)
     if (atual > prev) {
       setCurando(true)
-      const t = setTimeout(() => setCurando(false), 300)
+      const timer = setTimeout(() => setCurando(false), 300)
       prevHpAtualRef.current = ficha.hp_atual
-      return () => clearTimeout(t)
+      return () => clearTimeout(timer)
     }
     prevHpAtualRef.current = ficha.hp_atual
   }, [ficha.hp_atual])
@@ -122,7 +123,7 @@ export default function CabecalhoPersonagem({
   const subtituloSemNivel = [racaNome, classeLabel].filter(Boolean)
 
   return (
-    <section className="cabecalho-personagem relative rounded-2xl bg-gradient-to-br from-raised/90 via-raised/60 to-transparent p-5 sm:p-6" aria-label="Personagem">
+    <section className="cabecalho-personagem relative rounded-2xl bg-gradient-to-br from-raised/90 via-raised/60 to-transparent p-5 sm:p-6" aria-label={t('Personagem')}>
       <div className="flex flex-col sm:flex-row gap-5 sm:items-start">
 
         {/* Retrato */}
@@ -139,13 +140,13 @@ export default function CabecalhoPersonagem({
               {!isDono && (
                 subtituloSemNivel.length > 0
                   ? <p className="text-ink-dim mt-1">{subtituloSemNivel.join(' • ')}</p>
-                  : <p className="text-ink-dim text-sm mt-1 italic">Sem raça ou classe definida</p>
+                  : <p className="text-ink-dim text-sm mt-1 italic">{t('Sem raça ou classe definida')}</p>
               )}
             </div>
             {/* Nível: medalhão à direita (com classes, é o total) */}
             {nivelLabel ? (
-              <div className="medalhao-nivel shrink-0 text-center" aria-label={`Nível ${nivelLabel}`}>
-                <span className="block text-ink-dim text-xs font-semibold uppercase tracking-wider">Nível</span>
+              <div className="medalhao-nivel shrink-0 text-center" aria-label={t('Nível {n}', { n: nivelLabel })}>
+                <span className="block text-ink-dim text-xs font-semibold uppercase tracking-wider">{t('Nível')}</span>
                 <span className="block font-sora text-3xl font-bold text-ink tabular-nums leading-none mt-0.5">{nivelLabel}</span>
               </div>
             ) : null}
@@ -160,9 +161,9 @@ export default function CabecalhoPersonagem({
                     value={racaId || ''}
                     onChange={e => onRacaChange(e.target.value || null)}
                     className="campo !min-h-[36px] !py-1"
-                    aria-label="Raça"
+                    aria-label={t('Raça')}
                   >
-                    <option value="">Sem raça</option>
+                    <option value="">{t('Sem raça')}</option>
                     {racas.map(r => <option key={r.id} value={r.id}>{r.nome}</option>)}
                   </select>
                 ) : (
@@ -171,7 +172,7 @@ export default function CabecalhoPersonagem({
                     value={racaTexto}
                     onChange={e => setRacaTexto(e.target.value)}
                     onBlur={e => salvarTextoLegado('raca', e.target.value)}
-                    placeholder="Raça" aria-label="Raça"
+                    placeholder={t('Raça')} aria-label={t('Raça')}
                     className="campo !min-h-[36px] !py-1 w-32"
                   />
                 )}
@@ -183,7 +184,7 @@ export default function CabecalhoPersonagem({
                     value={classeTexto}
                     onChange={e => setClasseTexto(e.target.value)}
                     onBlur={e => salvarTextoLegado('classe', e.target.value)}
-                    placeholder="Classe" aria-label="Classe"
+                    placeholder={t('Classe')} aria-label={t('Classe')}
                     className="campo !min-h-[36px] !py-1 w-32"
                   />
                 )}
@@ -209,7 +210,7 @@ export default function CabecalhoPersonagem({
                 <Icone nome="coracao" tamanho={14} className="text-harm" /> {rotuloVida}
                 {temModVida && (
                   <span className="text-ok font-mono normal-case tracking-normal font-normal">
-                    (base {hpMaxBase}{vidaMaxFinal > hpMaxBase ? ` +${vidaMaxFinal - hpMaxBase}` : ` ${vidaMaxFinal - hpMaxBase}`})
+                    {t('(base {base}{extra})', { base: hpMaxBase, extra: vidaMaxFinal > hpMaxBase ? ` +${vidaMaxFinal - hpMaxBase}` : ` ${vidaMaxFinal - hpMaxBase}` })}
                   </span>
                 )}
               </p>
@@ -220,7 +221,7 @@ export default function CabecalhoPersonagem({
                     <input
                       type="number" value={hpAtual} onChange={e => setHpAtual(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && salvarHP()}
-                      aria-label="Vida atual" placeholder="0"
+                      aria-label={t('Vida atual')} placeholder="0"
                       className="w-14 bg-transparent text-ink text-right text-lg font-mono font-bold focus:outline-none"
                     />
                     <span className="text-ink-dim">/</span>
@@ -229,22 +230,22 @@ export default function CabecalhoPersonagem({
                       <input
                         type="number" value={hpBaseTemp} onChange={e => setHpBaseTemp(e.target.value)}
                         onBlur={salvarHpBase} onKeyDown={e => e.key === 'Enter' && salvarHpBase()}
-                        autoFocus aria-label="Vida máxima base"
+                        autoFocus aria-label={t('Vida máxima base')}
                         className="w-14 bg-transparent text-dice-400 text-sm font-mono font-semibold focus:outline-none border-b border-dice-500"
                       />
                     ) : (
                       <button
                         onClick={() => { setHpBaseTemp(String(hpMaxBase)); setEditandoHpBase(true) }}
                         className="min-w-[2.5rem] text-ink-dim text-sm font-mono font-semibold hover:text-dice-400 transition-colors duration-rapida"
-                        title={`Vida máxima base: ${hpMaxBase}${temModVida ? ` (+${vidaMaxFinal - hpMaxBase} de modificadores) = ${hpMaxDisplay}` : ''}. Clique para mudar.`}
-                        aria-label="Mudar a vida máxima base"
+                        title={temModVida ? t('Vida máxima base: {base} (+{mod} de modificadores) = {total}. Clique para mudar.', { base: hpMaxBase, mod: vidaMaxFinal - hpMaxBase, total: hpMaxDisplay }) : t('Vida máxima base: {base}. Clique para mudar.', { base: hpMaxBase })}
+                        aria-label={t('Mudar a vida máxima base')}
                       >
                         {hpMaxDisplay || '—'}
                       </button>
                     )}
                   </div>
                   <Botao variante={hpSalvo ? 'secundario' : 'primario'} tamanho="sm" onClick={salvarHP}>
-                    {hpSalvo ? <><Icone nome="check" tamanho={14} /> Salvo</> : 'Salvar'}
+                    {hpSalvo ? <><Icone nome="check" tamanho={14} /> {t('Salvo')}</> : t('Salvar')}
                   </Botao>
                 </div>
               ) : ficha.hp_atual == null && !hpMaxDisplay ? null : (
@@ -258,7 +259,7 @@ export default function CabecalhoPersonagem({
             {!isDono && ficha.hp_atual == null && !hpMaxDisplay ? (
               /* Antes aparecia "? / ?" sem explicação — quem olhava não sabia se
                  era erro, se faltava dado ou se a ficha estava quebrada. */
-              <p className="text-ink-dim text-sm">Vida ainda não definida neste sistema.</p>
+              <p className="text-ink-dim text-sm">{t('Vida ainda não definida neste sistema.')}</p>
             ) : hpMaxDisplay > 0 && (
               <BarraVida
                 atual={hpNum} maximo={hpMaxDisplay} temp={vidaTempEfetiva} rotulo={rotuloVida}
@@ -270,9 +271,9 @@ export default function CabecalhoPersonagem({
 
             {vidaTempEfetiva > 0 && (
               <p className="text-temp text-sm mt-2 font-medium flex items-center gap-1.5">
-                <Icone nome="escudo" tamanho={14} /> +{vidaTempEfetiva} de vida temporária
+                <Icone nome="escudo" tamanho={14} /> {t('+{n} de vida temporária', { n: vidaTempEfetiva })}
                 {isDono && vidaTempPontual > 0 && (
-                  <button onClick={limparVidaTemp} className="botao-icone !min-w-[28px] !min-h-[28px] !text-temp" aria-label="Limpar vida temporária" data-dica="Limpar">
+                  <button onClick={limparVidaTemp} className="botao-icone !min-w-[28px] !min-h-[28px] !text-temp" aria-label={t('Limpar vida temporária')} data-dica={t('Limpar')}>
                     <Icone nome="x" tamanho={14} />
                   </button>
                 )}

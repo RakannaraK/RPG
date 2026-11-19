@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /** Converte "cura, área" → ['cura','área']; vazio → null (coluna TEXT[]). */
 function parseTags(valor) {
   if (Array.isArray(valor)) return valor.length ? valor : null
   const lista = String(valor || '')
     .split(',')
-    .map(t => t.trim())
+    .map(tr => tr.trim())
     .filter(Boolean)
   return lista.length ? lista : null
 }
@@ -59,7 +60,7 @@ export function usePoderes(sistemaId) {
       if (err) throw err
       setPoderes(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar poderes.')
+      setError(err.message || t('Erro ao carregar poderes.'))
     } finally {
       setLoading(false)
     }

@@ -12,6 +12,7 @@
  * `atual` é o único estado, e nunca excede o máximo (clamp ao recalcular).
  */
 import { avaliarFormula } from './formulaEngine.js'
+import { t } from '../i18n'
 
 function safeFormula(f, contexto) {
   try { return avaliarFormula(f, contexto || {}) } catch { return 0 }
@@ -39,7 +40,7 @@ export function calcularMaximos(pools, contexto = {}) {
       maximos[p.id] = maximoPool(p, contexto)
     } catch (e) {
       maximos[p.id] = 0
-      erros[p.id] = e.message || 'Fórmula inválida'
+      erros[p.id] = e.message || t('Fórmula inválida')
     }
   }
   return { maximos, erros }
@@ -60,8 +61,8 @@ export function atualDePool(linhaFicha, maximo) {
  */
 export function gastarPool(atual, quantidade) {
   const q = Math.floor(Number(quantidade) || 0)
-  if (q <= 0) return { ok: false, novo: atual, motivo: 'Quantidade inválida.' }
-  if (q > atual) return { ok: false, novo: atual, motivo: `Insuficiente: tem ${atual}, precisa de ${q}.` }
+  if (q <= 0) return { ok: false, novo: atual, motivo: t('Quantidade inválida.') }
+  if (q > atual) return { ok: false, novo: atual, motivo: t('Insuficiente: tem {atual}, precisa de {precisa}.', { atual, precisa: q }) }
   return { ok: true, novo: atual - q }
 }
 

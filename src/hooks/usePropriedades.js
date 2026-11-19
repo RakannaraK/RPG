@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /**
  * Fase 21.4 — propriedades de item desbloqueáveis do sistema.
@@ -24,7 +25,7 @@ export function usePropriedades(sistemaId) {
       if (err) throw err
       setPropriedades(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar propriedades.')
+      setError(err.message || t('Erro ao carregar propriedades.'))
     } finally {
       setLoading(false)
     }

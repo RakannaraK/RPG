@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Modal, { FecharModal } from '../ui/Modal'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 /**
  * Fase 15.4 — descanso do grupo inteiro (só o mestre), na SessaoPage.
@@ -29,21 +30,21 @@ export default function DescansoGrupo({ descansos = [], onDescansar }) {
   return (
     <div className="mb-6 rounded-2xl border border-emerald-800/50 bg-emerald-950/20 px-5 py-3">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-emerald-300 text-sm font-medium mr-1">🏕️ Descanso do grupo:</span>
+        <span className="text-emerald-300 text-sm font-medium mr-1">{t('🏕️ Descanso do grupo:')}</span>
         {descansos.map(d => (
           <button
             key={d.id}
             onClick={() => { setResumo(null); setConfirmar(d) }}
             className="px-3 py-1.5 bg-emerald-800/70 hover:bg-emerald-700 text-emerald-50 text-sm rounded-lg transition-colors"
           >
-            {d.nome || 'Descanso'}
+            {d.nome || t('Descanso')}
           </button>
         ))}
       </div>
 
       {resumo && (
         <div className="mt-3 border-t border-emerald-900/50 pt-2">
-          <p className="text-emerald-300 text-xs font-medium mb-1">{resumo.tipo.nome} aplicado:</p>
+          <p className="text-emerald-300 text-xs font-medium mb-1">{t('{nome} aplicado:', { nome: String(resumo.tipo.nome ?? '') })}</p>
           <ul className="space-y-0.5">
             {resumo.itens.map((it, i) => (
               <li key={i} className="text-purple-300 text-xs">
@@ -58,15 +59,15 @@ export default function DescansoGrupo({ descansos = [], onDescansar }) {
       {confirmar && (
         <Modal
           onFechar={() => setConfirmar(null)} bloqueado={aplicando} tamanho="sm"
-          titulo={`${confirmar.nome} do grupo?`}
+          titulo={t('{nome} do grupo?', { nome: String(confirmar.nome ?? '') })}
           rodape={
             <>
               <FecharModal disabled={aplicando} />
-              <Botao variante="primario" onClick={aplicar} disabled={aplicando}>{aplicando ? 'Aplicando…' : 'Confirmar'}</Botao>
+              <Botao variante="primario" onClick={aplicar} disabled={aplicando}>{aplicando ? t('Aplicando…') : t('Confirmar')}</Botao>
             </>
           }
         >
-          <p className="text-ink text-sm">Todos os personagens da mesa vão recuperar vida e recursos conforme as regras deste descanso.</p>
+          <p className="text-ink text-sm">{t('Todos os personagens da mesa vão recuperar vida e recursos conforme as regras deste descanso.')}</p>
         </Modal>
       )}
     </div>

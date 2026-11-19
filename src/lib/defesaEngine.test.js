@@ -122,3 +122,9 @@ describe('22.6 — planejarDefesa (resolução do fluxo assíncrono)', () => {
     expect(planejarDefesa(dp, cfg, 'Zara').danoFinal).toBe(2)
   })
 })
+
+import { ehCampoDefesa } from './defesaEngine'
+describe('ehCampoDefesa', () => {
+  it.each(['CA', 'Classe de Armadura', 'Defesa', 'Armor Class', 'AC', 'Defensa', 'CA base'])('%s é defesa', n => expect(ehCampoDefesa(n)).toBe(true))
+  it.each(['Carisma', 'Capacidade', 'CD', 'Dano', 'Caçada', 'Ação', 'Ácaro'])('%s não é defesa', n => expect(ehCampoDefesa(n)).toBe(false))
+})

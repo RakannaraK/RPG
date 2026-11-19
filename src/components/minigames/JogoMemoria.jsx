@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { comecarResposta, iniciarMemoria, responderMemoria, resultadoMemoria, tempoExibir } from '../../lib/minigames/memoria'
+import { t } from '../../i18n'
 
 const PAUSA_ERRO_MS = 1100
 
@@ -55,12 +56,12 @@ export default function JogoMemoria({ config, semente, onFim, onSom }) {
 
   return (
     <div className="flex flex-col items-center gap-4 select-none w-full">
-      <p className="text-ink-dim text-sm">Rodada {e.rodada} · {e.sequencia.length} runas · {e.acertos} pts</p>
+      <p className="text-ink-dim text-sm">{t('Rodada {rodada} · {n} runas · {pts} pts', { rodada: e.rodada, n: e.sequencia.length, pts: e.acertos })}</p>
 
       {e.fase === 'memorizar' ? (
         <>
           <p className={`text-sm font-semibold ${quaseSumindo ? 'text-harm animate-pulse' : 'text-dice-400'}`}>
-            {quaseSumindo ? 'Desaparecendo em breve…' : 'Memorize a ordem!'}
+            {quaseSumindo ? t('Desaparecendo em breve…') : t('Memorize a ordem!')}
           </p>
           <div className="flex flex-wrap justify-center gap-2 max-w-md">
             {e.sequencia.map((runa, i) => (
@@ -80,7 +81,7 @@ export default function JogoMemoria({ config, semente, onFim, onSom }) {
         </>
       ) : (
         <>
-          <div className="flex gap-1.5" aria-label={`${e.posicao} de ${e.sequencia.length}`}>
+          <div className="flex gap-1.5" aria-label={t('{pos} de {n}', { pos: e.posicao, n: e.sequencia.length })}>
             {e.sequencia.map((_, i) => (
               <span key={i} className={`w-2.5 h-2.5 rounded-full ${i < e.posicao ? 'bg-ok' : erro && i === e.posicao ? 'bg-harm' : 'bg-hover'}`} />
             ))}

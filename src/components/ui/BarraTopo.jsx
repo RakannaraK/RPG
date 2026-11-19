@@ -5,6 +5,7 @@ import Sininho from '../notificacoes/Sininho'
 import MenuUsuario from './MenuUsuario'
 import Icone from './Icone'
 import { abrirBusca } from '../../lib/paleta'
+import { t, tx } from '../../i18n'
 
 /**
  * Fase 52 — cabeçalho único do site. Antes cada página desenhava o seu (6
@@ -30,7 +31,7 @@ export default function BarraTopo({ voltar, titulo, subtitulo, acoes, largura = 
             className="botao-icone -ml-1 shrink-0"
           ><Icone nome="seta-esq" tamanho={20} /></button>
         )}
-        <Link to={session ? '/dashboard' : '/'} aria-label="Dado & Pena — início" className="shrink-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-400">
+        <Link to={session ? '/dashboard' : '/'} aria-label={t('Dado & Pena — início')} className="shrink-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-400">
           <Marca tamanho="sm" compacta={!!(titulo || voltar || acoes)} />
         </Link>
         {titulo && (
@@ -47,15 +48,15 @@ export default function BarraTopo({ voltar, titulo, subtitulo, acoes, largura = 
           {acoes}
           {session && (
             <button
-              type="button" onClick={abrirBusca} aria-label="Buscar (Ctrl+K)" data-dica="Buscar (Ctrl+K)"
+              type="button" onClick={abrirBusca} aria-label={t('Buscar (Ctrl+K)')} data-dica={t('Buscar (Ctrl+K)')}
               className="botao-icone"
             ><Icone nome="busca" tamanho={20} /></button>
           )}
           {comunidade && (
             <Link
-              to="/comunidade" aria-label="Comunidade" data-dica="Fichas, criaturas e sistemas compartilhados"
+              to="/comunidade" aria-label={t('Comunidade')} data-dica={t('Fichas, criaturas e sistemas compartilhados')}
               className={`botao-icone lg:px-3 lg:gap-2 ${session ? 'max-sm:hidden' : ''}`}
-            ><Icone nome="globo" tamanho={20} /><span className="hidden lg:inline text-sm">Comunidade</span></Link>
+            ><Icone nome="globo" tamanho={20} /><span className="hidden lg:inline text-sm">{t('Comunidade')}</span></Link>
           )}
           {session ? (
             <>
@@ -63,7 +64,7 @@ export default function BarraTopo({ voltar, titulo, subtitulo, acoes, largura = 
               <MenuUsuario />
             </>
           ) : (
-            <Link to="/" className="botao botao-primario ml-1 inline-flex items-center px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-sobre-acento text-sm font-medium">Entrar</Link>
+            <Link to="/" className="botao botao-primario ml-1 inline-flex items-center px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-sobre-acento text-sm font-medium">{tx('conta', 'Entrar')}</Link>
           )}
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useConfirmar } from '../ui/Confirmar'
+import { t } from '../../i18n'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
 const BTN = 'px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-50'
@@ -49,7 +50,7 @@ export default function PainelOverlay({ mesaId }) {
 
   async function copiar() {
     try { await navigator.clipboard.writeText(url); setCopiado(true); setTimeout(() => setCopiado(false), 2000) }
-    catch { setErro('Copie o link manualmente.') }
+    catch { setErro(t('Copie o link manualmente.')) }
   }
 
   if (indisponivel) return null
@@ -57,60 +58,60 @@ export default function PainelOverlay({ mesaId }) {
   return (
     <div className="space-y-2">
       <div>
-        <p className="text-purple-200 font-medium text-sm">Overlay para transmissão (OBS)</p>
+        <p className="text-purple-200 font-medium text-sm">{t('Overlay para transmissão (OBS)')}</p>
         <p className="text-accent-300 text-xs mt-0.5">
-          Um link secreto com os retratos e a vida do grupo, com fundo transparente — entra no OBS como “fonte de navegador”.
+          {t('Um link secreto com os retratos e a vida do grupo, com fundo transparente — entra no OBS como “fonte de navegador”.')}
         </p>
       </div>
 
       {!token ? (
         <button type="button" onClick={() => salvar(cfg, true)} disabled={!!ocupado} className={`${BTN} bg-purple-700 hover:bg-purple-600 text-sobre-acento`}>
-          {ocupado ? 'Gerando…' : 'Gerar link do overlay'}
+          {ocupado ? t('Gerando…') : t('Gerar link do overlay')}
         </button>
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-2">
-            <input readOnly value={url} onFocus={e => e.target.select()} className={`${INP} flex-1 min-w-[16rem] font-mono text-xs`} aria-label="Link do overlay" />
-            <button type="button" onClick={copiar} className={`${BTN} bg-slate-700 hover:bg-slate-600 text-white`}>{copiado ? '✓ Copiado' : 'Copiar'}</button>
-            <a href={url} target="_blank" rel="noreferrer" className={`${BTN} bg-slate-700 hover:bg-slate-600 text-white`}>Abrir prévia ↗</a>
+            <input readOnly value={url} onFocus={e => e.target.select()} className={`${INP} flex-1 min-w-[16rem] font-mono text-xs`} aria-label={t('Link do overlay')} />
+            <button type="button" onClick={copiar} className={`${BTN} bg-slate-700 hover:bg-slate-600 text-white`}>{copiado ? t('✓ Copiado') : t('Copiar')}</button>
+            <a href={url} target="_blank" rel="noreferrer" className={`${BTN} bg-slate-700 hover:bg-slate-600 text-white`}>{t('Abrir prévia ↗')}</a>
             <button
               type="button"
-              onClick={async () => { if (await confirmar({ titulo: 'Gerar link novo?', mensagem: 'O link antigo para de funcionar na hora. Quem usa no OBS precisa trocar.', confirmar: 'Gerar link novo' })) salvar(cfg, true) }}
+              onClick={async () => { if (await confirmar({ titulo: t('Gerar link novo?'), mensagem: t('O link antigo para de funcionar na hora. Quem usa no OBS precisa trocar.'), confirmar: t('Gerar link novo') })) salvar(cfg, true) }}
               className={`${BTN} text-purple-300 hover:text-white border border-purple-800`}
-            >Trocar link</button>
+            >{t('Trocar link')}</button>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 pt-1">
             <label className="text-purple-400 text-xs flex items-center gap-1.5">
-              Vida
+              {t('Vida')}
               <select value={cfg.mostrar_vida} onChange={e => mudar({ mostrar_vida: e.target.value })} className={INP}>
-                <option value="barra">só barra</option>
-                <option value="numeros">barra e números</option>
-                <option value="nada">não mostrar</option>
+                <option value="barra">{t('só barra')}</option>
+                <option value="numeros">{t('barra e números')}</option>
+                <option value="nada">{t('não mostrar')}</option>
               </select>
             </label>
             <label className="text-purple-400 text-xs flex items-center gap-1.5">
-              Sentido
+              {t('Sentido')}
               <select value={cfg.direcao} onChange={e => mudar({ direcao: e.target.value })} className={INP}>
-                <option value="horizontal">deitado</option>
-                <option value="vertical">em pé</option>
+                <option value="horizontal">{t('deitado')}</option>
+                <option value="vertical">{t('em pé')}</option>
               </select>
             </label>
             <label className="text-purple-400 text-xs flex items-center gap-1.5">
-              Tamanho
+              {t('Tamanho')}
               <input type="number" min="0.5" max="3" step="0.1" value={cfg.escala} onChange={e => mudar({ escala: Number(e.target.value) || 1 })} className={`${INP} w-20`} />
             </label>
             <label className="text-purple-400 text-xs flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" checked={!!cfg.mostrar_turno} onChange={e => mudar({ mostrar_turno: e.target.checked })} className="accent-purple-500" />
-              mostrar turno
+              {t('mostrar turno')}
             </label>
             <label className="text-purple-400 text-xs flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" checked={!!cfg.mostrar_rolagem} onChange={e => mudar({ mostrar_rolagem: e.target.checked })} className="accent-purple-500" />
-              mostrar última rolagem
+              {t('mostrar última rolagem')}
             </label>
           </div>
           <p className="text-accent-300 text-xs">
-            Ficha privada nunca aparece no overlay; notas, chat e eventos secretos também não.
+            {t('Ficha privada nunca aparece no overlay; notas, chat e eventos secretos também não.')}
           </p>
         </>
       )}

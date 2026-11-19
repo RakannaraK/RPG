@@ -12,6 +12,7 @@ import { ehRolado } from '../../lib/pontosEngine'
 import { PRESET_IDS } from '../../engines/actionSoundEngine'
 import { tocarPresetAcao } from '../../audio/actionSynth'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 const INP_PS = 'px-2 py-1.5 rounded-lg bg-purple-950 border border-purple-700 text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-2 focus:ring-purple-500'
 
@@ -25,33 +26,30 @@ function PontosStatusEditor({ cfg = {}, onChange }) {
   return (
     <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-purple-200 text-sm font-semibold">Pontos de status (distribuição)</p>
+        <p className="text-purple-200 text-sm font-semibold">{t('Pontos de status (distribuição)')}</p>
         <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer">
           <input type="checkbox" checked={!!cfg.ativo} onChange={e => set({ ativo: e.target.checked })} className="accent-purple-500" />
-          ativar
+          {t('ativar')}
         </label>
       </div>
       <p className="text-accent-300 text-xs">
-        Point-buy: um pool inicial e ganho por nível, distribuídos nos atributos. É um modo
-        <span className="text-amber-400"> alternativo</span> — não use junto com a rolagem de atributo (F3).
-        Valores aceitam número, fórmula (<span className="font-mono">nivel</span>) ou notação rolada
-        (<span className="font-mono">1d6 + 10</span>, rolada a cada nível).
+        {t('Point-buy: um pool inicial e ganho por nível, distribuídos nos atributos. É um modo alternativo — não use junto com a rolagem de atributo (F3). Valores aceitam número, fórmula (nivel) ou notação rolada (1d6 + 10, rolada a cada nível).')}
       </p>
       {cfg.ativo && (
         <>
           <div className="flex flex-wrap gap-2 items-center">
-            <label className="text-purple-400 text-xs shrink-0">Rótulo</label>
+            <label className="text-purple-400 text-xs shrink-0">{t('Rótulo')}</label>
             <input type="text" value={cfg.rotulo || ''} onChange={e => set({ rotulo: e.target.value })}
-              placeholder="Pontos de Status" className={`${INP_PS} flex-1 min-w-[8rem]`} />
+              placeholder={t('Pontos de Status')} className={`${INP_PS} flex-1 min-w-[8rem]`} />
           </div>
           <div className="flex flex-wrap gap-3 items-center">
             <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" checked={!!cfg.inicial_por_raca} onChange={e => set({ inicial_por_raca: e.target.checked })} className="accent-purple-500" />
-              inicial por raça
+              {t('inicial por raça')}
             </label>
             {!cfg.inicial_por_raca && (
               <span className="flex items-center gap-1.5">
-                <span className="text-purple-400 text-xs">inicial</span>
+                <span className="text-purple-400 text-xs">{t('inicial')}</span>
                 <input type="text" value={cfg.inicial || ''} onChange={e => set({ inicial: e.target.value })}
                   placeholder="16" className={`${INP_PS} w-24 font-mono`} />
               </span>
@@ -59,18 +57,18 @@ function PontosStatusEditor({ cfg = {}, onChange }) {
           </div>
           <div className="flex flex-wrap gap-3 items-center">
             <span className="flex items-center gap-1.5">
-              <span className="text-purple-400 text-xs">ganho por nível</span>
+              <span className="text-purple-400 text-xs">{t('ganho por nível')}</span>
               <input type="text" value={cfg.ganho_por_nivel || ''} onChange={e => set({ ganho_por_nivel: e.target.value })}
                 placeholder="1d6 + 10" className={`${INP_PS} w-28 font-mono`} />
-              {ehRolado(cfg.ganho_por_nivel) && <span className="text-amber-400/80 text-xs">🎲 rolado</span>}
+              {ehRolado(cfg.ganho_por_nivel) && <span className="text-amber-400/80 text-xs">{t('🎲 rolado')}</span>}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="text-purple-400 text-xs">custo por ponto</span>
+              <span className="text-purple-400 text-xs">{t('custo por ponto')}</span>
               <input type="number" min={1} value={cfg.custo_por_ponto ?? 1} onChange={e => set({ custo_por_ponto: Number(e.target.value) })}
                 className={`${INP_PS} w-16 text-center`} />
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="text-purple-400 text-xs">teto/atributo</span>
+              <span className="text-purple-400 text-xs">{t('teto/atributo')}</span>
               <input type="number" value={cfg.maximo_por_atributo ?? ''} onChange={e => set({ maximo_por_atributo: e.target.value === '' ? null : Number(e.target.value) })}
                 placeholder="—" className={`${INP_PS} w-16 text-center`} />
             </span>
@@ -90,51 +88,49 @@ function CriticoEditor({ cfg = {}, onChange }) {
   return (
     <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-purple-200 text-sm font-semibold">Crítico</p>
+        <p className="text-purple-200 text-sm font-semibold">{t('Crítico')}</p>
         <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer">
           <input type="checkbox" checked={!!cfg.ativo} onChange={e => set({ ativo: e.target.checked })} className="accent-purple-500" />
-          ativar
+          {t('ativar')}
         </label>
       </div>
       <p className="text-accent-300 text-xs">
-        Avaliado no <span className="text-purple-300">dado puro do acerto</span> (antes de bônus). O limiar
-        é uma fórmula que pode usar <span className="font-mono text-purple-300">maestria</span> (nível do item).
-        Ex.: d20 clássico → <span className="font-mono">20</span>; IC → <span className="font-mono">max(25, 85 - 15 * piso(maestria / 2))</span>.
+        {t('Avaliado no')} <span className="text-purple-300">{t('dado puro do acerto')}</span> {t('(antes de bônus). O limiar é uma fórmula que pode usar')} <span className="font-mono text-purple-300">maestria</span> {t('(nível do item).')}
+        {t('Ex.: d20 clássico →')} <span className="font-mono">20</span>; IC → <span className="font-mono">max(25, 85 - 15 * piso(maestria / 2))</span>.
       </p>
       {cfg.ativo && (
         <>
           <div>
-            <label className="text-purple-400 text-xs block mb-1">Limiar (crítico se o dado ≥ isto)</label>
+            <label className="text-purple-400 text-xs block mb-1">{t('Limiar (crítico se o dado ≥ isto)')}</label>
             <FormulaInput
               value={cfg.limiar_formula || ''}
               onChange={f => set({ limiar_formula: f })}
               placeholder="20  ou  max(25, 85 - 15 * piso(maestria / 2))"
               presets={[
-                { label: '20 (d20 clássico)', valor: '20' },
-                { label: 'IC (d100 dinâmico)', valor: 'max(25, 85 - 15 * piso(maestria / 2))' },
+                { label: t('20 (d20 clássico)'), valor: '20' },
+                { label: t('IC (d100 dinâmico)'), valor: 'max(25, 85 - 15 * piso(maestria / 2))' },
               ]}
               variaveis={['maestria', 'piso(']}
             />
           </div>
           <div className="flex flex-wrap gap-3 items-center">
             <span className="flex items-center gap-1.5">
-              <span className="text-purple-400 text-xs">multiplicador padrão</span>
+              <span className="text-purple-400 text-xs">{t('multiplicador padrão')}</span>
               <input type="number" min={1} step="0.5" value={cfg.multiplicador_padrao ?? 2}
                 onChange={e => set({ multiplicador_padrao: Number(e.target.value) })}
                 className="w-16 px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-purple-500" />
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="text-purple-400 text-xs">modo</span>
+              <span className="text-purple-400 text-xs">{t('modo')}</span>
               <select value={cfg.modo_multiplicador || 'total'} onChange={e => set({ modo_multiplicador: e.target.value })}
                 className="px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                <option value="total">total (dobra tudo)</option>
-                <option value="dados">dados (só os dados)</option>
+                <option value="total">{t('total (dobra tudo)')}</option>
+                <option value="dados">{t('dados (só os dados)')}</option>
               </select>
             </span>
           </div>
           <p className="text-accent-300 text-xs">
-            Ordem: dados+fixos → multiplicador crítico → percentuais → piso. O multiplicador de uma
-            categoria (aba Maestria & Itens) sobrescreve o padrão.
+            {t('Ordem: dados+fixos → multiplicador crítico → percentuais → piso. O multiplicador de uma categoria (aba Maestria & Itens) sobrescreve o padrão.')}
           </p>
         </>
       )}
@@ -143,15 +139,15 @@ function CriticoEditor({ cfg = {}, onChange }) {
 }
 
 const SECOES = [
-  { id: 'acoes',         label: 'Ações / Ataques',      desc: 'Lista de ataques e habilidades ativas' },
-  { id: 'inventario',    label: 'Inventário',            desc: 'Equipamentos e itens carregados' },
-  { id: 'tracos',        label: 'Traços & Habilidades',  desc: 'Características passivas, raça, classe' },
-  { id: 'notas',         label: 'Notas',                 desc: 'Campo de anotações livres do jogador' },
-  { id: 'imagens',       label: 'Imagens',               desc: 'Galeria de imagens do personagem' },
-  { id: 'pericias',      label: 'Perícias',              desc: 'Lista de perícias com bônus e proficiência' },
-  { id: 'proficiencias', label: 'Proficiências',         desc: 'Linguagens, armas, armaduras, ferramentas' },
-  { id: 'combate',       label: 'Combate',               desc: 'CA, iniciativa, deslocamento e outros campos numéricos' },
-  { id: 'defesas',       label: 'Defesas & Condições',   desc: 'Resistências, imunidades, condições' },
+  { id: 'acoes',         label: t('Ações / Ataques'),      desc: t('Lista de ataques e habilidades ativas') },
+  { id: 'inventario',    label: t('Inventário'),            desc: t('Equipamentos e itens carregados') },
+  { id: 'tracos',        label: t('Traços & Habilidades'),  desc: t('Características passivas, raça, classe') },
+  { id: 'notas',         label: t('Notas'),                 desc: t('Campo de anotações livres do jogador') },
+  { id: 'imagens',       label: t('Imagens'),               desc: t('Galeria de imagens do personagem') },
+  { id: 'pericias',      label: t('Perícias'),              desc: t('Lista de perícias com bônus e proficiência') },
+  { id: 'proficiencias', label: t('Proficiências'),         desc: t('Linguagens, armas, armaduras, ferramentas') },
+  { id: 'combate',       label: t('Combate'),               desc: t('CA, iniciativa, deslocamento e outros campos numéricos') },
+  { id: 'defesas',       label: t('Defesas & Condições'),   desc: t('Resistências, imunidades, condições') },
 ]
 
 function Toggle({ checked, onChange }) {
@@ -245,9 +241,9 @@ export default function LayoutEditor({
     <div className="space-y-8">
       {/* Dado padrão dos testes */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
-        <p className="text-purple-200 text-sm font-semibold">Dado padrão dos testes</p>
+        <p className="text-purple-200 text-sm font-semibold">{t('Dado padrão dos testes')}</p>
         <p className="text-accent-300 text-xs">
-          Dado usado em testes de atributo e perícia. Aceita qualquer valor ≥ 2 (ex: d17, d1000).
+          {t('Dado usado em testes de atributo e perícia. Aceita qualquer valor ≥ 2 (ex: d17, d1000).')}
         </p>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
@@ -281,18 +277,16 @@ export default function LayoutEditor({
 
       {/* Fórmula do modificador de atributo (17.3) */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
-        <p className="text-purple-200 text-sm font-semibold">Modificador de atributo</p>
+        <p className="text-purple-200 text-sm font-semibold">{t('Modificador de atributo')}</p>
         <p className="text-accent-300 text-xs">
-          Como o modificador de cada atributo sai do valor. Use <span className="font-mono text-purple-300">x</span> para
-          o valor do atributo. Vazio = sem modificador (usa o valor puro, ex: Infinit Corridor).
-          A ficha exibe o modificador calculado quando há fórmula.
+          {t('Como o modificador de cada atributo sai do valor. Use')} <span className="font-mono text-purple-300">x</span> {t('para o valor do atributo. Vazio = sem modificador (usa o valor puro, ex: Infinit Corridor). A ficha exibe o modificador calculado quando há fórmula.')}
         </p>
         <FormulaInput
           value={config.formula_modificador || ''}
           onChange={f => onConfigChange({ ...config, formula_modificador: f })}
           placeholder="ex: piso((x-10)/2)"
           presets={[
-            { label: 'Sem modificador (valor puro)', valor: '' },
+            { label: t('Sem modificador (valor puro)'), valor: '' },
             { label: 'piso((x-10)/2)  (D&D)', valor: 'piso((x-10)/2)' },
           ]}
         />
@@ -300,26 +294,25 @@ export default function LayoutEditor({
 
       {/* Exibição de atributos — dots (24.3) */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
-        <p className="text-purple-200 text-sm font-semibold">Exibição de atributos e perícias</p>
+        <p className="text-purple-200 text-sm font-semibold">{t('Exibição de atributos e perícias')}</p>
         <p className="text-accent-300 text-xs">
-          <span className="text-purple-300">Dots</span> mostra bolinhas (●●●○○) em vez de número — só a
-          exibição muda; fórmulas e paradas continuam lendo o número. Override por atributo na aba Atributos.
+          <span className="text-purple-300">Dots</span> {t('mostra bolinhas (●●●○○) em vez de número — só a exibição muda; fórmulas e paradas continuam lendo o número. Override por atributo na aba Atributos.')}
         </p>
         <div className="flex items-center gap-3 flex-wrap">
           <label className="text-purple-300 text-xs flex items-center gap-1.5">
-            padrão
+            {t('padrão')}
             <select
               value={config.exibicao_atributos || 'numero'}
               onChange={e => onConfigChange({ ...config, exibicao_atributos: e.target.value })}
               className="px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
             >
-              <option value="numero">Número</option>
-              <option value="dots">Dots (bolinhas)</option>
+              <option value="numero">{t('Número')}</option>
+              <option value="dots">{t('Dots (bolinhas)')}</option>
             </select>
           </label>
           {(config.exibicao_atributos || 'numero') === 'dots' && (
             <label className="text-purple-300 text-xs flex items-center gap-1.5">
-              máximo de bolinhas
+              {t('máximo de bolinhas')}
               <input
                 type="number" min={1} max={10}
                 value={config.maximo_dots ?? 5}
@@ -333,18 +326,17 @@ export default function LayoutEditor({
 
       {/* Fórmula de proficiência (19.2) */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
-        <p className="text-purple-200 text-sm font-semibold">Proficiência</p>
+        <p className="text-purple-200 text-sm font-semibold">{t('Proficiência')}</p>
         <p className="text-accent-300 text-xs">
-          Fórmula da variável <span className="font-mono text-purple-300">proficiencia</span> (use{' '}
-          <span className="font-mono text-purple-300">nivel</span>). Vazio = sistema sem proficiência
-          (a variável nem aparece). Ex: D&D no nível 13 → 5.
+          {t('Fórmula da variável')} <span className="font-mono text-purple-300">proficiencia</span> {t('(use')}{' '}
+          <span className="font-mono text-purple-300">nivel</span>{t('). Vazio = sistema sem proficiência (a variável nem aparece). Ex: D&D no nível 13 → 5.')}
         </p>
         <FormulaInput
           value={config.formula_proficiencia || ''}
           onChange={f => onConfigChange({ ...config, formula_proficiencia: f })}
           placeholder="ex: 2 + teto(nivel / 4) - 1"
           presets={[
-            { label: 'Sem proficiência', valor: '' },
+            { label: t('Sem proficiência'), valor: '' },
             { label: '2 + teto(nivel/4) − 1  (D&D)', valor: '2 + teto(nivel / 4) - 1' },
           ]}
           variaveis={['nivel']}
@@ -353,19 +345,18 @@ export default function LayoutEditor({
 
       {/* Árvore de habilidades (F54) */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
-        <p className="text-purple-200 text-sm font-semibold">Árvore de habilidades</p>
+        <p className="text-purple-200 text-sm font-semibold">{t('Árvore de habilidades')}</p>
         <p className="text-accent-300 text-xs">
-          Pontos que o jogador gasta na árvore (cada habilidade define o custo). Fórmula vazia = sem
-          orçamento: a árvore só mostra os pré-requisitos. Raça e classe não gastam pontos.
+          {t('Pontos que o jogador gasta na árvore (cada habilidade define o custo). Fórmula vazia = sem orçamento: a árvore só mostra os pré-requisitos. Raça e classe não gastam pontos.')}
         </p>
         <FormulaInput
           value={config.arvore?.formula_pontos || ''}
           onChange={f => onConfigChange({ ...config, arvore: { ...config.arvore, formula_pontos: f } })}
           placeholder="ex: nivel * 2"
           presets={[
-            { label: 'Sem orçamento', valor: '' },
-            { label: '1 por nível', valor: 'nivel' },
-            { label: '2 por nível', valor: 'nivel*2' },
+            { label: t('Sem orçamento'), valor: '' },
+            { label: t('1 por nível'), valor: 'nivel' },
+            { label: t('2 por nível'), valor: 'nivel*2' },
           ]}
           variaveis={['nivel']}
         />
@@ -373,8 +364,8 @@ export default function LayoutEditor({
           type="text"
           value={config.arvore?.rotulo_pontos ?? ''}
           onChange={e => onConfigChange({ ...config, arvore: { ...config.arvore, rotulo_pontos: e.target.value } })}
-          placeholder="Pontos de habilidade"
-          aria-label="Nome dos pontos da árvore"
+          placeholder={t('Pontos de habilidade')}
+          aria-label={t('Nome dos pontos da árvore')}
           className={`${INP_PS} w-full`}
         />
       </div>
@@ -425,7 +416,7 @@ export default function LayoutEditor({
       <TrilhasEditor
         trilhas={config.trilhas}
         descansos={config.descansos || []}
-        onChange={t => onConfigChange({ ...config, trilhas: t })}
+        onChange={tr => onConfigChange({ ...config, trilhas: tr })}
       />
 
       {/* Estados com gatilhos (24.4) */}
@@ -440,19 +431,19 @@ export default function LayoutEditor({
 
       {/* Rótulo de vida */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
-        <p className="text-purple-200 text-sm font-semibold">Rótulo de vida</p>
+        <p className="text-purple-200 text-sm font-semibold">{t('Rótulo de vida')}</p>
         <div className="flex items-center gap-3">
-          <label className="text-purple-400 text-sm shrink-0">Nome do campo</label>
+          <label className="text-purple-400 text-sm shrink-0">{t('Nome do campo')}</label>
           <input
             type="text"
             value={config.rotulo_vida}
             onChange={e => onConfigChange({ ...config, rotulo_vida: e.target.value })}
-            placeholder="Pontos de Vida"
+            placeholder={t('Pontos de Vida')}
             className="flex-1 px-3 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
         <p className="text-accent-300 text-xs">
-          Ex: "Pontos de Vida", "Vitalidade", "HP", "Sanidade"
+          {t('Ex: "Pontos de Vida", "Vitalidade", "HP", "Sanidade"')}
         </p>
       </div>
 
@@ -461,21 +452,20 @@ export default function LayoutEditor({
       {/* Tabelas do mestre */}
       <TabelasEditor
         tabelas={config.tabelas || []}
-        onChange={t => onConfigChange({ ...config, tabelas: t })}
+        onChange={tb => onConfigChange({ ...config, tabelas: tb })}
       />
 
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
-        <p className="text-purple-200 text-sm font-semibold">Sons padrão (ações de combate)</p>
+        <p className="text-purple-200 text-sm font-semibold">{t('Sons padrão (ações de combate)')}</p>
         <p className="text-accent-300 text-xs">
-          Toca quando a arma/item ou habilidade não tem um som próprio configurado.
-          Opcional — deixe em branco para não tocar nada (como hoje).
+          {t('Toca quando a arma/item ou habilidade não tem um som próprio configurado. Opcional — deixe em branco para não tocar nada (como hoje).')}
         </p>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { chave: 'ataque', label: 'Ataque' },
-            { chave: 'dano', label: 'Dano' },
-            { chave: 'cura', label: 'Cura' },
-            { chave: 'defesa', label: 'Defesa' },
+            { chave: 'ataque', label: t('Ataque') },
+            { chave: 'dano', label: t('Dano') },
+            { chave: 'cura', label: t('Cura') },
+            { chave: 'defesa', label: t('Defesa') },
           ].map(({ chave, label }) => (
             <div key={chave} className="flex items-center gap-2">
               <label className="text-purple-400 text-xs w-14 shrink-0">{label}</label>
@@ -487,14 +477,14 @@ export default function LayoutEditor({
                 })}
                 className={`${INP_PS} flex-1`}
               >
-                <option value="">Nenhum</option>
+                <option value="">{t('Nenhum')}</option>
                 {PRESET_IDS.map(id => <option key={id} value={id}>{id}</option>)}
               </select>
               {config.sons?.padroes?.[chave] && (
                 <button
                   type="button"
                   onClick={() => tocarPresetAcao(config.sons.padroes[chave], { ativo: true, volume: 0.6 })}
-                  title="Ouvir"
+                  title={t('Ouvir')}
                   className="text-purple-300 hover:text-white text-sm shrink-0"
                 >▶</button>
               )}
@@ -505,18 +495,18 @@ export default function LayoutEditor({
 
       {/* Seções */}
       <div>
-        <p className="text-purple-200 text-sm font-semibold mb-1">Seções da ficha</p>
+        <p className="text-purple-200 text-sm font-semibold mb-1">{t('Seções da ficha')}</p>
         <p className="text-accent-300 text-xs mb-4">
-          Atributos estão sempre ativos. As demais seções aparecem na ficha apenas se ativadas aqui.
+          {t('Atributos estão sempre ativos. As demais seções aparecem na ficha apenas se ativadas aqui.')}
         </p>
 
         {/* Atributos — sempre ativo */}
         <div className="flex items-center justify-between bg-slate-800/50 border border-purple-900/40 rounded-xl px-4 py-3 mb-2 opacity-60">
           <div>
-            <p className="text-white text-sm font-medium">Atributos</p>
-            <p className="text-accent-300 text-xs">Valores de Força, Destreza, etc. definidos no sistema</p>
+            <p className="text-white text-sm font-medium">{t('Atributos')}</p>
+            <p className="text-accent-300 text-xs">{t('Valores de Força, Destreza, etc. definidos no sistema')}</p>
           </div>
-          <span className="text-xs text-accent-300 font-medium">Sempre ativo</span>
+          <span className="text-xs text-accent-300 font-medium">{t('Sempre ativo')}</span>
         </div>
 
         <div className="space-y-2">
@@ -543,22 +533,22 @@ export default function LayoutEditor({
         <div className="bg-slate-800 border border-purple-700 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-200 text-sm font-semibold">Campos de combate</p>
+              <p className="text-purple-200 text-sm font-semibold">{t('Campos de combate')}</p>
               <p className="text-accent-300 text-xs mt-0.5">
-                Cada campo é uma caixa na ficha. <span className="text-purple-400">Manual</span> = editável;{' '}
-                <span className="text-purple-400">Calculado</span> = fórmula (read-only, recalcula sozinho).
+                {t('Cada campo é uma caixa na ficha.')} <span className="text-purple-400">{t('Manual')}</span> {t('= editável;')}{' '}
+                <span className="text-purple-400">{t('Calculado')}</span> {t('= fórmula (read-only, recalcula sozinho).')}
               </p>
             </div>
             <Botao variante="primario" tamanho="sm"
               type="button"
               onClick={addCampoCombate}>
-              + Adicionar
+              {t('+ Adicionar')}
             </Botao>
           </div>
 
           {config.campos_combate.length === 0 ? (
             <p className="text-accent-300 text-xs py-2">
-              Nenhum campo ainda. Ex: Classe de Armadura, Iniciativa, Deslocamento
+              {t('Nenhum campo ainda. Ex: Classe de Armadura, Iniciativa, Deslocamento')}
             </p>
           ) : (
             <div className="space-y-3">
@@ -572,17 +562,17 @@ export default function LayoutEditor({
                         type="text"
                         value={campo.nome}
                         onChange={e => updateCampoCombate(i, { nome: e.target.value })}
-                        placeholder="Ex: Classe de Armadura"
+                        placeholder={t('Ex: Classe de Armadura')}
                         className="flex-1 px-3 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                       />
                       <select
                         value={campo.tipo || 'manual'}
                         onChange={e => updateCampoCombate(i, { tipo: e.target.value })}
                         className="px-2 py-2 rounded-lg bg-void border border-border text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        title="Tipo do campo"
+                        title={t('Tipo do campo')}
                       >
-                        <option value="manual">Manual</option>
-                        <option value="calculado">Calculado</option>
+                        <option value="manual">{t('Manual')}</option>
+                        <option value="calculado">{t('Calculado')}</option>
                       </select>
                       <button
                         type="button"
@@ -603,11 +593,11 @@ export default function LayoutEditor({
                         />
                         {previa && (
                           previa.ok
-                            ? <p className="text-accent-300 text-xs mt-1">Prévia (atributos=10, nível=5): <span className="text-green-400 font-mono">{previa.valor}</span></p>
+                            ? <p className="text-accent-300 text-xs mt-1">{t('Prévia (atributos=10, nível=5):')} <span className="text-green-400 font-mono">{previa.valor}</span></p>
                             : <p className="text-red-400 text-xs mt-1">⚠ {previa.erro}</p>
                         )}
                         <p className="text-accent-300 text-xs mt-1">
-                          Pode usar atributos, mod, nível, perícias — mas não outro campo (evita ciclos).
+                          {t('Pode usar atributos, mod, nível, perícias — mas não outro campo (evita ciclos).')}
                         </p>
                         {/* 22.7 — destacar este derivado no painel de combate */}
                         <label className="mt-1.5 flex items-center gap-1.5 text-purple-300 text-xs cursor-pointer">
@@ -617,7 +607,7 @@ export default function LayoutEditor({
                             onChange={e => updateCampoCombate(i, { exibir_combate: e.target.checked })}
                             className="accent-purple-500"
                           />
-                          exibir no combate (ex: "Ações extras: 3")
+                          {t('exibir no combate (ex: "Ações extras: 3")')}
                         </label>
                       </div>
                     )}
@@ -634,21 +624,21 @@ export default function LayoutEditor({
         <div className="bg-slate-800 border border-purple-700 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-200 text-sm font-semibold">Perícias</p>
+              <p className="text-purple-200 text-sm font-semibold">{t('Perícias')}</p>
               <p className="text-accent-300 text-xs mt-0.5">
-                Defina as perícias do sistema. O bônus base pode ser ligado a um atributo.
+                {t('Defina as perícias do sistema. O bônus base pode ser ligado a um atributo.')}
               </p>
             </div>
             <Botao variante="primario" tamanho="sm"
               type="button"
               onClick={onAddPericia}>
-              + Adicionar
+              {t('+ Adicionar')}
             </Botao>
           </div>
 
           {pericias.length === 0 ? (
             <p className="text-accent-300 text-xs py-2">
-              Nenhuma perícia ainda. Ex: Percepção, Atletismo, Furtividade, Persuasão
+              {t('Nenhuma perícia ainda. Ex: Percepção, Atletismo, Furtividade, Persuasão')}
             </p>
           ) : (
             <div className="space-y-2">
@@ -658,7 +648,7 @@ export default function LayoutEditor({
                     type="text"
                     value={p.nome}
                     onChange={e => onUpdatePericia(i, { ...p, nome: e.target.value })}
-                    placeholder="Ex: Percepção"
+                    placeholder={t('Ex: Percepção')}
                     className="flex-1 px-3 py-2 rounded-lg bg-void border border-border text-white placeholder-ink-dim text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                   <select
@@ -670,9 +660,9 @@ export default function LayoutEditor({
                       })
                     }
                     className="px-3 py-2 rounded-lg bg-purple-950 border border-purple-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    title="Atributo base (opcional)"
+                    title={t('Atributo base (opcional)')}
                   >
-                    <option value="">Sem atributo base</option>
+                    <option value="">{t('Sem atributo base')}</option>
                     {atributosSalvos.map(a => (
                       <option key={a.id} value={a.id}>
                         {a.nome}
@@ -693,7 +683,7 @@ export default function LayoutEditor({
 
           {atributosSalvos.length === 0 && pericias.length > 0 && (
             <p className="text-amber-600 text-xs">
-              Salve o sistema primeiro para poder vincular perícias a atributos.
+              {t('Salve o sistema primeiro para poder vincular perícias a atributos.')}
             </p>
           )}
         </div>

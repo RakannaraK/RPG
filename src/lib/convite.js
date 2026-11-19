@@ -2,21 +2,23 @@
  * Fase 47 — convite por link e jogador convidado (puro).
  */
 
+import { t } from '../i18n'
+
 export const LIMITE_NOME_CONVIDADO = 30
 
 /** Aceita o código puro ou o link inteiro colado (".../convite/abc123"). */
 export function codigoDoConvite(texto) {
-  const t = String(texto || '').trim()
-  const m = /\/convite\/([^/?#\s]+)/.exec(t)
-  return (m ? decodeURIComponent(m[1]) : t).toLowerCase()
+  const cod = String(texto || '').trim()
+  const m = /\/convite\/([^/?#\s]+)/.exec(cod)
+  return (m ? decodeURIComponent(m[1]) : cod).toLowerCase()
 }
 
 export const linkDeConvite = (origem, codigo) => `${origem}/convite/${encodeURIComponent(codigo)}`
 
 export function validarNomeConvidado(nome) {
   const n = String(nome || '').trim().replace(/\s+/g, ' ')
-  if (!n) return { ok: false, erro: 'Diga como quer ser chamado na mesa.' }
-  if (n.length > LIMITE_NOME_CONVIDADO) return { ok: false, erro: `Até ${LIMITE_NOME_CONVIDADO} letras.` }
+  if (!n) return { ok: false, erro: t('Diga como quer ser chamado na mesa.') }
+  if (n.length > LIMITE_NOME_CONVIDADO) return { ok: false, erro: t('Até {max} letras.', { max: LIMITE_NOME_CONVIDADO }) }
   return { ok: true, nome: n }
 }
 

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { gastarSlot, devolverSlot, slotsDisponiveis } from '../../lib/slotsEngine'
+import { t } from '../../i18n'
 
 /**
  * Fase 20.3 — painel de slots por círculo.
@@ -7,7 +8,7 @@ import { gastarSlot, devolverSlot, slotsDisponiveis } from '../../lib/slotsEngin
  * O total é DERIVADO da grade; aqui só se mexe em `usados`.
  */
 export default function PainelSlots({
-  rotulo = 'Espaços',
+  rotulo = t('Espaços'),
   totais = {},
   usados = {},
   isDono,
@@ -27,7 +28,7 @@ export default function PainelSlots({
     try {
       await onDefinirUsados(circulo, novoUsados)
     } catch (e) {
-      setErro(e.message || 'Erro ao atualizar slots.')
+      setErro(e.message || t('Erro ao atualizar slots.'))
     } finally {
       setOcupado(false)
     }
@@ -77,7 +78,7 @@ export default function PainelSlots({
                     onClick={() => gastar(c)}
                     disabled={ocupado || esgotado}
                     className="w-6 h-6 flex items-center justify-center rounded-lg border border-border text-accent-300 hover:text-ink hover:border-accent-500 transition-colors disabled:opacity-30"
-                    title="Gastar um slot"
+                    title={t('Gastar um slot')}
                   >
                     −
                   </button>
@@ -85,7 +86,7 @@ export default function PainelSlots({
                     onClick={() => aplicar(c, devolverSlot(c, usados))}
                     disabled={ocupado || usadosC === 0}
                     className="w-6 h-6 flex items-center justify-center rounded-lg border border-border text-accent-300 hover:text-ink hover:border-accent-500 transition-colors disabled:opacity-30"
-                    title="Devolver um slot"
+                    title={t('Devolver um slot')}
                   >
                     +
                   </button>

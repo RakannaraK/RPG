@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { ajustarCarga, aoUsarHabilidade, liberarRecarga } from '../lib/combateAvancado'
 import { supabase } from '../lib/supabase'
 import { atendeNivelMinimo } from '../lib/requisitos'
+import { t } from '../i18n'
 
 /**
  * Gerencia habilidades de uma ficha específica.
@@ -32,7 +33,7 @@ export function useHabilidadesFicha(fichaId, habilidadesSistema = []) {
       if (err) throw err
       setRawRows(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar habilidades da ficha.')
+      setError(err.message || t('Erro ao carregar habilidades da ficha.'))
     } finally {
       setLoading(false)
     }

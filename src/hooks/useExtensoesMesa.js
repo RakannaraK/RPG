@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { conteudoInstalado, validarPacote } from '../lib/extensoes'
+import { t } from '../i18n'
 
 /** Fase 62 — instala um pacote (validado aqui) na mesa, sem o hook montado. O servidor trava a mesa e exige mestre/co-mestre. */
 export async function instalarNaMesa(mesaId, pacoteBruto) {
@@ -22,7 +23,7 @@ export function useExtensoesMesa(mesaId) {
     let vivo = true
     supabase.from('mesas').select('extensoes').eq('id', mesaId).single().then(({ data, error }) => {
       if (!vivo) return
-      if (error) setErro('Não consegui ler as extensões da mesa.')
+      if (error) setErro(t('Não consegui ler as extensões da mesa.'))
       else if (!gravou.current) setExtensoes(Array.isArray(data?.extensoes) ? data.extensoes : [])
       setLoading(false)
     })

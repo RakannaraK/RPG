@@ -1,4 +1,6 @@
 /** Fase 55 — "continuar de onde parou": últimas telas visitadas, só no navegador. */
+import { t } from '../i18n'
+
 const CHAVE = 'dp-recentes'
 const MAXIMO = 10
 
@@ -15,9 +17,9 @@ export function tipoDaRota(pathname) {
 
 /** Texto do "Continuar" / da busca para uma visita, dados a mesa e a ficha dela. */
 export const rotuloDe = (v, mesa, ficha) => ({
-  ficha: `Ficha de ${ficha?.nome_personagem || 'Ficha'}`,
-  sessao: `Sessão em ${mesa.nome}`,
-  mapa: `Mapa de ${mesa.nome}`,
+  ficha: t('Ficha de {nome}', { nome: ficha?.nome_personagem || t('Ficha') }),
+  sessao: t('Sessão em {nome}', { nome: mesa.nome }),
+  mapa: t('Mapa de {nome}', { nome: mesa.nome }),
 }[v.tipo] || mesa.nome)
 
 /** Põe a visita no topo, sem repetir a rota, no máximo 10. */

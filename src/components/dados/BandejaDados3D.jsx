@@ -5,6 +5,7 @@ import { getSkin } from '../../lib/diceSkins'
 import { criarMaterialSkin } from '../../lib/materialDado'
 import { PROFUNDIDADE_BANDEJA, ajustarParedes, criarCorpoDado, criarGeometriaDado, criarMundo, estaParado } from '../../lib/fisicaDados'
 import { planejarLancamento } from '../../lib/bandejaDados'
+import { t } from '../../i18n'
 
 // Em segundos de FÍSICA (não de relógio): num aparelho lento a simulação anda
 // mais devagar e o valor não pode aparecer com o dado ainda no ar.
@@ -101,7 +102,10 @@ export default function BandejaDados3D({ lancamentos, onTerminou }) {
       })
       ativos.set(l.id, { dados, material, arestaMat, opacidadeBase: material.opacity, tMundo0: mundo.world.time, fase: 'rolando', tFase: 0 })
       if (l.excedente) {
-        setSelos(s => [...s, { id: l.id, texto: `${l.autor ? `${l.autor}: ` : ''}+${l.excedente.qtd} dados (soma ${l.excedente.soma})` }])
+        const qtdExtra = Number(l.excedente.qtd)
+        const somaExtra = Number(l.excedente.soma)
+        const resumoExtra = t('+{qtd} dados (soma {soma})', { qtd: qtdExtra, soma: somaExtra })
+        setSelos(s => [...s, { id: l.id, texto: `${l.autor ? `${l.autor}: ` : ''}${resumoExtra}` }])
       }
     }
 

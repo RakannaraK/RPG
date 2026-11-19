@@ -5,6 +5,7 @@ import AcoesTab from './AcoesTab'
 import PainelHabilidades from './PainelHabilidades'
 import ArvoreHabilidades from '../ArvoreHabilidades'
 import Abas from '../../ui/Abas'
+import { t } from '../../../i18n'
 
 function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, onRefetch }) {
   const [valor, setValor] = useState(valorInicial)
@@ -20,7 +21,7 @@ function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, on
       setTimeout(() => setSalvo(false), 2000)
       onRefetch()
     } catch (err) {
-      setErro(err.message || 'Erro ao salvar.')
+      setErro(err.message || t('Erro ao salvar.'))
     }
   }
 
@@ -36,7 +37,7 @@ function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, on
                 : 'bg-hover hover:bg-accent-700 text-sobre-acento'
             }`}
           >
-            {salvo ? '✓ Salvo' : 'Salvar'}
+            {salvo ? t('✓ Salvo') : t('Salvar')}
           </button>
         </div>
       )}
@@ -50,14 +51,14 @@ function TextoTab({ fichaId, campo, valor: valorInicial, isDono, placeholder, on
         />
       ) : null}
       {/* F45 — no papel o textarea cortaria o texto: sai como parágrafo */}
-      {isDono && <p className="hidden print:block text-sm whitespace-pre-wrap">{valor || 'Sem conteúdo.'}</p>}
+      {isDono && <p className="hidden print:block text-sm whitespace-pre-wrap">{valor || t('Sem conteúdo.')}</p>}
       {isDono ? null : valor ? (
         <p className="text-ink text-sm whitespace-pre-wrap min-h-[6rem] px-3 py-2.5 bg-hover rounded-lg border border-border">
           {valor}
         </p>
       ) : (
         <p className="text-ink-dim text-sm italic px-3 py-2.5 bg-hover rounded-lg border border-border min-h-[6rem]">
-          Sem conteúdo.
+          {t('Sem conteúdo.')}
         </p>
       )}
       {erro && <p className="text-harm text-xs">{erro}</p>}
@@ -98,35 +99,35 @@ export default function AbasCentrais({
   const temHabilidades = habilidades.length > 0 || habilidadesFicha.length > 0 || condicoesManuaisDisponiveis.length > 0
     || habilidadesBloqueadas.length > 0
   const tabsList = [
-    secoes.acoes      && { id: 'acoes',       label: 'Ações' },
-    secoes.inventario && { id: 'inventario',  label: 'Inventário' },
-    secoes.tracos     && { id: 'tracos',      label: 'Traços' },
-    secoes.notas      && { id: 'notas',       label: 'Notas' },
-    temHabilidades    && { id: 'habilidades', label: 'Habilidades' },
+    secoes.acoes      && { id: 'acoes',       label: t('Ações') },
+    secoes.inventario && { id: 'inventario',  label: t('Inventário') },
+    secoes.tracos     && { id: 'tracos',      label: t('Traços') },
+    secoes.notas      && { id: 'notas',       label: t('Notas') },
+    temHabilidades    && { id: 'habilidades', label: t('Habilidades') },
     // F33.3 — a árvore só aparece quando o sistema liga habilidades entre si
     (habilidades.some(h => h.requer_habilidade_id || h.requer_habilidades_ids?.length)
-      || ((pontosArvore?.total != null || pontosArvore?.erro) && habilidades.some(h => h.custo_pontos > 0))) && { id: 'arvore', label: 'Árvore' },
+      || ((pontosArvore?.total != null || pontosArvore?.erro) && habilidades.some(h => h.custo_pontos > 0))) && { id: 'arvore', label: t('Árvore') },
   ].filter(Boolean)
 
   const [activeTab, setActiveTab] = useState(tabsList[0]?.id || '')
 
   if (tabsList.length === 0) return null
 
-  const currentTab = tabsList.find(t => t.id === activeTab) ? activeTab : tabsList[0].id
-  const rotuloDe = id => tabsList.find(t => t.id === id)?.label
+  const currentTab = tabsList.find(ab => ab.id === activeTab) ? activeTab : tabsList[0].id
+  const rotuloDe = id => tabsList.find(ab => ab.id === id)?.label
 
   return (
     <div className="bg-raised border border-border rounded-xl overflow-hidden">
       <div className="px-2 print:hidden">
         <Abas
-          rotulo="Seções da ficha" tamanho="sm" idPainel="painel-da-ficha"
-          abas={tabsList.map(t => ({ id: t.id, rotulo: t.label }))}
+          rotulo={t('Seções da ficha')} tamanho="sm" idPainel="painel-da-ficha"
+          abas={tabsList.map(ab => ({ id: ab.id, rotulo: ab.label }))}
           atual={currentTab} onTrocar={setActiveTab}
         />
       </div>
 
       <div className="p-4" id="painel-da-ficha" role="tabpanel" aria-label={rotuloDe(currentTab)}>
-        {tabsList.some(t => t.id === 'acoes') && (
+        {tabsList.some(ab => ab.id === 'acoes') && (
           <Aba id="acoes" atual={currentTab} rotulo={rotuloDe('acoes')}>
           <AcoesTab
             fichaId={fichaId}
@@ -137,7 +138,7 @@ export default function AbasCentrais({
           />
           </Aba>
         )}
-        {tabsList.some(t => t.id === 'inventario') && (
+        {tabsList.some(ab => ab.id === 'inventario') && (
           <Aba id="inventario" atual={currentTab} rotulo={rotuloDe('inventario')}>
           <EquipamentosTab
             fichaId={fichaId}
@@ -160,26 +161,26 @@ export default function AbasCentrais({
           />
           </Aba>
         )}
-        {tabsList.some(t => t.id === 'tracos') && (
+        {tabsList.some(ab => ab.id === 'tracos') && (
           <Aba id="tracos" atual={currentTab} rotulo={rotuloDe('tracos')}>
           <TextoTab
             fichaId={fichaId}
             campo="tracos"
             valor={ficha.tracos || ''}
             isDono={isDono}
-            placeholder="Traços de personalidade, características de raça, habilidades de classe..."
+            placeholder={t('Traços de personalidade, características de raça, habilidades de classe...')}
             onRefetch={onRefetch}
           />
           </Aba>
         )}
-        {tabsList.some(t => t.id === 'notas') && (
+        {tabsList.some(ab => ab.id === 'notas') && (
           <Aba id="notas" atual={currentTab} rotulo={rotuloDe('notas')}>
           <TextoTab
             fichaId={fichaId}
             campo="notas"
             valor={ficha.notas || ''}
             isDono={isDono}
-            placeholder="Histórico, anotações, segredos, contatos..."
+            placeholder={t('Histórico, anotações, segredos, contatos...')}
             onRefetch={onRefetch}
           />
           </Aba>
@@ -196,7 +197,7 @@ export default function AbasCentrais({
           /></div>
         )}
 
-        {tabsList.some(t => t.id === 'habilidades') && (
+        {tabsList.some(ab => ab.id === 'habilidades') && (
           <Aba id="habilidades" atual={currentTab} rotulo={rotuloDe('habilidades')}>
           <PainelHabilidades
             habilidades={habilidades}

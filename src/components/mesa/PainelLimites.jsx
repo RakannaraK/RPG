@@ -4,6 +4,7 @@ import { LIMITE_TEXTO, TIPOS_LIMITE, agruparLimites } from '../../lib/seguranca'
 import Botao from '../ui/Botao'
 import Ilustra from '../arte/Ilustra'
 import { useConfirmar } from '../ui/Confirmar'
+import { t } from '../../i18n'
 
 const CAMPO = 'flex-1 min-w-0 px-2.5 py-1.5 rounded-lg bg-void border border-border text-ink text-sm placeholder:text-ink-dim focus:outline-none focus:ring-1 focus:ring-accent-500'
 
@@ -25,13 +26,13 @@ function Coluna({ tipo, itens, isGestor, onAcrescentar, onTirar }) {
         <p className="text-ink-dim text-xs">{tipo.explica}</p>
       </div>
       <ul className="space-y-1">
-        {itens.length === 0 && <li className="text-ink-dim text-xs italic">Nada ainda.</li>}
+        {itens.length === 0 && <li className="text-ink-dim text-xs italic">{t('Nada ainda.')}</li>}
         {itens.map(l => (
           <li key={l.id} className="flex items-start gap-2 text-sm text-ink">
             <span className="flex-1 min-w-0 break-words">{l.texto}</span>
             {isGestor && (
               <button
-                type="button" onClick={() => onTirar(l.id)} aria-label={`Tirar "${l.texto}"`}
+                type="button" onClick={() => onTirar(l.id)} aria-label={t('Tirar "{texto}"', { texto: l.texto })}
                 className="shrink-0 min-w-[24px] min-h-[24px] rounded-lg text-ink-dim hover:text-ink hover:bg-slate-700 inline-flex items-center justify-center"
               ><Ilustra nome="lixeira" tamanho={14} /></button>
             )}
@@ -41,9 +42,9 @@ function Coluna({ tipo, itens, isGestor, onAcrescentar, onTirar }) {
       <form onSubmit={enviar} className="flex gap-1">
         <input
           value={texto} onChange={e => setTexto(e.target.value)} maxLength={LIMITE_TEXTO}
-          placeholder="Acrescentar…" aria-label={`Acrescentar em ${tipo.nome}`} className={CAMPO}
+          placeholder={t('Acrescentar…')} aria-label={t('Acrescentar em {nome}', { nome: tipo.nome })} className={CAMPO}
         />
-        <Botao type="submit" variante="secundario" tamanho="sm" disabled={ocupado || !texto.trim()}>Pôr</Botao>
+        <Botao type="submit" variante="secundario" tamanho="sm" disabled={ocupado || !texto.trim()}>{t('Pôr')}</Botao>
       </form>
       {erro && <p className="text-harm text-xs" role="alert">{erro}</p>}
     </div>
@@ -62,7 +63,7 @@ export default function PainelLimites({ mesaId, isGestor }) {
   const grupos = agruparLimites(limites)
 
   async function tirarComConfirmacao(id) {
-    if (!(await confirmar({ titulo: 'Tirar da lista?', mensagem: 'Quem acrescentou não fica sabendo.', confirmar: 'Tirar' }))) return
+    if (!(await confirmar({ titulo: t('Tirar da lista?'), mensagem: t('Quem acrescentou não fica sabendo.'), confirmar: t('Tirar') }))) return
     setErro('')
     try { await tirar(id) } catch (e) { setErro(e.message) }
   }
@@ -72,16 +73,16 @@ export default function PainelLimites({ mesaId, isGestor }) {
       <div className="flex items-start gap-3">
         <Ilustra nome="escudo" tamanho={28} className="shrink-0" />
         <div>
-          <h2 id="titulo-limites" className="text-ink font-semibold">Combinados e limites</h2>
+          <h2 id="titulo-limites" className="text-ink font-semibold">{t('Combinados e limites')}</h2>
           <p className="text-ink-dim text-xs">
-            Tudo aqui é <strong className="text-ink">anônimo</strong>: nem o mestre sabe quem escreveu. Uma linha não se discute — se alguém pôs, vale para a mesa.
-            Na sessão, o botão <strong className="text-ink">X-Card</strong> corta a cena na hora, sem precisar explicar.
+            {t('Tudo aqui é')} <strong className="text-ink">{t('anônimo')}</strong>{t(': nem o mestre sabe quem escreveu. Uma linha não se discute — se alguém pôs, vale para a mesa.')}
+            {' '}{t('Na sessão, o botão')} <strong className="text-ink">X-Card</strong> {t('corta a cena na hora, sem precisar explicar.')}
           </p>
         </div>
       </div>
       <div className="grid gap-3 md:grid-cols-3">
-        {TIPOS_LIMITE.map(t => (
-          <Coluna key={t.id} tipo={t} itens={grupos[t.id]} isGestor={isGestor} onAcrescentar={acrescentar} onTirar={tirarComConfirmacao} />
+        {TIPOS_LIMITE.map(tp => (
+          <Coluna key={tp.id} tipo={tp} itens={grupos[tp.id]} isGestor={isGestor} onAcrescentar={acrescentar} onTirar={tirarComConfirmacao} />
         ))}
       </div>
       {erro && <p className="text-harm text-xs" role="alert">{erro}</p>}

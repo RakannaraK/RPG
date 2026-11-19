@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { atendeNivelMinimo } from '../lib/requisitos'
+import { t } from '../i18n'
 
 /**
  * Fase 20.4 — poderes conhecidos/preparados de uma ficha.
@@ -31,7 +32,7 @@ export function usePoderesFicha(fichaId, poderesSistema = []) {
       if (err) throw err
       setLinhas(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar poderes da ficha.')
+      setError(err.message || t('Erro ao carregar poderes da ficha.'))
     } finally {
       setLoading(false)
     }
@@ -65,7 +66,7 @@ export function usePoderesFicha(fichaId, poderesSistema = []) {
       if (err) throw err
     } catch (err) {
       setLinhas(prev => prev.map(l => (l.id === linhaId ? { ...l, preparado: anterior } : l)))
-      throw new Error(err.message || 'Não foi possível mudar a preparação.')
+      throw new Error(err.message || t('Não foi possível mudar a preparação.'))
     }
   }
 

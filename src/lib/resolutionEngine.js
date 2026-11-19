@@ -15,6 +15,7 @@
  * camada F7 rola); o RNG só é usado para EXPANDIR explosões.
  */
 import { rolarDados } from './dice.js'
+import { t, tn } from '../i18n'
 
 const LIMITE_EXPLOSAO = 20 // trava de segurança: nunca vira loop infinito
 
@@ -205,17 +206,17 @@ export function descreverResultado(res) {
 
   if (res.modo === 'sucessos') {
     const n = res.sucessos || 0
-    const sufixo = res.critico ? ' — crítico!' : res.botch ? ' — botch!' : ''
+    const sufixo = res.critico ? t(' — crítico!') : res.botch ? t(' — botch!') : ''
     const cor = res.critico ? 'verde' : res.botch ? 'vermelho' : n > 0 ? 'verde' : 'roxo'
-    return { texto: `${n} sucesso${n === 1 ? '' : 's'}${sufixo}`, cor, marcacao: res.marcacao || null }
+    return { texto: tn(n, '{n} sucesso', '{n} sucessos') + sufixo, cor, marcacao: res.marcacao || null }
   }
   if (res.modo === 'roll_under') {
-    const q = res.critico ? 'Crítico'
-      : res.desastre ? 'Desastre'
-      : res.sucesso ? (res.qualidade ? cap(res.qualidade) : 'Sucesso')
-      : 'Falha'
+    const q = res.critico ? t('Crítico')
+      : res.desastre ? t('Desastre')
+      : res.sucesso ? (res.qualidade ? cap(res.qualidade) : t('Sucesso'))
+      : t('Falha')
     const cor = res.critico ? 'verde' : res.desastre ? 'vermelho' : res.sucesso ? 'verde' : 'vermelho'
-    return { texto: `${res.valor} vs ${res.alvo} — ${q}`, cor }
+    return { texto: t('{valor} vs {alvo} — {q}', { valor: res.valor, alvo: res.alvo, q }), cor }
   }
   if (res.modo === 'faixas') {
     const f = res.faixa
@@ -279,23 +280,23 @@ export function validarResolucao(config = {}) {
   const modo = config.modo || 'soma'
 
   if (modo === 'sucessos') {
-    if ((Number(config.dado) || 0) < 2) erros.push('O dado da parada precisa ter ao menos 2 lados.')
-    if ((Number(config.dificuldade_padrao) || 0) < 1) erros.push('A dificuldade padrão precisa ser ao menos 1.')
+    if ((Number(config.dado) || 0) < 2) erros.push(t('O dado da parada precisa ter ao menos 2 lados.'))
+    if ((Number(config.dificuldade_padrao) || 0) < 1) erros.push(t('A dificuldade padrão precisa ser ao menos 1.'))
   } else if (modo === 'roll_under') {
-    if ((Number(config.dado) || 0) < 2) erros.push('O dado precisa ter ao menos 2 lados.')
+    if ((Number(config.dado) || 0) < 2) erros.push(t('O dado precisa ter ao menos 2 lados.'))
   } else if (modo === 'faixas') {
     const fs = config.faixas || []
-    if (fs.length === 0) erros.push('Defina ao menos uma faixa de resultado.')
+    if (fs.length === 0) erros.push(t('Defina ao menos uma faixa de resultado.'))
     fs.forEach((f, i) => {
-      if (!String(f.rotulo || '').trim()) erros.push(`Faixa ${i + 1}: dê um rótulo.`)
+      if (!String(f.rotulo || '').trim()) erros.push(t('Faixa {n}: dê um rótulo.', { n: i + 1 }))
       const de = f.de == null || f.de === '' ? -Infinity : Number(f.de)
       const ate = f.ate == null || f.ate === '' ? Infinity : Number(f.ate)
-      if (Number.isFinite(ate) && Number.isFinite(de) && ate < de) erros.push(`Faixa ${i + 1}: "até" menor que "de".`)
+      if (Number.isFinite(ate) && Number.isFinite(de) && ate < de) erros.push(t('Faixa {n}: "até" menor que "de".', { n: i + 1 }))
     })
   }
 
   if (!percentuaisAplicaveis(modo)) {
-    avisos.push('Modificadores percentuais (F18) não se aplicam neste modo — o resultado é contagem/comparação, não um total.')
+    avisos.push(t('Modificadores percentuais (F18) não se aplicam neste modo — o resultado é contagem/comparação, não um total.'))
   }
 
   return { valido: erros.length === 0, erros, avisos }

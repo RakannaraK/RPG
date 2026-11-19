@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useId } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { t } from '../i18n'
 
 /**
  * Fase 13.1 — sessões ao vivo de uma mesa.
@@ -36,7 +37,7 @@ export function useSessoes(mesaId) {
       if (err) throw err
       setSessaoAtiva(data?.[0] || null)
     } catch (err) {
-      setError(err.message || 'Erro ao carregar sessão.')
+      setError(err.message || t('Erro ao carregar sessão.'))
       setSessaoAtiva(null)
     } finally {
       setLoading(false)
@@ -68,7 +69,7 @@ export function useSessoes(mesaId) {
       .from('sessoes')
       .select('*', { count: 'exact', head: true })
       .eq('mesa_id', mesaId)
-    const tituloFinal = (titulo || '').trim() || `Sessão ${(count || 0) + 1}`
+    const tituloFinal = (titulo || '').trim() || t('Sessão {n}', { n: (count || 0) + 1 })
     const { data, error: err } = await supabase
       .from('sessoes')
       .insert({ mesa_id: mesaId, aberta_por: session.user.id, ativa: true, titulo: tituloFinal })
@@ -81,7 +82,7 @@ export function useSessoes(mesaId) {
       await supabase.rpc('notificar_mesa', {
         p_mesa_id: mesaId,
         p_tipo: 'sessao_iniciada',
-        p_titulo: 'Sessão iniciada',
+        p_titulo: t('Sessão iniciada'),
         p_corpo: tituloFinal,
         p_link: `/mesa/${mesaId}/sessao/${data.id}`,
       })

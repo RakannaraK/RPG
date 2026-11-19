@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /** F31: `tipo` separa personagens do bestiário (criaturas). */
 export function useFichas(mesaId, tipo = 'personagem') {
@@ -21,7 +22,7 @@ export function useFichas(mesaId, tipo = 'personagem') {
       if (err) throw err
       setFichas(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar fichas.')
+      setError(err.message || t('Erro ao carregar fichas.'))
     } finally {
       setLoading(false)
     }
@@ -50,7 +51,7 @@ export function useFicha(fichaId) {
         .maybeSingle()
       if (fichaErr) throw fichaErr
       // RLS: quem não é membro da mesa não recebe a ficha
-      if (!fichaData) throw new Error('Ficha não encontrada ou você não tem acesso a ela.')
+      if (!fichaData) throw new Error(t('Ficha não encontrada ou você não tem acesso a ela.'))
 
       const { data: valoresData, error: valoresErr } = await supabase
         .from('valores_atributos')
@@ -65,7 +66,7 @@ export function useFicha(fichaId) {
       setFicha(fichaData)
       setValoresAtributos(sorted)
     } catch (err) {
-      setError(err.message || 'Erro ao carregar ficha.')
+      setError(err.message || t('Erro ao carregar ficha.'))
     } finally {
       setLoading(false)
     }

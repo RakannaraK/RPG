@@ -15,6 +15,7 @@ import CabecalhoSecao from '../ui/CabecalhoSecao'
 import PainelRelogios from './PainelRelogios'
 import PainelOverlay from './PainelOverlay'
 import RoladorGenerico from '../dados/RoladorGenerico'
+import { t } from '../../i18n'
 
 const CAIXA = 'rounded-xl border border-border bg-raised p-4 space-y-3'
 
@@ -24,7 +25,7 @@ function Vida({ card }) {
   return (
     <div className="flex items-center gap-2">
       <span className="text-ink text-sm truncate flex-1 min-w-0">{card.nome}</span>
-      <BarraVida atual={dados.atual} maximo={dados.maximo} temp={dados.temp} rotulo={`Vida de ${card.nome}`} mostrarTexto={false} className="w-28 shrink-0" />
+      <BarraVida atual={dados.atual} maximo={dados.maximo} temp={dados.temp} rotulo={t('Vida de {nome}', { nome: card.nome })} mostrarTexto={false} className="w-28 shrink-0" />
       <span className="text-ink-dim text-xs tabular-nums w-20 text-right shrink-0">{textoVida(dados)}</span>
     </div>
   )
@@ -37,14 +38,14 @@ function Tabelas({ tabelas, mesaId, sessaoId }) {
 
   async function rolar(tabela) {
     const notacao = (tabela.notacao || '1d6').trim()
-    if (!validarNotacao(notacao)) { setUltimo({ nome: tabela.nome, texto: `Notação inválida: ${notacao}` }); return }
+    if (!validarNotacao(notacao)) { setUltimo({ nome: tabela.nome, texto: t('Notação inválida: {notacao}', { notacao }) }); return }
     const r = rolarNotacao(notacao)
     const entrada = entradaPara(tabela, r.total)
-    const texto = entrada?.texto || '(sem entrada para este resultado)'
+    const texto = entrada?.texto || t('(sem entrada para este resultado)')
     setUltimo({ nome: tabela.nome, valor: r.total, texto })
     await registrarEvento({
       mesaId, sessaoId,
-      rotulo: `🎲 ${tabela.nome}: ${texto}`,
+      rotulo: t('🎲 {nome}: {texto}', { nome: tabela.nome, texto }),
       notacao, total: r.total, dados: r.dados,
     })
   }
@@ -52,13 +53,13 @@ function Tabelas({ tabelas, mesaId, sessaoId }) {
   if (!tabelas.length) return null
   return (
     <div className={CAIXA}>
-      <CabecalhoSecao nivel={3} titulo="Tabelas aleatórias" />
+      <CabecalhoSecao nivel={3} titulo={t('Tabelas aleatórias')} />
       <div className="flex flex-wrap gap-1.5">
-        {tabelas.map(t => (
+        {tabelas.map(tb => (
           <Botao
-            key={t.id} variante="contorno" tamanho="sm" onClick={() => rolar(t)}
-            title={`Rolar ${t.notacao || '1d6'} e mandar ao feed`}
-          >{t.nome || 'tabela'}</Botao>
+            key={tb.id} variante="contorno" tamanho="sm" onClick={() => rolar(tb)}
+            title={t('Rolar {notacao} e mandar ao feed', { notacao: tb.notacao || '1d6' })}
+          >{tb.nome || t('tabela')}</Botao>
         ))}
       </div>
       {ultimo && (
@@ -87,7 +88,7 @@ export default function PainelEscudo({ mesaId, isGestor }) {
   const daVez = encontro ? ordem[Math.min(Math.max(0, encontro.turno_atual ?? 0), Math.max(0, ordem.length - 1))] : null
   const fixadas = notas.filter(n => n.fixada)
 
-  if (!isGestor) return <p className="text-ink-dim text-sm">O escudo é a tela do mestre.</p>
+  if (!isGestor) return <p className="text-ink-dim text-sm">{t('O escudo é a tela do mestre.')}</p>
 
   return (
     <div className="space-y-4">
@@ -95,16 +96,16 @@ export default function PainelEscudo({ mesaId, isGestor }) {
         <div className="space-y-4">
           {/* Combate */}
           <div className={CAIXA}>
-            <CabecalhoSecao nivel={3} titulo="Combate" acoes={sessaoAtiva && (
-              <Botao variante="fantasma" tamanho="sm" onClick={() => navigate(`/mesa/${mesaId}/sessao/${sessaoAtiva.id}`)}>abrir a sessão</Botao>
+            <CabecalhoSecao nivel={3} titulo={t('Combate')} acoes={sessaoAtiva && (
+              <Botao variante="fantasma" tamanho="sm" onClick={() => navigate(`/mesa/${mesaId}/sessao/${sessaoAtiva.id}`)}>{t('abrir a sessão')}</Botao>
             )} />
             {!encontro ? (
-              <p className="text-ink-dim text-sm">{sessaoAtiva ? 'Nenhum combate ativo.' : 'Nenhuma sessão ao vivo.'}</p>
+              <p className="text-ink-dim text-sm">{sessaoAtiva ? t('Nenhum combate ativo.') : t('Nenhuma sessão ao vivo.')}</p>
             ) : (
               <>
                 <p className="text-ink text-sm">
-                  {encontro.titulo || 'Combate'} · <span className="text-accent-300">rodada {encontro.rodada}</span>
-                  {daVez && <> · vez de <b>{daVez.nome}</b></>}
+                  {encontro.titulo || t('Combate')} · <span className="text-accent-300">{t('rodada {n}', { n: encontro.rodada })}</span>
+                  {daVez && <> · {t('Vez de {nome}', { nome: String(daVez.nome ?? '') })}</>}
                 </p>
                 <ol className="text-xs space-y-0.5">
                   {ordem.map((c, i) => (
@@ -120,9 +121,9 @@ export default function PainelEscudo({ mesaId, isGestor }) {
 
           {/* Vidas do grupo */}
           <div className={CAIXA}>
-            <CabecalhoSecao nivel={3} titulo="Vida do grupo" />
+            <CabecalhoSecao nivel={3} titulo={t('Vida do grupo')} />
             {cards.length === 0
-              ? <p className="text-ink-dim text-sm">Nenhum personagem nesta mesa.</p>
+              ? <p className="text-ink-dim text-sm">{t('Nenhum personagem nesta mesa.')}</p>
               : <div className="space-y-1">{cards.map(c => <Vida key={c.id} card={c} />)}</div>}
           </div>
 
@@ -132,12 +133,12 @@ export default function PainelEscudo({ mesaId, isGestor }) {
         <div className="space-y-4">
           {/* Notas fixadas */}
           <div className={CAIXA}>
-            <CabecalhoSecao nivel={3} titulo="Notas fixadas" />
+            <CabecalhoSecao nivel={3} titulo={t('Notas fixadas')} />
             {fixadas.length === 0
-              ? <p className="text-ink-dim text-sm">Fixe uma nota (📌) para ela aparecer aqui.</p>
+              ? <p className="text-ink-dim text-sm">{t('Fixe uma nota (📌) para ela aparecer aqui.')}</p>
               : fixadas.map(n => (
                 <div key={n.id}>
-                  <p className="text-ink text-sm font-medium">{n.titulo || 'Sem título'}</p>
+                  <p className="text-ink text-sm font-medium">{n.titulo || t('Sem título')}</p>
                   <p className="text-ink-dim text-xs whitespace-pre-wrap">{n.texto}</p>
                 </div>
               ))}
@@ -148,7 +149,7 @@ export default function PainelEscudo({ mesaId, isGestor }) {
           </div>
 
           <div className={CAIXA}>
-            <CabecalhoSecao nivel={3} titulo="Rolar" />
+            <CabecalhoSecao nivel={3} titulo={t('Rolar')} />
             <RoladorGenerico mesaId={mesaId} />
           </div>
 

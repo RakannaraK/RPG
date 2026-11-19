@@ -14,6 +14,7 @@
  * reembolso: se o mestre errar, corrige na mão.
  */
 import { avaliarFormula } from './formulaEngine.js'
+import { t } from '../i18n'
 
 export function custosDaHabilidade(hab) {
   const lista = hab?.custo_pool
@@ -54,17 +55,17 @@ export function podeAtivarHabilidade(hab, estado = {}) {
   try {
     custos = agregar(resolverCustos(custosDaHabilidade(hab), contexto))
   } catch (e) {
-    return { ok: false, motivo: `Custo inválido: ${e.message}`, custos: [] }
+    return { ok: false, motivo: t('Custo inválido: {msg}', { msg: e.message }), custos: [] }
   }
   if (custos.length === 0) return { ok: true, custos: [] }
 
   for (const c of custos) {
     const disponivel = atualDoPool(c.pool_id)
     if (disponivel < c.quantidade) {
-      const nome = poolsPorId[c.pool_id]?.nome || 'recurso'
+      const nome = poolsPorId[c.pool_id]?.nome || t('recurso')
       return {
         ok: false,
-        motivo: `${nome} insuficiente: tem ${disponivel}, precisa de ${c.quantidade}.`,
+        motivo: t('{nome} insuficiente: tem {tem}, precisa de {precisa}.', { nome, tem: disponivel, precisa: c.quantidade }),
         custos,
       }
     }
@@ -77,7 +78,7 @@ export function descreverCustoTurno(hab, poolsPorId = {}) {
   const custos = custosDeTurno(hab)
   if (custos.length === 0) return null
   return custos
-    .map(c => `${c.quantidade} ${poolsPorId[c.pool_id]?.nome || 'recurso'}`)
+    .map(c => `${c.quantidade} ${poolsPorId[c.pool_id]?.nome || t('recurso')}`)
     .join(' + ') + '/turno'
 }
 
@@ -123,8 +124,8 @@ export function planejarTurno(habilidadesAtivas = [], estado = {}) {
     const faltando = custos.find(c => ler(c.pool_id) < c.quantidade)
     if (faltando) {
       desativar.push(hf.id)
-      const nome = poolsPorId[faltando.pool_id]?.nome || 'recurso'
-      avisos.push(`${hab.nome} desativada: ${nome} insuficiente (tem ${ler(faltando.pool_id)}, precisa de ${faltando.quantidade}).`)
+      const nome = poolsPorId[faltando.pool_id]?.nome || t('recurso')
+      avisos.push(t('{hab} desativada: {nome} insuficiente (tem {tem}, precisa de {precisa}).', { hab: hab.nome, nome, tem: ler(faltando.pool_id), precisa: faltando.quantidade }))
       continue
     }
     for (const c of custos) saldo[c.pool_id] = ler(c.pool_id) - c.quantidade

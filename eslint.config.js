@@ -32,4 +32,5 @@ export default defineConfig([
       'preserve-caught-error': 'warn',
     },
   },
+  { files: ['scripts/**/*.mjs'], languageOptions: { globals: globals.node } },
 ])

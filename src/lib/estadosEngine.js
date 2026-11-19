@@ -14,6 +14,8 @@
  * }]
  */
 
+import { t } from '../i18n'
+
 /** Valor efetivo do estado (linha ausente = inicial), preso a [min, max]. */
 export function clampEstado(valor, cfg = {}) {
   const min = Number(cfg.min ?? 0)
@@ -45,7 +47,7 @@ export function modificadoresDeEstados(estados = [], valores = {}) {
     const v = clampEstado(valores[cfg.id], cfg)
     const faixa = faixaAtivaDoEstado(cfg, v)
     for (const m of faixa?.modificadores || []) {
-      out.push({ ...m, _fonte: cfg.nome || 'Estado', _estadoId: cfg.id })
+      out.push({ ...m, _fonte: cfg.nome || t('Estado'), _estadoId: cfg.id })
     }
   }
   return out

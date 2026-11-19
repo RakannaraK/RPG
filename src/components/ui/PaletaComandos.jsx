@@ -8,6 +8,7 @@ import { montarItens, filtrarItens } from '../../lib/paleta'
 import Modal, { useFecharModal } from './Modal'
 import EstadoVazio from './EstadoVazio'
 import Icone from './Icone'
+import { t } from '../../i18n'
 
 // Trechos seguidos do mesmo grupo (o filtro pode intercalar), mantendo o índice da lista plana.
 const gruposDe = lista => lista.reduce((gs, it, i) => {
@@ -54,14 +55,14 @@ function Miolo() {
           onChange={e => { setTexto(e.target.value); setAtivo(0) }}
           role="combobox" aria-expanded="true" aria-controls={lista.length ? idLista : undefined} aria-autocomplete="list"
           aria-activedescendant={lista.length ? idOpcao(atual) : undefined}
-          aria-label="Buscar mesa, personagem ou página" placeholder="Buscar mesa, personagem ou página…"
+          aria-label={t('Buscar mesa, personagem ou página')} placeholder={t('Buscar mesa, personagem ou página…')}
           className="flex-1 min-w-0 bg-transparent py-4 text-ink placeholder:text-ink-dim outline-none"
         />
       </div>
       {lista.length === 0 ? (
-        <div className="p-2"><EstadoVazio compacto titulo="Nada encontrado" descricao="Tente outra palavra." /></div>
+        <div className="p-2"><EstadoVazio compacto titulo={t('Nada encontrado')} descricao={t('Tente outra palavra.')} /></div>
       ) : (
-      <div ref={listaRef} id={idLista} role="listbox" aria-label="Resultados" className="max-h-[50vh] overflow-y-auto p-2">
+      <div ref={listaRef} id={idLista} role="listbox" aria-label={t('Resultados')} className="max-h-[50vh] overflow-y-auto p-2">
         {gruposDe(lista).map((g, n) => (
           <div key={n} role="group" aria-labelledby={`${idLista}-g-${n}`}>
             <p id={`${idLista}-g-${n}`} className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-ink-dim">{g.nome}</p>
@@ -79,7 +80,7 @@ function Miolo() {
         ))}
       </div>
       )}
-      <p className="px-4 py-2 border-t border-border/70 text-xs text-ink-dim">↑↓ escolher · Enter abrir · Esc fechar</p>
+      <p className="px-4 py-2 border-t border-border/70 text-xs text-ink-dim">{t('↑↓ escolher · Enter abrir · Esc fechar')}</p>
     </div>
   )
 }
@@ -101,7 +102,7 @@ export default function PaletaComandos() {
 
   if (!session || !aberto) return null
   return (
-    <Modal titulo="Busca" semCabecalho tamanho="md" onFechar={() => setAberto(false)}>
+    <Modal titulo={t('Busca')} semCabecalho tamanho="md" onFechar={() => setAberto(false)}>
       <Miolo />
     </Modal>
   )

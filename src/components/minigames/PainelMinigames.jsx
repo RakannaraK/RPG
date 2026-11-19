@@ -3,10 +3,11 @@ import { useMinigames } from '../../hooks/useMinigames'
 import { JOGOS, NOMES_DIFICULDADE, configDoJogo, estatisticasJogador, rankingMesa } from '../../lib/minigames/resultado'
 import { novaSemente } from '../../lib/minigames/semente'
 import JogoMinigame from './JogoMinigame'
+import { t } from '../../i18n'
 import SeletorJogo from './SeletorJogo'
 
 const fmtStat = (k, v) => (k === 'maiorSobrevivencia' ? `${String(v).replace('.', ',')} s` : k === 'menorErroMs' ? `${v} ms` : v)
-const NOMES_STATS = { partidas: 'Partidas', melhor: 'Melhor', maiorCombo: 'Maior combo', maiorSobrevivencia: 'Maior sobrevivência', menorErroMs: 'Menor erro', maiorSequencia: 'Maior sequência' }
+const NOMES_STATS = { partidas: t('Partidas'), melhor: t('Melhor'), maiorCombo: t('Maior combo'), maiorSobrevivencia: t('Maior sobrevivência'), menorErroMs: t('Menor erro'), maiorSequencia: t('Maior sequência') }
 
 /**
  * Fase 28.4 — escolher jogo e dificuldade, jogar (resultado vai ao feed),
@@ -33,18 +34,18 @@ export default function PainelMinigames({ mesaId, meuId, sessaoId = null, podeJo
 
       {podeJogar ? (
         <button onClick={() => setPartida({ semente: novaSemente() })} className="w-full py-2.5 rounded-xl bg-accent-600 hover:bg-accent-500 text-sobre-acento font-semibold">
-          🎮 Jogar {JOGOS[tipo].nome}
+          {t('🎮 Jogar {jogo}', { jogo: JOGOS[tipo].nome })}
         </button>
       ) : (
-        <p className="text-ink-dim text-sm">Espectadores assistem: o ranking aparece abaixo.</p>
+        <p className="text-ink-dim text-sm">{t('Espectadores assistem: o ranking aparece abaixo.')}</p>
       )}
 
       <section>
-        <h3 className="text-ink-dim text-xs font-semibold uppercase tracking-wider mb-2">Ranking da mesa · {NOMES_DIFICULDADE[dificuldade]}</h3>
+        <h3 className="text-ink-dim text-xs font-semibold uppercase tracking-wider mb-2">{t('Ranking da mesa · {dificuldade}', { dificuldade: NOMES_DIFICULDADE[dificuldade] })}</h3>
         {indisponivel ? (
-          <p className="text-ink-dim text-sm">Ranking ainda não ativado neste banco.</p>
+          <p className="text-ink-dim text-sm">{t('Ranking ainda não ativado neste banco.')}</p>
         ) : ranking.length === 0 ? (
-          <p className="text-ink-dim text-sm">Ninguém jogou esta combinação ainda.</p>
+          <p className="text-ink-dim text-sm">{t('Ninguém jogou esta combinação ainda.')}</p>
         ) : (
           <ol className="space-y-1">
             {ranking.map(r => (
@@ -60,7 +61,7 @@ export default function PainelMinigames({ mesaId, meuId, sessaoId = null, podeJo
 
       {minhas && (
         <section>
-          <h3 className="text-ink-dim text-xs font-semibold uppercase tracking-wider mb-2">Minhas estatísticas · {JOGOS[tipo].nome}</h3>
+          <h3 className="text-ink-dim text-xs font-semibold uppercase tracking-wider mb-2">{t('Minhas estatísticas · {jogo}', { jogo: JOGOS[tipo].nome })}</h3>
           <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
             {Object.entries(minhas).map(([k, v]) => (
               <div key={k} className="flex justify-between gap-2">

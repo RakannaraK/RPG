@@ -5,41 +5,43 @@
 // Mantido livre de imports para que a UI de preferências (11.4) possa importar
 // nomes/cores sem puxar o three.js para o bundle.
 
+import { t } from '../i18n'
+
 export const SKINS = {
   padrao: {
-    nome: 'Padrão',
+    nome: t('Padrão'),
     cor: 0x7c3aed, corCss: '#7c3aed',
     metalness: 0.2, roughness: 0.5, opacity: 1.0, emissive: 0x000000,
   },
   madeira: {
-    nome: 'Madeira',
+    nome: t('Madeira'),
     cor: 0x8b5a2b, corCss: '#8b5a2b',
     metalness: 0.0, roughness: 0.9, opacity: 1.0, emissive: 0x000000,
   },
   metal: {
-    nome: 'Metal',
+    nome: t('Metal'),
     cor: 0xb0b0b8, corCss: '#b0b0b8',
     metalness: 1.0, roughness: 0.25, opacity: 1.0, emissive: 0x000000,
   },
   cristal: {
-    nome: 'Cristal',
+    nome: t('Cristal'),
     cor: 0x88ccee, corCss: '#88ccee',
     metalness: 0.1, roughness: 0.05, opacity: 0.6, emissive: 0x113355,
     transmissivo: true,
   },
   gelo: {
-    nome: 'Gelo',
+    nome: t('Gelo'),
     cor: 0xcdeeff, corCss: '#cdeeff',
     metalness: 0.0, roughness: 0.15, opacity: 0.7, emissive: 0x224455,
     transmissivo: true,
   },
   neon: {
-    nome: 'Néon',
+    nome: t('Néon'),
     cor: 0x39ff14, corCss: '#39ff14',
     metalness: 0.3, roughness: 0.2, opacity: 1.0, emissive: 0x39ff14,
   },
   eletrico: {
-    nome: 'Elétrico',
+    nome: t('Elétrico'),
     cor: 0x33aaff, corCss: '#33aaff',
     metalness: 0.5, roughness: 0.2, opacity: 1.0, emissive: 0x2266ff,
     particulas: 'raios',

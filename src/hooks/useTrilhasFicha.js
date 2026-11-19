@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /**
  * Fase 24.2 — estado das TRILHAS de uma ficha (trilhas_ficha).
@@ -76,7 +77,7 @@ export function useTrilhasFicha(fichaId) {
           ? prev.map(l => (l.trilha_id === trilhaId ? anterior : l))
           : prev.filter(l => l.trilha_id !== trilhaId)
       )
-      throw new Error(err.message || 'Não foi possível salvar a trilha.')
+      throw new Error(err.message || t('Não foi possível salvar a trilha.'))
     }
   }
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useId } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { t } from '../i18n'
 
 const CORES_USUARIO = ['#A78BFA', '#60A5FA', '#34D399', '#FBBF24', '#FB7185', '#22D3EE', '#818CF8', '#2DD4BF']
 const INTERVALO_REGUA_MS = 66
@@ -108,7 +109,7 @@ export function useDesenhosMapa(mapaId) {
   async function apagar(id) {
     const { data, error } = await supabase.from('desenhos_mapa').delete().eq('id', id).select('id')
     if (error) throw error
-    if (!data?.length) throw new Error('Você só pode apagar os seus desenhos.')
+    if (!data?.length) throw new Error(t('Você só pode apagar os seus desenhos.'))
     setDesenhos(prev => prev.filter(d => d.id !== id))
   }
 

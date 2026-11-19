@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 export function rolarDados(quantidade, lados) {
   return Array.from({ length: quantidade }, () =>
     Math.ceil(Math.random() * lados)
@@ -43,7 +44,7 @@ export function aplicarRegra(regra) {
     }
   }
 
-  throw new Error(`Tipo de regra desconhecido: ${regra.tipo}`)
+  throw new Error(t('Tipo de regra desconhecido: {tipo}', { tipo: regra.tipo }))
 }
 
 export function calcularEstatisticas(regra) {

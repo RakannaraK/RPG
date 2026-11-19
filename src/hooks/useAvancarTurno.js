@@ -5,6 +5,7 @@ import { planejarTurno } from '../lib/custoHabilidade'
 import { efeitosDoTurno, textoEfeitoTurno } from '../lib/combateAvancado'
 import { rolarNotacao, validarNotacao } from '../lib/diceNotation'
 import { ordenarPorIniciativa } from '../lib/iniciativa'
+import { t } from '../i18n'
 
 /**
  * "Próximo turno" completo (F14.4 + F20.5), compartilhado pela sessão e pelo
@@ -45,8 +46,8 @@ export function useAvancarTurno({ encontroApi, cards, mesaId, sessaoId, aplicarH
       if (err) throw err
     } catch (err) {
       // Não quebra o combate, mas avisa o mestre que o custo por turno não foi cobrado.
-      const nome = card?.nome || 'o personagem'
-      setAvisoTurno(`Custo por turno de ${nome} não foi cobrado: ${err.message || 'erro na cobrança'}. Ajuste os recursos na mão.`)
+      const nome = card?.nome || t('o personagem')
+      setAvisoTurno(t('Custo por turno de {nome} não foi cobrado: {erro}. Ajuste os recursos na mão.', { nome, erro: err.message || t('erro na cobrança') }))
       return
     }
 
@@ -74,7 +75,7 @@ export function useAvancarTurno({ encontroApi, cards, mesaId, sessaoId, aplicarH
       await aplicarHp(combatente, delta, rotulo)
       if (dados.length) {
         // a rolagem do efeito aparece no feed com os dados, para a mesa conferir
-        await registrarEvento({ mesaId, sessaoId, rotulo: `${efeito.nome} em ${combatente.nome}`, notacao: efeito.notacao, total, dados })
+        await registrarEvento({ mesaId, sessaoId, rotulo: t('{efeito} em {alvo}', { efeito: efeito.nome, alvo: combatente.nome }), notacao: efeito.notacao, total, dados })
       }
     }
   }
@@ -94,7 +95,7 @@ export function useAvancarTurno({ encontroApi, cards, mesaId, sessaoId, aplicarH
     for (const cond of res?.expiradas || []) {
       await registrarEvento({
         mesaId, sessaoId,
-        rotulo: `${cond.nome} expirou em ${cond.combatenteNome}`,
+        rotulo: t('{cond} expirou em {alvo}', { cond: cond.nome, alvo: cond.combatenteNome }),
         notacao: '', total: 0, dados: [],
       })
     }

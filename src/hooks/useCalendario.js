@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useId, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { limitarData, normalizarCalendario } from '../lib/calendarioEngine'
+import { t } from '../i18n'
 
 const tabelaAusente = e => e?.code === '42P01' || e?.code === 'PGRST205'
 
@@ -54,7 +55,7 @@ export function useCalendario(mesaId) {
       .from('calendarios_mesa')
       .upsert({ mesa_id: mesaId, ...patch, updated_at: new Date().toISOString() })
       .select().single()
-    if (error) throw new Error(error.code === '42501' ? 'Só o mestre ou co-mestre mexe no calendário.' : error.message)
+    if (error) throw new Error(error.code === '42501' ? t('Só o mestre ou co-mestre mexe no calendário.') : error.message)
     setLinha(data)
     return data
   }

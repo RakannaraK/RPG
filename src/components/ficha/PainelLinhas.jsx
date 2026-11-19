@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import Dots from './Dots'
+import { t } from '../../i18n'
 
-const NIVEL_LABEL = n => `Nível ${n}`
+const NIVEL_LABEL = n => t('Nível {n}', { n })
 
 /**
  * Fase 25.3c — linhas de poder na ficha: rating em dots (F24.3) + poderes da
@@ -27,7 +28,7 @@ export default function PainelLinhas({
 
   return (
     <div className="bg-raised border border-border rounded-2xl p-4 space-y-3">
-      <p className="text-ink text-sm font-semibold">Linhas de poder</p>
+      <p className="text-ink text-sm font-semibold">{t('Linhas de poder')}</p>
       {linhas.map(linha => {
         const rating = ratingDe(linha.id)
         const poderesDaLinha = catalogoPoderes.filter(p => p.linha_id === linha.id)
@@ -54,7 +55,7 @@ export default function PainelLinhas({
             {linha.descricao && <p className="text-ink-dim text-xs">{linha.descricao}</p>}
 
             {niveis.length === 0 ? (
-              <p className="text-ink-dim text-xs">Nenhum poder cadastrado nesta linha.</p>
+              <p className="text-ink-dim text-xs">{t('Nenhum poder cadastrado nesta linha.')}</p>
             ) : (
               <div className="space-y-1.5 pl-1">
                 {niveis.map(n => (
@@ -72,19 +73,19 @@ export default function PainelLinhas({
                               {poder.nome}
                             </span>
                             {aprendido ? (
-                              <span className="text-ok text-xs shrink-0">✓ aprendido</span>
+                              <span className="text-ok text-xs shrink-0">{t('✓ aprendido')}</span>
                             ) : desbloqueado ? (
                               isDono && (
                                 <button
-                                  onClick={() => onAprender(poder.id, 'linha').catch(e => setErro(e.message || 'Erro ao aprender.'))}
+                                  onClick={() => onAprender(poder.id, 'linha').catch(e => setErro(e.message || t('Erro ao aprender.')))}
                                   className="text-xs px-2 py-0.5 rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors shrink-0"
                                 >
-                                  Aprender
+                                  {t('Aprender')}
                                 </button>
                               )
                             ) : (
-                              <span className="text-ink-dim text-xs shrink-0" title={`Requer ${linha.nome} ${n}`}>
-                                req. {linha.nome} {n}
+                              <span className="text-ink-dim text-xs shrink-0" title={t('Requer {nome} {n}', { nome: linha.nome, n })}>
+                                {t('req. {nome} {n}', { nome: linha.nome, n })}
                               </span>
                             )}
                           </div>

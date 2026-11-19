@@ -28,9 +28,11 @@ import EstadoVazio from '../components/ui/EstadoVazio'
 import { EsqueletoCartoes } from '../components/ui/Esqueleto'
 import { useToast } from '../components/ui/Toast'
 import { useConfirmar } from '../components/ui/Confirmar'
+import { t, tn } from '../i18n'
 
 // tipo de publicação → desenho da biblioteca de arte (o emoji fica para o conteúdo)
 const ARTE_DO_TIPO = { ficha: 'elmo', criatura: 'garra', sistema: 'tomo', extensao: 'lanterna', arte: 'moldura' }
+const PLURAL_DO_TIPO = { ficha: t('Fichas'), criatura: t('Criaturas'), sistema: t('Sistemas'), extensao: t('Extensões'), arte: t('Artes') }
 
 /**
  * Demo sem conta: rola de verdade (mesmo motor do site) e NÃO grava nada em
@@ -44,7 +46,7 @@ function DemoRolador() {
 
   function rolar(n) {
     const bruto = (n || notacao).trim()
-    if (!validarNotacao(bruto)) { setErro(`Notação inválida: ${bruto}`); return }
+    if (!validarNotacao(bruto)) { setErro(t('Notação inválida: {bruto}', { bruto })); return }
     setErro('')
     setNotacao(bruto)
     setResultado(rolarNotacao(bruto))
@@ -57,9 +59,9 @@ function DemoRolador() {
         <input
           value={notacao} onChange={e => setNotacao(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') rolar() }}
-          className="campo w-32 font-mono" aria-label="Notação do dado"
+          className="campo w-32 font-mono" aria-label={t('Notação do dado')}
         />
-        <Botao variante="primario" onClick={() => rolar()}><Icone nome="dado" tamanho={16} /> Rolar</Botao>
+        <Botao variante="primario" onClick={() => rolar()}><Icone nome="dado" tamanho={16} /> {t('Rolar')}</Botao>
         {['1d20', '2d6+3', '4d6kh3', '1d100'].map(atalho => (
           <Botao key={atalho} variante="contorno" tamanho="sm" className="font-mono" onClick={() => rolar(atalho)}>{atalho}</Botao>
         ))}
@@ -71,7 +73,7 @@ function DemoRolador() {
             <Dice3D key={i} lados={d.lados} resultado={d.valor} rolando={false} descartado={d.descartado} skin="padrao" />
           ))}
           <p className="text-ink" aria-live="polite">
-            <span className="text-ink-dim text-xs mr-1.5 uppercase tracking-wider">total</span>
+            <span className="text-ink-dim text-xs mr-1.5 uppercase tracking-wider">{t('total')}</span>
             <span className="text-4xl font-bold text-dice-400 tabular-nums font-sora">{resultado.total}</span>
           </p>
         </div>
@@ -84,15 +86,15 @@ function DemoRolador() {
 function resumoDoArquivo(json) {
   if (json?.ficha) {
     const f = json.ficha
-    return [f.nome_personagem, [f.raca, f.classe].filter(Boolean).join(' • '), f.nivel ? `nível ${f.nivel}` : null].filter(Boolean).join(' · ')
+    return [f.nome_personagem, [f.raca, f.classe].filter(Boolean).join(' • '), f.nivel ? t('nível {nivel}', { nivel: f.nivel }) : null].filter(Boolean).join(' · ')
   }
   if (json?.sistema || Array.isArray(json?.atributos)) {
-    const nome = json.sistema?.nome || json.nome || 'Sistema'
+    const nome = json.sistema?.nome || json.nome || t('Sistema')
     const n = Array.isArray(json.atributos) ? json.atributos.length : 0
-    return `${nome}${n ? ` · ${n} atributos` : ''}`
+    return `${nome}${n ? ` · ${tn(n, '{n} atributo', '{n} atributos')}` : ''}`
   }
   if (json?.formato === 'dado-e-pena/extensao') {
-    return `${json.nome || json.id} · ${json.cenas?.length || 0} cena(s) · ${json.efeitos?.length || 0} efeito(s)`
+    return `${json.nome || json.id} · ${tn(json.cenas?.length || 0, '{n} cena', '{n} cenas')} · ${tn(json.efeitos?.length || 0, '{n} efeito', '{n} efeitos')}`
   }
   return null
 }
@@ -135,7 +137,7 @@ function Publicar({ onPublicar, onFechar, meuId, inicial }) {
       setErro('')
     } catch {
       setConteudo(null); setNomeArquivo('')
-      setErro('Não consegui ler esse arquivo. Ele precisa ser o .json que o site exporta (ficha, criatura, sistema ou extensão).')
+      setErro(t('Não consegui ler esse arquivo. Ele precisa ser o .json que o site exporta (ficha, criatura, sistema ou extensão).'))
     }
   }
 
@@ -144,7 +146,7 @@ function Publicar({ onPublicar, onFechar, meuId, inicial }) {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
-    if (!file.type.startsWith('image/')) { setErro('Escolha um arquivo de imagem.'); return }
+    if (!file.type.startsWith('image/')) { setErro(t('Escolha um arquivo de imagem.')); return }
     setEnviandoImagem(true); setErro('')
     try {
       const reduzida = await redimensionarImagem(file, 1600)
@@ -153,7 +155,7 @@ function Publicar({ onPublicar, onFechar, meuId, inicial }) {
       if (error) throw new Error(error.message)
       setImagem(supabase.storage.from('fichas-imagens').getPublicUrl(caminho).data.publicUrl)
       if (!titulo) setTitulo(file.name.replace(/\.[a-z0-9]+$/i, ''))
-    } catch (err) { setErro(err.message || 'Não foi possível enviar a imagem.') }
+    } catch (err) { setErro(err.message || t('Não foi possível enviar a imagem.')) }
     finally { setEnviandoImagem(false) }
   }
 
@@ -170,25 +172,25 @@ function Publicar({ onPublicar, onFechar, meuId, inicial }) {
   return (
     <Modal
       onFechar={() => onFechar(false)} bloqueado={ocupado} tamanho="lg"
-      titulo="Publicar na comunidade" subtitulo="O que vai é a cópia exportada. Nada da sua mesa fica visível."
+      titulo={t('Publicar na comunidade')} subtitulo={t('O que vai é a cópia exportada. Nada da sua mesa fica visível.')}
       rodape={
         <>
           <FecharModal disabled={ocupado} />
-          <Botao variante="primario" onClick={enviar} disabled={ocupado || enviandoImagem}>{ocupado ? 'Publicando…' : 'Publicar'}</Botao>
+          <Botao variante="primario" onClick={enviar} disabled={ocupado || enviandoImagem}>{ocupado ? t('Publicando…') : t('Publicar')}</Botao>
         </>
       }
     >
       <div className="space-y-5">
         <fieldset>
-          <legend className="rotulo">O que você vai publicar?</legend>
+          <legend className="rotulo">{t('O que você vai publicar?')}</legend>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-            {TIPOS_PUBLICACAO.map(t => (
+            {TIPOS_PUBLICACAO.map(tp => (
               <button
-                key={t.id} type="button" onClick={() => { setTipo(t.id); setErro('') }} aria-pressed={tipo === t.id}
-                className={`cartao flex flex-col items-center gap-1.5 rounded-xl border p-3 ${tipo === t.id ? 'selecionado' : 'border-border bg-void/40'}`}
+                key={tp.id} type="button" onClick={() => { setTipo(tp.id); setErro('') }} aria-pressed={tipo === tp.id}
+                className={`cartao flex flex-col items-center gap-1.5 rounded-xl border p-3 ${tipo === tp.id ? 'selecionado' : 'border-border bg-void/40'}`}
               >
-                <Ilustra nome={ARTE_DO_TIPO[t.id]} tamanho={32} />
-                <span className="text-sm text-ink font-medium">{t.nome}</span>
+                <Ilustra nome={ARTE_DO_TIPO[tp.id]} tamanho={32} />
+                <span className="text-sm text-ink font-medium">{tp.nome}</span>
               </button>
             ))}
           </div>
@@ -199,8 +201,8 @@ function Publicar({ onPublicar, onFechar, meuId, inicial }) {
             <input ref={imagemRef} type="file" accept="image/*" onChange={escolherImagem} className="hidden" />
             {imagem ? (
               <div className="relative rounded-xl overflow-hidden border border-border">
-                <img src={imagem} alt="Prévia da arte" className="w-full max-h-64 object-cover" />
-                <Botao variante="secundario" tamanho="sm" className="absolute top-2 right-2" onClick={() => imagemRef.current?.click()}>Trocar imagem</Botao>
+                <img src={imagem} alt={t('Prévia da arte')} className="w-full max-h-64 object-cover" />
+                <Botao variante="secundario" tamanho="sm" className="absolute top-2 right-2" onClick={() => imagemRef.current?.click()}>{t('Trocar imagem')}</Botao>
               </div>
             ) : (
               <button
@@ -208,12 +210,12 @@ function Publicar({ onPublicar, onFechar, meuId, inicial }) {
                 className="w-full rounded-xl border border-dashed border-border hover:border-accent-500 p-6 text-center transition-colors duration-rapida"
               >
                 <Icone nome="enviar" tamanho={24} className="mx-auto text-accent-300" />
-                <span className="block text-ink text-sm mt-2">{enviandoImagem ? 'Enviando…' : 'Escolher a imagem'}</span>
-                <span className="block text-ink-dim text-xs mt-0.5">Fica guardada no site (até 1600 px).</span>
+                <span className="block text-ink text-sm mt-2">{enviandoImagem ? t('Enviando…') : t('Escolher a imagem')}</span>
+                <span className="block text-ink-dim text-xs mt-0.5">{t('Fica guardada no site (até 1600 px).')}</span>
               </button>
             )}
-            <label className="block"><span className="rotulo">Crédito do artista</span>
-              <input value={creditos} onChange={e => setCreditos(e.target.value)} placeholder="Quem fez a arte" className="campo w-full" />
+            <label className="block"><span className="rotulo">{t('Crédito do artista')}</span>
+              <input value={creditos} onChange={e => setCreditos(e.target.value)} placeholder={t('Quem fez a arte')} className="campo w-full" />
             </label>
           </div>
         ) : (
@@ -225,23 +227,23 @@ function Publicar({ onPublicar, onFechar, meuId, inicial }) {
             >
               <Icone nome={conteudo ? 'ok' : 'enviar'} tamanho={22} className={conteudo ? 'text-ok' : 'text-accent-300'} />
               <span className="min-w-0">
-                <span className="block text-ink text-sm font-medium truncate">{conteudo ? `Arquivo reconhecido: ${nomeArquivo}` : 'Escolher o arquivo exportado (.json)'}</span>
+                <span className="block text-ink text-sm font-medium truncate">{conteudo ? t('Arquivo reconhecido: {nomeArquivo}', { nomeArquivo }) : t('Escolher o arquivo exportado (.json)')}</span>
                 <span className="block text-ink-dim text-xs mt-0.5 truncate">
-                  {resumo || 'Exporte pela ficha, pelo bestiário ou em Sistema → Exportar.'}
+                  {resumo || t('Exporte pela ficha, pelo bestiário ou em Sistema → Exportar.')}
                 </span>
               </span>
             </button>
           </div>
         )}
 
-        <label className="block"><span className="rotulo">Título</span>
-          <input value={titulo} onChange={e => setTitulo(e.target.value)} placeholder="Ex.: Sistema de Magitech — Thauriun" className="campo w-full" />
+        <label className="block"><span className="rotulo">{t('Título')}</span>
+          <input value={titulo} onChange={e => setTitulo(e.target.value)} placeholder={t('Ex.: Sistema de Magitech — Thauriun')} className="campo w-full" />
         </label>
-        <label className="block"><span className="rotulo">Descrição <span className="text-ink-dim font-normal">(opcional)</span></span>
-          <textarea value={descricao} onChange={e => setDescricao(e.target.value)} rows={3} placeholder="Para que serve, como usar, de onde veio…" className="campo w-full resize-y" />
+        <label className="block"><span className="rotulo">{t('Descrição')} <span className="text-ink-dim font-normal">{t('(opcional)')}</span></span>
+          <textarea value={descricao} onChange={e => setDescricao(e.target.value)} rows={3} placeholder={t('Para que serve, como usar, de onde veio…')} className="campo w-full resize-y" />
         </label>
-        <label className="block"><span className="rotulo">Etiquetas</span>
-          <input value={etiquetas} onChange={e => setEtiquetas(e.target.value)} placeholder="Separadas por vírgula: fantasia, baixo nível" className="campo w-full" />
+        <label className="block"><span className="rotulo">{t('Etiquetas')}</span>
+          <input value={etiquetas} onChange={e => setEtiquetas(e.target.value)} placeholder={t('Separadas por vírgula: fantasia, baixo nível')} className="campo w-full" />
         </label>
         {erro && <p className="aviso-erro" role="alert">{erro}</p>}
       </div>
@@ -264,16 +266,16 @@ function LevarParaMesa({ p, mesas, onLevar, onFechar }) {
   return (
     <Modal
       onFechar={onFechar} bloqueado={ocupado} tamanho="sm"
-      titulo={`Levar “${p.titulo}”`} subtitulo={p.tipo === 'extensao' ? 'A extensão é instalada na mesa que você escolher (só mesas em que você é mestre).' : p.tipo === 'sistema' ? 'O sistema é importado na mesa que você escolher.' : 'Vira uma ficha sua na mesa que você escolher.'}
+      titulo={t('Levar “{titulo}”', { titulo: p.titulo })} subtitulo={p.tipo === 'extensao' ? t('A extensão é instalada na mesa que você escolher (só mesas em que você é mestre).') : p.tipo === 'sistema' ? t('O sistema é importado na mesa que você escolher.') : t('Vira uma ficha sua na mesa que você escolher.')}
       rodape={
         <>
           <FecharModal disabled={ocupado} />
-          <Botao variante="primario" onClick={levar} disabled={ocupado || !mesaId}>{ocupado ? 'Levando…' : 'Levar para a mesa'}</Botao>
+          <Botao variante="primario" onClick={levar} disabled={ocupado || !mesaId}>{ocupado ? t('Levando…') : t('Levar para a mesa')}</Botao>
         </>
       }
     >
       <fieldset className="space-y-2">
-        <legend className="sr-only">Mesa</legend>
+        <legend className="sr-only">{t('Mesa')}</legend>
         {mesas.map(m => (
           <label key={m.id} className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 cursor-pointer transition-colors duration-rapida ${mesaId === m.id ? 'selecionado' : 'border-border hover:border-accent-700'}`}>
             <input type="radio" name="mesa-destino" checked={mesaId === m.id} onChange={() => setMesaId(m.id)} className="accent-purple-500" />
@@ -293,7 +295,7 @@ function Cartao({ p, logado, curtida, onCurtir, onObter, onDenunciar, onApagar, 
 
   async function acao(nome, fn, ok) {
     setOcupado(nome)
-    try { await fn(); if (ok) toast.ok(ok) } catch (e) { toast.erro('Não deu certo', { detalhe: e.message }) } finally { setOcupado('') }
+    try { await fn(); if (ok) toast.ok(ok) } catch (e) { toast.erro(t('Não deu certo'), { detalhe: e.message }) } finally { setOcupado('') }
   }
 
   return (
@@ -302,7 +304,7 @@ function Cartao({ p, logado, curtida, onCurtir, onObter, onDenunciar, onApagar, 
         <Avatar nome={p.autor} tamanho="sm" />
         <div className="min-w-0 flex-1">
           <p className="text-ink text-sm font-medium truncate">{p.autor}</p>
-          <p className="text-ink-dim text-xs">{quandoFoi(p.created_at)}{p.oculta ? ' · oculta por denúncias' : ''}</p>
+          <p className="text-ink-dim text-xs">{quandoFoi(p.created_at)}{p.oculta ? ` · ${t('oculta por denúncias')}` : ''}</p>
         </div>
         <span className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-ink-dim border border-border rounded-full px-2 py-0.5">
           <Ilustra nome={ARTE_DO_TIPO[p.tipo] || 'bau'} tamanho={14} /> {nomeDoTipo(p.tipo)}
@@ -317,7 +319,7 @@ function Cartao({ p, logado, curtida, onCurtir, onObter, onDenunciar, onApagar, 
 
       <div className="px-4 pt-3 pb-4 space-y-2 flex-1">
         <h3 className="font-sora text-ink text-lg font-semibold leading-snug">{p.titulo}</h3>
-        {p.creditos && <p className="text-ink-dim text-xs">Arte de {p.creditos}</p>}
+        {p.creditos && <p className="text-ink-dim text-xs">{t('Arte de {creditos}', { creditos: p.creditos })}</p>}
         {p.descricao && <p className="text-ink-dim text-sm line-clamp-3">{p.descricao}</p>}
         {(p.etiquetas || []).length > 0 && (
           <div className="flex flex-wrap gap-1.5 pt-1">
@@ -331,8 +333,8 @@ function Cartao({ p, logado, curtida, onCurtir, onObter, onDenunciar, onApagar, 
       <footer className="flex items-center gap-1 px-2 py-2 border-t border-border/60">
         <button
           type="button" onClick={() => logado && acao('curtir', () => onCurtir(p.id))} disabled={!logado || ocupado === 'curtir'}
-          aria-pressed={curtida} aria-label={`${curtida ? 'Descurtir' : 'Curtir'} · ${textoCurtidas(p.curtidas)}`}
-          data-dica={logado ? (curtida ? 'Descurtir' : 'Curtir') : 'Entre para curtir'} data-dica-lado="dir"
+          aria-pressed={curtida} aria-label={`${curtida ? t('Descurtir') : t('Curtir')} · ${textoCurtidas(p.curtidas)}`}
+          data-dica={logado ? (curtida ? t('Descurtir') : t('Curtir')) : t('Entre para curtir')} data-dica-lado="dir"
           className={`botao-icone px-2.5 gap-1.5 ${curtida ? '!text-harm' : ''} ${logado ? '' : 'opacity-60'}`}
         >
           <Icone nome="coracao" tamanho={18} className={curtida ? 'fill-current' : ''} />
@@ -341,18 +343,18 @@ function Cartao({ p, logado, curtida, onCurtir, onObter, onDenunciar, onApagar, 
         {p.tipo !== 'arte' && (
           <button
             type="button" onClick={() => logado && onObter(p)} disabled={!logado}
-            data-dica={logado ? 'Trazer para uma mesa sua' : 'Entre para levar para a sua mesa'} data-dica-lado="dir"
+            data-dica={logado ? t('Trazer para uma mesa sua') : t('Entre para levar para a sua mesa')} data-dica-lado="dir"
             className={`botao-icone px-2.5 gap-1.5 ${logado ? '' : 'opacity-60'}`}
-          ><Icone nome="baixar" tamanho={18} /><span className="text-sm">Levar para a mesa</span></button>
+          ><Icone nome="baixar" tamanho={18} /><span className="text-sm">{t('Levar para a mesa')}</span></button>
         )}
         <span className="flex-1" />
         {logado && !souAutor && (
-          <button type="button" onClick={() => onDenunciar(p)} aria-label="Denunciar" data-dica="Denunciar" className="botao-icone hover:!text-warn">
+          <button type="button" onClick={() => onDenunciar(p)} aria-label={t('Denunciar')} data-dica={t('Denunciar')} className="botao-icone hover:!text-warn">
             <Icone nome="alerta" tamanho={18} />
           </button>
         )}
         {logado && souAutor && (
-          <button type="button" onClick={() => onApagar(p)} disabled={ocupado === 'apagar'} aria-label="Apagar da comunidade" data-dica="Apagar" className="botao-icone hover:!text-harm">
+          <button type="button" onClick={() => onApagar(p)} disabled={ocupado === 'apagar'} aria-label={t('Apagar da comunidade')} data-dica={t('Apagar')} className="botao-icone hover:!text-harm">
             <Icone nome="lixeira" tamanho={18} />
           </button>
         )}
@@ -418,7 +420,7 @@ export default function ComunidadePage() {
 
   function obter(p) {
     if (mesasDe(p).length === 0) {
-      toast.aviso(p.tipo === 'extensao' ? 'Você precisa ser mestre ou co-mestre de uma mesa.' : 'Você precisa de uma mesa', p.tipo === 'extensao' ? undefined : { detalhe: 'Crie ou entre numa mesa para levar isto para ela.' })
+      toast.aviso(p.tipo === 'extensao' ? t('Você precisa ser mestre ou co-mestre de uma mesa.') : t('Você precisa de uma mesa'), p.tipo === 'extensao' ? undefined : { detalhe: t('Crie ou entre numa mesa para levar isto para ela.') })
       return
     }
     setLevando(p)
@@ -429,38 +431,38 @@ export default function ComunidadePage() {
     if (p.tipo === 'sistema') {
       await importarSistemaNaMesa(mesa.id, p.conteudo)
       setLevando(null)
-      toast.ok(`Sistema importado em ${mesa.nome}`)
+      toast.ok(t('Sistema importado em {nome}', { nome: mesa.nome }))
       return
     }
     if (p.tipo === 'extensao') {
       await instalarNaMesa(mesa.id, p.conteudo)
       setLevando(null)
-      toast.ok(`Extensão instalada em ${mesa.nome}`)
+      toast.ok(t('Extensão instalada em {nome}', { nome: mesa.nome }))
       return
     }
     const plano = await prepararImportacao(p.conteudo, mesa.id)
     const extras = p.tipo === 'criatura' ? { tipo_ficha: 'criatura', privada: true } : {}
     const novoId = await gravarImportacao(plano, { mesaId: mesa.id, donoId: meuId, extras })
     setLevando(null)
-    toast.ok(`Trazido para ${mesa.nome}`, plano.avisos.length ? { detalhe: `${plano.avisos.length} coisa(s) não casaram com o sistema da mesa.` } : undefined)
+    toast.ok(t('Trazido para {nome}', { nome: mesa.nome }), plano.avisos.length ? { detalhe: tn(plano.avisos.length, '{n} coisa não casou com o sistema da mesa.', '{n} coisas não casaram com o sistema da mesa.') } : undefined)
     navigate(`/mesa/${mesa.id}/ficha/${novoId}`)
   }
 
   async function denunciarPublicacao(p) {
     const motivo = await perguntar({
-      titulo: 'Denunciar publicação', mensagem: `Por que "${p.titulo}" não deveria estar aqui?`,
-      rotulo: 'Motivo (opcional)', placeholder: 'Ex.: conteúdo ofensivo, cópia sem crédito…', confirmar: 'Denunciar',
+      titulo: t('Denunciar publicação'), mensagem: t('Por que "{titulo}" não deveria estar aqui?', { titulo: p.titulo }),
+      rotulo: t('Motivo (opcional)'), placeholder: t('Ex.: conteúdo ofensivo, cópia sem crédito…'), confirmar: t('Denunciar'),
     })
     if (motivo === null) return
-    try { await denunciar(p.id, motivo); toast.ok('Denúncia registrada', { detalhe: 'Com 3 denúncias a publicação sai do ar até alguém revisar.' }) }
-    catch (e) { toast.erro('Não foi possível denunciar', { detalhe: e.message }) }
+    try { await denunciar(p.id, motivo); toast.ok(t('Denúncia registrada'), { detalhe: t('Com 3 denúncias a publicação sai do ar até alguém revisar.') }) }
+    catch (e) { toast.erro(t('Não foi possível denunciar'), { detalhe: e.message }) }
   }
 
   async function apagarPublicacao(p) {
-    const ok = await confirmar({ titulo: 'Apagar da comunidade?', mensagem: `"${p.titulo}" sai do ar para todo mundo.`, confirmar: 'Apagar', perigo: true })
+    const ok = await confirmar({ titulo: t('Apagar da comunidade?'), mensagem: t('"{titulo}" sai do ar para todo mundo.', { titulo: p.titulo }), confirmar: t('Apagar'), perigo: true })
     if (!ok) return
-    try { await apagar(p.id); toast.ok('Publicação apagada') }
-    catch (e) { toast.erro('Não foi possível apagar', { detalhe: e.message }) }
+    try { await apagar(p.id); toast.ok(t('Publicação apagada')) }
+    catch (e) { toast.erro(t('Não foi possível apagar'), { detalhe: e.message }) }
   }
 
   const chip = (ativo, conteudo, onClick, chave) => (
@@ -476,39 +478,39 @@ export default function ComunidadePage() {
         comunidade={false}
         acoes={participa && (
           <Botao variante="primario" onClick={() => setPublicando(true)} className="mr-1">
-            <Icone nome="mais" tamanho={18} /><span className="max-sm:sr-only">Publicar</span>
+            <Icone nome="mais" tamanho={18} /><span className="max-sm:sr-only">{t('Publicar')}</span>
           </Botao>
         )}
       />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         <section>
-          <h1 className="font-sora text-3xl sm:text-4xl font-bold text-ink tracking-tight">Comunidade</h1>
-          <p className="text-ink-dim mt-1.5">Fichas, criaturas, sistemas e artes compartilhados por quem joga.</p>
+          <h1 className="font-sora text-3xl sm:text-4xl font-bold text-ink tracking-tight">{t('Comunidade')}</h1>
+          <p className="text-ink-dim mt-1.5">{t('Fichas, criaturas, sistemas e artes compartilhados por quem joga.')}</p>
 
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
             <label className="relative flex-1">
-              <span className="sr-only">Buscar na comunidade</span>
+              <span className="sr-only">{t('Buscar na comunidade')}</span>
               <Icone nome="busca" tamanho={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-dim pointer-events-none" />
-              <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar por título, autor ou etiqueta" className="campo w-full !pl-10 !min-h-[44px]" />
+              <input value={busca} onChange={e => setBusca(e.target.value)} placeholder={t('Buscar por título, autor ou etiqueta')} className="campo w-full !pl-10 !min-h-[44px]" />
             </label>
             <label className="flex items-center gap-2">
-              <span className="text-ink-dim text-sm shrink-0">Ordenar</span>
+              <span className="text-ink-dim text-sm shrink-0">{t('Ordenar')}</span>
               <select value={ordem} onChange={e => setOrdem(e.target.value)} className="campo !min-h-[44px]">
-                <option value="recentes">Mais recentes</option>
-                <option value="curtidas">Mais curtidas</option>
+                <option value="recentes">{t('Mais recentes')}</option>
+                <option value="curtidas">{t('Mais curtidas')}</option>
               </select>
             </label>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Tipo">
-            {chip(!tipo, 'Tudo', () => setTipo(null), '__tudo')}
-            {TIPOS_PUBLICACAO.map(t => chip(tipo === t.id, <><Ilustra nome={ARTE_DO_TIPO[t.id]} tamanho={16} />{t.id === 'extensao' ? 'Extensões' : `${t.nome}s`}</>, () => setTipo(tipo === t.id ? null : t.id), t.id))}
+          <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label={t('Tipo')}>
+            {chip(!tipo, t('Tudo'), () => setTipo(null), '__tudo')}
+            {TIPOS_PUBLICACAO.map(tp => chip(tipo === tp.id, <><Ilustra nome={ARTE_DO_TIPO[tp.id]} tamanho={16} />{PLURAL_DO_TIPO[tp.id]}</>, () => setTipo(tipo === tp.id ? null : tp.id), tp.id))}
           </div>
 
           {etiquetas.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 items-center text-sm">
-              <span className="text-ink-dim">Etiquetas:</span>
+              <span className="text-ink-dim">{t('Etiquetas:')}</span>
               {etiqueta ? (
                 <button onClick={() => setEtiqueta(null)} className="inline-flex items-center gap-1 text-ink font-medium">
                   #{etiqueta} <Icone nome="x" tamanho={14} className="text-ink-dim" />
@@ -523,13 +525,13 @@ export default function ComunidadePage() {
         </section>
 
         {!logado && (
-          <section className="rounded-2xl border border-border bg-raised/70 p-5 sm:p-6 space-y-4" aria-label="Experimente">
+          <section className="rounded-2xl border border-border bg-raised/70 p-5 sm:p-6 space-y-4" aria-label={t('Experimente')}>
             <div>
-              <h2 className="font-sora text-xl font-semibold text-ink">Experimente sem criar conta</h2>
-              <p className="text-ink-dim text-sm mt-1">Este rolador é de verdade, o mesmo do site. Nada aqui é gravado. Para ter mesa, ficha, mapa e o resto, crie uma conta.</p>
+              <h2 className="font-sora text-xl font-semibold text-ink">{t('Experimente sem criar conta')}</h2>
+              <p className="text-ink-dim text-sm mt-1">{t('Este rolador é de verdade, o mesmo do site. Nada aqui é gravado. Para ter mesa, ficha, mapa e o resto, crie uma conta.')}</p>
             </div>
             <DemoRolador />
-            <Botao variante="primario" onClick={() => navigate('/')}>Criar conta grátis</Botao>
+            <Botao variante="primario" onClick={() => navigate('/')}>{t('Criar conta grátis')}</Botao>
           </section>
         )}
 
@@ -537,17 +539,17 @@ export default function ComunidadePage() {
         <MesasAbertas />
 
         {indisponivel ? (
-          <p className="text-ink-dim text-sm italic">Comunidade ainda não ativada neste banco (sql/fase36_comunidade.sql).</p>
+          <p className="text-ink-dim text-sm italic">{t('Comunidade ainda não ativada neste banco (sql/fase36_comunidade.sql).')}</p>
         ) : carregandoLista ? (
           <EsqueletoCartoes quantos={3} className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" altura="h-56" />
         ) : visiveis.length === 0 ? (
           lista.length === 0 ? (
-            <EstadoVazio arte="bau" titulo="Nada publicado ainda" descricao="Seja a primeira pessoa a compartilhar uma ficha, criatura, sistema ou arte.">
-              {participa && <Botao variante="primario" onClick={() => setPublicando(true)}><Icone nome="mais" tamanho={18} /> Publicar</Botao>}
+            <EstadoVazio arte="bau" titulo={t('Nada publicado ainda')} descricao={t('Seja a primeira pessoa a compartilhar uma ficha, criatura, sistema ou arte.')}>
+              {participa && <Botao variante="primario" onClick={() => setPublicando(true)}><Icone nome="mais" tamanho={18} /> {t('Publicar')}</Botao>}
             </EstadoVazio>
           ) : (
-            <EstadoVazio compacto arte="bau" titulo="Nada encontrado" descricao="Tente outra busca, outro tipo ou tire a etiqueta.">
-              <Botao variante="contorno" onClick={() => { setBusca(''); setTipo(null); setEtiqueta(null) }}>Limpar filtros</Botao>
+            <EstadoVazio compacto arte="bau" titulo={t('Nada encontrado')} descricao={t('Tente outra busca, outro tipo ou tire a etiqueta.')}>
+              <Botao variante="contorno" onClick={() => { setBusca(''); setTipo(null); setEtiqueta(null) }}>{t('Limpar filtros')}</Botao>
             </EstadoVazio>
           )
         ) : (
@@ -570,7 +572,7 @@ export default function ComunidadePage() {
       {publicando && (
         <Publicar
           meuId={meuId} onPublicar={publicar} inicial={inicial}
-          onFechar={publicou => { setPublicando(false); setInicial(null); if (publicou) toast.ok('Publicado na comunidade') }}
+          onFechar={publicou => { setPublicando(false); setInicial(null); if (publicou) toast.ok(t('Publicado na comunidade')) }}
         />
       )}
       {levando && (

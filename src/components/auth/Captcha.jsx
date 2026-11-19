@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { idiomaAtual, t } from '../../i18n'
 
 /**
  * Verificação anti-robô (Cloudflare Turnstile) no login, no cadastro e na
@@ -19,7 +20,7 @@ function carregarTurnstile() {
       s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
       s.async = true
       s.onload = () => ok(window.turnstile)
-      s.onerror = () => { apiTurnstile = null; falha(new Error('Não foi possível carregar a verificação anti-robô.')) }
+      s.onerror = () => { apiTurnstile = null; falha(new Error(t('Não foi possível carregar a verificação anti-robô.'))) }
       document.head.appendChild(s)
     })
   }
@@ -35,11 +36,11 @@ export default function Captcha({ onToken, versao = 0 }) {
     if (!CHAVE_CAPTCHA) return
     let vivo = true
     let widget = null
-    carregarTurnstile().then(t => {
+    carregarTurnstile().then(api => {
       if (!vivo || !alvo.current) return
-      widget = t.render(alvo.current, {
+      widget = api.render(alvo.current, {
         sitekey: CHAVE_CAPTCHA,
-        language: 'pt-br',
+        language: idiomaAtual() === 'pt' ? 'pt-br' : idiomaAtual(),
         theme: 'dark',
         callback: token => onTokenRef.current(token),
         'expired-callback': () => onTokenRef.current(null),

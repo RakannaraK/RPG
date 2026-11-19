@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 export const CONFIG_LAYOUT_DEFAULT = {
   secoes: {
     atributos: true,
@@ -141,7 +142,7 @@ export function mergeConfigLayout(raw) {
       ...((raw || {}).secoes || {}),
     },
     campos_combate: (raw || {}).campos_combate || [],
-    rotulo_vida: (raw || {}).rotulo_vida || 'Pontos de Vida',
+    rotulo_vida: (raw || {}).rotulo_vida || t('Pontos de Vida'),
     dado_padrao: (raw || {}).dado_padrao || 20,
     descansos: (raw || {}).descansos || [],
     formula_modificador: (raw || {}).formula_modificador || '',
@@ -162,7 +163,7 @@ export function mergeConfigLayout(raw) {
       ...CONFIG_LAYOUT_DEFAULT.slots,
       ...((raw || {}).slots || {}),
     },
-    poderes_rotulo: (raw || {}).poderes_rotulo || 'Poderes',
+    poderes_rotulo: (raw || {}).poderes_rotulo || t('Poderes'),
     moedas: { ...CONFIG_LAYOUT_DEFAULT.moedas, ...((raw || {}).moedas || {}) },
     tabelas: (raw || {}).tabelas || [],
     sons: {

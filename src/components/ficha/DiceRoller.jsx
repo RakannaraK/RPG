@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { aplicarRegra } from '../../lib/dice'
+import { t } from '../../i18n'
 
 export default function DiceRoller({ regra, onConfirmar }) {
   const [resultado, setResultado] = useState(null)
@@ -89,7 +90,7 @@ export default function DiceRoller({ regra, onConfirmar }) {
         <div>
           <p className="text-xs text-ink-dim font-mono">{resultado.formula}</p>
           <p className="text-ink mt-1">
-            Total:{' '}
+            {t('Total:')}{' '}
             <span className="text-ink font-bold text-2xl ml-1">{resultado.valor}</span>
           </p>
         </div>
@@ -102,7 +103,7 @@ export default function DiceRoller({ regra, onConfirmar }) {
           disabled={animando}
           className="flex-1 py-2.5 text-sm bg-dice-500 hover:bg-dice-700 disabled:opacity-50 disabled:cursor-not-allowed text-ink font-semibold rounded-lg transition-colors"
         >
-          {animando ? '🎲 Rolando...' : resultado ? '🎲 Rolar novamente' : '🎲 Rolar'}
+          {animando ? t('🎲 Rolando...') : resultado ? t('🎲 Rolar novamente') : t('🎲 Rolar')}
         </button>
         {resultado && (
           <button
@@ -110,7 +111,7 @@ export default function DiceRoller({ regra, onConfirmar }) {
             onClick={() => onConfirmar(resultado)}
             className="px-4 py-2.5 text-sm bg-ok/80 hover:bg-ok text-ink font-semibold rounded-lg transition-colors"
           >
-            ✓ Confirmar
+            {t('✓ Confirmar')}
           </button>
         )}
       </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { t } from '../i18n'
 
 /**
  * Fase 19.1 — classes de uma ficha (multiclasse).
@@ -31,7 +32,7 @@ export function useClassesFicha(fichaId, classesSistema = []) {
       if (err) throw err
       setRawRows(data || [])
     } catch (err) {
-      setError(err.message || 'Erro ao carregar classes da ficha.')
+      setError(err.message || t('Erro ao carregar classes da ficha.'))
     } finally {
       setLoading(false)
     }

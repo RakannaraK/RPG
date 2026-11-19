@@ -1,22 +1,23 @@
 import { DIFICULDADES_RODA } from './rodaRunica'
 import { DIFICULDADES_CRONOMETRO } from './cronometro'
 import { DIFICULDADES_MEMORIA } from './memoria'
+import { t } from '../../i18n'
 
 /**
  * Fase 28 — catálogo dos jogos, textos do feed e classificação de desafios.
  */
 export const JOGOS = {
-  roda: { nome: 'Roda Rúnica', icone: '🌀', dificuldades: DIFICULDADES_RODA },
-  cronometro: { nome: 'Cronômetro', icone: '⏱', dificuldades: DIFICULDADES_CRONOMETRO },
-  memoria: { nome: 'Memória', icone: 'ᚱ', dificuldades: DIFICULDADES_MEMORIA },
+  roda: { nome: t('Roda Rúnica'), icone: '🌀', dificuldades: DIFICULDADES_RODA },
+  cronometro: { nome: t('Cronômetro'), icone: '⏱', dificuldades: DIFICULDADES_CRONOMETRO },
+  memoria: { nome: t('Memória'), icone: 'ᚱ', dificuldades: DIFICULDADES_MEMORIA },
 }
 
-export const NOMES_DIFICULDADE = { normal: 'Normal', dificil: 'Difícil', impossivel: 'Impossível', personalizada: 'Personalizada' }
+export const NOMES_DIFICULDADE = { normal: t('Normal'), dificil: t('Difícil'), impossivel: t('Impossível'), personalizada: t('Personalizada') }
 
 /** Configuração efetiva: a da dificuldade, ou a Normal sobrescrita pelos parâmetros personalizados. */
 export function configDoJogo(tipo, dificuldade, personalizada = {}) {
   const tabela = JOGOS[tipo]?.dificuldades
-  if (!tabela) throw new Error(`Jogo desconhecido: ${tipo}`)
+  if (!tabela) throw new Error(t('Jogo desconhecido: {tipo}', { tipo }))
   return dificuldade === 'personalizada' ? { ...tabela.normal, ...personalizada } : { ...(tabela[dificuldade] || tabela.normal) }
 }
 
@@ -25,12 +26,12 @@ const num = n => String(n).replace('.', ',')
 export const rotuloFeed = (tipo, dificuldade) => `🎮 ${JOGOS[tipo]?.nome || tipo} (${NOMES_DIFICULDADE[dificuldade] || dificuldade})`
 
 export function resumoResultado(tipo, r) {
-  if (tipo === 'roda') return `${r.pontos} pontos · ${r.acertos} acertos · combo ${r.maiorCombo} · ${num(r.duracao)} s`
+  if (tipo === 'roda') return t('{pontos} pontos · {acertos} acertos · combo {combo} · {duracao} s', { pontos: r.pontos, acertos: r.acertos, combo: r.maiorCombo, duracao: num(r.duracao) })
   if (tipo === 'cronometro') {
-    return `${r.faixa} — parou em ${num(r.parado)} s (alvo ${num(r.alvo)} s, ${r.adiantado ? '−' : '+'}${r.erroMs} ms) · ${r.pontos} pontos`
+    return t('{faixa} — parou em {parado} s (alvo {alvo} s, {sinal}{erro} ms) · {pontos} pontos', { faixa: r.faixa, parado: num(r.parado), alvo: num(r.alvo), sinal: r.adiantado ? '−' : '+', erro: r.erroMs, pontos: r.pontos })
   }
-  if (tipo === 'memoria') return `${r.pontos} runas · maior sequência ${r.maiorSequencia}`
-  return `${r.pontos} pontos`
+  if (tipo === 'memoria') return t('{pontos} runas · maior sequência {sequencia}', { pontos: r.pontos, sequencia: r.maiorSequencia })
+  return t('{pontos} pontos', { pontos: r.pontos })
 }
 
 /**

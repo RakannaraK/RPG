@@ -17,6 +17,7 @@ import { validarFormula, normalizar, avaliarFormula } from './formulaEngine.js'
 import { validarNotacao } from './diceNotation.js'
 import { validarFaixas, faixaAtiva } from './faixas.js'
 import { circulosGastaveis } from './slotsEngine.js'
+import { t } from '../i18n'
 
 // ────────────────────────────────────────────────────────────── custo
 
@@ -38,14 +39,14 @@ export function descreverCusto(custo, poolsPorId = {}) {
   const partes = []
   for (const c of custo || []) {
     if (c.tipo === 'pool') {
-      const nome = poolsPorId[c.pool_id]?.nome || 'recurso'
-      partes.push(`${c.quantidade} ${nome}`)
+      const nome = poolsPorId[c.pool_id]?.nome || t('recurso')
+      partes.push(t('{quantidade} {nome}', { quantidade: c.quantidade, nome }))
     } else if (c.tipo === 'slot') {
       const min = Number(c.circulo_minimo)
-      partes.push(Number.isFinite(min) ? `slot de círculo ${min}+` : 'slot')
+      partes.push(Number.isFinite(min) ? t('slot de círculo {min}+', { min }) : t('slot'))
     }
   }
-  return partes.length ? partes.join(' + ') : 'Sem custo'
+  return partes.length ? partes.join(' + ') : t('Sem custo')
 }
 
 /** @returns {{ valida: boolean, erro?: string }} */
@@ -56,20 +57,20 @@ export function validarCusto(custo, pools = []) {
 
   for (let i = 0; i < custo.length; i++) {
     const c = custo[i]
-    const rotulo = `Custo ${i + 1}`
+    const rotulo = t('Custo {n}', { n: i + 1 })
     if (c?.tipo === 'pool') {
-      if (!c.pool_id || !ids.has(c.pool_id)) return { valida: false, erro: `${rotulo}: escolha um recurso existente.` }
+      if (!c.pool_id || !ids.has(c.pool_id)) return { valida: false, erro: t('{rotulo}: escolha um recurso existente.', { rotulo }) }
       const q = String(c.quantidade ?? '').trim()
-      if (!q) return { valida: false, erro: `${rotulo}: informe a quantidade.` }
+      if (!q) return { valida: false, erro: t('{rotulo}: informe a quantidade.', { rotulo }) }
       const v = validarFormula(q) // aceita "3" e "piso(nivel / 2)"
-      if (!v.valida) return { valida: false, erro: `${rotulo}: quantidade inválida — ${v.erro}` }
+      if (!v.valida) return { valida: false, erro: t('{rotulo}: quantidade inválida — {erro}', { rotulo, erro: v.erro }) }
     } else if (c?.tipo === 'slot') {
       slots++
-      if (slots > 1) return { valida: false, erro: 'Só um custo de slot por poder.' }
+      if (slots > 1) return { valida: false, erro: t('Só um custo de slot por poder.') }
       const n = Number(c.circulo_minimo)
-      if (!Number.isFinite(n) || n < 0) return { valida: false, erro: `${rotulo}: círculo mínimo inválido.` }
+      if (!Number.isFinite(n) || n < 0) return { valida: false, erro: t('{rotulo}: círculo mínimo inválido.', { rotulo }) }
     } else {
-      return { valida: false, erro: `${rotulo}: tipo desconhecido.` }
+      return { valida: false, erro: t('{rotulo}: tipo desconhecido.', { rotulo }) }
     }
   }
   return { valida: true }
@@ -92,7 +93,7 @@ export function descreverEscala(escala) {
   return fs
     .map(f => {
       const ate = f.ate == null ? '+' : `–${f.ate}`
-      return `${f.de}${ate}: +${f.valor_extra_por_circulo}/círculo`
+      return t('{de}{ate}: +{valor}/círculo', { de: f.de, ate, valor: f.valor_extra_por_circulo })
     })
     .join(' · ')
 }
@@ -116,33 +117,33 @@ export function validarEscala(escala) {
  * as variáveis, a notação é plausível — a resolução real acontece ao usar.
  */
 export function validarPoder(poder, { pools = [] } = {}) {
-  if (!poder?.nome?.trim()) return { valida: false, erro: 'Informe o nome do poder.' }
+  if (!poder?.nome?.trim()) return { valida: false, erro: t('Informe o nome do poder.') }
 
   if (poder.circulo != null && poder.circulo !== '') {
     const c = Number(poder.circulo)
-    if (!Number.isFinite(c) || c < 0) return { valida: false, erro: 'Círculo inválido.' }
+    if (!Number.isFinite(c) || c < 0) return { valida: false, erro: t('Círculo inválido.') }
   }
 
   const custo = validarCusto(poder.custo, pools)
   if (!custo.valida) return custo
 
   const escala = validarEscala(poder.escala_circulo)
-  if (!escala.valida) return { valida: false, erro: `Escala: ${escala.erro}` }
+  if (!escala.valida) return { valida: false, erro: t('Escala: {erro}', { erro: escala.erro }) }
 
   const notacao = String(poder.efeito_notacao ?? '').trim()
   if (notacao && !notacaoPlausivel(notacao)) {
-    return { valida: false, erro: 'Efeito: notação inválida (ex: 2d6, 1d8 + mod(carisma)).' }
+    return { valida: false, erro: t('Efeito: notação inválida (ex: 2d6, 1d8 + mod(carisma)).') }
   }
 
   const cd = String(poder.cd_formula ?? '').trim()
   if (cd) {
     const v = validarFormula(cd)
-    if (!v.valida) return { valida: false, erro: `CD: ${v.erro}` }
+    if (!v.valida) return { valida: false, erro: t('CD: {erro}', { erro: v.erro }) }
   }
 
   if (poder.nivel_minimo != null && poder.nivel_minimo !== '') {
     const n = Number(poder.nivel_minimo)
-    if (!Number.isFinite(n) || n < 1) return { valida: false, erro: 'Nível mínimo inválido.' }
+    if (!Number.isFinite(n) || n < 1) return { valida: false, erro: t('Nível mínimo inválido.') }
   }
 
   return { valida: true }
@@ -181,7 +182,7 @@ export function filtrarPoderes(poderes, f = {}) {
     }
     if (f.categoria && normalizar(p.categoria || '') !== normalizar(f.categoria)) return false
     if (f.classeId && p.classe_id !== f.classeId) return false
-    if (f.tag && !(p.tags || []).some(t => normalizar(t) === normalizar(f.tag))) return false
+    if (f.tag && !(p.tags || []).some(tg => normalizar(tg) === normalizar(f.tag))) return false
     return true
   })
 }
@@ -193,7 +194,7 @@ export function opcoesDeFiltro(poderes) {
   const circulos = new Set()
   for (const p of poderes || []) {
     if (p.categoria?.trim()) categorias.add(p.categoria.trim())
-    for (const t of p.tags || []) if (t?.trim()) tags.add(t.trim())
+    for (const tg of p.tags || []) if (tg?.trim()) tags.add(tg.trim())
     if (p.circulo != null) circulos.add(Number(p.circulo))
   }
   return {
@@ -285,15 +286,15 @@ export function podeUsarPoder(poder, estado = {}) {
   try {
     custos = custoResolvido(poder?.custo, contexto)
   } catch (e) {
-    return { ok: false, motivo: `Custo inválido: ${e.message}`, circulos: [], custos: [] }
+    return { ok: false, motivo: t('Custo inválido: {erro}', { erro: e.message }), circulos: [], custos: [] }
   }
   for (const c of custos) {
     const disponivel = atualDoPool(c.pool_id)
     if (disponivel < c.quantidade) {
-      const nome = poolsPorId[c.pool_id]?.nome || 'recurso'
+      const nome = poolsPorId[c.pool_id]?.nome || t('recurso')
       return {
         ok: false,
-        motivo: `${nome} insuficiente: tem ${disponivel}, precisa de ${c.quantidade}.`,
+        motivo: t('{nome} insuficiente: tem {disponivel}, precisa de {precisa}.', { nome, disponivel, precisa: c.quantidade }),
         circulos: [],
         custos,
       }
@@ -307,7 +308,7 @@ export function podeUsarPoder(poder, estado = {}) {
   const minimo = Number(slot.circulo_minimo) || 0
   const circulos = circulosGastaveis(totaisSlots, usadosSlots, minimo)
   if (circulos.length === 0) {
-    return { ok: false, motivo: `Sem slots disponíveis de ${minimo}º círculo ou acima.`, circulos: [], custos }
+    return { ok: false, motivo: t('Sem slots disponíveis de {minimo}º círculo ou acima.', { minimo }), circulos: [], custos }
   }
   return { ok: true, circulos, custos }
 }
@@ -327,11 +328,11 @@ export function cdDoPoder(poder, cdSistema, contexto = {}) {
 }
 
 /** Frase do feed: "conjurou Curar Feridas no 2º círculo". */
-export function frasesDeUso(poder, circuloUsado, rotuloCategoria = 'usou') {
-  const nome = poder?.nome || 'poder'
+export function frasesDeUso(poder, circuloUsado, rotuloCategoria = t('usou')) {
+  const nome = poder?.nome || t('poder')
   const base = circuloBaseDoPoder(poder)
   const noCirculo = custoDeSlot(poder?.custo) && circuloUsado > 0
-    ? ` no ${circuloUsado}º círculo${circuloUsado > base ? ' (elevado)' : ''}`
+    ? t(' no {n}º círculo', { n: circuloUsado }) + (circuloUsado > base ? t(' (elevado)') : '')
     : ''
   return `${rotuloCategoria} ${nome}${noCirculo}`
 }

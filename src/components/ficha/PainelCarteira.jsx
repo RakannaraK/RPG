@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import { t, locale } from '../../i18n'
 import { totalConsolidado, saldoDe, ajustar, converter, denominacaoBase } from '../../lib/moedasEngine'
 
-const fmt = n => Number(n || 0).toLocaleString('pt-BR')
+const fmt = n => Number(n || 0).toLocaleString(locale())
 
 /**
  * Fase 21.6 — carteira da ficha (adaptativo: some se o sistema não tem moedas).
@@ -27,22 +28,22 @@ export default function PainelCarteira({ moedas, carteira = {}, isDono, onSalvar
       await onSalvar(nova)
       if (aviso) setMsg(aviso)
     } catch (e) {
-      setMsg(e.message || 'Erro ao salvar carteira.')
+      setMsg(e.message || t('Erro ao salvar carteira.'))
     } finally { setOcupado(false) }
   }
 
   function transacao(id, delta) {
     const nova = ajustar(carteira, id, delta)
-    const aviso = nova[id] < 0 ? `Saldo de ${denom.find(d => d.id === id)?.sigla || id} ficou negativo.` : ''
+    const aviso = nova[id] < 0 ? t('Saldo de {moeda} ficou negativo.', { moeda: denom.find(d => d.id === id)?.sigla || id }) : ''
     aplicar(nova, aviso)
   }
 
   function converterMoeda() {
     setMsg('')
-    if (!conv.de || !conv.para || conv.de === conv.para) { setMsg('Escolha duas moedas diferentes.'); return }
+    if (!conv.de || !conv.para || conv.de === conv.para) { setMsg(t('Escolha duas moedas diferentes.')); return }
     const q = Math.floor(Number(conv.qtd) || 0)
-    if (q <= 0) { setMsg('Quantidade inválida.'); return }
-    if (saldoDe(carteira, conv.de) < q) { setMsg('Saldo insuficiente para converter.'); return }
+    if (q <= 0) { setMsg(t('Quantidade inválida.')); return }
+    if (saldoDe(carteira, conv.de) < q) { setMsg(t('Saldo insuficiente para converter.')); return }
     const { carteira: nova, recebido, sobra } = converter(carteira, conv.de, conv.para, q, denom)
     const sd = denom.find(d => d.id === conv.de)?.sigla
     const sp = denom.find(d => d.id === conv.para)?.sigla
@@ -55,9 +56,9 @@ export default function PainelCarteira({ moedas, carteira = {}, isDono, onSalvar
   return (
     <div className="bg-raised border border-border rounded-2xl p-4 space-y-3">
       <div className="flex items-baseline justify-between gap-2 flex-wrap">
-        <p className="text-ink text-sm font-semibold">Carteira</p>
+        <p className="text-ink text-sm font-semibold">{t('Carteira')}</p>
         <span className="text-ink-dim text-xs">
-          Total: <span className="text-dice-400 font-mono">{fmt(total)}</span> {base?.sigla}
+          {t('Total:')} <span className="text-dice-400 font-mono">{fmt(total)}</span> {base?.sigla}
         </span>
       </div>
 
@@ -74,12 +75,12 @@ export default function PainelCarteira({ moedas, carteira = {}, isDono, onSalvar
               {isDono && (
                 <span className="flex items-center gap-1 shrink-0">
                   <input type="number" value={gasto[d.id] ?? ''} onChange={e => setGasto({ ...gasto, [d.id]: e.target.value })}
-                    placeholder="qtd"
+                    placeholder={t('qtd')}
                     className="w-14 px-1.5 py-1 rounded-lg bg-void border border-border text-ink text-xs text-center placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500" />
                   <button onClick={() => { transacao(d.id, -(Number(gasto[d.id]) || 1)); setGasto({ ...gasto, [d.id]: '' }) }}
-                    disabled={ocupado} className="w-6 h-6 flex items-center justify-center rounded-lg border border-border text-accent-300 hover:text-ink hover:border-accent-500 transition-colors disabled:opacity-40" title="Gastar">−</button>
+                    disabled={ocupado} className="w-6 h-6 flex items-center justify-center rounded-lg border border-border text-accent-300 hover:text-ink hover:border-accent-500 transition-colors disabled:opacity-40" title={t('Gastar')}>−</button>
                   <button onClick={() => { transacao(d.id, +(Number(gasto[d.id]) || 1)); setGasto({ ...gasto, [d.id]: '' }) }}
-                    disabled={ocupado} className="w-6 h-6 flex items-center justify-center rounded-lg border border-border text-accent-300 hover:text-ink hover:border-accent-500 transition-colors disabled:opacity-40" title="Ganhar">+</button>
+                    disabled={ocupado} className="w-6 h-6 flex items-center justify-center rounded-lg border border-border text-accent-300 hover:text-ink hover:border-accent-500 transition-colors disabled:opacity-40" title={t('Ganhar')}>+</button>
                 </span>
               )}
             </div>
@@ -90,21 +91,21 @@ export default function PainelCarteira({ moedas, carteira = {}, isDono, onSalvar
       {/* Conversor */}
       {isDono && denom.length > 1 && (
         <div className="flex items-center gap-1.5 flex-wrap border-t border-border/50 pt-2">
-          <span className="text-ink-dim text-xs">Converter</span>
+          <span className="text-ink-dim text-xs">{t('Converter')}</span>
           <input type="number" value={conv.qtd} onChange={e => setConv({ ...conv, qtd: e.target.value })}
-            placeholder="qtd" className="w-14 px-1.5 py-1 rounded-lg bg-void border border-border text-ink text-xs text-center placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500" />
+            placeholder={t('qtd')} className="w-14 px-1.5 py-1 rounded-lg bg-void border border-border text-ink text-xs text-center placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500" />
           <select value={conv.de} onChange={e => setConv({ ...conv, de: e.target.value })} className={selCls}>
-            <option value="">de…</option>
+            <option value="">{t('de…')}</option>
             {denom.map(d => <option key={d.id} value={d.id}>{d.sigla || d.nome}</option>)}
           </select>
           <span className="text-ink-dim text-xs">→</span>
           <select value={conv.para} onChange={e => setConv({ ...conv, para: e.target.value })} className={selCls}>
-            <option value="">para…</option>
+            <option value="">{t('para…')}</option>
             {denom.map(d => <option key={d.id} value={d.id}>{d.sigla || d.nome}</option>)}
           </select>
           <button onClick={converterMoeda} disabled={ocupado}
             className="px-2.5 py-1 text-xs rounded-lg bg-accent-700 hover:bg-accent-600 text-sobre-acento transition-colors disabled:opacity-40">
-            Converter
+            {t('Converter')}
           </button>
         </div>
       )}

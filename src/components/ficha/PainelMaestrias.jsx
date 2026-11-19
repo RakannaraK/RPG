@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { calcularMaestria, proximaPropriedade, xpParaNivel } from '../../lib/masteryEngine'
+import { t } from '../../i18n'
 
 /**
  * Fase 21.3 — painel de maestrias da ficha (adaptativo: some se maestria
@@ -28,7 +29,7 @@ function MaestriaCard({ nome, sub, xp, curva, ganhos, propriedades = [], isDono,
           <span className="text-ink text-sm font-medium">{nome}</span>
           {sub && <span className="text-ink-dim text-xs ml-1.5">{sub}</span>}
         </span>
-        <span className="text-dice-400 text-sm font-mono shrink-0">Maestria {nivel}</span>
+        <span className="text-dice-400 text-sm font-mono shrink-0">{t('Maestria {nivel}', { nivel })}</span>
       </div>
 
       <div className="h-2 bg-hover rounded-full overflow-hidden">
@@ -36,13 +37,13 @@ function MaestriaCard({ nome, sub, xp, curva, ganhos, propriedades = [], isDono,
       </div>
       <p className="text-ink-dim text-xs">
         {xpParaProximo > 0
-          ? <>XP {xp} · faltam <span className="text-ink-dim">{faltam}</span> para a maestria {nivel + 1}</>
-          : <>XP {xp} · nível máximo da curva</>}
+          ? <>{t('XP {xp} · faltam', { xp })} <span className="text-ink-dim">{faltam}</span> {t('para a maestria {n}', { n: nivel + 1 })}</>
+          : <>{t('XP {xp} · nível máximo da curva', { xp })}</>}
       </p>
       {prox && (
         <p className="text-dice-500/70 text-xs">
-          🔒 Próximo: <span className="text-dice-400">{prox.nome}</span> na maestria {prox.maestria_minima}
-          {faltamProx > 0 && <> — faltam {faltamProx} XP</>}
+          {t('🔒 Próximo:')} <span className="text-dice-400">{prox.nome}</span> {t('na maestria {n}', { n: prox.maestria_minima })}
+          {faltamProx > 0 && <> {t('— faltam {n} XP', { n: faltamProx })}</>}
         </p>
       )}
 
@@ -54,7 +55,7 @@ function MaestriaCard({ nome, sub, xp, curva, ganhos, propriedades = [], isDono,
               onClick={() => ganhar(Number(g.xp) || 0)}
               disabled={ocupado}
               className="text-xs px-2 py-1 rounded-lg bg-void/60 hover:bg-hover text-ink hover:text-ink transition-colors disabled:opacity-40"
-              title={`+${g.xp} XP`}
+              title={t('+{xp} XP', { xp: g.xp })}
             >
               {g.rotulo || `+${g.xp}`} <span className="text-dice-400/80">+{g.xp}</span>
             </button>
@@ -65,7 +66,7 @@ function MaestriaCard({ nome, sub, xp, curva, ganhos, propriedades = [], isDono,
               value={manual}
               onChange={e => setManual(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && manual) { ganhar(Number(manual)); setManual('') } }}
-              placeholder="XP"
+              placeholder={t('XP')}
               disabled={ocupado}
               className="w-14 px-1.5 py-1 rounded-lg bg-void border border-border text-ink text-xs text-center placeholder-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-500"
             />
@@ -132,11 +133,11 @@ export default function PainelMaestrias({
 
   return (
     <div className="bg-raised border border-border rounded-2xl p-4 space-y-2.5">
-      <p className="text-ink text-sm font-semibold">Maestrias</p>
+      <p className="text-ink text-sm font-semibold">{t('Maestrias')}</p>
 
       {emTreino.length === 0 && (
         <p className="text-ink-dim text-xs">
-          Nenhuma maestria em treino. {isDono && `Escolha ${escopo === 'categoria' ? 'uma categoria' : 'um item'} para começar.`}
+          {t('Nenhuma maestria em treino.')} {isDono && (escopo === 'categoria' ? t('Escolha uma categoria para começar.') : t('Escolha um item para começar.'))}
         </p>
       )}
 
@@ -145,7 +146,7 @@ export default function PainelMaestrias({
           <MaestriaCard
             key={c.id}
             nome={c.nome}
-            sub={escopo === 'categoria' ? 'categoria' : 'item'}
+            sub={escopo === 'categoria' ? t('categoria') : t('item')}
             xp={xpDe(c.alvo)}
             curva={curva}
             ganhos={ganhos}
@@ -163,7 +164,7 @@ export default function PainelMaestrias({
             onChange={e => setTreinar(e.target.value)}
             className="px-2 py-1 rounded-lg bg-void border border-border text-ink text-xs focus:outline-none focus:ring-1 focus:ring-accent-500"
           >
-            <option value="">Treinar {escopo === 'categoria' ? 'categoria' : 'item'}…</option>
+            <option value="">{escopo === 'categoria' ? t('Treinar categoria…') : t('Treinar item…')}</option>
             {disponiveis.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select>
           <button
@@ -174,7 +175,7 @@ export default function PainelMaestrias({
             disabled={!treinar}
             className="text-xs px-2.5 py-1 rounded-lg border border-dashed border-border text-accent-300 hover:text-ink hover:border-accent-500 transition-colors disabled:opacity-40"
           >
-            + começar
+            {t('+ começar')}
           </button>
         </div>
       )}

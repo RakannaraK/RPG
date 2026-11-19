@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { calcularDescanso } from '../../lib/restEngine'
 import Modal, { FecharModal } from '../ui/Modal'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 /**
  * Fase 15.3 — botões de descanso na ficha, com preview + confirmação.
@@ -44,14 +45,14 @@ export default function DescansoBar({
   return (
     <div className="bg-raised border border-border rounded-2xl p-4">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-accent-300 text-sm font-medium mr-1">🏕️ Descanso:</span>
+        <span className="text-accent-300 text-sm font-medium mr-1">{t('🏕️ Descanso:')}</span>
         {descansos.map(d => (
           <button
             key={d.id}
             onClick={() => abrir(d)}
             className="px-3 py-1.5 bg-hover hover:bg-border text-accent-300 text-sm rounded-lg transition-colors"
           >
-            {d.nome || 'Descanso'}
+            {d.nome || t('Descanso')}
           </button>
         ))}
       </div>
@@ -65,14 +66,14 @@ export default function DescansoBar({
           rodape={
             <>
               <FecharModal disabled={aplicando} />
-              <Botao variante="primario" onClick={confirmar} disabled={aplicando}>{aplicando ? 'Aplicando…' : 'Confirmar descanso'}</Botao>
+              <Botao variante="primario" onClick={confirmar} disabled={aplicando}>{aplicando ? t('Aplicando…') : t('Confirmar descanso')}</Botao>
             </>
           }
         >
             <div className="space-y-1.5 text-sm">
               {preview.resultado.vida.recuperado !== 0 && (
                 <div className="flex justify-between">
-                  <span className="text-ink-dim">Vida{preview.resultado.vida.notacao ? ` (${preview.resultado.vida.notacao})` : ''}</span>
+                  <span className="text-ink-dim">{t('Vida')}{preview.resultado.vida.notacao ? ` (${preview.resultado.vida.notacao})` : ''}</span>
                   <span className="text-ink font-medium">
                     {preview.resultado.vida.de} → {preview.resultado.vida.para}
                     <span className="text-ok ml-1">(+{preview.resultado.vida.recuperado})</span>
@@ -81,7 +82,7 @@ export default function DescansoBar({
               )}
               {preview.resultado.vida_temp.para !== preview.resultado.vida_temp.de && (
                 <div className="flex justify-between">
-                  <span className="text-ink-dim">Vida temporária</span>
+                  <span className="text-ink-dim">{t('Vida temporária')}</span>
                   <span className="text-ink font-medium">{preview.resultado.vida_temp.de} → {preview.resultado.vida_temp.para}</span>
                 </div>
               )}
@@ -101,8 +102,8 @@ export default function DescansoBar({
               {/* 20.3 — slots devolvidos */}
               {(preview.resultado.slots || []).map(s => (
                 <div key={s.circulo} className="flex justify-between">
-                  <span className="text-dice-400">Slots {s.circulo}º círculo</span>
-                  <span className="text-ink font-medium">{s.de} → {s.para} usados</span>
+                  <span className="text-dice-400">{t('Slots {n}º círculo', { n: s.circulo })}</span>
+                  <span className="text-ink font-medium">{t('{de} → {para} usados', { de: s.de, para: s.para })}</span>
                 </div>
               ))}
               {preview.resultado.vida.recuperado === 0
@@ -110,7 +111,7 @@ export default function DescansoBar({
                 && preview.resultado.recursos.length === 0
                 && (preview.resultado.pools || []).length === 0
                 && (preview.resultado.slots || []).length === 0 && (
-                <p className="text-ink-dim">Nada seria recuperado.</p>
+                <p className="text-ink-dim">{t('Nada seria recuperado.')}</p>
               )}
             </div>
 

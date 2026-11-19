@@ -17,6 +17,7 @@
  *   5. Compra definitiva; correção via ajuste do mestre.
  */
 import { avaliarFormula } from './formulaEngine.js'
+import { t } from '../i18n'
 
 /**
  * Custo de subir de valorAtual para valorAtual+1.
@@ -46,19 +47,19 @@ export function validarCompra(categoria, valorAtual, xpDisponivel, contexto = {}
 
   const maximo = categoria?.maximo
   if (maximo != null && maximo !== '' && novoValor > Number(maximo)) {
-    return { permitida: false, custo: null, novoValor, motivoBloqueio: `Já está no máximo (${maximo}).` }
+    return { permitida: false, custo: null, novoValor, motivoBloqueio: t('Já está no máximo ({max}).', { max: maximo }) }
   }
 
   let custo
   try {
     custo = custoCompra(categoria, atual, contexto, opts)
   } catch (e) {
-    return { permitida: false, custo: null, novoValor, motivoBloqueio: `Fórmula de custo inválida: ${e.message}` }
+    return { permitida: false, custo: null, novoValor, motivoBloqueio: t('Fórmula de custo inválida: {erro}', { erro: e.message }) }
   }
 
   const saldo = Math.floor(Number(xpDisponivel) || 0)
   if (saldo < custo) {
-    return { permitida: false, custo, novoValor, motivoBloqueio: `XP insuficiente: tem ${saldo}, precisa de ${custo}.` }
+    return { permitida: false, custo, novoValor, motivoBloqueio: t('XP insuficiente: tem {saldo}, precisa de {custo}.', { saldo, custo }) }
   }
   return { permitida: true, custo, novoValor }
 }

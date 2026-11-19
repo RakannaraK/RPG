@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRecompensas } from '../../hooks/useRecompensas'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
@@ -19,14 +20,14 @@ export default function RecompensasEditor({ sistemaId, classes = [] }) {
 
   async function handleCriar() {
     setErro('')
-    if (!titulo.trim()) { setErro('Informe o título da recompensa.'); return }
-    if (nivel === '' || Number(nivel) < 1) { setErro('Informe um nível válido.'); return }
+    if (!titulo.trim()) { setErro(t('Informe o título da recompensa.')); return }
+    if (nivel === '' || Number(nivel) < 1) { setErro(t('Informe um nível válido.')); return }
     setSalvando(true)
     try {
       await criarRecompensa({ classe_id: classeId || null, nivel, titulo, descricao })
       setTitulo(''); setDescricao(''); setNivel('')
     } catch (err) {
-      setErro(err.message || 'Erro ao criar recompensa.')
+      setErro(err.message || t('Erro ao criar recompensa.'))
     } finally {
       setSalvando(false)
     }
@@ -36,11 +37,9 @@ export default function RecompensasEditor({ sistemaId, classes = [] }) {
 
   return (
     <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
-      <p className="text-purple-200 text-sm font-semibold">Recompensas por nível</p>
+      <p className="text-purple-200 text-sm font-semibold">{t('Recompensas por nível')}</p>
       <p className="text-accent-300 text-xs">
-        O que o personagem ganha ao chegar num nível. É um <span className="text-purple-300">checklist-guia</span>:
-        o jogador aplica à mão (criar habilidade, subir atributo) e marca aqui. Deixe a classe em
-        branco para valer no <span className="text-purple-300">nível total</span>.
+        {t('O que o personagem ganha ao chegar num nível. É um')} <span className="text-purple-300">{t('checklist-guia')}</span>{t(': o jogador aplica à mão (criar habilidade, subir atributo) e marca aqui. Deixe a classe em branco para valer no')} <span className="text-purple-300">{t('nível total')}</span>.
       </p>
 
       {recompensas.length > 0 && (
@@ -50,7 +49,7 @@ export default function RecompensasEditor({ sistemaId, classes = [] }) {
             return (
               <div key={r.id} className="flex items-start gap-2 bg-purple-950/40 border border-purple-800 rounded-lg px-2.5 py-1.5">
                 <span className="text-amber-400 text-xs font-mono shrink-0 mt-0.5">
-                  {classe ? `${classe.nome} ${r.nivel}` : `nv ${r.nivel}`}
+                  {classe ? `${classe.nome} ${r.nivel}` : t('nv {n}', { n: String(r.nivel ?? '') })}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="text-white text-xs block">{r.titulo}</span>
@@ -59,7 +58,7 @@ export default function RecompensasEditor({ sistemaId, classes = [] }) {
                 <button
                   onClick={() => removerRecompensa(r.id).catch(e => setErro(e.message))}
                   className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors shrink-0"
-                  title="Remover recompensa"
+                  title={t('Remover recompensa')}
                 >
                   ×
                 </button>
@@ -70,18 +69,18 @@ export default function RecompensasEditor({ sistemaId, classes = [] }) {
       )}
 
       <div className="flex flex-wrap gap-2 items-center border-t border-purple-900/50 pt-2">
-        <select value={classeId} onChange={e => setClasseId(e.target.value)} className={INP} title="Classe (vazio = nível total)">
-          <option value="">Nível total</option>
+        <select value={classeId} onChange={e => setClasseId(e.target.value)} className={INP} title={t('Classe (vazio = nível total)')}>
+          <option value="">{t('Nível total')}</option>
           {classes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
         </select>
         <input type="number" min={1} value={nivel} onChange={e => setNivel(e.target.value)}
-          placeholder="Nv" className={`${INP} w-14 text-center`} />
+          placeholder={t('Nv')} className={`${INP} w-14 text-center`} />
         <input type="text" value={titulo} onChange={e => setTitulo(e.target.value)}
-          placeholder="Ex: Criar uma habilidade própria" className={`${INP} flex-1 min-w-[12rem]`} />
+          placeholder={t('Ex: Criar uma habilidade própria')} className={`${INP} flex-1 min-w-[12rem]`} />
         <input type="text" value={descricao} onChange={e => setDescricao(e.target.value)}
-          placeholder="Detalhe (opcional)" className={`${INP} flex-1 min-w-[10rem]`} />
+          placeholder={t('Detalhe (opcional)')} className={`${INP} flex-1 min-w-[10rem]`} />
         <Botao variante="primario" tamanho="sm" onClick={handleCriar} disabled={salvando}>
-          {salvando ? '...' : '+ Adicionar'}
+          {salvando ? '...' : t('+ Adicionar')}
         </Botao>
       </div>
 

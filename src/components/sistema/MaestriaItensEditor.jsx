@@ -4,6 +4,7 @@ import { useCategorias } from '../../hooks/useCategorias'
 import PropriedadesEditor from './PropriedadesEditor'
 import MoedasEditor from './MoedasEditor'
 import Botao from '../ui/Botao'
+import { t } from '../../i18n'
 
 const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-xs placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
@@ -24,17 +25,17 @@ function CategoriasEditor({ categorias, criarCategoria, atualizarCategoria, remo
 
   async function adicionar() {
     setErro('')
-    if (!nome.trim()) { setErro('Informe o nome da categoria.'); return }
+    if (!nome.trim()) { setErro(t('Informe o nome da categoria.')); return }
     try {
       await criarCategoria({ nome, descricao })
       setNome(''); setDescricao('')
-    } catch (e) { setErro(e.message || 'Erro ao criar categoria.') }
+    } catch (e) { setErro(e.message || t('Erro ao criar categoria.')) }
   }
 
   return (
     <div className="space-y-2">
       <p className="text-purple-400 text-xs">
-        Categorias de arma/item para agrupar a maestria — "Machados", "Arcos", "Ferramentas".
+        {t('Categorias de arma/item para agrupar a maestria — "Machados", "Arcos", "Ferramentas".')}
       </p>
       {categorias.length > 0 && (
         <div className="space-y-1.5">
@@ -50,12 +51,12 @@ function CategoriasEditor({ categorias, criarCategoria, atualizarCategoria, remo
                 type="text"
                 defaultValue={c.descricao || ''}
                 onBlur={e => { if ((e.target.value || '') !== (c.descricao || '')) atualizarCategoria(c.id, { descricao: e.target.value }).catch(er => setErro(er.message)) }}
-                placeholder="Descrição (opcional)"
+                placeholder={t('Descrição (opcional)')}
                 className={`${INP} flex-1 min-w-[6rem]`}
               />
               {/* 22.3 — multiplicador de crítico da categoria (sobrescreve o padrão) */}
-              <span className="flex items-center gap-1 shrink-0" title="Multiplicador de crítico (vazio = padrão do sistema)">
-                <span className="text-accent-300 text-xs">crít ×</span>
+              <span className="flex items-center gap-1 shrink-0" title={t('Multiplicador de crítico (vazio = padrão do sistema)')}>
+                <span className="text-accent-300 text-xs">{t('crít ×')}</span>
                 <input
                   type="number" min={1} step="0.5"
                   defaultValue={c.critico_config?.multiplicador ?? ''}
@@ -71,7 +72,7 @@ function CategoriasEditor({ categorias, criarCategoria, atualizarCategoria, remo
               <button
                 onClick={() => removerCategoria(c.id).catch(e => setErro(e.message))}
                 className="w-5 h-5 flex items-center justify-center text-accent-300 hover:text-red-400 transition-colors shrink-0"
-                title="Remover categoria"
+                title={t('Remover categoria')}
               >
                 ×
               </button>
@@ -82,11 +83,11 @@ function CategoriasEditor({ categorias, criarCategoria, atualizarCategoria, remo
       <div className="flex items-center gap-2 flex-wrap">
         <input type="text" value={nome} onChange={e => setNome(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') adicionar() }}
-          placeholder="Nova categoria (ex: Machados)" className={`${INP} flex-1 min-w-[10rem]`} />
+          placeholder={t('Nova categoria (ex: Machados)')} className={`${INP} flex-1 min-w-[10rem]`} />
         <input type="text" value={descricao} onChange={e => setDescricao(e.target.value)}
-          placeholder="Descrição" className={`${INP} w-40`} />
+          placeholder={t('Descrição')} className={`${INP} w-40`} />
         <Botao variante="primario" tamanho="sm" onClick={adicionar}>
-          + Adicionar
+          {t('+ Adicionar')}
         </Botao>
       </div>
       {erro && <p className="text-red-400 text-xs">{erro}</p>}
@@ -102,7 +103,7 @@ function GanhosEditor({ ganhos = [], onChange }) {
       {ganhos.map((g, i) => (
         <div key={i} className="flex items-center gap-2">
           <input type="text" value={g.rotulo ?? ''} onChange={e => set(i, { rotulo: e.target.value })}
-            placeholder="Rótulo (ex: Inimigo mais forte)" className={`${INP} flex-1 min-w-[10rem]`} />
+            placeholder={t('Rótulo (ex: Inimigo mais forte)')} className={`${INP} flex-1 min-w-[10rem]`} />
           <span className="text-accent-300 text-xs">+</span>
           <input type="number" value={g.xp ?? ''} onChange={e => set(i, { xp: Number(e.target.value) })}
             placeholder="XP" className={`${INP} w-16 text-center`} />
@@ -112,9 +113,9 @@ function GanhosEditor({ ganhos = [], onChange }) {
       ))}
       <button onClick={() => onChange([...ganhos, { rotulo: '', xp: 10 }])}
         className="text-xs px-2 py-0.5 rounded-lg border border-dashed border-purple-700 text-purple-300 hover:text-white hover:border-purple-500 transition-colors">
-        + botão de ganho
+        {t('+ botão de ganho')}
       </button>
-      {ganhos.length === 0 && <p className="text-accent-300 text-xs">Nenhum botão rápido — o ganho fica só no campo manual.</p>}
+      {ganhos.length === 0 && <p className="text-accent-300 text-xs">{t('Nenhum botão rápido — o ganho fica só no campo manual.')}</p>}
     </div>
   )
 }
@@ -139,38 +140,36 @@ export default function MaestriaItensEditor({ sistemaId, config, onChange }) {
       {/* Maestria */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-purple-200 text-sm font-semibold">Maestria por uso</p>
+          <p className="text-purple-200 text-sm font-semibold">{t('Maestria por uso')}</p>
           <label className="text-purple-300 text-xs flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" checked={!!m.ativo} onChange={e => set({ ativo: e.target.checked })} className="accent-purple-500" />
-            ativar
+            {t('ativar')}
           </label>
         </div>
         <p className="text-accent-300 text-xs">
-          Armas/ferramentas acumulam XP próprio ao serem usadas; níveis dão bônus percentuais
-          (via a mesma ordem de operações da F18) e desbloqueiam propriedades. Sistemas sem maestria
-          não mostram nada na ficha.
+          {t('Armas/ferramentas acumulam XP próprio ao serem usadas; níveis dão bônus percentuais (via a mesma ordem de operações da F18) e desbloqueiam propriedades. Sistemas sem maestria não mostram nada na ficha.')}
         </p>
 
         {!m.ativo ? (
-          <p className="text-accent-300 text-xs">Desativada.</p>
+          <p className="text-accent-300 text-xs">{t('Desativada.')}</p>
         ) : (
           <>
             {/* Escopo */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-purple-400 text-xs">A maestria é por</span>
+              <span className="text-purple-400 text-xs">{t('A maestria é por')}</span>
               <select value={m.escopo || 'categoria'} onChange={e => set({ escopo: e.target.value })} className={INP}>
-                <option value="categoria">Categoria (ex: todos os Machados)</option>
-                <option value="item">Item individual</option>
+                <option value="categoria">{t('Categoria (ex: todos os Machados)')}</option>
+                <option value="item">{t('Item individual')}</option>
               </select>
             </div>
 
             {/* Curva */}
             <div className="space-y-1.5 border-t border-purple-900/50 pt-2">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-purple-400 text-xs">Curva de XP</span>
+                <span className="text-purple-400 text-xs">{t('Curva de XP')}</span>
                 <select value={curva.modo} onChange={e => setCurva({ modo: e.target.value })} className={INP}>
-                  <option value="formula">Fórmula</option>
-                  <option value="tabela">Tabela</option>
+                  <option value="formula">{t('Fórmula')}</option>
+                  <option value="tabela">{t('Tabela')}</option>
                 </select>
               </div>
               {curva.modo === 'formula' ? (
@@ -183,8 +182,7 @@ export default function MaestriaItensEditor({ sistemaId, config, onChange }) {
                     variaveis={['proximo_nivel', 'piso(']}
                   />
                   <p className="text-accent-300 text-xs">
-                    XP para ir ao nível <span className="font-mono">proximo_nivel</span> — que vale 1, 2, 3…
-                    Ex.: "100 × proximo_nivel" custa 100 p/ o nv1, 200 p/ o nv2, 300 p/ o nv3.
+                    {t('XP para ir ao nível')} <span className="font-mono">proximo_nivel</span> {t('— que vale 1, 2, 3… Ex.: "100 × proximo_nivel" custa 100 p/ o nv1, 200 p/ o nv2, 300 p/ o nv3.')}
                   </p>
                 </>
               ) : (
@@ -198,7 +196,7 @@ export default function MaestriaItensEditor({ sistemaId, config, onChange }) {
                     className={`${INP} w-full font-mono`}
                   />
                   <p className="text-accent-300 text-xs">
-                    Custo de CADA nível, em ordem (nv1, nv2, nv3…). {(curva.tabela || []).length} definido(s).
+                    {t('Custo de CADA nível, em ordem (nv1, nv2, nv3…). {n} definido(s).', { n: (curva.tabela || []).length })}
                   </p>
                 </>
               )}
@@ -206,25 +204,25 @@ export default function MaestriaItensEditor({ sistemaId, config, onChange }) {
 
             {/* Bônus por nível */}
             <div className="flex items-center gap-3 flex-wrap border-t border-purple-900/50 pt-2">
-              <span className="text-purple-400 text-xs">Bônus por nível de maestria</span>
+              <span className="text-purple-400 text-xs">{t('Bônus por nível de maestria')}</span>
               <label className="text-purple-400 text-xs flex items-center gap-1">
-                acerto
+                {t('acerto')}
                 <input type="number" value={bonus.acerto_percentual ?? 0}
                   onChange={e => setBonus({ acerto_percentual: Number(e.target.value) })}
                   className={`${INP} w-14 text-center`} />%
               </label>
               <label className="text-purple-400 text-xs flex items-center gap-1">
-                efeito
+                {t('efeito')}
                 <input type="number" value={bonus.efeito_percentual ?? 0}
                   onChange={e => setBonus({ efeito_percentual: Number(e.target.value) })}
                   className={`${INP} w-14 text-center`} />%
               </label>
-              <span className="text-accent-300 text-xs">× nível, somados como percentual (F18).</span>
+              <span className="text-accent-300 text-xs">{t('× nível, somados como percentual (F18).')}</span>
             </div>
 
             {/* Ganhos padrão */}
             <div className="border-t border-purple-900/50 pt-2">
-              <p className="text-purple-400 text-xs mb-1.5">Botões de ganho rápido (o mestre nomeia)</p>
+              <p className="text-purple-400 text-xs mb-1.5">{t('Botões de ganho rápido (o mestre nomeia)')}</p>
               <GanhosEditor ganhos={m.ganhos_padrao || []} onChange={g => set({ ganhos_padrao: g })} />
             </div>
           </>
@@ -233,7 +231,7 @@ export default function MaestriaItensEditor({ sistemaId, config, onChange }) {
 
       {/* Categorias */}
       <div className="bg-slate-800 border border-purple-800 rounded-xl p-4 space-y-3">
-        <p className="text-purple-200 text-sm font-semibold">Categorias de item</p>
+        <p className="text-purple-200 text-sm font-semibold">{t('Categorias de item')}</p>
         <CategoriasEditor
           categorias={cats.categorias}
           criarCategoria={cats.criarCategoria}

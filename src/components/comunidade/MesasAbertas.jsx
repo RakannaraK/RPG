@@ -8,6 +8,7 @@ import CapaMesa from '../mesa/CapaMesa'
 import Botao from '../ui/Botao'
 import Icone from '../ui/Icone'
 import { capaDaMesa } from '../../lib/capas'
+import { t, tn } from '../../i18n'
 
 
 function Cartao({ m, estado, onPedir, onCancelar, onAbrir, onEntrar }) {
@@ -27,28 +28,28 @@ function Cartao({ m, estado, onPedir, onCancelar, onAbrir, onEntrar }) {
       <div className="p-4 space-y-2 flex-1 flex flex-col">
         <p className="font-sora text-ink text-lg font-semibold leading-snug">{m.nome}</p>
         <p className="text-ink-dim text-xs">
-          {[m.sistema, m.quando, textoVagas(m.vagas), `${m.jogadores} ${m.jogadores === 1 ? 'jogador' : 'jogadores'}`].filter(Boolean).join(' · ')}
+          {[m.sistema, m.quando, textoVagas(m.vagas), tn(m.jogadores, '{n} jogador', '{n} jogadores')].filter(Boolean).join(' · ')}
         </p>
-        {m.iniciantes && <span className="self-start inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border border-ok/60 text-ok"><Icone nome="check" tamanho={12} /> Aceita iniciantes</span>}
+        {m.iniciantes && <span className="self-start inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border border-ok/60 text-ok"><Icone nome="check" tamanho={12} /> {t('Aceita iniciantes')}</span>}
         <p className="text-ink-dim text-sm whitespace-pre-wrap flex-1 line-clamp-4">{m.descricao}</p>
 
-        {estado === 'sem-login' && <Botao variante="contorno" tamanho="sm" onClick={onEntrar}>Entre para pedir uma vaga</Botao>}
-        {estado === 'convidado' && <p className="text-ink-dim text-xs">Crie uma conta para pedir vaga em outra mesa.</p>}
-        {estado === 'membro' && <Botao variante="secundario" tamanho="sm" onClick={onAbrir}>Você já está nesta mesa · abrir</Botao>}
-        {estado === 'recusado' && <p className="text-ink-dim text-xs">Seu pedido para esta mesa não foi aceito.</p>}
+        {estado === 'sem-login' && <Botao variante="contorno" tamanho="sm" onClick={onEntrar}>{t('Entre para pedir uma vaga')}</Botao>}
+        {estado === 'convidado' && <p className="text-ink-dim text-xs">{t('Crie uma conta para pedir vaga em outra mesa.')}</p>}
+        {estado === 'membro' && <Botao variante="secundario" tamanho="sm" onClick={onAbrir}>{t('Você já está nesta mesa · abrir')}</Botao>}
+        {estado === 'recusado' && <p className="text-ink-dim text-xs">{t('Seu pedido para esta mesa não foi aceito.')}</p>}
         {estado === 'pendente' && (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-accent-300 text-xs">Pedido enviado — o mestre decide.</span>
-            <Botao variante="fantasma" tamanho="sm" disabled={ocupado} onClick={() => acao(onCancelar)}>Cancelar pedido</Botao>
+            <span className="text-accent-300 text-xs">{t('Pedido enviado — o mestre decide.')}</span>
+            <Botao variante="fantasma" tamanho="sm" disabled={ocupado} onClick={() => acao(onCancelar)}>{t('Cancelar pedido')}</Botao>
           </div>
         )}
-        {estado === 'pode-pedir' && !escrevendo && <Botao variante="primario" tamanho="sm" onClick={() => setEscrevendo(true)}>Quero jogar</Botao>}
+        {estado === 'pode-pedir' && !escrevendo && <Botao variante="primario" tamanho="sm" onClick={() => setEscrevendo(true)}>{t('Quero jogar')}</Botao>}
         {estado === 'pode-pedir' && escrevendo && (
           <div className="space-y-2">
-            <textarea value={mensagem} onChange={e => setMensagem(e.target.value)} maxLength={500} rows={2} placeholder="Conte um pouco sobre você (opcional)" aria-label="Mensagem para o mestre" className="campo w-full" />
+            <textarea value={mensagem} onChange={e => setMensagem(e.target.value)} maxLength={500} rows={2} placeholder={t('Conte um pouco sobre você (opcional)')} aria-label={t('Mensagem para o mestre')} className="campo w-full" />
             <div className="flex gap-2">
-              <Botao variante="primario" tamanho="sm" disabled={ocupado} onClick={() => acao(() => onPedir(mensagem))}>{ocupado ? 'Enviando…' : 'Enviar pedido'}</Botao>
-              <Botao variante="fantasma" tamanho="sm" onClick={() => setEscrevendo(false)}>Cancelar</Botao>
+              <Botao variante="primario" tamanho="sm" disabled={ocupado} onClick={() => acao(() => onPedir(mensagem))}>{ocupado ? t('Enviando…') : t('Enviar pedido')}</Botao>
+              <Botao variante="fantasma" tamanho="sm" onClick={() => setEscrevendo(false)}>{t('Cancelar')}</Botao>
             </div>
           </div>
         )}
@@ -96,12 +97,12 @@ export default function MesasAbertas() {
     <section className="space-y-3" aria-labelledby="titulo-mesas-abertas">
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-[14rem]">
-          <h2 id="titulo-mesas-abertas" className="font-sora text-ink font-semibold text-xl">Mesas procurando jogadores</h2>
-          <p className="text-ink-dim text-sm mt-0.5">Peça uma vaga: o mestre recebe e decide.</p>
+          <h2 id="titulo-mesas-abertas" className="font-sora text-ink font-semibold text-xl">{t('Mesas procurando jogadores')}</h2>
+          <p className="text-ink-dim text-sm mt-0.5">{t('Peça uma vaga: o mestre recebe e decide.')}</p>
         </div>
-        <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar sistema, horário, tema…" aria-label="Buscar mesas abertas" className="campo min-w-[12rem]" />
+        <input value={busca} onChange={e => setBusca(e.target.value)} placeholder={t('Buscar sistema, horário, tema…')} aria-label={t('Buscar mesas abertas')} className="campo min-w-[12rem]" />
         <label className="flex items-center gap-2 text-sm text-ink min-h-[24px] cursor-pointer">
-          <input type="checkbox" checked={iniciantes} onChange={e => setIniciantes(e.target.checked)} className="accent-purple-500" /> Aceita iniciantes
+          <input type="checkbox" checked={iniciantes} onChange={e => setIniciantes(e.target.checked)} className="accent-purple-500" /> {t('Aceita iniciantes')}
         </label>
       </div>
       <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -123,7 +124,7 @@ export default function MesasAbertas() {
           />
         ))}
       </ul>
-      {!lista.length && <p className="text-ink-dim text-sm">Nenhuma mesa com esse filtro.</p>}
+      {!lista.length && <p className="text-ink-dim text-sm">{t('Nenhuma mesa com esse filtro.')}</p>}
     </section>
   )
 }
