@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { montarItens, filtrarItens } from './paleta'
+import { montarItens, filtrarItens, itensDaBusca } from './paleta'
 
 const mesas = [
   { id: 'm1', nome: 'Ruínas de Éter', role: 'mestre', arquivada: false },
@@ -44,4 +44,23 @@ describe('filtrarItens', () => {
     const l = Array.from({ length: 50 }, (_, i) => ({ titulo: `Item ${i}`, detalhe: '' }))
     expect(filtrarItens(l, 'item')).toHaveLength(30)
   })
+})
+
+describe('itensDaBusca', () => {
+  const l = (tipo, o = {}) => ({ tipo, id: 'i1', mesa_id: 'm1', mesa_nome: 'Éter', titulo: 'X', detalhe: null, ficha_id: null, ...o })
+  it('converte cada tipo com rota, grupo e detalhe', () => {
+    const r = itensDaBusca([
+      l('ficha', { detalhe: 'criatura' }), l('item', { id: 'i2', detalhe: 'Brisa', ficha_id: 'f9' }), l('item', { id: 'i3', ficha_id: 'f9' }),
+      l('bau', { id: 'b1' }), l('verbete', { id: 'v1', titulo: null }),
+    ])
+    expect(r.map(i => i.chave)).toEqual(['b:ficha:i1', 'b:item:i2', 'b:item:i3', 'b:bau:b1', 'b:verbete:v1'])
+    expect(r[0]).toMatchObject({ grupo: 'Fichas', detalhe: 'Criatura · Éter', rota: '/mesa/m1/ficha/i1' })
+    expect(r[1]).toMatchObject({ grupo: 'Itens', detalhe: 'Brisa · Éter', rota: '/mesa/m1/ficha/f9' })
+    expect(r[3]).toMatchObject({ grupo: 'Itens', detalhe: 'Baú do grupo · Éter', rota: '/mesa/m1?aba=Fichas' })
+    expect(r[4]).toMatchObject({ grupo: 'Verbetes', titulo: 'Verbete sem título', detalhe: 'Éter', rota: '/mesa/m1?aba=Enciclopédia&verbete=v1' })
+  })
+  it('não deduplica por rota e não limita a 30', () => {
+    expect(itensDaBusca(Array.from({ length: 40 }, (_, i) => l('item', { id: `i${i}`, ficha_id: 'f' })))).toHaveLength(40)
+  })
+  it('entrada inválida vira lista vazia', () => expect(itensDaBusca(null)).toEqual([]))
 })

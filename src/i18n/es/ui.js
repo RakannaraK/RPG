@@ -237,4 +237,5 @@ export default {
   '{texto}, {estado}': '{texto}, {estado}',
   '{titulo} sai da mesa.': '{titulo} sale de la mesa.',
   '↑↓ escolher · Enter abrir · Esc fechar': '↑↓ elegir · Enter abrir · Esc cerrar',
+  'Buscando…': 'Buscando…',
 }

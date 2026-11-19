@@ -426,4 +426,6 @@ export default {
   'Vou': 'Asisto',
   'Clique no mapa onde fica {nome}.': 'Haz clic en el mapa donde va {nome}.',
   'Você está como convidado.': 'Estás como invitado.',
+  'Aumentar': 'Aumentar',
+  'Diminuir': 'Disminuir',
 }

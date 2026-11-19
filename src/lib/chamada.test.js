@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { servidoresIce, quemOferece, normalizarSinal, participantesDaPresenca, MAX_PARTICIPANTES } from './chamada'
+import { normalizarIce, servidoresIce, quemOferece, normalizarSinal, participantesDaPresenca, MAX_PARTICIPANTES } from './chamada'
 
 const A = '11111111-1111-4111-8111-111111111111'
 const B = '22222222-2222-4222-8222-222222222222'
@@ -12,6 +12,30 @@ describe('servidoresIce', () => {
   it('inválido, vazio ou lista vazia devolve o padrão', () => {
     for (const t of ['{nao', '', undefined, '[]', '{"a":1}']) {
       expect(servidoresIce(t)).toEqual([{ urls: 'stun:stun.l.google.com:19302' }])
+    }
+  })
+})
+
+describe('normalizarIce', () => {
+  it('aceita stun e turn, com texto ou lista', () => {
+    const l = [{ urls: 'stun:a.com:3478' }, { urls: ['turn:b.com', 'turns:b.com:443'], username: 'u', credential: 'c' }]
+    expect(normalizarIce({ iceServers: l })).toEqual(l)
+  })
+  it('protocolo errado, campo longo ou tipo errado devolve null', () => {
+    expect(normalizarIce({ iceServers: [{ urls: 'http://x.com' }] })).toBeNull()
+    expect(normalizarIce({ iceServers: [{ urls: ['stun:a', 'javascript:x'] }] })).toBeNull()
+    expect(normalizarIce({ iceServers: [{ urls: 'turn:' + 'a'.repeat(300) }] })).toBeNull()
+    expect(normalizarIce({ iceServers: [{ urls: 'turn:a', username: 'u'.repeat(501) }] })).toBeNull()
+    expect(normalizarIce({ iceServers: [{ urls: 'turn:a', credential: 5 }] })).toBeNull()
+  })
+  it('lista grande demais ou vazia devolve null', () => {
+    expect(normalizarIce({ iceServers: Array(7).fill({ urls: 'stun:a' }) })).toBeNull()
+    expect(normalizarIce({ iceServers: Array(6).fill({ urls: 'stun:a' }) })).toHaveLength(6)
+    expect(normalizarIce({ iceServers: [] })).toBeNull()
+  })
+  it('lixo devolve null', () => {
+    for (const v of [null, undefined, 5, 'x', [], {}, { iceServers: 'x' }, { iceServers: [null] }, { iceServers: [{}] }]) {
+      expect(normalizarIce(v)).toBeNull()
     }
   })
 })

@@ -41,3 +41,21 @@ export function filtrarItens(itens, texto) {
   const comeca = i => normalizar(i.titulo).startsWith(q)
   return [...ok.filter(comeca), ...ok.filter(i => !comeca(i))].slice(0, MAXIMO)
 }
+
+const GRUPO_BUSCA = { ficha: t('Fichas'), item: t('Itens'), bau: t('Itens'), verbete: t('Verbetes') }
+
+/** F67 — linhas de `buscar_conteudo` (dado do banco) no formato de item da paleta. Sem dedupe: itens da mesma ficha são resultados distintos. */
+export function itensDaBusca(linhas) {
+  if (!Array.isArray(linhas)) return []
+  const ordem = ['ficha', 'item', 'bau', 'verbete']
+  const itens = linhas.filter(l => l && GRUPO_BUSCA[l.tipo] && l.id && l.mesa_id).map(l => {
+    const mesa = l.mesa_nome || ''
+    const base = { chave: `b:${l.tipo}:${l.id}`, grupo: GRUPO_BUSCA[l.tipo] }
+    if (l.tipo === 'ficha') return { ...base, titulo: l.titulo, detalhe: `${l.detalhe === 'criatura' ? t('Criatura') : t('Ficha')} · ${mesa}`, rota: `/mesa/${l.mesa_id}/ficha/${l.id}` }
+    if (l.tipo === 'item') return { ...base, titulo: l.titulo, detalhe: `${l.detalhe || ''} · ${mesa}`, rota: `/mesa/${l.mesa_id}/ficha/${l.ficha_id}` }
+    if (l.tipo === 'bau') return { ...base, titulo: l.titulo, detalhe: `${t('Baú do grupo')} · ${mesa}`, rota: `/mesa/${l.mesa_id}?aba=Fichas` }
+    return { ...base, titulo: l.titulo || t('Verbete sem título'), detalhe: mesa, rota: `/mesa/${l.mesa_id}?aba=Enciclopédia&verbete=${l.id}` }
+  })
+  // item e baú dividem o grupo "Itens"; ordem estável fichas, itens, baús, verbetes
+  return ordem.flatMap(tp => itens.filter(i => i.chave.startsWith(`b:${tp}:`)))
+}

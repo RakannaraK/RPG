@@ -82,7 +82,7 @@ export default function MesaPage() {
   const [abaVista, setAbaVista] = useState(null)
   if (abaDoLink !== abaVista) { // ajuste no render, não em efeito: um aviso novo na mesma página troca a aba
     setAbaVista(abaDoLink)
-    if (TABS.includes(abaDoLink)) setActiveTab(abaDoLink)
+    if (TABS.includes(abaDoLink) || TABS_GESTOR.includes(abaDoLink)) setActiveTab(abaDoLink) // as do gestor só renderizam com isGestor
   }
   const [copiado, setCopiado] = useState(false)
   const [linkCopiado, setLinkCopiado] = useState(false)
@@ -603,7 +603,7 @@ export default function MesaPage() {
           )}
 
           {activeTab === 'Enciclopédia' && (
-            <PainelEnciclopedia mesaId={id} meuId={session?.user?.id} isGestor={isGestor} />
+            <PainelEnciclopedia mesaId={id} meuId={session?.user?.id} isGestor={isGestor} verbeteInicial={params.get('verbete')} />
           )}
 
           {activeTab === 'Dados' && (

@@ -1,21 +1,22 @@
 import { useState } from 'react'
 import { useRelogios } from '../../hooks/useRelogios'
 import Botao from '../ui/Botao'
+import CabecalhoSecao from '../ui/CabecalhoSecao'
+import Icone from '../ui/Icone'
 import { t } from '../../i18n'
 
-const INP = 'px-2 py-1.5 rounded-lg bg-void border border-border text-white text-sm placeholder-ink-dim focus:outline-none focus:ring-1 focus:ring-purple-500'
 
 /** Segmentos do relógio: preenchidos à esquerda, vazios à direita. */
 function Segmentos({ preenchido, segmentos }) {
   const total = Math.max(0, Number(segmentos) || 0)
   const cheio = Math.max(0, Math.min(total, Number(preenchido) || 0))
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-1" role="img" aria-label={t('{a} de {b}', { a: cheio, b: total })}>
       {Array.from({ length: total }, (_, i) => (
         <span
           key={i}
           className={`w-4 h-4 rounded-lg border transition-colors ${
-            i < cheio ? 'bg-amber-500 border-amber-400' : 'bg-slate-900 border-purple-800'
+            i < cheio ? 'bg-accent-500 border-accent-400' : 'bg-void border-border'
           }`}
         />
       ))}
@@ -56,15 +57,14 @@ export default function PainelRelogios({ mesaId, isGestor }) {
 
   return (
     <div className="space-y-3">
-      <div>
-        <p className="text-purple-200 font-medium text-sm">{t('Relógios da campanha')}</p>
-        <p className="text-accent-300 text-xs mt-0.5">
-          {t('O que está em andamento no mundo, entre uma sessão e outra.')}
-        </p>
-      </div>
+      <CabecalhoSecao
+        nivel={3}
+        titulo={t('Relógios da campanha')}
+        descricao={t('O que está em andamento no mundo, entre uma sessão e outra.')}
+      />
 
       {relogios.length === 0 && (
-        <p className="text-accent-300 text-xs italic">{t('Nenhum relógio ainda.')}</p>
+        <p className="text-ink-dim text-sm">{t('Nenhum relógio ainda.')}</p>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -72,15 +72,15 @@ export default function PainelRelogios({ mesaId, isGestor }) {
           <div
             key={r.id}
             className={`rounded-xl border p-3 space-y-2 ${
-              r.concluido ? 'bg-amber-950/30 border-amber-700/60' : 'bg-slate-800 border-purple-800'
+              r.concluido ? 'bg-accent-500/10 border-accent-500/50' : 'bg-void/60 border-border'
             }`}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-white text-sm font-medium truncate">{r.nome}</p>
-                {r.descricao && <p className="text-accent-300 text-xs mt-0.5">{r.descricao}</p>}
+                <p className="text-ink text-sm font-medium truncate">{r.nome}</p>
+                {r.descricao && <p className="text-ink-dim text-xs mt-0.5">{r.descricao}</p>}
               </div>
-              <span className="text-amber-400 font-mono text-sm shrink-0">
+              <span className="text-accent-300 font-mono text-sm shrink-0 tabular-nums">
                 {r.preenchido}/{r.segmentos}
               </span>
             </div>
@@ -88,24 +88,20 @@ export default function PainelRelogios({ mesaId, isGestor }) {
             <Segmentos preenchido={r.preenchido} segmentos={r.segmentos} />
 
             {r.concluido && (
-              <p className="text-amber-300 text-xs font-semibold">{t('✓ Completo')}</p>
+              <p className="text-accent-300 text-xs font-semibold">{t('✓ Completo')}</p>
             )}
 
             {isGestor && (
-              <div className="flex items-center gap-1.5 pt-1">
-                <button
-                  type="button" onClick={() => avancar(r, -1)}
-                  className="w-7 h-7 rounded-lg border border-purple-700 text-purple-300 hover:text-white transition-colors"
-                >−</button>
-                <button
-                  type="button" onClick={() => avancar(r, +1)}
-                  className="w-7 h-7 rounded-lg bg-amber-800 hover:bg-amber-700 text-white transition-colors"
-                >+</button>
-                <button
-                  type="button" onClick={() => remover(r.id)}
-                  className="ml-auto text-red-800 hover:text-red-500 transition-colors px-1 text-sm"
-                  title={t('Remover relógio')}
-                >✕</button>
+              <div className="flex items-center gap-1.5 pt-1" role="group" aria-label={r.nome}>
+                <Botao variante="contorno" tamanho="icone" onClick={() => avancar(r, -1)} aria-label={t('Diminuir')}>
+                  <Icone nome="menos" tamanho={16} />
+                </Botao>
+                <Botao variante="primario" tamanho="icone" onClick={() => avancar(r, +1)} aria-label={t('Aumentar')}>
+                  <Icone nome="mais" tamanho={16} />
+                </Botao>
+                <Botao variante="fantasma" tamanho="icone" className="ml-auto" onClick={() => remover(r.id)} aria-label={t('Remover relógio')} title={t('Remover relógio')}>
+                  <Icone nome="lixeira" tamanho={16} />
+                </Botao>
               </div>
             )}
           </div>
@@ -113,22 +109,22 @@ export default function PainelRelogios({ mesaId, isGestor }) {
       </div>
 
       {isGestor && (
-        <div className="flex gap-2 flex-wrap items-center border-t border-purple-900/60 pt-3">
+        <div className="flex gap-2 flex-wrap items-center border-t border-border pt-3">
           <input
             type="text" value={nome} onChange={e => setNome(e.target.value)}
             placeholder={t('Novo relógio (ex: Investigação do Inquisidor)')}
-            className={`${INP} flex-1 min-w-[12rem]`}
+            className="campo flex-1 min-w-[12rem]" aria-label={t('Novo relógio (ex: Investigação do Inquisidor)')}
           />
           <input
             type="number" min={1} max={24} value={segmentos}
             onChange={e => setSegmentos(Number(e.target.value) || 6)}
-            className={`${INP} w-16 text-center`} title={t('Segmentos')}
+            className="campo w-16 text-center" title={t('Segmentos')} aria-label={t('Segmentos')}
           />
           <Botao variante="primario" tamanho="sm"
             type="button" onClick={handleCriar} disabled={criando}>
             {criando ? '...' : t('+ Criar')}
           </Botao>
-          {erro && <p className="text-red-400 text-xs w-full">{erro}</p>}
+          {erro && <p className="text-harm text-xs w-full" role="alert">{erro}</p>}
         </div>
       )}
     </div>

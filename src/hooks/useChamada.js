@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { MAX_PARTICIPANTES, servidoresIce, quemOferece, normalizarSinal, participantesDaPresenca } from '../lib/chamada'
+import { MAX_PARTICIPANTES, servidoresIce, normalizarIce, quemOferece, normalizarSinal, participantesDaPresenca } from '../lib/chamada'
 import { t } from '../i18n'
 
 const ICE = servidoresIce(import.meta.env.VITE_ICE_SERVERS)
@@ -24,7 +24,7 @@ export function useChamada(mesaId) {
   const [erro, setErro] = useState(null)
 
   // tudo que os ouvintes do canal precisam ler sem refazer a assinatura
-  const r = useRef({ canal: null, ok: false, dentro: false, pares: new Map(), mic: null, cam: null, info: null, vivo: true, lista: [], tent: {}, falhou: null })
+  const r = useRef({ canal: null, ok: false, dentro: false, pares: new Map(), mic: null, cam: null, info: null, vivo: true, lista: [], tent: {}, falhou: null, ice: ICE })
   const [ligacao, setLigacao] = useState({})
 
   const enviar = useCallback(payload => {
@@ -49,7 +49,7 @@ export function useChamada(mesaId) {
   }, [])
 
   const criarPar = useCallback(id => {
-    const pc = new RTCPeerConnection({ iceServers: ICE })
+    const pc = new RTCPeerConnection({ iceServers: r.current.ice })
     const remoto = new MediaStream()
     const par = { pc, fila: [] }
     pc.onicecandidate = e => {
@@ -206,6 +206,12 @@ export function useChamada(mesaId) {
     if (!c.ok) { setErro(t('Não foi possível entrar no canal da chamada. Tente de novo em instantes.')); return }
     if (participantes.length >= MAX_PARTICIPANTES) { setErro(t('Chamada cheia ({n} pessoas).', { n: MAX_PARTICIPANTES })); return }
     setEstado('entrando')
+    // TURN: a busca corre junto com o pedido do microfone; qualquer falha cai no STUN
+    c.ice = ICE
+    const busca = Promise.race([
+      supabase.functions.invoke('turn-credenciais', { body: { mesaId } }).then(({ data }) => normalizarIce(data)),
+      new Promise(res => setTimeout(res, 4000, null)),
+    ]).catch(() => null).then(l => { if (l) c.ice = l })
     let stream
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: AUDIO })
@@ -226,9 +232,10 @@ export function useChamada(mesaId) {
         nome = p?.username || null
       }
     } catch { /* cai no "Jogador" */ }
+    await busca
     if (!c.vivo || !c.canal) { stream.getTracks().forEach(tr => tr.stop()); return }
     c.mic = stream.getAudioTracks()[0]
-    c.info = { usuarioId: userId, nome: nome || 'Jogador', avatar }
+    c.info = { usuarioId: userId, nome: nome || t('Jogador'), avatar }
     c.dentro = true
     setFluxos({ [meuId]: stream })
     try {

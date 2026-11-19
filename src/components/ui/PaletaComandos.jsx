@@ -4,7 +4,8 @@ import { useAuth } from '../../context/AuthContext'
 import { useMesas } from '../../hooks/useMesa'
 import { useMeusPersonagens } from '../../hooks/useMeusPersonagens'
 import { lerRecentes } from '../../lib/recentes'
-import { montarItens, filtrarItens } from '../../lib/paleta'
+import { supabase } from '../../lib/supabase'
+import { montarItens, filtrarItens, itensDaBusca } from '../../lib/paleta'
 import Modal, { useFecharModal } from './Modal'
 import EstadoVazio from './EstadoVazio'
 import Icone from './Icone'
@@ -30,7 +31,30 @@ function Miolo() {
   const listaRef = useRef(null)
 
   const itens = useMemo(() => montarItens({ recentes, mesas, personagens }), [recentes, mesas, personagens])
-  const lista = useMemo(() => filtrarItens(itens, texto), [itens, texto])
+  const locais = useMemo(() => filtrarItens(itens, texto), [itens, texto])
+  const [resultado, setResultado] = useState({ q: '', linhas: [] })
+  const pedido = useRef(0)
+  const q = texto.trim()
+  const comBusca = q.length >= 2
+  const buscando = comBusca && resultado.q !== q
+  const achados = resultado.linhas
+
+  // F67 — busca no conteúdo das mesas: 250 ms depois da última tecla; resposta velha é ignorada
+  useEffect(() => {
+    const n = ++pedido.current
+    if (!comBusca) return
+    const espera = setTimeout(async () => {
+      let linhas = []
+      try {
+        const { data, error } = await supabase.rpc('buscar_conteudo', { p_texto: q })
+        if (!error) linhas = itensDaBusca(data)
+      } catch { /* segue só com os resultados locais */ }
+      if (n === pedido.current) setResultado({ q, linhas })
+    }, 250)
+    return () => clearTimeout(espera)
+  }, [q, comBusca])
+
+  const lista = useMemo(() => [...locais, ...(comBusca ? achados : [])], [locais, achados, comBusca])
   const atual = Math.min(ativo, lista.length - 1)
   const idOpcao = i => `${idLista}-${i}`
 
@@ -59,7 +83,9 @@ function Miolo() {
           className="flex-1 min-w-0 bg-transparent py-4 text-ink placeholder:text-ink-dim outline-none"
         />
       </div>
-      {lista.length === 0 ? (
+      {lista.length === 0 && buscando ? (
+        <p className="p-4 text-sm text-ink-dim" role="status">{t('Buscando…')}</p>
+      ) : lista.length === 0 ? (
         <div className="p-2"><EstadoVazio compacto titulo={t('Nada encontrado')} descricao={t('Tente outra palavra.')} /></div>
       ) : (
       <div ref={listaRef} id={idLista} role="listbox" aria-label={t('Resultados')} className="max-h-[50vh] overflow-y-auto p-2">
@@ -78,6 +104,7 @@ function Miolo() {
             ))}
           </div>
         ))}
+        {buscando && <p className="px-3 py-2 text-sm text-ink-dim" role="status">{t('Buscando…')}</p>}
       </div>
       )}
       <p className="px-4 py-2 border-t border-border/70 text-xs text-ink-dim">{t('↑↓ escolher · Enter abrir · Esc fechar')}</p>

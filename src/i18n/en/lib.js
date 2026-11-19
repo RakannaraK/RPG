@@ -544,4 +544,5 @@ export default {
   'Erro ao salvar rolagem no servidor.': 'Error saving the roll on the server.',
   '🤫 para {nomes}': '🤫 to {nomes}',
   'Role, anote, jogue': 'Roll, write, play',
+  'Verbete sem título': 'Untitled entry',
 };

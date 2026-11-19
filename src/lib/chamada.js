@@ -20,6 +20,26 @@ export function servidoresIce(texto) {
   }
 }
 
+/** Resposta da função `turn-credenciais` (dado não confiável): lista limpa ou `null`. */
+export function normalizarIce(json) {
+  const bruto = json?.iceServers
+  if (!Array.isArray(bruto) || !bruto.length || bruto.length > 6) return null
+  const lista = []
+  for (const s of bruto) {
+    if (!s || typeof s !== 'object') return null
+    const urls = Array.isArray(s.urls) ? s.urls : [s.urls]
+    if (!urls.length || !urls.every(u => typeof u === 'string' && u.length <= 300 && /^(stun|turns?):/.test(u))) return null
+    const item = { urls: Array.isArray(s.urls) ? urls : urls[0] }
+    for (const k of ['username', 'credential']) {
+      if (s[k] === undefined) continue
+      if (typeof s[k] !== 'string' || s[k].length > 500) return null
+      item[k] = s[k]
+    }
+    lista.push(item)
+  }
+  return lista
+}
+
 /** Só um dos dois lados cria a oferta, então não há colisão. */
 export function quemOferece(meuId, outroId) {
   return meuId < outroId

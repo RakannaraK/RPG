@@ -405,19 +405,24 @@ function ArtigoVerbete({ verbete, verbetes, isGestor, estado, onAbrir, acoes, ch
  * categoria, artigo com caixa de informações e ligações entre verbetes, e a
  * revelação campo a campo (o jogador só lê o que foi revelado a ele).
  */
-export default function PainelEnciclopedia({ mesaId, meuId, isGestor }) {
+export default function PainelEnciclopedia({ mesaId, meuId, isGestor, verbeteInicial = null }) {
   const { confirmar } = useConfirmar()
   const toast = useToast()
   const enc = useEnciclopedia(mesaId, isGestor)
   const { membros } = useMembrosMesa(mesaId)
   const [busca, setBusca] = useState('')
   const [tipo, setTipo] = useState('')
-  const [abertoId, setAbertoId] = useState(null)
+  const [abertoId, setAbertoId] = useState(verbeteInicial)
   const [modo, setModo] = useState('ler') // ler | editar | novo | gerar
   const [revelando, setRevelando] = useState(false)
   const [rascunho, setRascunho] = useState(null) // F46 — NPC gerado indo para o formulário
   const [erro, setErro] = useState('')
   const [vista, setVista] = useState('verbetes') // F48: verbetes | atlas
+  const [inicialVisto, setInicialVisto] = useState(verbeteInicial)
+  if (verbeteInicial !== inicialVisto) { // busca global levando a outro verbete com o painel já aberto
+    setInicialVisto(verbeteInicial)
+    if (verbeteInicial) { setAbertoId(verbeteInicial); setModo('ler') }
+  }
   const artigoRef = useRef(null)
 
   const jogadores = useMemo(() => membros.filter(m => m.usuario_id !== meuId && !GESTORES.includes(m.role)), [membros, meuId])

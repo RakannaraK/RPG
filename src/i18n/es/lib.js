@@ -544,4 +544,5 @@ export default {
   'Erro ao salvar rolagem no servidor.': 'Error al guardar la tirada en el servidor.',
   '🤫 para {nomes}': '🤫 para {nomes}',
   'Role, anote, jogue': 'Tira, anota, juega',
+  'Verbete sem título': 'Entrada sin título',
 };
