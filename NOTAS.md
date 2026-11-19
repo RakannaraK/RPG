@@ -6,7 +6,7 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
 ## Estado
 
 - Site de fichas de RPG + mesa virtual. React + Vite, JavaScript puro (sem TypeScript), Tailwind v3, Supabase (Postgres, RLS, Realtime, Storage), three + cannon-es (dados 3D), Vitest.
-- Publicado: GitHub `RakannaraK/RPG`, deploy no Render a partir do `main`. Último commit de fase no ar: `dc1eecb` (F62), enviado em 2026-11-13.
+- Publicado: GitHub `RakannaraK/RPG`, deploy no Render a partir do `main`. Último commit de fase no ar: `9d20e2e` (F63–F66), enviado em 2026-11-19.
 - Números da última conferência: 1117 testes passando, lint 0 erros (108 avisos antigos), build ok.
 - Todos os SQLs de `sql/` até `fase65_chamada.sql` já foram rodados no Supabase.
 - Fases recentes (spec de cada uma em `docs/`, com seção "Como ficou"):
@@ -15,7 +15,7 @@ Leia este arquivo antes de qualquer outro. Atualize ao fim de cada etapa. Limite
   - F57 atmosfera do mapa (11 efeitos + som ambiente) · F58 luz e aura · F59 efeitos de ação (projétil, explosão…) · F60 extensões da mesa e imagens animadas. Tudo em `docs/FASE57_EFEITOS_DO_MAPA.md`.
   - F61 acabamento dos efeitos: editor de habilidade lista efeitos das extensões instaladas, alças para arrastar efeito e luz no mapa, extensão publicável na Comunidade. Em `docs/FASE61_ACABAMENTO_DOS_EFEITOS.md`.
   - F62 sobras: extensão instalada/removida por RPC no servidor, publicar extensão direto do modal, Escudo e Baú no padrão do redesign, busca global (Ctrl+K). Em `docs/FASE62_SOBRAS.md`.
-- PRONTAS E SEM COMMIT (2026-11-19). O dono reabriu em 2026-11-13 quatro itens que eram "não fazer". Os SQLs `fase63`, `fase64` e `fase65` já foram rodados e testados por papel.
+- F63–F66 PUBLICADAS (2026-11-19, `9d20e2e`). O dono reabriu em 2026-11-13 quatro itens que eram "não fazer". Os SQLs `fase63`, `fase64` e `fase65` já foram rodados e testados por papel.
   - F63 paredes e linha de visão (`docs/FASE63_PAREDES_E_VISAO.md`).
   - F64 cinemáticas (`docs/FASE64_CINEMATICAS.md`).
   - F65 chamada de voz e vídeo (`docs/FASE65_VOZ_E_VIDEO.md`). Só o dono confere a autorização do canal privado e a chamada em redes diferentes (login real, duas pessoas).
